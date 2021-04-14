@@ -1,0 +1,21 @@
+\begin{tikzpicture}
+\draw (0,0) node[name = agent, circle, draw = black, fill = green!10!white]{\phantom{Agent}};
+\draw (agent.north west) + (6,3) node[name = obs, circle, draw = black, fill = blue!10!white]{Observation Engine};
+\draw (agent.south west) + (6,-3) node[name = inf, circle, draw = black, fill = yellow!10!white]{Inference Engine};
+\draw (agent.south east) + (-5,-4) node[name = state, circle, draw = black]{Internal State};
+\draw (agent.north east) + (-4,3) node[name = pol, circle, draw = black, fill = red!10!white]{Policy};
+
+\draw (agent) -- (obs) node[sloped, above, midway]{Make observations};
+\draw (agent) -- (inf) node[sloped, above, midway]{Make inferences};
+\draw (agent) -- (pol) node[sloped, above, midway]{Take actions};
+\draw (agent) -- (state) node[sloped, above, midway]{Store parameters};
+
+\draw[-triangle 60, dashed] (obs) -- (inf) node[sloped, above, midway]{use};
+\draw[-triangle 60, dashed] (inf) -- (state) node[sloped, above, midway]{update};
+\draw[-triangle 60, dashed] (state) -- (pol) node[sloped, above, midway]{use};
+\draw[-triangle 60, dashed] (obs) -- (pol) node[sloped, above, midway]{use};
+
+\node[draw=green!50!black, ultra thick, fit=(pol.north) (agent.east) (state.south) (state.west)](fit) {};
+\draw (fit.north west) node[above right, color = green!50!black]{BaseAgent};
+
+\end{tikzpicture}
