@@ -1,5 +1,7 @@
 .. agents:
 
+.. _agent-label:
+
 Agents
 *******
 

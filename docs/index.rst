@@ -3,27 +3,75 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to interaction-agents's documentation!
-==============================================
 
-A Python module that provides standardization of computational HCI models.
-
-Overview
+Caution
 ============
 
 This is a version that is not ready for realease yet. Documentation is here solely for my own purpose.
 
+Welcome to interaction-agents's documentation!
+==============================================
 
 
-Learn how to use *interaction-agents* quickly:
+*Interaction-agents* is a Python module that
+
+1. Provides standardization of computational HCI models, and
+2. Helps design intelligent user interfaces (IUIs).
+
+
+The main idea of *interaction-agents* is to separate interactive systems into three components:
+
+1. A task,
+2. A user model, called the **operator**
+3. A tool, called the **assistant**.
+
+and **bundling** them back together. Different **bundles** are proposed, depending on the use case:
+
+* Evaluate user and interface models,
+* Train a user model for a given interface,
+* Find the best interface given a user model,
+* Jointly train interface and user models, to model adaptation ...
+* ... and more
+
+.. note::
+
+    Another benefit of this separation is that it facilitates implementations, comparisons and evaluations by proposing a standardization of computational models in HCI. This will likely foster sharing/re-use of HCI models across researchers, as has been the case with other communities.
+
+
+
+
+*Interaction-agents* builds on a two-agent interaction model, see [link] for the terminology used in this module.
+
+
+
+
+Learn how to use *interaction-agents*:
 ===============================================
 
+
+
 .. toctree::
-   :maxdepth: 2
-   :caption: User Guide:
+  :maxdepth: 2
+  :caption: Tutorial
+
+  guide/terminology
+
+.. toctree::
+    :maxdepth: 2
+    :caption: User Guide
+
+    guide/interaction_model
+    guide/design
+    guide/agents
+    guide/tasks
+    guide/bundles
+    guide/wrappers
+    guide/observation_engine
+    guide/inference_engine
+    guide/operator_model
 
 
-Documentation of *interaction-agents* code:
+Documentation of *interaction-agents*:
 ============================================
 
 
@@ -53,6 +101,18 @@ Documentation of *interaction-agents* code:
     modules/eye/operators
     modules/eye/envs
     modules/eye/noise
+
+
+TODO list:
+==============
+
+1. Fix render signature
+2. change all agent.observation to agent.observation_engine.observation
+3. check if game_state_indices is still used
+4. Make the RuleObservationEngine work again with slices/ other substate indicators
+5. Make the process observation engine
+6. Verify that the buffer works in the inference_engine
+7. FIx note Continuous Gaussian inference engine
 
 Indices
 ===========

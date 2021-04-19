@@ -31,7 +31,8 @@ release = '0.0.1'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [  'sphinx.ext.autodoc',
-                'sphinx.ext.mathjax'   ]
+                'sphinx.ext.mathjax',
+                'sphinxcontrib.tikz'   ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -53,3 +54,15 @@ html_theme = 'classic'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+
+# -- My options --------------------------------------------------------------
+
+# Numbering anything with captions
+numfig = True
+
+# tikz stuff
+tikz_proc_suite = 'GhostScript'
+tikz_resolution = 184
+tikz_tikzlibraries = 'calc,shapes,arrows,fit'
+# tikz_latex_preamble = '\usepackage\{ulem\}'

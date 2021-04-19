@@ -1,0 +1,19 @@
+\begin{tikzpicture}
+\draw (0,0) node[name = gamestate, rounded corners, rectangle split, rectangle split parts=4, very thick, draw=black!50, align=center]{$S_1$ \nodepart{two}{$S_2$}\nodepart{three}{$S_3$}\nodepart{four}{$S_4$}};
+
+\draw (gamestate) + (5,0) node[name = observation, rounded corners, rectangle split, rectangle split parts=4, very thick, draw=black!50, align=center]{\phantom{$S_1$} \nodepart{two}{$\widetilde{S}_2$}\nodepart{three}{$S_3$}\nodepart{four}{$S_4$}};
+
+
+\draw[thick] (gamestate.four east) -- ++ (.5,0) -| ++ (0,.25) node[name = line]{} |- (gamestate.three east);
+
+% adding + (0,0) seems to do the trick, otherwise there is a blank space.
+\draw[thick, -triangle 60] (line) + (0,0) -- (observation.three split west) node[midway, below]{\tiny Perfect observation};
+
+\draw (gamestate.two east) + (3.5,0) node[name=sum, thick, circle, draw = black]{\tiny $+$};
+\draw[thick, -triangle 60] (gamestate.two east) -- node[midway, above]{\tiny Noisy observation} (sum.west);
+\draw [thick, -triangle 60](sum.north) + (0,1) node[right]{$Z_2$} -- (sum.north);
+\draw[thick, -triangle 60] (sum.east) -- (observation.two west);
+\draw (gamestate.west) node[rotate = 90, above]{{Game state}};
+\draw (observation.east) node[rotate = -90, above]{{Observation}};
+\draw[dashed] (gamestate.one east) -- node[midway, above]{\tiny No observation} (observation.one west);
+\end{tikzpicture}

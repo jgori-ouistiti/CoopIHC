@@ -1,0 +1,47 @@
+\begin{tikzpicture}
+\draw (0,0) node[name=buffer, rectangle split, rectangle split parts = 10, draw, rectangle split horizontal, minimum height = 2cm, rounded corners, thick]{
+\rotatebox{90}{Observation (t-10)}
+\nodepart{two} \rotatebox{90}{Observation (t-9)}
+\nodepart{three} \rotatebox{90}{Observation (t-8)}
+\nodepart{four} \rotatebox{90}{Observation (t-7)}
+\nodepart{five} \rotatebox{90}{Observation (t-6)}
+\nodepart{six} \rotatebox{90}{Observation (t-5)}
+\nodepart{seven} \rotatebox{90}{Observation (t-4)}
+\nodepart{eight} \rotatebox{90}{Observation (t-3)}
+\nodepart{nine} \rotatebox{90}{Observation (t-2)}
+\nodepart{ten} \rotatebox{90}{Observation (t-1)}
+};
+
+\draw[triangle 60-] (buffer.east) -- ++ (1,0) node[name = obs, rotate = 90, below]{Observation (t)};
+
+\draw (buffer.north) node[above]{Buffer(t-1)};
+
+
+\draw (buffer)+ (0,-5) node[name=buffernew, rectangle split, rectangle split parts = 10, draw, rectangle split horizontal, minimum height = 2cm, rounded corners, thick]{
+\rotatebox{90}{Observation (t-9)}
+\nodepart{two} \rotatebox{90}{Observation (t-8)}
+\nodepart{three} \rotatebox{90}{Observation (t-7)}
+\nodepart{four} \rotatebox{90}{Observation (t-6)}
+\nodepart{five} \rotatebox{90}{Observation (t-5)}
+\nodepart{six} \rotatebox{90}{Observation (t-4)}
+\nodepart{seven} \rotatebox{90}{Observation (t-3)}
+\nodepart{eight} \rotatebox{90}{Observation (t-2)}
+\nodepart{nine} \rotatebox{90}{Observation (t-1)}
+\nodepart{ten} \rotatebox{90}{Observation (t)}
+};
+
+\draw (buffernew.south) node[below]{Buffer(t)};
+
+\draw[-triangle 60] (buffer.two south) -- (buffernew.one north);
+\draw[-triangle 60] (buffer.three south) -- (buffernew.two north);
+\draw[-triangle 60] (buffer.four south) -- (buffernew.three north);
+\draw[-triangle 60] (buffer.five south) -- (buffernew.four north);
+\draw[-triangle 60] (buffer.six south) -- (buffernew.five north);
+\draw[-triangle 60] (buffer.seven south) -- (buffernew.six north);
+\draw[-triangle 60] (buffer.eight south) -- (buffernew.seven north);
+\draw[-triangle 60] (buffer.nine south) -- (buffernew.eight north);
+\draw[-triangle 60] (buffer.ten south) -- (buffernew.nine north);
+
+\draw[-triangle 60, thick, dashed, green!50!black] (obs.west) -- (buffernew.ten north);
+\draw[-triangle 60, thick, dashed, red!50!black] (buffer.one west) -- ++ (-2,-1);
+\end{tikzpicture}
