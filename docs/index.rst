@@ -40,7 +40,7 @@ and **bundling** them back together. Different **bundles** are proposed, dependi
 
 
 
-*Interaction-agents* builds on a two-agent interaction model, see [link] for the terminology used in this module.
+*Interaction-agents* builds on a two-agent interaction model. The terminology used in this module is explained in the [link].
 
 
 
@@ -51,10 +51,12 @@ Learn how to use *interaction-agents*:
 
 
 .. toctree::
-  :maxdepth: 2
-  :caption: Tutorial
+    :maxdepth: 2
+    :caption: Tutorial
 
-  guide/terminology
+    guide/terminology
+    guide/quickstart
+
 
 .. toctree::
     :maxdepth: 2
@@ -70,6 +72,12 @@ Learn how to use *interaction-agents*:
     guide/inference_engine
     guide/operator_model
 
+
+.. toctree::
+    :maxdepth: 2
+    :caption: What's next?
+
+    roadmap
 
 Documentation of *interaction-agents*:
 ============================================
@@ -106,13 +114,16 @@ Documentation of *interaction-agents*:
 TODO list:
 ==============
 
-1. Fix render signature
-2. change all agent.observation to agent.observation_engine.observation
-3. check if game_state_indices is still used
-4. Make the RuleObservationEngine work again with slices/ other substate indicators
-5. Make the process observation engine
-6. Verify that the buffer works in the inference_engine
-7. FIx note Continuous Gaussian inference engine
+0. There is a liberty granted to the user about the type of data used in the substate. Ideally, the user could user anything which can be sliced, such as list and arrays. But this liberty means more complex code. Maybe force everything to be arrays.
+1. add a render method to the inference engine. Usually we would want to call that method at the agent level.
+2. Reorder (restructure) the various inference engines
+3. Come up with a common API for inference engines
+4. Ensure modularity, e.g. process observation engine.
+5. Evaluate overhead of using interaction-agents by profiling
+6. provide test code to ensure the engines are working properly
+7. Combine multiple inference engines and observation engines into one. This [this](https://rhettinger.wordpress.com/2011/05/26/super-considered-super/) might be useful.
+8. Think about Continuous/Discrete spaces + normalizing
+9. Create separate classes for policies and internal states. Just like observation engines and inference engines. This will increase readability and flexibility.
 
 Indices
 ===========

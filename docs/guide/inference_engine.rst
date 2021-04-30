@@ -59,5 +59,38 @@ The following table summarizes the inference engines implemented.
 Engine      Discrete    Continuous  Method   operator model has to be provided?
 ======= ==============  ==========  ======  ===================================
 GIWOMG          ✔️                   Bayes                  ✔️
-CG                          ✔️          ✔️                 (✔️)
+CG                          ✔️       Bayes                 (✔️)
 ======= ==============  ==========  ======  ===================================
+
+``GoalInferenceWithOperatorModelGiven`` (GIWOMG)
+""""""""""""""""""""""""""""""""""""""""""""""""""""
+Bayesian updating in the discrete case.
+Computes for each target :math:`\theta` the associated posterior probability, given an observation :math:`x` and the last user action :math:`y`:
+
+.. math::
+
+    P(\Theta = \theta | X=x, Y=y) = \frac{p(Y = y | \Theta = \theta, X=x)}{\sum_{\Theta} p(Y=y|\Theta = \theta, X=x)} P(\Theta = \theta).
+
+
+``ContinuousGaussian`` (CG)
+"""""""""""""""""""""""""""""""
+Bayesian updating, but in the continuous multivariate case. Assumes Gaussian likelihoods and priors.
+
+With a likelihood of the form
+
+.. math::
+
+    p(y|x) \sim \mathcal{N}(x, \Sigma_0)
+
+and with a Gaussian prior
+
+.. math::
+
+    p(x(t-1)) \sim \mathcal{N}(\mu(t-1), \Sigma(t-1))
+
+computes the posterior as
+
+.. math::
+
+    p(x(t) | y, x(t-1)) \sim \mathcal{N}(\Sigma(t) \left[ \Sigma_0^{-1}y + \Sigma(t-1) \mu(t-1) \right], \Sigma(t)) \\
+    \Sigma(t) = (\Sigma_0^{-1} + \Sigma(t-1)^{-1})^{-1}

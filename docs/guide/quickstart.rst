@@ -28,7 +28,7 @@ The examples below assume the following imports. Adapt to your needs
 
 Basic Example
 -----------------
-We start with a 1D pointing task, in the shape of a gridworld, called ``SimplePointingTask``. There is a target goal (green), a cursor (blue) which should be positioned on the goal for the task to end, and some surrounding targets (violet). We consider a task with 31 possible positions for the cursor and 10 targets in total.
+We start with a 1D pointing task, in the shape of a gridworld, called ``SimplePointingTask``. There is a target goal (green), a cursor (blue) which should be positioned on the goal for the task to end, and some surrounding targets (violet). We consider a task with 31 possible positions for the cursor and 10 targets.
 
 .. code-block:: python
 
@@ -126,7 +126,7 @@ For example, let's try out a simple heuristic rule with adaptive gain.
             break
 
 
-We can encode this behavior into an assistant policy, and define a new assistant. We will so this later. Several assistants already exist in *interaction-agents*.
+We can encode this behavior into an assistant policy, and define a new assistant. An example which does so is provided here [link]. Several assistants already exist in *interaction-agents*.
 For example, below, we use a Bayesian Information Gain (BIG) assistant.
 
 .. code-block:: python
@@ -181,13 +181,11 @@ An overview of *interaction-agents*
 1. *interaction-agents* comes equipped with presently two tasks (pointing with a cursor, and a human eye-gaze selection task). Look at the list of modules [link].
 2. Several operators and assistants are provided, some generic and described in the agent sections [link], others adapted to one of the tasks, described in the modules [link]
 3. Several bundles are provided, that cover many use cases. These are described in the bundles section [link]
-4. One can define new agents by minimally writing new code, by taking advantage of the modular approach of *interaction-agents*. In particular, inference engines [link], observation engines [link], and operator models [link] can be re-used and sub-classed.  
+4. One can define new agents by minimally writing new code, by taking advantage of the modular approach of *interaction-agents*. In particular, inference engines [link], observation engines [link], and operator models [link] can be re-used and sub-classed.
 
 
 What's next?
 ------------------------
-Not only does coming up with realistic tasks and operators, and high performance assistants, take a lot of time, it also requires a different skill set. Realistic tasks require a good grasp of interface design, while operator modeling is based on the understanding of a human's various cognitive, motor capabilities. Good assistants on the other hand require advances planning strategies.
-
-One of the ideas of *interaction-agents* is to separate each of these 'burdens'. One can for example implement a realistic HCI task, while another can work on an efficient planning strategy. The standard API makes sure that the two components will be inter-operable.
-
-Another thing to look for is whether or not the interaction model is sufficient for most HCI scenarios. If not, the model should be updated to encompass more cases.
+ 1. Build you own tasks [link]
+ 2. Build you own agents [link]
+ 3. Train, evaluate, simulate [link]
