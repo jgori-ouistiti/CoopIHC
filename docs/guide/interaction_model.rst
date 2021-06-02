@@ -5,42 +5,36 @@ The Interaction Model
 *interaction-agents* builds on a two-agent interaction model called the **operator-assistant model**, which is represented in the figure below.
 
 
-.. tikz:: The operator-assistant model
-    :include: tikz/operator_assistant_model.tikz
-    :xscale: 100
-    :align: center
+.. _interaction_model_fig_label:
 
+.. figure::  images/bundle.png
+    :width: 100%
+
+    The graphical interaction model used in *interaction-agents*
 
 The assumptions of the model are:
 
-1. There is a task which can be described by a state :math:`s_T`
-2. An operator wants to drive the task to a goal state :math:`s^*_T`.
+1. There is a task which can be represented by a state :math:`s_T`,
+2. An operator wants to drive the task to a goal state,
 3. An assistant is here to help (assist) the operator achieve this.
 
 In the HCI language, the operator is the user and the assistant is some intelligent tool/interface.
-Many interactive settings can be decomposed like this, see the list of examples implemented in *interaction-agents* here[link to].
+Many interactive settings can be decomposed like this, see :ref:`modules-label` for some examples that have been implemented using *interaction-agents*.
 
 
 Agents
 -----------
 Both the operator and assistant are **agents**:
 
-1. They have an internal state, which stores e.g. goals, preferences, model parameters. The states of the operator and assistants are denoted respectively :math:`s_O` and :math:`s_A`.
-2. They have the ability to observe (perfectly or partially) the various states of the components of the interaction model. When making an observation, the agents may receive a reward, to account for the fact that they could perceive a cost (e.g. because that observation may take some time to be created) or a benefit (e.g. because it satisfies a curiosity) to making an observation.
+1. They have an internal state (:math:`s_O` and :math:`s_A` for respectively the operator and the assistant), which stores e.g. goals, preferences, model parameters.
+2. They have the ability to observe (perfectly or partially) the various states of the components of the interaction model. When making an observation (:math:`o_O` and :math:`o_A`), the agents may receive a reward, to account for the fact that they could perceive a cost (e.g. because that observation may take some time to be created) or a benefit (e.g. because it satisfies a curiosity) to making an observation.
 3. Based on these observations, they are able to make inferences that change their internal states. The agents may again here receive a reward, since there could be a cost to inferring (e.g. mental effort, computational resources) or a benefit (e.g. satisfaction).
-4. Based on their internal states and their observations, they are able to take actions which influence the states of the components of the interaction model;
+4. Based on their internal states and their observations, they are able to take actions (:math:`a_O` and :math:`a_A`) via a policy. Those actions may have an effect on the other states (e.g. the task state) of the interaction model.
 
 
 State Transitions and Observations
 --------------------------------------
-It is further assumed in the model that the agents act sequentially.
-
-.. note::
-
-    This is not a strong assumption, since simultaneous play can always be achieved by delaying the effect of the operator action to the assistant's turn. Furthermore, it could be argued that no real simultaneous play is possible.
-
-
-A **round** of interaction consists of the following transitions, where the superscript indicates the **turn** of interaction (a round is played in four turns):
+It is further assumed in the model that the agents act sequentially. A **round** of interaction consists of the following transitions, where the superscript indicates the **turn** of interaction (a round is played in four turns):
 
 .. math::
 
@@ -86,6 +80,10 @@ and the joint actions:
 
 .. note::
 
+    This sequential nature of actions is not a strong assumption, since simultaneous play can always be achieved by delaying the effect of the operator action to the assistant's turn. Furthermore, it could be argued that no real simultaneous play is ever possible.
+
+.. note::
+
     No-Op is a No-Operation, and signals that this part of the joint action is void.
 
 A Partially Observable Stochastic Game (POSG)
@@ -119,12 +117,6 @@ The interactive game is created from the three components (task, operator and as
     Bundles also handle joint rendering, as well as collection of rewards.
 
 
-.. tikz:: Tentative representation of a bundle
-    :include: tikz/bundle.tikz
-    :xscale: 100
-    :align: center
-
-
 Several bundles exist, to form various games with different utilities for the user of *interaction-agents*. Current implemented bundles are:
 
 1. ``PlayNone`` , which does not take any action as input. It puts together two agents together at play to perform the task. This allows one to evaluate agents where policies are provided (e.g. a trained agent, a rule-based agent).
@@ -133,3 +125,4 @@ Several bundles exist, to form various games with different utilities for the us
 4. ``PlayBoth``, which takes the joint (operator, assistant) action as input at each step. This allows evaluating policies for both agents on-line (e.g. as part of a joint training procedure).
 5. ``SinglePlayOperator``, which does not uses an assistant. It it useful when one wants to develop a "pure" user model using *interaction-agents*. Here the policy is evaluated on-line.
 6. ``SinglePlayOperatorAuto`` is the same as the previous bundle but the policy is assumed to be provided to the agent.
+7. ``_DevelopTask`` is a bundle with only the task as input, used to develop tasks when no compatible agents exist yet.

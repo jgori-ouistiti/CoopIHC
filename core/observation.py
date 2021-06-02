@@ -2,13 +2,14 @@ from collections import OrderedDict
 import numpy
 from core.helpers import flatten
 import copy
+from core.space import State
 
 class ObservationEngine:
     """ Base Class for Observation Engine.
 
     Does nothing but specify a type for the observation engine and return the full game state.
 
-    The only requirement for an Observation Engine is that it has a type (either base, rule, noisyrule, process) and that it has a function called observe with the signature below.
+    The only requirement for an Observation Engine is that it has a type (either base, rule, process) and that it has a function called observe with the signature below.
 
     All Observation Engines are subclassed from this main class, but you are really not inheriting much... This is mostly here for potential future changes.
 
@@ -19,47 +20,59 @@ class ObservationEngine:
 
 
     def observe(self, game_state):
-        return game_state, 0
+        return copy.deepcopy(game_state), 0
 
 
 
 
 # ========================== Some observation engine specifications
 
-oracle_engine_specification =       [('b_state', 'all'),
+oracle_engine_specification =       [('turn_index', 'all'),
                                     ('task_state', 'all'),
                                     ('operator_state', 'all'),
-                                    ('assistant_state', 'all')
+                                    ('assistant_state', 'all'),
+                                    ('operator_action', 'all'),
+                                    ('assistant_action', 'all')
                                     ]
 
-blind_engine_specification =        [('b_state', 'all'),
+blind_engine_specification =        [('turn_index', 'all'),
                                     ('task_state', None),
                                     ('operator_state', None),
-                                    ('assistant_state', None)
+                                    ('assistant_state', None),
+                                    ('operator_action', 'all'),
+                                    ('assistant_action', 'all')
                                     ]
 
-base_task_engine_specification =         [('b_state', 'all'),
+base_task_engine_specification =         [('turn_index', 'all'),
                                     ('task_state', 'all'),
                                     ('operator_state', None),
-                                    ('assistant_state', None)
+                                    ('assistant_state', None),
+                                    ('operator_action', 'all'),
+                                    ('assistant_action', 'all')
                                     ]
 
-base_operator_engine_specification  =    [ ('b_state', 'all'),
+base_operator_engine_specification  =    [ ('turn_index', 'all'),
                                     ('task_state', 'all'),
                                     ('operator_state', 'all'),
-                                    ('assistant_state', None)
+                                    ('assistant_state', None),
+                                    ('operator_action', 'all'),
+                                    ('assistant_action', 'all')
                                     ]
 
-base_assistant_engine_specification  =   [ ('b_state', 'all'),
+base_assistant_engine_specification  =   [ ('turn_index', 'all'),
                                     ('task_state', 'all'),
                                     ('operator_state', None),
-                                    ('assistant_state', 'all')
+                                    ('assistant_state', 'all'),
+                                    ('operator_action', 'all'),
+                                    ('assistant_action', 'all')
                                     ]
 
-custom_example_specification =      [('b_state', 'all'),
+custom_example_specification =      [('turn_index', 'all'),
                                     ('task_state', 'substate1', 'all'),
                                     ('operator_state', 'substate1', slice(0,2,1)),
-                                    ('assistant_state', 'None')
+                                    ('assistant_state', 'None'),
+                                    ('operator_action', 'all'),
+                                    ('assistant_action', 'all')
                                     ]
 
 class RuleObservationEngine(ObservationEngine):
@@ -70,10 +83,12 @@ class RuleObservationEngine(ObservationEngine):
     :meta public:
     """
     def __init__(self, deterministic_specification = base_task_engine_specification, extradeterministicrules = {}, extraprobabilisticrules = {}, mapping = None):
+        self.type = 'rule'
         self.deterministic_specification = deterministic_specification
         self.extradeterministicrules = extradeterministicrules
         self.extraprobabilisticrules = extraprobabilisticrules
         self.mapping = mapping
+
 
 
     def observe(self, game_state):
@@ -83,11 +98,11 @@ class RuleObservationEngine(ObservationEngine):
         return obs, 0
 
     def apply_mapping(self, game_state):
-        observation = OrderedDict({})
+        observation = State()
         for substate, subsubstate, _slice, _func, _args, _nfunc, _nargs in self.mapping:
             if observation.get(substate) is None:
-                observation[substate] = OrderedDict({})
-            _obs = game_state[substate][subsubstate][_slice]
+                observation[substate] = State()
+            _obs = game_state[substate][subsubstate]['values'][_slice]
             if _func:
                 if _args is not None:
                     _obs = _func(_obs, *_args)
@@ -97,11 +112,14 @@ class RuleObservationEngine(ObservationEngine):
                 _obs = _obs
             if _nfunc:
                 if _nargs is not None:
-                    observation[substate][subsubstate] = _nfunc(_obs, *_nargs)
+                    _obs = _nfunc(_obs, *_nargs)
                 else:
-                    observation[substate][subsubstate] = _nfunc(_obs)
+                    _obs = _nfunc(_obs)
             else:
-                observation[substate][subsubstate] = _obs
+                _obs = _obs
+
+            observation[substate][subsubstate] = game_state[substate][subsubstate]
+            observation[substate][subsubstate]['values'] = [_obs]
 
         return observation
 
@@ -110,8 +128,12 @@ class RuleObservationEngine(ObservationEngine):
         mapping = []
         for substate, *rest in observation_engine_specification:
             subsubstate = rest[0]
+            if substate == 'turn_index':
+                continue
             if subsubstate == 'all':
+                print(substate, game_state[substate])
                 for key, value in game_state[substate].items():
+                    value = value['values']
                     v = extradeterministicrules.get((substate, key))
                     if v is not None:
                         f,a = v
@@ -123,10 +145,10 @@ class RuleObservationEngine(ObservationEngine):
                     else:
                         g,b = None, None
                     mapping.append( (substate, key, slice(0, len(value), 1), f, a, g, b) )
-
             elif subsubstate is None:
                 pass
             else:
+                # Outdated
                 v = extradeterministicrules.get((substate, subsubstate))
                 if v is not None:
                     f,a = v

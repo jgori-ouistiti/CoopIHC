@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from collections import OrderedDict
 import gym
 from core.interactiontask import InteractionTask
-
+from core.space import StateElement
 
 class SimplePointingTask(InteractionTask):
     """ A 1D pointing task.
@@ -15,12 +15,18 @@ class SimplePointingTask(InteractionTask):
 
     :meta public:
     """
-    def __init__(self, gridsize = 31, number_of_targets = 10):
+    def __init__(self, gridsize = 31, number_of_targets = 10, mode = 'gain'):
         super().__init__()
-        self.state = OrderedDict({'Gridsize': [gridsize], 'Position': [2], 'Targets': [3,4]})
-        self.number_of_targets = 10
+        self.gridsize = gridsize
+        self.number_of_targets = number_of_targets
+        self.mode = mode
 
-    def reset(self, *args):
+        self.state['Position'] = StateElement(values = None, spaces = [gym.spaces.Discrete(gridsize)], possible_values = None)
+        # self.state['Targets'] = [None, [gym.spaces.Discrete(gridsize) for i in range(self.number_of_targets)], None]
+        self.state['Targets'] = StateElement(values = None, spaces = [gym.spaces.Discrete(gridsize) for i in range(self.number_of_targets)], possible_values = None)
+
+
+    def reset(self, dic = None):
         """ Reset the task.
 
         Reset the grid used for rendering, define new targets, select a starting position
@@ -30,30 +36,29 @@ class SimplePointingTask(InteractionTask):
         :meta public:
         """
 
-        if args:
-            raise NotImplementedError
-        else:
-            self.grid = [' ' for i in range(self.state['Gridsize'][0])]
-            targets = sorted(numpy.random.choice(list(range(self.state['Gridsize'][0])), size = self.number_of_targets, replace = False))
-            for i in targets:
-                self.grid[i] = 'T'
-            # Define starting position
-            copy = list(range(len(self.grid)))
-            for i in targets:
-                copy.remove(i)
-            position = int(numpy.random.choice(copy))
-            self.state['Position'] = [position]
-            self.state['Targets'] = targets
+
+        self.grid = [' ' for i in range(self.gridsize)]
+        targets = sorted(numpy.random.choice(list(range(self.gridsize)), size = self.number_of_targets, replace = False))
+        for i in targets:
+            self.grid[i] = 'T'
+        # Define starting position
+        copy = list(range(len(self.grid)))
+        for i in targets:
+            copy.remove(i)
+        position = int(numpy.random.choice(copy))
+        self.state['Position']['values'] = position
+        self.state['Targets']['values'] = targets
+        super().reset(dic)
 
 
-    def operator_step(self, operator_action):
+    def operator_step(self, *args, **kwargs):
         """ Do nothing, increment turns, return half a timestep
 
         :meta public:
         """
-        return super().operator_step(operator_action)
+        return super().operator_step()
 
-    def assistant_step(self, assistant_action):
+    def assistant_step(self, *args, **kwargs):
         """ Modulate the operator's action.
 
         Multiply the operator action with the assistant action.
@@ -65,16 +70,22 @@ class SimplePointingTask(InteractionTask):
 
         :meta public:
         """
-        super().assistant_step(assistant_action)
+        super().assistant_step()
         is_done = False
-        operator_action = self.bundle.assistant.state['OperatorAction'][0]
-        assistant_action = assistant_action[0]
-        self.state['Position'] = [int(numpy.clip(numpy.round(self.state['Position'][0] + operator_action*assistant_action, decimals = 0), 0, self.state['Gridsize'][0]-1))]
-        if self.state['Position'][0] == self.bundle.operator.state['Goal'][0]:
+
+        if self.mode == 'position':
+            self.state['Position'] = self.bundle.game_state['assistant_action']['action']
+        elif self.mode == 'gain':
+            assistant_action = self.bundle.game_state['assistant_action']['action']['human_values'][0]
+            operator_action = self.bundle.game_state['operator_action']['action']['human_values'][0]
+            position = self.state['Position']['human_values'][0]
+            self.state['Position']['values'] = [int(numpy.clip(numpy.round(position + operator_action*assistant_action, decimals = 0), 0, self.gridsize-1))]
+
+        if self.state['Position']['human_values'][0] == self.bundle.game_state['operator_state']['Goal']['human_values'][0]:
             is_done = True
         return self.state, -1/2, is_done, {}
 
-    def render(self, ax, *args, mode="text"):
+    def render(self,*args, mode="text"):
         """ Render the task.
 
         Plot or print the grid, with cursor and target positions.
@@ -89,11 +100,11 @@ class SimplePointingTask(InteractionTask):
 
         :meta public:
         """
-        goal = self.bundle.operator.state['Goal'][0]
+        goal = self.bundle.game_state['operator_state']['Goal']['human_values'][0]
         self.grid[goal] = 'G'
         if 'text' in mode:
             tmp = self.grid.copy()
-            tmp[int(self.state['Position'][0])] = 'P'
+            tmp[int(self.state['Position']['human_values'][0])] = 'P'
             _str = "|"
             for t in tmp:
                 _str += t + "|"
@@ -102,15 +113,16 @@ class SimplePointingTask(InteractionTask):
             print("Turn number {:f}".format(self.turn))
             print(_str)
 
-            targets = sorted(self.state['Targets'])
+            targets = sorted(self.state['Targets']['human_values'])
             print('Targets:')
             print(targets)
             print("\n")
         if 'plot' in mode:
+            axtask, axoperator, axassistant = args[:3]
             if self.ax is not None:
                 self.update_position()
             else:
-                self.ax = ax
+                self.ax = axtask
                 self.init_grid()
                 self.ax.set_aspect('equal')
         if not ('plot' in mode or 'text' in mode):
@@ -171,12 +183,12 @@ class SimplePointingTask(InteractionTask):
         self.draws = []
         self.fills = []
         self.symbols = []
-        for i in range(self.state['Gridsize'][0]):
+        for i in range(self.gridsize):
             draw, fill, symbol = self.set_box(self.ax, i, shortcut = 'void')
             self.draws.append(draw)
             self.fills.append(fill)
             self.symbols.append(symbol)
-        for t in self.state['Targets']:
+        for t in self.state['Targets']['human_values']:
             self.fills[t].remove()
             self.draws[t].remove()
             if self.symbols[t]:
@@ -185,7 +197,7 @@ class SimplePointingTask(InteractionTask):
             self.draws[t] = draw
             self.fills[t] = fill
             self.symbols[t] = symbol
-        t = self.bundle.operator.state['Goal'][0]
+        t = self.bundle.game_state['operator_state']['Goal']['human_values'][0]
         self.fills[t].remove()
         self.draws[t].remove()
         if self.symbols[t]:
@@ -195,14 +207,14 @@ class SimplePointingTask(InteractionTask):
         self.fills[t] = fill
         self.symbols[t] = symbol
 
-        self.draw_pos = self.state["Position"][0]
+        self.draw_pos = self.state["Position"]['human_values'][0]
         self.update_position()
 
 
 
         self.ax.set_yticks([])
-        self.ax.set_xticks(list(range(self.state['Gridsize'][0]))[::5])
-        self.ax.set_xlim([-.6,self.state['Gridsize'][0] - .4])
+        self.ax.set_xticks(list(range(self.gridsize))[::5])
+        self.ax.set_xlim([-.6,self.gridsize - .4])
         plt.show(block = False)
 
     def update_position(self):
@@ -217,9 +229,9 @@ class SimplePointingTask(InteractionTask):
         self.draws[t].remove()
         if self.symbols[t]:
             self.symbols[t].remove()
-        if t == self.bundle.operator.state['Goal'][0]:
+        if t == self.bundle.game_state['operator_state']['Goal']['human_values'][0]:
             shortcut = 'goal'
-        elif t in self.state['Targets']:
+        elif t in self.state['Targets']['human_values']:
             shortcut = 'target'
         else:
             shortcut = 'void'
@@ -229,7 +241,7 @@ class SimplePointingTask(InteractionTask):
         self.symbols[t] = symbol
 
 
-        t = self.state['Position'][0]
+        t = self.state['Position']['human_values'][0]
         draw, fill, symbol = self.set_box(self.ax, t, shortcut = 'position')
         self.draws[t] = draw
         self.fills[t] = fill
@@ -286,6 +298,8 @@ class Screen_v0(InteractionTask):
         :param screen_size: (list) [width, height] in pixels
         :param number_of_targets: (int) The number of targets that will be placed on the screen
         """
+        # Call super().__init__() before anything else
+        super().__init__()
         # Task properties
         self.screen_size = screen_size
         self.number_of_targets = int(number_of_targets)
@@ -293,12 +307,12 @@ class Screen_v0(InteractionTask):
         self.timestep = 0.1
         self.target_radius = 20
 
-        # Call super().__init__() before anything else
-        super().__init__()
-
-        # Define the state. You can put dummy values at this point.
-        self.state = OrderedDict({'Screensize': screen_size, 'Position': [[100,100]], 'Targets': [(numpy.array(screen_size)/i).tolist() for i in range(self.number_of_targets)]})
-
+        # Define state
+        self.state['Position'] = [[100,100], [gym.spaces.Discrete(screen_size[0]), gym.spaces.Discrete(screen_size[1])], [None, None]]
+        self.state['Targets'] = [   [(numpy.array(screen_size)/(i+1)).tolist() for i in range(self.number_of_targets)],
+            [gym.spaces.MultiDiscrete((screen_size[0], screen_size[1])) for i in range(self.number_of_targets) ],
+            [None]
+        ]
 
         # Rendering stuff
         self.ax = None
@@ -316,7 +330,7 @@ class Screen_v0(InteractionTask):
 
 
     def init_grid(self, axoperator):
-        targets = self.state['Targets']
+        targets = self.state['_value_Targets']
         self.ax.set_xlim([-10 , 10 + self.screen_size[0]])
         self.ax.set_ylim([-10 , 10 + self.screen_size[1]])
 
@@ -327,7 +341,7 @@ class Screen_v0(InteractionTask):
             circle = plt.Circle((x,y), self.target_radius, color = '#913979')
             self.ax.add_patch(circle)
 
-        x,y = self.state['Position'][0]
+        x,y = self.state['_value_Position']
         self.cursor =  plt.Circle((x,y), self.target_radius/5, color = 'r')
         self.ax.add_patch(self.cursor)
         cursor2 = plt.Circle((x,y), self.target_radius/5, color = 'r')
@@ -335,21 +349,25 @@ class Screen_v0(InteractionTask):
 
     def update_position(self):
         self.cursor.remove()
-        x,y = self.state['Position'][0]
-        print(x,y)
+        x,y = self.state['_value_Position']
         self.cursor =  plt.Circle((x,y), self.target_radius/5, color = 'r')
         self.ax.add_patch(self.cursor)
 
 
 
 
-    def reset(self, *args):
+    def reset(self, dic = None):
         """ Randomly draw N+1 disjoint disks. The N first disks are used as targets, the last disk's center is used as cursor position.
         """
 
-        # Place targets
-        if args:
-            raise NotImplementedError
+        # Forced reset
+        if dic:
+            dictionary = dic.get("task_state")
+            if dictionary:
+                for key in list(self.state.keys()):
+                    value = dictionnary.get(key)
+                    if value is not None:
+                        self.state[key] = value
         else:
             targets = []
             radius = self.target_radius
@@ -370,15 +388,11 @@ class Screen_v0(InteractionTask):
             position = targets.pop(-1)
             targets.sort()
 
-        # Place cursor
-        if args:
-            raise NotImplementedError
-        else:
-            pass
 
-        self.state = OrderedDict()
-        self.state['Position'] = [position]
-        self.state['Targets'] = targets
+
+        print(targets)
+        self.state['_value_Position'] = [position]
+        self.state['_value_Targets'] = targets
 
 
 

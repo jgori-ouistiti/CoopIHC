@@ -1,0 +1,81 @@
+%% \usetikzlibrary{calc, fit}
+%%	\usetikzlibrary{shapes}
+%%	\usetikzlibrary{arrows}
+%%	\usetikzlibrary{positioning}
+%%	\usetikzlibrary{decorations.pathreplacing}
+	
+
+
+\begin{tikzpicture}
+	\tikzstyle{every text node part}=[font=\bfseries]
+	\tikzset{agent/.style = {circle, draw, double}}
+
+% ------- turn index
+\draw (-6,-5) node[name = gs_turn_index, rectangle, rounded corners, draw, minimum height = 1cm, thick, fill = white!80!black]{0/1};
+\draw ($(gs_turn_index.south) + (0,-.2)$) node[left, rotate = 90]{turn index};
+
+% ------- task state
+\draw (gs_turn_index.east) node[name=gs_task_state, rectangle split, rectangle split parts = 5, draw, rectangle split horizontal, minimum height = 1cm, rounded corners, thick, fill = blue!10, right]{
+{$S_1$}
+\nodepart{two}{$S_2$}
+\nodepart{three} {$S_3$}
+\nodepart{four} {$S_4$}
+\nodepart{five} {$S_5$}
+};
+
+\draw ($(gs_task_state.south) + (0,-.2)$) node[left, rotate = 90]{task state};
+
+
+% ------- operator state
+\draw (gs_task_state.east) node[name=gs_operator_state, rectangle split, rectangle split parts = 5, draw, rectangle split horizontal, minimum height = 1cm, rounded corners, thick, fill = green!10, right]{
+{$S'_1$}
+\nodepart{two}{$S'_2$}
+\nodepart{three} {$S'_3$}
+\nodepart{four} {$S'_4$}
+\nodepart{five} {$S'_5$}
+};
+
+\draw ($(gs_operator_state.south) + (0,-.2)$) node[left, rotate = 90]{operator state};
+
+
+% --------- assistant state
+\draw (gs_operator_state.east) node[name=gs_assistant_state, rectangle split, rectangle split parts = 5, draw, rectangle split horizontal, minimum height = 1cm, rounded corners, thick, fill = yellow!10, right]{
+{$S''_1$}
+\nodepart{two}{$S''_2$}
+\nodepart{three} {$S''_3$}
+\nodepart{four} {$S''_4$}
+\nodepart{five} {$S''_5$}
+};
+
+\draw ($(gs_assistant_state.south) + (0,-.2)$) node[left, rotate = 90]{assistant state};
+
+
+% --------- operator action
+\draw (gs_assistant_state.east) node[name= gs_operator_action, rectangle split, rectangle split parts = 2, rectangle split horizontal, minimum height = 1cm, rounded corners, draw, thick, fill = green!50!white!80!black, right]{
+{$A_1$}
+\nodepart{two}{$A_2$}
+};
+
+\draw ($(gs_operator_action.south) + (0,-.2)$) node[left, rotate = 90]{operator action};
+
+% ------------ assistant action
+\draw (gs_operator_action.east) node[name= gs_assistant_action, rectangle split, rectangle split parts = 2, rectangle split horizontal, minimum height = 1cm, rounded corners, draw, thick, fill = yellow!50!white!80!black, right]{
+{$A'_1$}
+\nodepart{two}{$A'_2$}
+};
+
+\draw ($(gs_assistant_action.south) + (0,-.2)$) node[left, rotate = 90]{assistant action};
+
+
+\node[ultra thick, black, rounded corners, draw = black, fit=(gs_turn_index) (gs_assistant_action)](bundle_game_state) {};
+
+\draw[-triangle 60, ultra thick] (bundle_game_state.north) + (0,2) node[above]{StateElement} -- (gs_assistant_state.two north);
+\draw[-triangle 60, ultra thick] (bundle_game_state.north) + (0,2) -- (gs_operator_state.three north);
+\draw [ultra thick, decorate,decoration={brace,amplitude=10pt}]
+( $(gs_task_state.north west) + (0,.2)$) -- ($ (gs_task_state.north east) + (0,.2)$) node [black,midway, above, yshift = .3cm] 
+{State};
+\draw [ultra thick, decorate,decoration={brace,amplitude=10pt}]
+($ (bundle_game_state.south east) + (0,-3.5)$) -- ( $(bundle_game_state.south west) + (0,-3.5)$) node [black,midway, below, yshift = -.3cm] 
+{State};
+
+\end{tikzpicture}

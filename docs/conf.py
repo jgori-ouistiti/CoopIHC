@@ -64,5 +64,5 @@ numfig = True
 # tikz stuff
 tikz_proc_suite = 'GhostScript'
 tikz_resolution = 184
-tikz_tikzlibraries = 'calc,shapes,arrows,fit'
+tikz_tikzlibraries = 'calc,shapes,arrows,fit,positioning,decorations.pathreplacing'
 # tikz_latex_preamble = '\usepackage\{ulem\}'

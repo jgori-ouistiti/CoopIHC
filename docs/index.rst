@@ -56,6 +56,13 @@ Learn how to use *interaction-agents*:
 
     guide/terminology
     guide/quickstart
+    guide/api
+
+.. toctree::
+    :maxdepth: 2
+    :caption: Examples
+
+    guide/operators
 
 
 .. toctree::
@@ -64,6 +71,7 @@ Learn how to use *interaction-agents*:
 
     guide/interaction_model
     guide/design
+    guide/states
     guide/agents
     guide/tasks
     guide/bundles
@@ -79,7 +87,10 @@ Learn how to use *interaction-agents*:
 
     roadmap
 
-Documentation of *interaction-agents*:
+
+.. _modules-label:
+
+List of Modules in *interaction-agents*
 ============================================
 
 
@@ -114,16 +125,15 @@ Documentation of *interaction-agents*:
 TODO list:
 ==============
 
-0. There is a liberty granted to the user about the type of data used in the substate. Ideally, the user could user anything which can be sliced, such as list and arrays. But this liberty means more complex code. Maybe force everything to be arrays.
 1. add a render method to the inference engine. Usually we would want to call that method at the agent level.
 2. Reorder (restructure) the various inference engines
 3. Come up with a common API for inference engines
 4. Ensure modularity, e.g. process observation engine.
 5. Evaluate overhead of using interaction-agents by profiling
-6. provide test code to ensure the engines are working properly
+6. provide test code to ensure the engines and states are working properly
 7. Combine multiple inference engines and observation engines into one. This [this](https://rhettinger.wordpress.com/2011/05/26/super-considered-super/) might be useful.
 8. Think about Continuous/Discrete spaces + normalizing
-9. Create separate classes for policies and internal states. Just like observation engines and inference engines. This will increase readability and flexibility.
+9. T
 
 Indices
 ===========

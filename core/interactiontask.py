@@ -4,9 +4,14 @@ import gym
 import numpy
 from core.helpers import flatten
 import scipy.linalg
+from core.space import State
+import core.space
 
-# not tested, but should work
-# class InteractionTask(gym.Env):
+
+
+
+
+
 class InteractionTask:
     """ The class that defines an Interaction Task. Subclass this to define any new task. When doing so, make sure to call ``super()`` in ``__init__()``.
 
@@ -29,7 +34,9 @@ class InteractionTask:
 
 
     def __init__(self):
-        self._state = OrderedDict()
+        # self._state = TestState('task_state')
+        self.state = State()
+        # self._state._on_state_update = self._on_state_update
         self.bundle = None
         self.round = 0
         self.turn = 0
@@ -40,17 +47,24 @@ class InteractionTask:
     def finit(self):
         pass
 
-    @property
-    def state(self):
-        return self._state
+    # @property
+    # def state(self):
+    #     return self._state
+    #
+    # @state.setter
+    # def state(self, state):
+    #     if self._state != state: # & self.bundle is True
+    #         self._on_state_update()
+    #         # self._state._on_state_update = self._on_state_update
+    #         # self.bundle.game_state.modify_groupstate('task_state', state)
+    #     self._state = state
+    #
+    # def _on_state_update(self, name, value):
+    #     print("going to modify bundle state")
 
-    @state.setter
-    def state(self, state):
-        self._state = state
-        if self.bundle:
-            self.bundle.game_state['task_state'] = state
 
-    def operator_step(self, operator_action, *args):
+
+    def operator_step(self,  *args, **kwargs):
         """ Describe how the task state evolves after an operator action. This method has to be redefined when subclassing this class.
 
         :param operator_action: (list) operator action
@@ -62,7 +76,7 @@ class InteractionTask:
         self.turn += 1/2
         return self.state, -1/2, False, {}
 
-    def assistant_step(self, assistant_action, *args):
+    def assistant_step(self,  *args, **kwargs):
         """ Describe how the task state evolves after an assistant action. This method has to be redefined when subclassing this class.
 
         :param operator_action: (list) assistant action
@@ -75,13 +89,17 @@ class InteractionTask:
         self.round += 1
         return self.state, -1/2, False, {}
 
-    def render(self, mode, *args, **kwargs):
+    def render(self, *args, **kwargs):
         """ Render the task on the main plot.
 
         :param mode: (str) text or plot
         :param args: (list) list of axis in order axtask, axoperator, axassistant
 
         """
+        mode = kwargs.get('mode')
+        if mode is None:
+            mode = 'text'
+
         if 'text' in mode:
             print(self.state)
         else:
@@ -103,7 +121,7 @@ class InteractionTask:
             for key in list(self.state.keys()):
                 value = dictionnary.get(key)
                 if value is not None:
-                    self.state[key] = value
+                    self.state['_value_{}'.format(key)] = value
 
 
 
@@ -116,7 +134,8 @@ class ClassicControlTask(InteractionTask):
         super().__init__()
         self.dim = A.shape[1]
         x = numpy.array([0 for i in range(self.dim)])
-        self.state = OrderedDict({'x': x})
+        self.state = State()
+        self.state['x'] = [x, [core.space.Array(x)], None]
         self.timestep = timestep
 
         # Convert dynamics between discrete and continuous.
@@ -151,14 +170,12 @@ class ClassicControlTask(InteractionTask):
             self.B = self.B_d
 
     def reset(self, dic = None):
-        x = self.state['x'].reshape(-1,1)
-        new_x = numpy.zeros(x.shape)
-        new_x[0,0] = numpy.random.normal(0,1)
-        self.state['x'] = new_x
-
-        # Call super().reset after to force states
+        self.state.reset()
+        # Force zero velocity
+        self.state['x'][0][1] = 0
+        # Call super().reset after to force states if needed
         super().reset(dic)
-        self.last_x = self.state['x'].copy()
+        self.last_x = self.state['_value_x'].copy()
 
     def operator_step(self, operator_action):
         # print(operator_action, type(operator_action))
@@ -169,7 +186,7 @@ class ClassicControlTask(InteractionTask):
         # For readability
         A, B, F, G = self.A, self.B, self.F, self.G
         u = operator_action[0]
-        x = self.state['x'].reshape(-1,1)
+        x = self.state['_value_x'].reshape(-1,1)
 
         # Generate noise samples
         if self.noise == 'on':
@@ -188,7 +205,7 @@ class ClassicControlTask(InteractionTask):
         else:
             x += (A@x + B*u)*self.timestep + F@x*beta + G@omega
 
-        self.state['x'] = x
+        self.state['_value_x'] = x
         if abs(x[0,0]) <= 0.01:
             is_done = True
 
@@ -197,10 +214,15 @@ class ClassicControlTask(InteractionTask):
     def assistant_step(self, assistant_action):
         return super().assistant_step(assistant_action)
 
-    def render(self, mode, *args, **kwargs):
+    def render(self, *args, **kwargs):
+        mode = kwargs.get('mode')
+        if mode is None:
+            mode = 'text'
+
+
         if 'text' in mode:
             print('state')
-            print(self.state['x'])
+            print(self.state['_value_x'])
         if 'plot' in mode:
             axtask, axoperator, axassistant = args[:3]
             if self.ax is not None:
@@ -223,10 +245,10 @@ class ClassicControlTask(InteractionTask):
 
 
     def draw(self):
-        if (self.last_x == self.state["x"]).all():
+        if (self.last_x == self.state["_value_x"]).all():
             pass
         else:
             for i in range(self.dim):
-                self.axes[i].plot([(self.turn-1)*self.timestep, self.turn*self.timestep], flatten([self.last_x[i,0].tolist(), self.state['x'][i,0].tolist()]), '-', color = self.color[i], label = self.labels[i])
+                self.axes[i].plot([(self.turn-1)*self.timestep, self.turn*self.timestep], flatten([self.last_x[i,0].tolist(), self.state['_value_x'][i,0].tolist()]), '-', color = self.color[i], label = self.labels[i])
 
         return

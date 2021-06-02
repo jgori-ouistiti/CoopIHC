@@ -11,9 +11,11 @@ from eye.operators import ChenEye
 from collections import OrderedDict
 from core.models import LinearEstimatedFeedback
 from core.helpers import flatten
-from core.agents import FHDT_LQRController, IHDT_LQRController, IHCT_LQGController
-from core.observation import base_task_engine_specification, RuleObservationEngine
+from core.agents import BaseAgent, FHDT_LQRController, IHDT_LQRController, IHCT_LQGController
+from core.observation import base_task_engine_specification, base_operator_engine_specification, RuleObservationEngine
 from core.interactiontask import ClassicControlTask
+from core.policy import LLDiscretePolicy, Policy
+from core.space import State
 
 import sys
 _str = sys.argv[1]
@@ -23,7 +25,7 @@ from check_env import check_env
 
 if _str == 'basic-plot':
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-    operator = CarefulPointer()
+    operator = CarefulPointer(task)
     assistant = ConstantCDGain(1)
 
     bundle = PlayNone(task, operator, assistant)
@@ -31,12 +33,34 @@ if _str == 'basic-plot':
     bundle.render('plotext')
 
 if _str == 'basic-PlayNone' or _str == 'all':
-    # Checking Evaluate with CarefulPointer, ConstantCDGain and SimplePointingTask
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-    operator = CarefulPointer()
-    assistant = ConstantCDGain(1)
+    binary_operator = CarefulPointer(task)
 
-    bundle = PlayNone(task, operator, assistant)
+    # ====================  Implementing Assistant  ===============
+    # We are going to implement an assistant which has a single action (always 1). This mimics a unit constant CD Gain. No internal state is needed, and the policy is a single action. While possible, there is no need to use a LLDiscretePolicy here, and we will directly use the baseclass Policy. No observation and inference engines are needed either. However, putting a blind observation_engine instead of nothing will be more efficient (likely, not tested).
+
+    #
+    # ------- Policy -------
+    action_space = [gym.spaces.Discrete(1)]
+    action_set = [[1]]
+    agent_policy = Policy(action_space, action_set = action_set)
+
+    base_blind_engine_specification  =    [ ('bundle_state', 'all'),
+                                        ('task_state', None),
+                                        ('operator_state', None),
+                                        ('assistant_state', None),
+                                        ('operator_action', 'all'),
+                                        ('assistant_action', 'all')
+                                        ]
+
+    observation_engine = RuleObservationEngine(deterministic_specification = base_blind_engine_specification)
+
+    unitcdgain = BaseAgent( 'assistant',
+                            policy = agent_policy,
+                            observation_engine = observation_engine
+                            )
+
+    bundle = PlayNone(task, binary_operator, unitcdgain)
     game_state = bundle.reset()
     bundle.render('plotext')
     k = 0
@@ -44,7 +68,7 @@ if _str == 'basic-PlayNone' or _str == 'all':
         k += 1
         sum_rewards, is_done, rewards = bundle.step()
         bundle.render('plotext')
-        bundle.fig.savefig("/home/jgori/Documents/img_tmp/{}.pdf".format(k))
+        # bundle.fig.savefig("/home/jgori/Documents/img_tmp/{}.pdf".format(k))
         if is_done:
             bundle.close()
             break
@@ -333,14 +357,23 @@ if _str == 'LQG':
 
     task = ClassicControlTask(timestep, A, B, F = F, G = G, discrete_dynamics = False, noise = 'off')
     operator = IHCT_LQGController('operator', timestep, Q, R, U, C, Gamma, D, noise = 'on')
-    bundle = SinglePlayOperatorAuto(task, operator, onreset_deterministic_first_half_step = True)
+    bundle = SinglePlayOperator(task, operator, onreset_deterministic_first_half_step = True)
     bundle.reset( {
             'task_state': {'x':  numpy.array([[-0.5],[0],[0],[0]]) }
                     } )
-    bundle.playspeed = 0.01
+    bundle.playspeed = 0.001
     bundle.render('plot')
-    for i in range(150):
-        bundle.step()
-        # if not i%10:
-        #     bundle.render("plot")
+    for i in range(1):
+        bundle.step([1])
+        if not i%10:
+            bundle.render("plot")
         bundle.render('plot')
+
+
+if _str == 'test':
+    task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
+    operator = CarefulPointer()
+    assistant = ConstantCDGain(1)
+
+    bundle = PlayNone(task, operator, assistant)
+    game_state = bundle.reset()
