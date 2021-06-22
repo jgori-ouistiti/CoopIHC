@@ -99,6 +99,7 @@ def _check_returned_values(env: gym.Env, observation_space: spaces.Space, action
 
     # Sample a random action
     action = action_space.sample()
+
     data = env.step(action)
 
     assert len(data) == 4, "The `step()` method must return four values: obs, reward, done, info"

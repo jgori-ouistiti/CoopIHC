@@ -4,15 +4,19 @@ import gym
 import numpy
 from core.helpers import flatten
 import scipy.linalg
-from core.space import State
+from core.space import State, StateElement
 import core.space
+from core.core import Core, Handbook
+
+
+import sys
+from loguru import logger
+# logger.add('interaction_agent.log', format = "{time} {level} {message}")
+# logger.add(sys.stderr, colorize = True, format="<green>{time}</green> <level>{message}</level>")
 
 
 
-
-
-
-class InteractionTask:
+class InteractionTask(Core):
     """ The class that defines an Interaction Task. Subclass this to define any new task. When doing so, make sure to call ``super()`` in ``__init__()``.
 
     The main API methods for this class are:
@@ -40,29 +44,23 @@ class InteractionTask:
         self.bundle = None
         self.round = 0
         self.turn = 0
-
         # Render stuff
         self.ax = None
 
+        self.handbook = Handbook({'name': self.__class__.__name__, 'render_mode': [], 'parameters': []})
+        logger.info('Initializing task {}'.format(self.__class__.__name__))
+
     def finit(self):
-        pass
-
-    # @property
-    # def state(self):
-    #     return self._state
-    #
-    # @state.setter
-    # def state(self, state):
-    #     if self._state != state: # & self.bundle is True
-    #         self._on_state_update()
-    #         # self._state._on_state_update = self._on_state_update
-    #         # self.bundle.game_state.modify_groupstate('task_state', state)
-    #     self._state = state
-    #
-    # def _on_state_update(self, name, value):
-    #     print("going to modify bundle state")
+        logger.info(str(self.handbook))
 
 
+    def _is_done_operator(self, *args, **kwargs):
+        logger.info('{} is done on operator step: False (Inherited from InteractionTask)'.format(self.__class__.__name__))
+        return False
+
+    def _is_done_assistant(self, *args, **kwargs):
+        logger.info('{} is done on assistant step: False (Inherited from InteractionTask)'.format(self.__class__.__name__))
+        return False
 
     def operator_step(self,  *args, **kwargs):
         """ Describe how the task state evolves after an operator action. This method has to be redefined when subclassing this class.
@@ -74,7 +72,7 @@ class InteractionTask:
         :meta public:
         """
         self.turn += 1/2
-        return self.state, -1/2, False, {}
+        return self.state, -1/2, self._is_done_operator(), {}
 
     def assistant_step(self,  *args, **kwargs):
         """ Describe how the task state evolves after an assistant action. This method has to be redefined when subclassing this class.
@@ -87,7 +85,7 @@ class InteractionTask:
         """
         self.turn += 1/2
         self.round += 1
-        return self.state, -1/2, False, {}
+        return self.state, -1/2, self._is_done_assistant(), {}
 
     def render(self, *args, **kwargs):
         """ Render the task on the main plot.
@@ -114,17 +112,40 @@ class InteractionTask:
 
         :meta public:
         """
+        self.turn = 0
+        self.round = 0
         if not dic:
             return
-        dictionnary  = dic.get('task_state')
-        if dictionnary:
-            for key in list(self.state.keys()):
-                value = dictionnary.get(key)
-                if value is not None:
-                    self.state['_value_{}'.format(key)] = value
+
+        for key in list(self.state.keys()):
+            value = dic.get(key)
+            if isinstance(value, StateElement):
+                value = value['values']
+            if value is not None:
+                self.state[key]['values'] = value
 
 
 
+class TaskWrapper(InteractionTask):
+    def __init__(self, task, *args, **kwargs):
+        self.task = task
+        self.__dict__.update(task.__dict__)
+
+    def operator_step(self, *args, **kwargs):
+        return self.task.operator_step(*args, **kwargs)
+
+    def assistant_step(self, *args, **kwargs):
+        return self.task.assistant_step(*args, **kwargs)
+
+    def reset(self, dic = None):
+        return self.task.reset(dic = dic)
+
+    def render(self, *args, **kwargs):
+        return self.task.render(*args, **kwargs)
+
+    @property
+    def unwrapped(self):
+        return self.task.unwrapped
 
 
 class ClassicControlTask(InteractionTask):

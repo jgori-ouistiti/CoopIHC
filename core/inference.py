@@ -3,9 +3,13 @@ import numpy
 import queue
 from core.space import State
 from core.helpers import hard_flatten
+from core.core import Handbook
 import copy
 
-
+import matplotlib.pyplot as plt
+from matplotlib.patches import Ellipse
+import matplotlib.transforms as transforms
+import scipy.linalg
 # Base Inference Engine: does nothing but return the same state. Any new inference method can subclass InferenceEngine to have a buffer and add_observation method (required by the bundle)
 
 
@@ -30,6 +34,10 @@ class InferenceEngine:
         self.buffer = None
         self.buffer_depth = buffer_depth
         self.render_flag = None
+        self.ax = None
+
+        _buffer_depth = {"name": 'buffer_depth', "value": buffer_depth, "meaning": 'Depth of the buffer used by the inference_engine to store observations'}
+        self.handbook = Handbook({'name': self.__class__.__name__,'render_mode': [], 'parameters': [_buffer_depth]})
 
     def add_observation(self, observation):
         """ add an observation  to the buffer. Currently poorly performing implementation
@@ -44,7 +52,15 @@ class InferenceEngine:
         else:
             self.buffer = self.buffer[1:] + [observation]
 
-
+    # https://stackoverflow.com/questions/1015307/python-bind-an-unbound-method
+    def bind(self, func, as_name=None):
+        # print("\n")
+        # print(func, as_name)
+        if as_name is None:
+            as_name = func.__name__
+        bound_method = func.__get__(self, self.__class__)
+        setattr(self, as_name, bound_method)
+        return bound_method
 
     def infer(self):
         """ The main method of this class.
@@ -65,6 +81,9 @@ class InferenceEngine:
                 return self.buffer[-1]['assistant_state'], 0
             except KeyError:
                 return OrderedDict({}), 0
+
+    def reset(self):
+        self.buffer = None
 
     def render(self, *args, **kwargs):
         mode = kwargs.get('mode')
@@ -105,7 +124,6 @@ class GoalInferenceWithOperatorPolicyGiven(InferenceEngine):
             self.operator_policy_model = None
 
         self.render_tag = ['plot', 'text']
-        self.ax = None
 
 
     def attach_policy(self, policy):
@@ -164,7 +182,7 @@ class GoalInferenceWithOperatorPolicyGiven(InferenceEngine):
             return draw, fill, symbol
 
         def draw_beliefs(ax):
-            beliefs = hard_flatten(self.host.state['Beliefs']['human_values'])
+            beliefs = hard_flatten(self.host.state['Beliefs']['values'])
             ticks = []
             ticklabels = []
             for i, b in enumerate(beliefs):
@@ -190,7 +208,7 @@ class GoalInferenceWithOperatorPolicyGiven(InferenceEngine):
                 self.ax.set_title(type(self).__name__ + " Beliefs")
 
         if 'text' in mode:
-            beliefs = hard_flatten(self.host.state['Beliefs']['human_values'])
+            beliefs = hard_flatten(self.host.state['Beliefs']['values'])
             print("Beliefs", beliefs)
 
     def infer(self):
@@ -210,6 +228,7 @@ class GoalInferenceWithOperatorPolicyGiven(InferenceEngine):
         operator_action = observation['operator_action']['action']
 
         for nt,t in enumerate(self.set_theta):
+            # candidate_observation = copy.copy(observation)
             candidate_observation = copy.deepcopy(observation)
             for key, value in t.items():
                 try:
@@ -236,8 +255,7 @@ class GoalInferenceWithOperatorPolicyGiven(InferenceEngine):
 
 
 
-
-class ContinuousGaussian(InferenceEngine):
+class LinearGaussianContinuous(InferenceEngine):
     """ An Inference Engine that handles a Gaussian Belief. It assumes a Gaussian prior and a Gaussian likelihood. ---- Currently the covariance matrix for the likelihood is assumed to be contained by the host as self.Sigma. Maybe change this ----
 
     The mean and covariance matrices of Belief are stored in the substates 'MuBelief' and 'SigmaBelief'.
@@ -247,33 +265,17 @@ class ContinuousGaussian(InferenceEngine):
 
     :meta public:
     """
-    def __init__(self):
+    def __init__(self, likelihood_binding):
         super().__init__()
-        self.yms = None
+        self.render_tag = ['text', 'plot']
+        _binding = {"name": 'likelihood_binding', "value": str(likelihood_binding), "meaning": 'This inference engine requires as input a function that indicates the likelihood (mu and sigma) of the received observations. '}
 
-    def reset(self, *args):
-        # Check if needed, if so add it to the Base class, otherwise remove
-        """
-        :meta private:
-        """
-        pass
+        self.handbook = Handbook({'name': self.__class__.__name__,'render_mode': ['plot', 'text', 'log'], 'parameters': [_binding]})
 
+        self.bind(likelihood_binding, 'provide_likelihood')
 
-    def attach_yms(self, yms):
-        """ Call this when initializing the inference engine.
-
-        yms is a function which takes an observation (OrderedDict) as input, and returns the substate that is modeled by the belief. See the example below where a target is modeled.
-
-        .. code-block:: python
-
-            def yms(internal_observation):
-                ## specify here what part of the internal observation will be used as observation sample
-                return internal_observation['task_state']['Targets'][0]
-
-        :param yms: (method) see above.
-
-        """
-        self.yms = yms
+    def provide_likelihood(self):
+        raise NotImplementedError("You should bind a method named 'provide_likelihood' to this inference engine")
 
 
     def infer(self):
@@ -289,17 +291,104 @@ class ContinuousGaussian(InferenceEngine):
         else:
             state = observation["assistant_state"]
 
-        if self.yms is None:
+        if self.provide_likelihood is None:
             print("Please call attach_yms() method before. You have to specify which components of the states constitute the observation that is used to update the beliefs.")
         else:
-            y = numpy.array(self.yms(observation))
+            y, v = self.provide_likelihood()
 
-        oldmu, oldsigma = state['MuBelief'], state['SigmaBelief']
-        new_sigma = numpy.linalg.inv((numpy.linalg.inv(oldsigma) + numpy.linalg.inv(self.host.Sigma)))
-        newmu = new_sigma @ (numpy.linalg.inv(self.host.Sigma)@y + numpy.linalg.inv(oldsigma)@oldmu)
-        state['MuBelief'] = newmu
-        state['SigmaBelief'] = new_sigma
+        oldmu, oldsigma = state["belief"]['values']
+        new_sigma = numpy.linalg.inv((numpy.linalg.inv(oldsigma) + numpy.linalg.inv(v)))
+        newmu = new_sigma @ (numpy.linalg.inv(v)@y + numpy.linalg.inv(oldsigma)@oldmu)
+        state['belief']["values"] = [newmu, new_sigma]
         return state, 0
+
+
+    def render(self, *args, **kwargs):
+        mode = kwargs.get('mode')
+        render_flag = False
+        for r in self.render_tag:
+            if r in mode:
+                render_flag = True
+
+        if 'plot' in mode:
+            axtask, axoperator, axassistant = args[:3]
+            if self.host.role == 'operator':
+                ax = axoperator
+            else:
+                ax = axassistant
+
+
+            dim = self.host.dimension
+            if self.ax is not None:
+                pass
+            else:
+                self.ax = ax
+
+            self.draw_beliefs(ax, dim)
+            belief = self.host.state['belief']['values'][0]
+            if dim == 1:
+                belief = [belief[0], 0]
+            axtask.plot(*belief, 'r*')
+            self.ax.set_title(type(self).__name__ + " Beliefs")
+
+        if 'text' in mode:
+            print(self.host.state['belief']['values'])
+
+    def draw_beliefs(self, ax, dim):
+        mu, cov = self.host.state['belief']['values']
+        if dim == 2:
+            self.patch = self.confidence_ellipse(mu, cov, ax)
+        else:
+            self.patch = self.confidence_interval(mu, cov, ax)
+
+
+    def confidence_interval(self, mu, cov, ax, n_std = 2.0, color='b', **kwargs):
+        vec = [(mu - 2*numpy.sqrt(cov)).reshape(1,).tolist(), (mu + 2*numpy.sqrt(cov)).reshape(1,).tolist()]
+        ax.plot(vec, [-.5 + .05*self.host.bundle.task.round,-.5 + .05*self.host.bundle.task.round], '-', marker = '|', markersize = 10, color = color, lw = 2, **kwargs)
+
+    def confidence_ellipse(self, mu, covariance, ax, n_std=2.0, facecolor='#d1dcf0', edgecolor = 'b', **kwargs):
+        """
+        :meta private:
+        """
+        ## See https://matplotlib.org/devdocs/gallery/statistics/confidence_ellipse.html for source. Computing eigenvalues directly should lead to code that is more readily understandable
+        rho = numpy.sqrt(covariance[0,1]**2/covariance[0,0]/covariance[1,1])
+        ellipse_radius_x = numpy.sqrt(1 + rho)
+        ellipse_radius_y = numpy.sqrt(1 - rho)
+
+        ellipse1 = Ellipse((0, 0), width=ellipse_radius_x * 2, height=ellipse_radius_y * 2, facecolor=facecolor, edgecolor = edgecolor, **kwargs)
+
+        scale_x = numpy.sqrt(covariance[0, 0]) * n_std
+        mean_x = mu[0]
+
+        scale_y = numpy.sqrt(covariance[1, 1]) * n_std
+        mean_y = mu[1]
+
+        transf = transforms.Affine2D() \
+            .rotate_deg(45) \
+            .scale(scale_x, scale_y) \
+            .translate(mean_x, mean_y)
+
+        ellipse1.set_transform(transf + ax.transData)
+        ax.add_patch(ellipse1)
+
+        ellipse2 = Ellipse((0, 0), width=ellipse_radius_x * 2, height=ellipse_radius_y * 2, facecolor=facecolor, edgecolor = edgecolor, alpha = 0.3, **kwargs)
+        n_std = n_std*2
+        scale_x = numpy.sqrt(covariance[0, 0]) * n_std
+        mean_x = mu[0]
+
+        scale_y = numpy.sqrt(covariance[1, 1]) * n_std
+        mean_y = mu[1]
+
+        transf = transforms.Affine2D() \
+            .rotate_deg(45) \
+            .scale(scale_x, scale_y) \
+            .translate(mean_x, mean_y)
+
+        ellipse2.set_transform(transf + ax.transData)
+        ax.add_patch(ellipse2)
+
+        return
+
 
 
 class ContinuousKalmanUpdate(InferenceEngine):

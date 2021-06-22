@@ -1,9 +1,13 @@
 import numpy
 import collections
+import gym
+
 
 def hard_flatten(l):
     out = []
-    if isinstance(l, collections.OrderedDict):
+    if isinstance(l, (gym.spaces.Dict, gym.spaces.Tuple)):
+        l = l.spaces
+    if isinstance(l, (collections.OrderedDict, dict)):
         l = list(l.values())
     for item in l:
         if isinstance(item, (list, tuple)):
@@ -13,6 +17,8 @@ def hard_flatten(l):
                 out.extend(hard_flatten(item.tolist()))
             elif isinstance(item, collections.OrderedDict):
                 out.extend(hard_flatten(list(item.values())))
+            elif isinstance(item, (gym.spaces.Dict, gym.spaces.Tuple)):
+                out.extend(hard_flatten(item.spaces))
             else:
                 out.append(item)
     return out

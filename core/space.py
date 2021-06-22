@@ -2,35 +2,19 @@ from collections import OrderedDict
 import copy
 import gym
 import numpy
-from core.helpers import flatten
+
+numpy.set_printoptions(precision = 3, suppress = True)
+
+from core.helpers import flatten, hard_flatten
 import itertools
+from tabulate import tabulate
+
 
 def remove_prefix(text, prefix):
     # from Python 3.9 use str.removeprefix() directly
     # copied from https://stackoverflow.com/questions/16891340/remove-a-prefix-from-a-string
     return text[text.startswith(prefix) and len(prefix):]
 
-class Array:
-    def __init__(self, array, low = None, high = None):
-        self.array_size = array.shape
-
-        if low is None:
-            self.low = numpy.full(array.shape, -numpy.inf)
-        elif self.low.shape == array.shape:
-            self.low = low
-        else:
-            raise ValueError("Shape mismatch between array and lower bound with shapes {}, {}".format(array.shape.__str__(), low.shape.__str__()))
-
-        if high is None:
-            self.high = numpy.full(array.shape, numpy.inf)
-        elif self.high.shape == array.shape:
-            self.high = high
-        else:
-            raise ValueError("Shape mismatch between array and lower bound with shapes {}, {}".format(array.shape.__str__(), high.shape.__str__()))
-
-
-    def sample(self):
-        return 2*numpy.random.sample(self.array_size) -1
 
 class StateElement:
     def __init__(self, values = None, spaces = None, possible_values = None):
@@ -77,7 +61,9 @@ class StateElement:
     def get_human_values(self):
         values = []
         for n, (v, hv) in enumerate(zip(self.values, self.possible_values)):
-            if hv == [None]:
+            if v is None:
+                values.append(v)
+            elif hv == [None]:
                 values.append(v)
             else:
                 if hv[v] is not None:
@@ -91,14 +77,17 @@ class StateElement:
     def check_values(self, values):
         values = flatten([values])
 
-        if values == [None]:
-            if not(self.values is None or self.values == [None]):
-                return self.values
-            if self.values == [None] and not(self.spaces is None or self.spaces == [None]):
-                return [None for space in self.spaces]
-            else:
-                return [None]
-        # values = flatten([values])
+        try:
+            if values == [None]:
+                if not(self.values is None or self.values == [None]):
+                    return self.values
+                if self.values == [None] and not(self.spaces is None or self.spaces == [None]):
+                    return [None for space in self.spaces]
+                else:
+                    return [None]
+        except ValueError:
+            pass
+            # print('warning: you might want to check whether the values {} have been initialized correctly in {}'.format(values.__str__(), self.__repr__() ) )
 
         if self.spaces is not None and self.spaces != [None]:
             # check whether values has the same number of elements as spaces
@@ -111,7 +100,7 @@ class StateElement:
                         pass
                     else:
                         if value not in space:# and value is not None:
-                            raise ValueError('You are assigning an invalid value: value number {} ({}) is not contained in {}'.format(str(n), str(value), str(space)))
+                            raise ValueError('You are assigning an invalid value: value number {} ({}) is not contained in {} (low: {}, high: {})'.format(str(n), str(value), str(space), str(space.low), str(space.high)))
                 except AttributeError:
                     if numpy.array(value).reshape(space.shape) in space:
                         values[n] = numpy.array(value).reshape(space.shape)
@@ -166,6 +155,75 @@ class StateElement:
         return possible_values
 
 
+    def flat(self):
+        return self['values'], self['spaces'], self['possible_values'], [str(i) for i,v in enumerate(self['values'])]
+
+    def clip(self, values):
+        values = flatten([values])
+        for n, (value, space) in enumerate(zip(values, self.spaces)):
+            if value not in space:
+                if isinstance(space, gym.spaces.Box):
+                    values[n] = numpy.clip( value, space.low, space.high)
+                elif isinstance(space, gym.spaces.Discrete):
+                    values[n] = max(0,min(space.n -1, value))
+        return values
+
+
+
+    # works only for 1D
+    def _n_to_box(self, other):
+        _value = self['values'][0]
+        ls = numpy.linspace(other['spaces'][0].low, other["spaces"][0].high, self["spaces"][0].n+1)
+        _diff = ls[1]-ls[0]
+        value = ls[_value] + _diff/2
+        return value
+        # works only for 1D
+    def _box_to_box(self, other):
+        _value = self['values'][0]
+        _range_self = self['spaces'][0].high - self['spaces'][0].low
+        _range_other = other['spaces'][0].high - other['spaces'][0].low
+        value = (_value - _range_self/2)/_range_self*_range_other + _range_other/2
+        return value
+
+    def _box_to_n(self, other):
+        _value = self['values'][0]
+        _range = self['spaces'][0].high - self['spaces'][0].low
+        value = int(numpy.floor(  (_value - self['spaces'][0].low)/_range*(other['spaces'][0].n)  ))
+        return value
+
+    # works only for 1D
+    def cast(self, other, inplace = False):
+        if not isinstance(other, StateElement):
+            raise TypeError("other {} must be of type StateElement".format(str(other)))
+
+        values = []
+        for s,o in zip(self, other):
+            if isinstance(s['spaces'][0], gym.spaces.Discrete) and isinstance(o['spaces'][0], gym.spaces.Box):
+                value = s._n_to_box(o)
+            elif isinstance(s['spaces'][0], gym.spaces.Box) and isinstance(o['spaces'][0], gym.spaces.Box):
+                value = s._box_to_box(o)
+            elif isinstance(s['spaces'][0], gym.spaces.Box) and isinstance(o['spaces'][0], gym.spaces.Discrete):
+                value = s._box_to_n(o)
+            elif isinstance(s['spaces'][0], gym.spaces.Discrete) and isinstance(o['spaces'][0], gym.spaces.Discrete):
+                if s['spaces'][0].n == o['spaces'][0].n:
+                    value = s['values']
+                else:
+                    raise ValueError('You are trying to match a discrete space to another discrete space of different size.')
+            else:
+                raise NotImplementedError
+            values.append(value)
+        if inplace:
+            other['values'] = values
+            return
+        else:
+            _copy = copy.deepcopy(other)
+            _copy['values'] = values
+            return _copy
+
+
+
+
+
     def __setitem__(self, key, item):
         if key == 'values':
             setattr(self, key, self.check_values(item))
@@ -181,8 +239,37 @@ class StateElement:
             return getattr(self, key)
         elif key == 'human_values':
             return self.get_human_values()
+        elif isinstance(key, (int, numpy.int)):
+            return StateElement(values = self.values[key],
+                                spaces = self.spaces[key],
+                                possible_values = self.possible_values[key])
 
-    def __repr__(self):
+    def __add__(self, other):
+        _copy = copy.deepcopy(self)
+        if not hasattr(other, '__len__'):
+            other = [other]
+
+        if len(_copy['values']) == 1:
+            out = _copy.values[0] + other
+        elif len(_copy['values']) == len(other):
+            out = [_copy['values'][k] + v for k,v in enumerate(other)]
+        elif len(_copy['values']) != 1 and len(other) == 1:
+            out = [v + other[0] for k,v in enumerate(_copy['values'])]
+        else:
+            out = _copy['values'] + other
+        _copy['values'] = self.clip(out)
+        return _copy
+
+    def __radd__(self, other):
+        raise NotImplementedError
+
+    def __sub__(self, other):
+        return self.__add__(-other)
+
+    def __rsub__(self, other):
+        raise NotImplementedError
+
+    def __str__(self):
         _str = '\n'
         _str += 'value:\t'
         if self.values:
@@ -204,9 +291,31 @@ class StateElement:
 
         return _str
 
+    def __repr__(self):
+        return 'StateElement({},...)'.format(self.values.__repr__())
+
+    # https://stackoverflow.com/questions/1500718/how-to-override-the-copy-deepcopy-operations-for-a-python-object
+    # Here we override copy and deepcopy simply because there seems to be a huge overhead in the default deepcopy implementation.
+    def __copy__(self):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        return result
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            setattr(result, k, copy.deepcopy(v, memo))
+        return result
+
 
 
 class State(OrderedDict):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     def reset(self, dic = {}):
         for key, value in self.items():
             reset_dic = dic.get(key)
@@ -214,139 +323,71 @@ class State(OrderedDict):
                 reset_dic = {}
             value.reset(reset_dic)
 
-    # get around the huge overhead of the regular deepcopy method. This is probably more  like copy than deepcopy, but it is enough for what is needed for now.
-    def __deepcopy__(self, memodict={}):
-        copy_object = State()
+    def flat(self):
+        values = []
+        spaces = []
+        possible_values = []
+        labels = []
+        l,k = list(self.values()), list(self.keys())
+        for n,item in enumerate(l):
+            _values, _spaces, _possible_values, _labels = item.flat()
+            values.extend(_values)
+            spaces.extend(_spaces)
+            possible_values.extend(_possible_values)
+            labels.extend([k[n] + '|' + label for label in _labels])
+        return values, spaces, possible_values, labels
+        # return hard_flatten(values), spaces, possible_values, labels
+
+    def filter(self, mode, ordereddict):
+        new_state = OrderedDict()
+        if ordereddict is None:
+            ordereddict = self
+        for key, values in ordereddict.items():
+            if isinstance(self[key], State):
+                new_state[key] = self[key].filter(mode, values)
+            elif isinstance(self[key], StateElement):
+                # to make S.filter("values", S) possible. Warning: Contrary to what one would expect values != self[key]
+                if isinstance(values, StateElement):
+                    values = slice(0,len(values), 1)
+                if mode == 'spaces':
+                    new_state[key] = gym.spaces.Tuple(flatten([self[key][mode][values]]))
+                else:
+                    new_state[key] = self[key][mode][values]
+            else:
+                new_state[key] = self[key]
+        if mode == 'spaces':
+            return gym.spaces.Dict(new_state)
+        return new_state
+
+
+    # Here we override copy and deepcopy simply because there seems to be some overhead in the default deepcopy implementation. Adapted from StateElement code
+    def __copy__(self):
+        cls = self.__class__
+        copy_object = cls.__new__(cls)
+        copy_object.__dict__.update(self.__dict__)
         copy_object.update(self)
         return copy_object
 
+    def __deepcopy__(self, memodict={}):
+        cls = self.__class__
+        deepcopy_object = cls.__new__(cls)
+        memodict[id(self)] = deepcopy_object
+        deepcopy_object.__dict__.update(self.__dict__)
+        for k, v in self.items():
+            deepcopy_object[k] = copy.deepcopy(v, memodict)
+        return deepcopy_object
 
-    def __repr__(self):
-        _str = 'State 0x{} of type {}'.format(id(self), self.__class__)
-        for key, value in self.items():
-            _str += "\n{}:   {}".format(key, value.__repr__())
-
-        return _str
-
-    # def __repr__(self):
-    #     """ Redefine the default print behavior to have a pretty print format of the game state. Can only be called after the bundle has been reset.
-    #
-    #
-    #     :meta private:
-    #     """
-    #     _str = "{}  {:>20}  {:<10} {:<10}\n".format("index", "substate", "value", 'real_value')
-    #     l = 0
-    #     for key, value in self.items():
-    #         for skey, svalue in value.items():
-    #             for nitem, item in enumerate(svalue[0]):
-    #                 try:
-    #                     real_value = svalue[2][nitem][item]
-    #                 except (TypeError, IndexError):
-    #                     real_value = ""
-    #                 if isinstance(item, float):
-    #                     _str += "{}  {:>30}  {:<10.3f} {:<10}\n".format(l, key + '|' + str(skey) + '|' + str(nitem),  item, real_value)
-    #                 else:
-    #                     _str += "{}  {:>30}  {:<10} {:<10}\n".format(l, key + '|' + str(skey) + '|' + str(nitem),  item.__str__(), real_value)
-    #                 l+=1
-    #     return "{}".format(_str)
-
-
-class _State(OrderedDict):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def __setitem__(self, key, item):
-        if isinstance(item, State):
-            super().__setitem__(key, item)
-            return
-
-        if '_value_' in key:
-            key = remove_prefix(key, '_value_')
-            item = (item, None, None)
-
-
-        if len(item) == 3:
-            value, space, possible_values = item
-        else:
-            raise TypeError('Assigning an item in State requires you to pass a list [value, spacetype, possible_values], where spacetype and possible_values may be None. Alternatively you can set the value of State with by indexing using the special syntax _value_ e.g. State["_value_x"] = [0] will set the value of substate x to [0].')
-        # elif len(item) == 1:
-        #     value, space, possible_values = item, None, None
-        values = self.get(key)
-        if values is not None:
-            if value is None:
-                value = values[0]
-            # wrap the action in a list if needed
-            if isinstance(value, (int, float, numpy.integer, numpy.float, type(None))):
-                value = [value]
-            # if the state value list is nested in a list, unwrap one level
-            if isinstance(value[0], list):
-                value = value[0]
-            # If the state value is an array nested in a list, unwrap one level
-            if isinstance(value, list):
-                if len(value) == 1 and isinstance(value[0], numpy.ndarray):
-                    value = value[0]
-            if space is None:
-                space = values[1]
-            if possible_values is None:
-                possible_values = values[2]
-        else:
-            if isinstance(value, (int, float, numpy.integer, numpy.float, type(None))):
-                value = [value]
-        super().__setitem__(key, [value, space, possible_values])
-
-    def __getitem__(self, key):
-        if isinstance(key, str):
-            if '_value_' in key:
-                return self.__getitem__(remove_prefix(key, '_value_'))[0]
-            return super().__getitem__(key)
-        else:
-            str_key = list(self.keys())[key]
-            return super().__getitem__(str_key)
-
-    def reset(self, **kwargs):
-        if not kwargs:
-            for key, value in self.items():
-                self['_value_{}'.format(key)] = [v.sample() for v in value[1]]
-        else:
-            raise NotImplementedError
 
     def __str__(self):
-        """ Redefine the default print behavior to have a pretty print format of the game state. Can only be called after the bundle has been reset.
-        only works for bundle for the moment
-
-
-        :meta private:
+        """ Print out the game_state and the name of each substate with according indices.
         """
-        _str = "{}  {:>20}  {:<10} {:<10}\n".format("index", "substate", "value", 'real_value')
-        l = 0
-        for key, value in self.items():
-            for skey, svalue in value.items():
-                for nitem, item in enumerate(svalue[0]):
-                    try:
-                        real_value = svalue[2][nitem][item]
-                    except (TypeError, IndexError):
-                        real_value = ""
-                    if isinstance(item, float):
-                        _str += "{}  {:>30}  {:<10.3f} {:<10}\n".format(l, key + '|' + str(skey) + '|' + str(nitem),  item, real_value)
-                    else:
-                        _str += "{}  {:>30}  {:<10} {:<10}\n".format(l, key + '|' + str(skey) + '|' + str(nitem),  item.__str__(), real_value)
-                    l+=1
-        return "{}".format(_str)
 
-# task = State()
-# task['x'] = [[None], [gym.spaces.Box(-1,1, shape = (1,))],  [None]]
-# operator = State()
-# operator['xhat'] = [[None], [gym.spaces.Box(-2,2, shape = (1,))], [None]]
-#
-# u  = State()
-# u['y'] = [[None], [gym.spaces.Box(-1,1, shape = (1,))],  [None]]
-#
-#
-# bundle = State()
-# bundle['task_state'] = task
-# bundle['operator_state'] = operator
-# bundle['u_state'] = u
-#
-#
-# packagedoperator = State()
-# packagedoperator['operator_state'] =
+        table_header = ['Index', 'Label', 'Value','Space','Possible Value']
+        table_rows = []
+        for i, (v, s, p, l) in enumerate(zip(*self.flat())):
+                table_rows.append([str(i), l, str(v), str(s), str(p)])
+
+        _str = tabulate(table_rows, table_header)
+
+
+        return _str

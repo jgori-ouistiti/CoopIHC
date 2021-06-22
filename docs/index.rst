@@ -56,6 +56,7 @@ Learn how to use *interaction-agents*:
 
     guide/terminology
     guide/quickstart
+    guide/modularity
     guide/api
 
 .. toctree::

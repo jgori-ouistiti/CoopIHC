@@ -3,7 +3,7 @@ from core.observation import RuleObservationEngine, base_operator_engine_specifi
 from core.space import State, StateElement
 from core.policy import ELLDiscretePolicy
 import gym
-
+import numpy
 
 class CarefulPointer(BaseAgent):
     """ An operator that only indicates the right direction, with a fixed amplitude.
@@ -27,8 +27,8 @@ class CarefulPointer(BaseAgent):
             def compute_likelihood(self, action, observation):
                 # convert actions and observations
                 action = action['human_values'][0]
-                goal = observation['operator_state']['Goal']['human_values'][0]
-                position = observation['task_state']['Position']['human_values'][0]
+                goal = observation['operator_state']['Goal']['values'][0]
+                position = observation['task_state']['Position']['values'][0]
 
                 # Write down all possible cases (5)
                 # (1) Goal to the right, positive action
@@ -76,7 +76,6 @@ class CarefulPointer(BaseAgent):
         # ---------- Calling BaseAgent class -----------
         # Calling an agent, set as an operator, which uses our previously defined observation engine and without an inference engine.
 
-
         super().__init__(
                             'operator',
                             policy = agent_policy,
@@ -86,16 +85,34 @@ class CarefulPointer(BaseAgent):
 
 
     def finit(self):
-        target_values = self.bundle.task.state['Targets']['values']
+        self.target_values = self.bundle.task.state['Targets']['values']
         target_spaces = self.bundle.task.state['Targets']['spaces']
-        self.state['Goal'] =  StateElement( values = None,
-                                            spaces = [gym.spaces.Discrete(len(target_spaces))],
-                                            possible_values = [target_values])
+
+        self.state['Goal'] =  StateElement( values = [None],
+                                            spaces = [gym.spaces.Discrete(self.bundle.task.gridsize)],
+                                            possible_values = [[None]])
 
 
-    def reset(self, *args):
-        self.finit()
-        super().reset(*args)
+    def reset(self, dic = None):
+        if dic is None:
+            super().reset()
+
+        self.target_values = self.bundle.task.state['Targets']['values']
+        self.state['Goal']["values"] = numpy.random.choice(self.target_values)
+
+        if dic is not None:
+            super().reset(dic = dic)
+
+
+
+
+
+class HeuristicPointer(BaseAgent):
+    def __init__(self, *args, **kwargs):
+        agent_policy = kwargs.get('agent_policy')
+        if agent_policy is None:
+            agent_policy = ELLDiscretePolicy(action_space = [gym.spaces.Discrete(2)], action_set = [[-1, 1]])
+
 
 
 

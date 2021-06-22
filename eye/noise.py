@@ -16,10 +16,16 @@ def eccentric_noise(target, position, sdn_level):
 
     :meta public:
     """
-    eccentricity = numpy.sqrt(numpy.sum((target-position)**2))
-    cosalpha = (target - position)[0] / eccentricity
-    sinalpha = (target - position)[1] / eccentricity
-    _sigma = sdn_level * eccentricity
-    sigma = numpy.array([[_sigma, 0], [0, 4*_sigma/3]])
-    P = numpy.array([[cosalpha, -sinalpha], [sinalpha, cosalpha]])
-    return P @ sigma @ P.T
+    if target.shape == (2,) or target.shape == (1,2) or target.shape == (2,1):
+        eccentricity = numpy.sqrt(numpy.sum((target-position)**2))
+        cosalpha = (target - position)[0] / eccentricity
+        sinalpha = (target - position)[1] / eccentricity
+        _sigma = sdn_level * eccentricity
+        sigma = numpy.array([[_sigma, 0], [0, 4*_sigma/3]])
+        P = numpy.array([[cosalpha, -sinalpha], [sinalpha, cosalpha]])
+        return P @ sigma @ P.T
+    elif target.shape == (1,) or target.shape == (1,1):
+        eccentricity = numpy.sqrt(numpy.sum((target-position)**2))
+        return numpy.array([sdn_level * eccentricity]).reshape(1,1)
+    else:
+        raise NotImplementedError

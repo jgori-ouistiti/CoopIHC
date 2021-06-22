@@ -5,11 +5,16 @@ from collections import OrderedDict
 import matplotlib.pyplot as plt
 
 from core.space import State, StateElement
-from core.helpers import flatten
+from core.helpers import flatten, hard_flatten
 from core.agents import DummyAssistant, DummyOperator
 from core.observation import ObservationEngine
+from core.core import Handbook
 
 import copy
+
+import sys
+from loguru import logger
+
 
 
 ######### List of kwargs for bundles init()
@@ -21,7 +26,7 @@ import copy
 
 
 
-class Bundle(ABC):
+class Bundle:
     """A bundle combines a task with an operator and an assistant. All bundles are obtained by subclassing this main Bundle class.
 
     A bundle will create the ``game_state`` by combining three states of the task, the operator and the assistant as well as the turn index. It also takes care of adding the assistant action substate to the operator state and vice-versa.
@@ -37,6 +42,8 @@ class Bundle(ABC):
     :meta public:
     """
     def __init__(self, task, operator, assistant,**kwargs):
+        logger.info("Starting to Bundle {}, {} and {}".format(task.__class__.__name__, operator.__class__.__name__, assistant.__class__.__name__))
+
         self.kwargs = kwargs
         self.task = task
         self.task.bundle = self
@@ -65,26 +72,15 @@ class Bundle(ABC):
             self.game_state["assistant_action"] = State()
             self.game_state["assistant_action"]['action'] = StateElement()
 
-        #
-        # bundle_state = State(name = 'turn_index', spacetype = [gym.spaces.Discrete(2)], possible_values = None, value = 0)
-        #
-        # game_state.add_substates([bundle_state, self.task.state, self.operator.state, self.assistant.state, self.operator.policy.action_state, self.assistant.policy.action_state])
 
-
-        # self.game_state = OrderedDict({'b_state': OrderedDict({'next_agent': [0]}), 'task_state': self.task.state, 'operator_state': self.operator.state.Value.value, 'assistant_state': self.assistant.state.Value.value})
-        # self.game_state['operator_action'] = self.operator.policy.action_state.Value.value
-        # self.game_state['assistant_action'] = self.assistant.policy.action_state.Value.value
-
-
-        # Finish Initializing task, operator and assistant
+        logger.info('Finish Initializing task, operator and assistant')
         self.task.finit()
         self.operator.finit()
         self.assistant.finit()
 
-        # # Form joint action state
-        # self.action_state = core.space.merge([self.operator.policy.action_state, self.assistant.policy.action_state])
-
-
+        logger.info('Task state:\n{}'.format(str(self.task.state)))
+        logger.info('Operator state:\n{}'.format(str(self.operator.state)))
+        logger.info('Assistant state:\n{}'.format(str(self.assistant.state)))
 
         # Needed for render
         self.active_render_figure = None
@@ -93,44 +89,14 @@ class Bundle(ABC):
         self.render_perm  = False
         self.playspeed = 0.1
 
-    # def _tuple_to_flat_space(self, tupled_spaces):
-    #     """ Turn a ``gym.spaces.Tuple`` of Discrete and Box spaces to a single box space.
-    #
-    #     :param tupled_spaces: (gym.spaces.Tuple) a tuple of Box or Discrete spaces.
-    #
-    #     :return: (gym.spaces.Box) a gym Box
-    #
-    #     :meta private:
-    #     """
-    #     low = []
-    #     high = []
-    #     for space in tupled_spaces:
-    #         if isinstance(space, gym.spaces.Box):
-    #             low += space.low.tolist()
-    #             high += space.high.tolist()
-    #         elif isinstance(space, gym.spaces.Discrete): #Should we use onehot encoding at all ?
-    #             low += [0]
-    #             high += [space.n]
-    #             # if space.n <= 2:
-    #             #     low += [0]
-    #             #     high += [1]
-    #             #     self.spacedim += [1]
-    #             #     self.onehot += [False]
-    #             # else:
-    #             #     low = [0 for i in range(space.n)]
-    #             #     high = [1 for i in range(space.n)]
-    #             #     self.spacedim += [space.n]
-    #             #     self.onehot += [True]
-    #         else:
-    #             raise NotImplementedError
-    #     return gym.spaces.Box(numpy.array(low), numpy.array(high))
 
+        logger.info('\n========================\nCreated bundle {} with task {}, operator {}, and assistant {}\n========================\n'.format(self.__class__.__name__, task.__class__.__name__, operator.__class__.__name__, assistant.__class__.__name__))
+        logger.info("The game state is \n{}".format(str(self.game_state)))
+        logger.info('\n\n========================\n')
 
+        self.handbook = Handbook({'name': self.__class__.__name__, 'render_mode': [], 'parameters': []})
 
-
-
-
-    def reset(self, dic = None):
+    def reset(self, dic = {}):
         """ Reset the bundle. When subclassing Bundle, make sure to call super().reset() in the new reset method
 
         :param dic: (dictionnary) Reset the bundle with a game_state
@@ -139,39 +105,21 @@ class Bundle(ABC):
 
         :meta private:
         """
-        self.task.reset(dic)
-        self.operator.reset(dic)
-        self.assistant.reset(dic)
+        task_dic = dic.get('task_state')
+        operator_dic = dic.get('operator_state')
+        assistant_dic = dic.get("assistant_state")
+        task_state = self.task.reset(dic = task_dic)
+        operator_state = self.operator.reset(dic = operator_dic)
+        assistant_state = self.assistant.reset(dic = assistant_dic)
 
-
-        # self.full_observation, self.full_observation_labels, self.indices, self.game_state_indices = self._flatten_game_state()
-
+        logger.info('Resetting {}'.format(self.__class__.__name__))
+        logger.info('Reset dic used:\n{}'.format(str(dic)))
+        logger.info('Reset to state:\n{}'.format(str(self.game_state)))
 
         return self.game_state
 
 
-
-    # def _flatten_game_state(self):
-    #     """ Used for __repr__
-    #
-    #     :meta private:
-    #     """
-    #     obs = flatten([list(d.values()) for d in list(self.game_state.Value.value.values())])
-    #     labels = []
-    #     indices = []
-    #     upper_indices = []
-    #     for pkey, pvalue in self.game_state.items():
-    #         index = 0
-    #         for skey, svalue in pvalue.items():
-    #             indices.append((pkey, skey, len(flatten(svalue))))
-    #             for n,i in enumerate(flatten(svalue)):
-    #                 labels.append("/".join([pkey, skey, str(n)]))
-    #                 index += 1
-    #         upper_indices.append((pkey, index))
-    #     return obs, labels, indices, upper_indices
-
-    @abstractmethod
-    def step(self, action, convert = False):
+    def step(self, action):
         """ Define what happens with the bundle when applying a joint action. Should be redefined when subclassing bundle.
 
         :param action: (list) joint action.
@@ -180,7 +128,7 @@ class Bundle(ABC):
 
         :meta public:
         """
-        pass
+        logger.info('Stepping into {} with action {}'.format(self.__class__.__name__, str(action)))
 
     def render(self, mode, *args, **kwargs):
         """ Combines all render methods.
@@ -197,6 +145,13 @@ class Bundle(ABC):
             self.operator.render(mode='text', *args , **kwargs)
             print('Assistant Render')
             self.assistant.render(mode = 'text', *args , **kwargs)
+        if 'log' in mode:
+            logger.info('Task Render')
+            self.task.render(mode='log', *args , **kwargs)
+            logger.info("Operator Render")
+            self.operator.render(mode='log', *args , **kwargs)
+            logger.info('Assistant Render')
+            self.assistant.render(mode = 'log', *args , **kwargs)
         if 'plot' in mode:
             if self.active_render_figure:
                 plt.pause(self.playspeed)
@@ -218,6 +173,8 @@ class Bundle(ABC):
                 self.assistant.render(self.axtask, self.axoperator, self.axassistant, *args ,  mode = 'plot', **kwargs)
                 self.fig.show()
 
+            plt.tight_layout()
+
         if not ('plot' in mode or 'text' in mode):
             self.task.render(None, mode = mode, *args, **kwargs)
             self.operator.render(None, mode = mode, *args, **kwargs)
@@ -232,6 +189,8 @@ class Bundle(ABC):
             plt.close(self.fig)
             self.active_render_figure = None
 
+        logger.info("Closing bundle {}".format(self.__class__.__name__))
+
     def _operator_first_half_step(self):
         """ This is the first half of the operator step, where the operaror observes the game state and updates its state via inference.
 
@@ -239,10 +198,12 @@ class Bundle(ABC):
 
         :meta public:
         """
+
         if not self.kwargs.get('onreset_deterministic_first_half_step'):
             operator_obs_reward, operator_infer_reward = self.operator.agent_step()
 
         else:
+            logger.info('Observing with probabilistic rules excluded')
             # Store the probabilistic rules
             store = self.operator.observation_engine.extraprobabilisticrules
             # Remove the probabilistic rules
@@ -252,6 +213,8 @@ class Bundle(ABC):
             # Reposition the probabilistic rules, and reset mapping
             self.operator.observation_engine.extraprobabilisticrules = store
             self.operator.observation_engine.mapping = None
+
+        logger.info('Observation rewards: {} / Inference rewards: {}'.format( operator_obs_reward, operator_infer_reward))
 
         return operator_obs_reward, operator_infer_reward
 
@@ -268,13 +231,17 @@ class Bundle(ABC):
         :meta public:
         """
 
-        # convert operator_action from human_readable
-
-
+        logger.info('Applying action to task ---')
         # Play operator's turn in the task
         task_state, task_reward, is_done, _ = self.task.operator_step(operator_action)
-        # update task state
-        self.task.state.update(task_state)
+
+        # update task state (likely not needed, remove ?)
+        self.broadcast_state('operator', 'task_state', task_state)
+
+        logger.info('Resulting task state:')
+        logger.info(str(task_state))
+        logger.info('Associated rewards: {}'.format(task_reward))
+
         return task_reward, is_done
 
     def _assistant_first_half_step(self):
@@ -284,8 +251,11 @@ class Bundle(ABC):
 
         :meta public:
         """
+        logger.info('Assistant {} first half step'.format(self.operator.__class__.__name__))
+
         assistant_obs_reward, assistant_infer_reward = self.assistant.agent_step()
-        # assistant takes action
+
+        logger.info('Observation rewards: {} / Inference rewards: {}'.format( assistant_obs_reward, assistant_infer_reward))
 
         return assistant_obs_reward, assistant_infer_reward
 
@@ -301,9 +271,17 @@ class Bundle(ABC):
         # update action_state
 
         # Play assistant's turn in the task
+        logger.info('Assistant second half step')
+
         task_state, task_reward, is_done, _ = self.task.assistant_step(assistant_action)
         # update task state
-        self.task.state.update(task_state)
+        self.broadcast_state('operator', 'task_state', task_state)
+
+        logger.info('Applied {} to task, which resulted in the new state'.format(str(assistant_action)))
+        logger.info(str(task_state))
+        logger.info('Associated rewards: {}'.format(task_reward))
+        logger.info('task is done: {}'.format(is_done))
+
         return task_reward, is_done
 
     def _operator_step(self, *args):
@@ -315,7 +293,6 @@ class Bundle(ABC):
 
         :meta public:
         """
-
         operator_obs_reward, operator_infer_reward = self._operator_first_half_step()
         try:
             # If human input is provided
@@ -323,7 +300,6 @@ class Bundle(ABC):
         except IndexError:
             # else sample from policy
             operator_action = self.operator.take_action()
-
 
         self.broadcast_action('operator', operator_action)
 
@@ -352,12 +328,18 @@ class Bundle(ABC):
             assistant_action = self.assistant.take_action()
             manual = False
 
+
+        print(assistant_action)
+
         self.broadcast_action('assistant', assistant_action)
 
         task_reward, is_done = self._assistant_second_half_step(assistant_action)
         return assistant_obs_reward, assistant_infer_reward, task_reward, is_done
 
 
+    def broadcast_state(self, role, state_key, state):
+        self.game_state[state_key] = state
+        getattr(self, role).inference_engine.buffer[-1][state_key] = state
 
     def broadcast_action(self, role, action, key = None):
         # update game state and observations
@@ -383,7 +365,7 @@ class PlayNone(Bundle):
         super().__init__(task, operator, assistant, **kwargs)
         self.action_state = None
 
-    def reset(self, dic = None):
+    def reset(self, dic = {}):
         """ Reset the bundle.
 
         :param args: see Bundle
@@ -400,6 +382,8 @@ class PlayNone(Bundle):
 
         :meta public:
         """
+        super().step(None)
+
         operator_obs_reward, operator_infer_reward, first_task_reward, is_done = self._operator_step()
         if is_done:
             return operator_obs_reward, operator_infer_reward, task_reward, is_done
@@ -417,17 +401,17 @@ class PlayOperator(Bundle):
     """
     def __init__(self, task, operator, assistant, **kwargs):
         super().__init__(task, operator, assistant, **kwargs)
-        self.action_state = copy.copy(self.operator.policy.action_state)
+        self.action_space = copy.copy(self.operator.policy.action_state['action']['spaces'])
 
-        operator.policy.action_state['action'] = StateElement(
-            values = None,
-            spaces = [gym.spaces.Box(low = -numpy.inf, high = numpy.inf, shape = (1,)) for i in range(len(operator.policy.action_state['action']))],
-            possible_values = None
-             )
+        # operator.policy.action_state['action'] = StateElement(
+        #     values = None,
+        #     spaces = [gym.spaces.Box(low = -numpy.inf, high = numpy.inf, shape = (1,)) for i in range(len(operator.policy.action_state['action']))],
+        #     possible_values = None
+        #      )
 
 
 
-    def reset(self, dic = None):
+    def reset(self, dic = {}):
         """ Reset the bundle. A first observation and inference is performed.
 
         :param args: see Bundle
@@ -447,7 +431,9 @@ class PlayOperator(Bundle):
 
         :meta public:
         """
-        self.broadcast_action('operator', operator_action)
+        super().step(operator_action)
+
+        self.broadcast_action('operator', operator_action, key = 'values')
         first_task_reward, is_done = self._operator_second_half_step(operator_action)
         if is_done:
             return self.operator.inference_engine.buffer[-1], first_task_reward, is_done, [first_task_reward]
@@ -467,15 +453,15 @@ class PlayAssistant(Bundle):
     """
     def __init__(self, task, operator, assistant, **kwargs):
         super().__init__(task, operator, assistant, **kwargs)
-        self.action_state = copy.copy(self.assistant.policy.action_state)
+        self.action_space = self.assistant.policy.action_state['action']['spaces']
 
-        assistant.policy.action_state['action'] = StateElement(
-            values = None,
-            spaces = [gym.spaces.Box(low = -numpy.inf, high = numpy.inf, shape = (1,)) for i in range(len(assistant.policy.action_state['action']))],
-            possible_values = None
-             )
+        # assistant.policy.action_state['action'] = StateElement(
+        #     values = None,
+        #     spaces = [gym.spaces.Box(low = -numpy.inf, high = numpy.inf, shape = (1,)) for i in range(len(assistant.policy.action_state['action']))],
+        #     possible_values = None
+        #      )
 
-    def reset(self, dic = None):
+    def reset(self, dic = {}):
         """ Reset the bundle. A first  operator step and assistant observation and inference is performed.
 
         :param args: see Bundle
@@ -496,6 +482,7 @@ class PlayAssistant(Bundle):
 
         :meta public:
         """
+        super().step(assistant_action)
 
         self.broadcast_action('assistant', assistant_action, key = 'values')
         second_task_reward, is_done = self._assistant_second_half_step(assistant_action)
@@ -529,7 +516,7 @@ class PlayBoth(Bundle):
         self._operator_first_half_step()
         return self.task.state
 
-    def step(self, joint_action, convert = False):
+    def step(self, joint_action):
         """ Play a step, operator and assistant actions are given externally in the step() method.
 
         :param joint_action: (list) joint operator assistant action
@@ -538,6 +525,9 @@ class PlayBoth(Bundle):
 
         :meta public:
         """
+
+        super().step(joint_action)
+
         operator_action, assistant_action = joint_action
         first_task_reward, is_done = self._operator_second_half_step(operator_action)
         if is_done:
@@ -559,7 +549,7 @@ class SinglePlayOperator(Bundle):
         super().__init__(task, operator, DummyAssistant(), **kwargs)
 
 
-    def reset(self, dic = None):
+    def reset(self, dic = {}):
         """ Reset the bundle. A first observation and inference is performed.
 
         :param args: see Bundle
@@ -579,6 +569,9 @@ class SinglePlayOperator(Bundle):
 
         :meta public:
         """
+
+        super().step(operator_action)
+
         self.broadcast_action('operator', operator_action)
         first_task_reward, is_done = self._operator_second_half_step(operator_action)
         if is_done:
@@ -602,19 +595,28 @@ class SinglePlayOperatorAuto(Bundle):
         self.action_space = None
         self.kwargs = kwargs
 
-    def reset(self, dic = None):
+
+
+        _start_at_action = {'value': kwargs.get('start_at_action'), 'meaning': 'If Start at action is True, then the reset will first perform an observation before returning.'}
+        self.handbook['kwargs'] = [_start_at_action]
+
+
+    def reset(self, dic = {}):
         """ Reset the bundle. A first observation and inference is performed.
 
         :param args: see Bundle
 
         :meta public:
         """
-        super().reset(dic)
-        self._operator_first_half_step()
+        super().reset(dic = dic)
 
+        if self.kwargs.get('start_at_action'):
+            self._operator_first_half_step()
+            return self.operator.inference_engine.buffer[-1]
 
+        return self.game_state
         # Return observation
-        return self.operator.inference_engine.buffer[-1]
+
 
     def step(self):
         """ Play a step, operator actions are obtained by sampling the agent's policy.
@@ -623,6 +625,8 @@ class SinglePlayOperatorAuto(Bundle):
 
         :meta public:
         """
+        if self.kwargs.get('start_at_action'):
+            operator_obs_reward, operator_infer_reward = self._operator_first_half_step()
         operator_action = self.operator.take_action()
         self.broadcast_action('operator', operator_action)
 
@@ -630,15 +634,39 @@ class SinglePlayOperatorAuto(Bundle):
         if is_done:
             return self.operator.inference_engine.buffer[-1], first_task_reward, is_done, [first_task_reward]
         self.task.assistant_step([0])
-        operator_obs_reward, operator_infer_reward = self._operator_first_half_step()
+        if not self.kwargs.get('start_at_action'):
+            operator_obs_reward, operator_infer_reward = self._operator_first_half_step()
         return self.operator.inference_engine.buffer[-1], sum([operator_obs_reward, operator_infer_reward, first_task_reward]), is_done, [operator_obs_reward, operator_infer_reward, first_task_reward]
 
 
 ## Wrappers
 # ====================
 
+
+class BundleWrapper(Bundle):
+    def __init__(self, bundle):
+        self.__class__ = type(bundle.__class__.__name__, (self.__class__, bundle.__class__), {})
+        self.__dict__ = bundle.__dict__
+
+
+
 ## =====================
 ## Train
+
+# https://stackoverflow.com/questions/1012185/in-python-how-do-i-index-a-list-with-another-list/1012197
+#
+# class Flexlist(list):
+#     def __getitem__(self, keys):
+#         if isinstance(keys, (int, numpy.int, slice)): return list.__getitem__(self, keys)
+#         return [self[k] for k in keys]
+#
+# class Flextuple(tuple):
+#     def __getitem__(self, keys):
+#         if isinstance(keys, (int, numpy.int, slice)): return tuple.__getitem__(self, keys)
+#         return [self[k] for k in keys]
+
+
+
 
 class Train(gym.Env):
     """ Use this class to wrap a Bundle up, so that it is compatible with the gym API and can be trained with off-the-shelf RL algorithms.
@@ -650,34 +678,57 @@ class Train(gym.Env):
 
     :meta public:
     """
-    def __init__(self, bundle):
+    def __init__(self, bundle, *args, **kwargs):
         self.bundle = bundle
-        self.action_space = bundle.action_space
-        observation = flatten(bundle.reset())
-        # For now let's assume that the observation space takes value in here. This should be normalized anyway.
-        self.observation_space = gym.spaces.Box(low = -100, high = 100, shape = (len(observation),))
-        self.extract_object = slice(0, self.observation_space.shape[0], 1)
+        self.action_space = gym.spaces.Tuple(bundle.action_space)
 
-    def get_state_mapping(self):
-        """ Print out the game_state and the name of each substate with according indices.
-        """
-        obs = self.bundle.reset()
-        labels = []
-        for pkey, pvalue in obs.items():
-            index = 0
-            for skey, svalue in pvalue.items():
-                for n,i in enumerate(flatten(svalue)):
-                    labels.append("/".join([pkey, skey, str(n)]))
-        for n,label in enumerate(labels):
-            print("{}: \t {}".format(str(n), label))
+        obs = bundle.reset()
 
-    def squeeze_output(self, extract_object):
-        """ Call this on the environment to remove some of the outputs to lower the dimension of the observation space for the RL algorithms. To know which substates to keep, use get_state_mapping(). Call this right after initializing the environment.
+        self.observation_mode = kwargs.get('observation_mode')
+        self.observation_dict = kwargs.get('observation_dict')
 
-        :param extract_object: (slice, array) a set of indices which will be extracted from the flattened observation. extract_object can be any type used for indexing i.e. a slice or a numpy.ndarray e.g. ``env.squeeze_output(slice(3,5,1))`` to keep the substates at index 3 and 4 in the flattened game_state.
-        """
-        self.extract_object = extract_object
-        self.observation_space = gym.spaces.Box(low = -100, high = 100, shape = (len(numpy.array(flatten(self.bundle.reset()))[extract_object]),))
+
+        if self.observation_mode is None:
+            self.observation_space = obs.filter('spaces', obs)
+        elif self.observation_mode == 'tuple':
+            self.observation_space = gym.spaces.Tuple(hard_flatten(obs.filter('spaces', self.observation_dict)))
+        elif self.observation_mode == 'multidiscrete':
+            self.observation_space = gym.spaces.MultiDiscrete([i.n for i in hard_flatten(obs.filter('spaces', self.observation_dict))])
+        elif self.observation_mode == 'dict':
+            self.observation_space = obs.filter('spaces', self.observation_dict)
+        else:
+            raise NotImplementedError
+
+
+    def convert_observation(self, observation):
+        if self.observation_mode is None:
+            return observation
+        elif self.observation_mode == 'tuple':
+            return self.convert_observation_tuple(observation)
+        elif self.observation_mode == 'multidiscrete':
+            return self.convert_observation_multidiscrete(observation)
+        elif self.observation_mode == 'dict':
+            return self.convert_observation_dict(observation)
+        else:
+            raise NotImplementedError
+
+    def convert_observation_tuple(self, observation):
+        return tuple(hard_flatten(observation.filter('values', self.observation_dict)))
+
+    def convert_observation_multidiscrete(self, observation):
+        return numpy.array(hard_flatten(observation.filter('values', self.observation_dict)))
+
+    def convert_observation_dict(self, observation):
+        return observation.filter('values', self.observation_dict)
+
+
+    # def squeeze_output(self, extract_object):
+    #     """ Call this on the environment to remove some of the outputs to lower the dimension of the observation space for the RL algorithms. To know which substates to keep, use get_state_mapping(). Call this right after initializing the environment.
+    #
+    #     :param extract_object: (slice, array) a set of indices which will be extracted from the flattened observation. extract_object can be any type used for indexing i.e. a slice or a numpy.ndarray e.g. ``env.squeeze_output(slice(3,5,1))`` to keep the substates at index 3 and 4 in the flattened game_state.
+    #     """
+    #     self.extract_object = extract_object
+    #     self.observation_space = gym.spaces.Tuple(Flextuple(self.observation_space)[extract_object])
 
 
     def reset(self, dic = None):
@@ -688,7 +739,7 @@ class Train(gym.Env):
         :meta public:
         """
         obs = self.bundle.reset(dic)
-        return numpy.array(flatten(obs))[self.extract_object]
+        return self.convert_observation(obs)
 
     def step(self, action):
         """ Perform a step of the environment.
@@ -699,14 +750,10 @@ class Train(gym.Env):
 
         :meta public:
         """
-        if isinstance(action, numpy.ndarray):
-            action = action.tolist()
-        if isinstance(self.bundle, PlayBoth):
-            action_operator = action[:self.bundle.operator.action_space.shape[0]]
-            action_assistant = action[self.bundle.operator.action_space.shape[0]:]
-            action = [action_operator, action_assistant]
+
         obs, sum_reward, is_done, rewards = self.bundle.step(action)
-        return numpy.array(flatten(obs))[self.extract_object], sum_reward, is_done, {'rewards':rewards}
+
+        return self.convert_observation(obs), sum_reward, is_done, {'rewards':rewards}
 
     def render(self, mode):
         """ See Bundle
@@ -726,14 +773,15 @@ class Train(gym.Env):
 
 
 
+
 class _DevelopTask(Bundle):
     """ A bundle without operator or assistant. It can be used when developping tasks to facilitate some things like rendering
     """
     def __init__(self, task, **kwargs):
         super().__init__(task, DummyOperator(), DummyAssistant(), **kwargs)
 
-    def reset(self, dic = None):
-        super().reset(dic)
+    def reset(self, dic = {}):
+        super().reset(dic = dic)
 
     def step(self, joint_action):
         operator_action, assistant_action = joint_action

@@ -38,7 +38,6 @@ class BIGGain(BaseAgent):
 
     def finit(self):
 
-        assistant_action_set =      list(range(self.bundle.task.gridsize))
         assistant_action_space = [gym.spaces.Discrete(self.bundle.task.gridsize)]
         operator_policy_model = self.bundle.operator.policy
 
@@ -46,7 +45,6 @@ class BIGGain(BaseAgent):
         action_state = self.bundle.game_state['assistant_action']
         agent_policy = BIGDiscretePolicy(       action_state,
                                                 assistant_action_space,
-                                                assistant_action_set,
                                                 operator_policy_model                                                )
 
         self.attach_policy(agent_policy)
@@ -55,18 +53,22 @@ class BIGGain(BaseAgent):
 
 
 
-    def reset(self, *args):
+    def reset(self, dic = None):
+        if dic is None:
+            super().reset()
 
         self.state['Beliefs'] = StateElement(values = [1/self.bundle.task.number_of_targets for i in range(self.bundle.task.number_of_targets)], spaces = [gym.spaces.Box(0, 1, shape = (1,)) for i in range(self.bundle.task.number_of_targets)], possible_values = None)
 
         # change theta for inference engine
         set_theta = [{('operator_state', 'Goal'): StateElement(values = [t],
-                spaces = [gym.spaces.Discrete(self.bundle.task.number_of_targets)],
-                possible_values =  self.bundle.task.state['Targets']['values'])  } for t in range(self.bundle.task.number_of_targets) ]
+                spaces = [gym.spaces.Discrete(self.bundle.task.gridsize)],
+                possible_values =  self.bundle.task.state['Targets']['values'])  } for t in self.bundle.task.state['Targets']['values'] ]
 
         self.inference_engine.attach_set_theta(set_theta)
         self.policy.attach_set_theta(set_theta)
 
+        if dic is not None:
+            super().reset(dic = dic)
 
         def transition_function(assistant_action, observation):
             """ What future observation will the user see due to assistant action

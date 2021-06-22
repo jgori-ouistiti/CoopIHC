@@ -3,11 +3,12 @@ import numpy
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 
+from core.core import Core, Handbook
 import core.observation
 from core.space import State
 from core.policy import Policy, LinearFeedback
 from core.observation import RuleObservationEngine, base_operator_engine_specification, base_assistant_engine_specification, base_task_engine_specification
-from core.inference import InferenceEngine, GoalInferenceWithOperatorPolicyGiven, ContinuousGaussian, ContinuousKalmanUpdate
+from core.inference import InferenceEngine, GoalInferenceWithOperatorPolicyGiven, ContinuousKalmanUpdate
 from core.helpers import flatten, sort_two_lists
 
 import matplotlib.pyplot as plt
@@ -15,7 +16,14 @@ from matplotlib.patches import Ellipse
 import matplotlib.transforms as transforms
 import scipy.linalg
 
-class BaseAgent(ABC):
+
+import sys
+from loguru import logger
+
+
+
+
+class BaseAgent(Core):
     """Subclass this to define an agent that can be used in a Bundle.
     A Baseagent class, with an internal state, methods to access this state, a policy (random sampling by default), and observation and inference engine.
 
@@ -43,10 +51,11 @@ class BaseAgent(ABC):
     def __init__(self, role, policy = None, state = None, observation_engine = None, inference_engine = None):
 
         # Bundles stuff
-        self.encapsulation = False
+        self.encapsulation = False #Deprecated ?
         self.bundle = None
         self.ax = None
 
+        self.handbook = Handbook({'name': self.__class__.__name__, 'render_mode': [], 'parameters': []})
 
         # Set role of agent
         if role not in ["operator", "assistant"]:
@@ -72,13 +81,19 @@ class BaseAgent(ABC):
         # Define inference engine
         self.attach_inference_engine(inference_engine)
 
+        logger.info('Initializing {}: {}'.format(self.role, self.__class__.__name__))
+        logger.info('Using this Policy:\n{}'.format(str(self.policy.handbook)))
+        logger.info('Using this Observation Engine:\n{}'.format(str(self.observation_engine.handbook)))
+        logger.info('Using this Inference Engine:\n{}'.format(str(self.inference_engine.handbook)))
+
 
     def attach_policy(self, policy):
-        self.policy = policy
-        try:
-            self.policy.host = self
-        except AttributeError as err:
-            pass
+        if policy is None:
+            self.policy = Policy()
+        else:
+            self.policy = policy
+        self.policy.host = self
+
 
     def attach_observation_engine(self, observation_engine):
         if observation_engine is None:
@@ -100,7 +115,7 @@ class BaseAgent(ABC):
         self.inference_engine.host = self
 
 
-    def reset(self, dic = {}):
+    def reset(self, all = True, dic = None):
         """ Resets the agent to an initial state. Does not reset the other agents or task. Usually, it is enough to reset the interbal state of the agent. This method has to be redefined when subclassing BaseAgent.
 
         :param args: (collections.OrderedDict) internal state to which the agent should be reset e.g. ``OrderedDict([('AssistantAction', [1]), ('Goal', [2])])``
@@ -109,19 +124,26 @@ class BaseAgent(ABC):
         """
         if self.policy is None:
             return RuntimeError('A policy needs to be attached to this agent.')
+
+        if all:
+            self.policy.reset()
+            self.inference_engine.reset()
+            self.observation_engine.reset()
+
         if not dic:
             self.state.reset()
             return
 
-        if self.role == "operator":
-            dictionnary = dic.get("operator_state")
-        else:
-            dictionnary = dic.get("assistant_state")
-        if dictionnary:
-            for key in list(self.state.keys()):
-                value = dictionnary.get(key)
-                if value is not None:
-                    self.state[key]['value'] = value
+
+        for key in list(self.state.keys()):
+            value = dic.get(key)
+            if isinstance(value, StateElement):
+                value = value['values']
+            if value is not None:
+                self.state[key]['value'] = value
+
+
+
 
     def finit(self):
         """ finit is called by bundle after the two agents and task have been linked together. This gives the possibility to finish initializing (finit) when information from another component is required e.g. an assistant which requires the list of possible targets from the task. This method has to be redefined when subclassing BaseAgent.
@@ -142,15 +164,23 @@ class BaseAgent(ABC):
         :meta private:
         """
         # agent observes the state
+
         agent_observation, agent_obs_reward = self.observe(self.bundle.game_state)
+
+        logger.info('{} observing ---result:\n{}'.format(self.__class__.__name__, str(agent_observation)))
+
         # Pass observation to InferenceEngine Buffer
         self.inference_engine.add_observation(agent_observation)
         # Infer the new operator state
         if infer:
+
             agent_state, agent_infer_reward = self.inference_engine.infer()
             # Broadcast new agent_state
             self.state.update(agent_state)
-            # Update agent observation if
+
+            logger.info('{} changing its internal state to\n{}'.format(self.__class__.__name__, str(self.state)))
+
+            # Update agent observation
             if self.role == "operator":
                 if self.inference_engine.buffer[-1].get('operator_state') is not None:
                     self.inference_engine.buffer[-1]['operator_state'].update(agent_state)
@@ -216,7 +246,7 @@ class DummyAssistant(BaseAgent):
         """
         :meta private:
         """
-        super().__init__("assistant", kwargs)
+        super().__init__("assistant", **kwargs)
 
     def finit(self):
         """
@@ -224,7 +254,7 @@ class DummyAssistant(BaseAgent):
         """
         pass
 
-    def reset(self, *args):
+    def reset(self, dic = None):
         """
         :meta private:
         """
@@ -240,7 +270,7 @@ class DummyOperator(BaseAgent):
         """
         :meta private:
         """
-        super().__init__("operator", kwargs)
+        super().__init__("operator", **kwargs)
 
     def finit(self):
         """
@@ -248,7 +278,7 @@ class DummyOperator(BaseAgent):
         """
         pass
 
-    def reset(self, *args):
+    def reset(self, dic = None):
         """
         :meta private:
         """
@@ -330,80 +360,80 @@ class GoalDrivenDiscreteOperator(BaseAgent):
 
 
 
-
-# An agent that has handles Gaussian Continuous Beliefs
-class GaussianContinuousBeliefOperator(BaseAgent):
-    """ An Operator that maintains a continuous Gaussian belief. It can be used in cases where the goal of the operator is not directly observable to it.
-
-    :param action_space: (list(gym.spaces)) space in which the actions of the operator take place, e.g.``[gym.spaces.Box(low=-1, high=1, shape=(2, ), dtype=numpy.float64)]``
-    :param action_set: (list) possible action set for each subspace (None for Box) e.g. ``[None, None]``
-    :param observation_engine: (core.observation_engine).
-    :param dim: dimension of the multivariate Gaussian used to model the belief.
-
-    :meta public:
-    """
-    def __init__(self, action_space, action_set, observation_engine, dim = 1):
-        self.dim = dim
-        inference_engine = ContinuousGaussian()
-        super().__init__("operator", action_space, action_set, observation_engine = observation_engine, inference_engine = inference_engine)
-        self.append_state("MuBelief", [gym.spaces.Box(low=-1, high=1, shape=(dim, ), dtype=numpy.float64)])
-        self.append_state("SigmaBelief", [gym.spaces.Box(low=-1, high=1, shape=(dim**2, ), dtype=numpy.float64)])
-
-
-    def reset(self, dic = None):
-        super().reset(dic)
-
-    def render(self, mode, *args, **kwargs):
-        """ Similar to BaseAgent's render. In text mode, prints the parameters of the belief model. In plot, prints a 95% confidence ellipsis for the belief on the task axis.
-
-        :param args: (list) list of axes used in the bundle render, in order: axtask, axoperator, axassistant
-        :param mode: (str) currently supports either 'plot' or 'text'. Both modes can be combined by having both modes in the same string e.g. 'plottext' or 'plotext'.
-
-        :meta public:
-        """
-
-        if 'text' in mode:
-            print(self.state['MuBelief'].tolist())
-            print(self.state['SigmaBelief'].tolist())
-        elif 'plot' in mode:
-            if self.dim == 2:
-                # try:
-                #     self.patch.remove()
-                # except AttributeError:
-                #     pass
-                axtask, axoperator, axassistant = args[:3]
-                covariance = self.state['SigmaBelief']
-                mu = self.state['MuBelief']
-                self.patch = self.confidence_ellipse(mu, covariance, axtask)
-            else:
-                raise NotImplementedError
-
-
-    def confidence_ellipse(self, mu, covariance, ax, n_std=2.0, facecolor='#d1dcf0', edgecolor = 'b', **kwargs):
-        """
-        :meta private:
-        """
-        ## See https://matplotlib.org/devdocs/gallery/statistics/confidence_ellipse.html for source. Computing eigenvalues directly should lead to code that is more readily understandable
-        rho = numpy.sqrt(covariance[0,1]**2/covariance[0,0]/covariance[1,1])
-        ellipse_radius_x = numpy.sqrt(1 + rho)
-        ellipse_radius_y = numpy.sqrt(1 - rho)
-
-        ellipse = Ellipse((0, 0), width=ellipse_radius_x * 2, height=ellipse_radius_y * 2, facecolor=facecolor, edgecolor = edgecolor, **kwargs)
-        n_std = 2
-        scale_x = numpy.sqrt(covariance[0, 0]) * n_std
-        mean_x = mu[0]
-
-        scale_y = numpy.sqrt(covariance[1, 1]) * n_std
-        mean_y = mu[1]
-
-        transf = transforms.Affine2D() \
-            .rotate_deg(45) \
-            .scale(scale_x, scale_y) \
-            .translate(mean_x, mean_y)
-
-        ellipse.set_transform(transf + ax.transData)
-        return ax.add_patch(ellipse)
-
+#
+# # An agent that has handles Gaussian Continuous Beliefs
+# class GaussianLinearContinuousBeliefOperator(BaseAgent):
+#     """ An Operator that maintains a continuous Gaussian belief. It can be used in cases where the goal of the operator is not directly observable to it.
+#
+#     :param action_space: (list(gym.spaces)) space in which the actions of the operator take place, e.g.``[gym.spaces.Box(low=-1, high=1, shape=(2, ), dtype=numpy.float64)]``
+#     :param action_set: (list) possible action set for each subspace (None for Box) e.g. ``[None, None]``
+#     :param observation_engine: (core.observation_engine).
+#     :param dim: dimension of the multivariate Gaussian used to model the belief.
+#
+#     :meta public:
+#     """
+#     def __init__(self, action_space, action_set, observation_engine, dim = 1):
+#         self.dim = dim
+#         inference_engine = ContinuousGaussian()
+#         super().__init__("operator", action_space, action_set, observation_engine = observation_engine, inference_engine = inference_engine)
+#         self.append_state("MuBelief", [gym.spaces.Box(low=-1, high=1, shape=(dim, ), dtype=numpy.float64)])
+#         self.append_state("SigmaBelief", [gym.spaces.Box(low=-1, high=1, shape=(dim**2, ), dtype=numpy.float64)])
+#
+#
+#     def reset(self, dic = None):
+#         super().reset(dic)
+#
+#     def render(self, mode, *args, **kwargs):
+#         """ Similar to BaseAgent's render. In text mode, prints the parameters of the belief model. In plot, prints a 95% confidence ellipsis for the belief on the task axis.
+#
+#         :param args: (list) list of axes used in the bundle render, in order: axtask, axoperator, axassistant
+#         :param mode: (str) currently supports either 'plot' or 'text'. Both modes can be combined by having both modes in the same string e.g. 'plottext' or 'plotext'.
+#
+#         :meta public:
+#         """
+#
+#         if 'text' in mode:
+#             print(self.state['MuBelief'].tolist())
+#             print(self.state['SigmaBelief'].tolist())
+#         elif 'plot' in mode:
+#             if self.dim == 2:
+#                 # try:
+#                 #     self.patch.remove()
+#                 # except AttributeError:
+#                 #     pass
+#                 axtask, axoperator, axassistant = args[:3]
+#                 covariance = self.state['SigmaBelief']
+#                 mu = self.state['MuBelief']
+#                 self.patch = self.confidence_ellipse(mu, covariance, axtask)
+#             else:
+#                 raise NotImplementedError
+#
+#
+#     def confidence_ellipse(self, mu, covariance, ax, n_std=2.0, facecolor='#d1dcf0', edgecolor = 'b', **kwargs):
+#         """
+#         :meta private:
+#         """
+#         ## See https://matplotlib.org/devdocs/gallery/statistics/confidence_ellipse.html for source. Computing eigenvalues directly should lead to code that is more readily understandable
+#         rho = numpy.sqrt(covariance[0,1]**2/covariance[0,0]/covariance[1,1])
+#         ellipse_radius_x = numpy.sqrt(1 + rho)
+#         ellipse_radius_y = numpy.sqrt(1 - rho)
+#
+#         ellipse = Ellipse((0, 0), width=ellipse_radius_x * 2, height=ellipse_radius_y * 2, facecolor=facecolor, edgecolor = edgecolor, **kwargs)
+#         n_std = 2
+#         scale_x = numpy.sqrt(covariance[0, 0]) * n_std
+#         mean_x = mu[0]
+#
+#         scale_y = numpy.sqrt(covariance[1, 1]) * n_std
+#         mean_y = mu[1]
+#
+#         transf = transforms.Affine2D() \
+#             .rotate_deg(45) \
+#             .scale(scale_x, scale_y) \
+#             .translate(mean_x, mean_y)
+#
+#         ellipse.set_transform(transf + ax.transData)
+#         return ax.add_patch(ellipse)
+#
 
 
 # An agent that has a substate called Beliefs, which are updated in a Bayesian fashion. Requires a model of the operator as well as the potential target states that can serve as goals. Subclass this to implement various policies w/r beliefs.

@@ -3,6 +3,9 @@ import numpy
 from core.helpers import flatten
 import copy
 from core.space import State
+from core.core import Handbook
+
+from loguru import logger
 
 class ObservationEngine:
     """ Base Class for Observation Engine.
@@ -17,11 +20,15 @@ class ObservationEngine:
     """
     def __init__(self):
         self.type = 'base'
+        self.handbook = Handbook({'name': self.__class__.__name__, 'render_mode': [], 'parameters': []})
 
 
     def observe(self, game_state):
         return copy.deepcopy(game_state), 0
 
+
+    def reset(self):
+        pass
 
 
 
@@ -83,6 +90,7 @@ class RuleObservationEngine(ObservationEngine):
     :meta public:
     """
     def __init__(self, deterministic_specification = base_task_engine_specification, extradeterministicrules = {}, extraprobabilisticrules = {}, mapping = None):
+        super().__init__()
         self.type = 'rule'
         self.deterministic_specification = deterministic_specification
         self.extradeterministicrules = extradeterministicrules
@@ -90,8 +98,17 @@ class RuleObservationEngine(ObservationEngine):
         self.mapping = mapping
 
 
+        _deterministic_specification = {"name": 'deterministic_specification', "value": str(deterministic_specification), "meaning": 'Indicates which states are observable'}
+        _extradeterministicrules =  {"name": 'extradeterministicrules', "value": str(extradeterministicrules), "meaning": 'Extra deterministic rules, applied on a substate basis'}
+        _extraprobabilisticrules = {"name": 'extraprobabilisticrules', "value": str(extraprobabilisticrules), "meaning": 'Extra probabilistic rules, applied on a substate basis'}
+
+
+
+        self.handbook['parameters'].extend([_deterministic_specification, _extradeterministicrules, _extraprobabilisticrules] )
+
 
     def observe(self, game_state):
+        game_state = copy.deepcopy(game_state)
         if self.mapping is None:
             self.mapping = self.create_mapping(game_state)
         obs = self.apply_mapping(game_state)
@@ -102,23 +119,24 @@ class RuleObservationEngine(ObservationEngine):
         for substate, subsubstate, _slice, _func, _args, _nfunc, _nargs in self.mapping:
             if observation.get(substate) is None:
                 observation[substate] = State()
-            _obs = game_state[substate][subsubstate]['values'][_slice]
+            _obs = copy.copy(game_state[substate][subsubstate]['values'][_slice])
             if _func:
-                if _args is not None:
-                    _obs = _func(_obs, *_args)
+                if _args:
+                    _obs = _func(_obs, game_state, *_args)
                 else:
-                    _obs = _func(_obs)
+                    _obs = _func(_obs, game_state)
             else:
                 _obs = _obs
             if _nfunc:
-                if _nargs is not None:
-                    _obs = _nfunc(_obs, *_nargs)
+                if _nargs:
+                    _obs, noise = _nfunc(_obs, game_state, *_nargs)
                 else:
-                    _obs = _nfunc(_obs)
+                    _obs, noise = _nfunc(_obs, game_state)
+                logger.info('Noise applied for {}/{}: {}'.format(substate, subsubstate, str(noise)))
             else:
                 _obs = _obs
 
-            observation[substate][subsubstate] = game_state[substate][subsubstate]
+            observation[substate][subsubstate] = copy.copy(game_state[substate][subsubstate])
             observation[substate][subsubstate]['values'] = [_obs]
 
         return observation
@@ -131,7 +149,6 @@ class RuleObservationEngine(ObservationEngine):
             if substate == 'turn_index':
                 continue
             if subsubstate == 'all':
-                print(substate, game_state[substate])
                 for key, value in game_state[substate].items():
                     value = value['values']
                     v = extradeterministicrules.get((substate, key))
@@ -219,6 +236,30 @@ def agn(_obs, D, *args):
     if list_converted:
         _obs = _obs.tolist()
     return _obs
+
+
+class CascadedObservationEngine(ObservationEngine):
+    def __init__(self, engine_list):
+        super().__init__()
+        self.engine_list = engine_list
+        self.type = 'multi'
+
+
+        _engine_list = {"name": 'engine_list', "value": str(engine_list), "meaning": 'A list of observation engines to be cascaded'}
+
+        self.handbook['parameters'].extend([_engine_list])
+
+    def observe(self, game_state):
+        game_state = copy.deepcopy(game_state)
+        rewards = 0
+        for engine in self.engine_list:
+            new_obs, new_reward = engine.observe(game_state)
+            game_state.update(new_obs)
+            rewards += new_reward
+
+        return game_state, rewards
+
+
 
 # agn_mapping = {('task_state', 'x'): (agn, (C, D, numpy.array([0,0]).reshape(-1,), numpy.sqrt(timestep)*numpy.eye(2)))}
 
@@ -356,15 +397,7 @@ def agn(_obs, D, *args):
 #         return obs, reward
 
 
-class ProcessObservationEngine(ObservationEngine):
-    """ Not impleted yet.
-    """
-    def __init__(self, bundle):
-        super().__init__('process')
-        self.bundle = bundle
 
-    def observe(self, game_state):
-        raise NotImplementedError
 
 
 
