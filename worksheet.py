@@ -3,7 +3,7 @@ import numpy
 
 from core.bundle import PlayNone, PlayOperator, PlayAssistant, PlayBoth, Train, SinglePlayOperator, SinglePlayOperatorAuto, _DevelopTask
 from pointing.envs import SimplePointingTask, Screen_v0
-from pointing.operators import CarefulPointer
+from pointing.operators import CarefulPointer, LQGPointer
 from pointing.assistants import ConstantCDGain, BIGGain
 from eye.envs import ChenEyePointingTask
 from eye.operators import ChenEye
@@ -11,13 +11,14 @@ from eye.operators import ChenEye
 from collections import OrderedDict
 from core.models import LinearEstimatedFeedback
 from core.helpers import flatten
-from core.agents import BaseAgent, FHDT_LQRController, IHDT_LQRController, IHCT_LQGController, PackageToOperator, DummyAssistant
-from core.observation import base_task_engine_specification, base_operator_engine_specification, RuleObservationEngine, ObservationEngine, CascadedObservationEngine
-from core.interactiontask import ClassicControlTask,  InteractionTask, TaskWrapper
-from core.policy import ELLDiscretePolicy, Policy, BIGDiscretePolicy, RLPolicy
-from core.space import State
+from core.agents import BaseAgent, FHDT_LQRController, IHDT_LQRController, IHCT_LQGController, DummyAssistant, DummyOperator
+from core.observation import base_task_engine_specification, base_operator_engine_specification, RuleObservationEngine, BaseObservationEngine, CascadedObservationEngine, WrapAsObservationEngine
+from core.interactiontask import ClassicControlTask,  InteractionTask, TaskWrapper, WebsocketWrapper, WebsocketInteractionTask, create_websocket_task, WebSocketTask
+from core.policy import ELLDiscretePolicy, BasePolicy, BIGDiscretePolicy, RLPolicy, WrapAsPolicy
+from core.space import State, StateElement
 import matplotlib.pyplot as plt
 import copy
+import asyncio
 
 import sys
 _str = sys.argv[1]
@@ -43,8 +44,6 @@ if _str == 'basic-plot':
 if _str == 'basic-PlayNone' or _str == 'all':
 
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-
-
     binary_operator = CarefulPointer()
     unitcdgain = ConstantCDGain(1)
     bundle = PlayNone(task, binary_operator, unitcdgain)
@@ -53,7 +52,7 @@ if _str == 'basic-PlayNone' or _str == 'all':
     k = 0
     while True:
         k += 1
-        sum_rewards, is_done, rewards = bundle.step()
+        game_state, sum_rewards, is_done, rewards = bundle.step()
         bundle.render('plotext')
         # bundle.fig.savefig("/home/jgori/Documents/img_tmp/{}.pdf".format(k))
         if is_done:
@@ -75,7 +74,7 @@ if _str == 'biggain-PlayNone' or _str == 'all':
     # plt.savefig('/home/jgori/Documents/img_tmp/biggain_{}.png'.format(k))
     #
     while True:
-        sum_rewards, is_done, rewards = bundle.step()
+        game_state, sum_rewards, is_done, rewards = bundle.step()
         bundle.render('plotext')
         # k+=1
 
@@ -86,6 +85,7 @@ if _str == 'biggain-PlayNone' or _str == 'all':
 
 
 if _str == 'basic-TrainOperator' or _str == 'all':
+
     from stable_baselines3 import PPO
     from stable_baselines3.common.vec_env import SubprocVecEnv
     from stable_baselines3.common.env_util import make_vec_env
@@ -100,8 +100,21 @@ if _str == 'basic-TrainOperator' or _str == 'all':
 
     operator = CarefulPointer(agent_policy = policy)
     bundle = PlayOperator(task, operator, unitcdgain)
+    observation = bundle.reset()
 
     observation_dict = OrderedDict({'task_state': OrderedDict({'Position': 0}), 'operator_state': OrderedDict({'Goal': 0})})
+
+
+    class ThisActionWrapper(gym.ActionWrapper):
+        def __init__(self, env):
+            super().__init__(env)
+            self.N = env.action_space[0].n
+            self.action_space = gym.spaces.Box(low  = -1, high = 1, shape = (1,))
+
+        def action(self, action):
+            return int(numpy.round((action *(self.N-1e-3)/2) + (self.N-1)/2)[0])
+
+
     md_env = ThisActionWrapper( Train(
             bundle,
             observation_mode = 'multidiscrete',
@@ -112,10 +125,44 @@ if _str == 'basic-TrainOperator' or _str == 'all':
 
     from stable_baselines3.common.env_checker import check_env
     check_env(md_env)
-    num_cpu = 3
-    env = SubprocVecEnv([make_env(i) for i in range(num_cpu)])
-    model = PPO('MlpPolicy', env, verbose=1)
-    # model.learn(total_timesteps=100000)
+
+    obs = md_env.reset()
+    print(obs)
+    print(md_env.bundle.game_state)
+
+    # =============
+    def make_env(rank, seed = 0):
+        def _init():
+            task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
+            unitcdgain = ConstantCDGain(1)
+
+            policy = Policy(    action_space = [gym.spaces.Discrete(10)],
+                                action_set = [-5 + i for i in range (5)] + [i+1 for i in range(5)],
+                                action_values = None
+            )
+
+            operator = CarefulPointer(agent_policy = policy)
+            bundle = PlayOperator(task, operator, unitcdgain)
+
+            observation_dict = OrderedDict({'task_state': OrderedDict({'Position': 0}), 'operator_state': OrderedDict({'Goal': 0})})
+            env = ThisActionWrapper( Train(
+                    bundle,
+                    observation_mode = 'multidiscrete',
+                    observation_dict = observation_dict
+                    ))
+
+            env.seed(seed + rank)
+            return env
+        set_random_seed(seed)
+        return _init
+    # =============
+
+    if __name__ == '__main__':
+        num_cpu = 3
+        env = SubprocVecEnv([make_env(i) for i in range(num_cpu)])
+
+        model = PPO('MlpPolicy', env, verbose=1)
+        # model.learn(total_timesteps=100000)
 
 
 
@@ -159,7 +206,7 @@ if _str == 'loadNNpolicy' or _str == 'all':
             observation_dict = observation_dict
             ))
 
-    # ----------------- Training environment creatin finished
+    # ----------------- Training environment creation finished
 
 
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
@@ -192,13 +239,12 @@ if _str == 'loadNNpolicy' or _str == 'all':
 if _str == 'chen-play-1D':
     fitts_W = 4e-2
     fitts_D = 0.8
-    perceptualnoise = 0.2
-    oculomotornoise = 0.2
+    perceptualnoise = 0.09
+    oculomotornoise = 0.09
     task = ChenEyePointingTask(fitts_W, fitts_D, dimension = 1)
     operator = ChenEye(perceptualnoise, oculomotornoise, dimension = 1)
     bundle = SinglePlayOperator(task, operator)
-
-
+    obs = bundle.reset()
     bundle.render('plotext')
     while True:
         _action = copy.deepcopy(obs['operator_state']['belief'])
@@ -207,7 +253,8 @@ if _str == 'chen-play-1D':
         noise_obs['task_state'] = State()
         noise_obs['task_state']['Targets'] = action
         noise_obs['task_state']['Fixation'] = obs['task_state']['Fixation']
-        noise = operator.eccentric_noise_gen(noise_obs, ocular_std)[0]
+        noise = operator.eccentric_noise_gen(noise_obs, oculomotornoise)[0]
+
         noisy_action = action + noise
         obs, reward, is_done, _ = bundle.step(noisy_action)
         bundle.render('plotext')
@@ -293,52 +340,45 @@ if _str == 'careful-with-obs':
 
     fitts_W = 4e-2
     fitts_D = 0.8
-    perceptualnoise = 0.09
-    oculomotornoise = 0.09
+    perceptualnoise = 0.2
+    oculomotornoise = 0.2
     task = ChenEyePointingTask(fitts_W, fitts_D, dimension = 1)
     operator = ChenEye( perceptualnoise, oculomotornoise, dimension = 1)
     obs_bundle = SinglePlayOperatorAuto(task, operator, start_at_action = True)
 
-    # reset_dic = {'task_state':
-    #                 {   'Targets': .5,
-    #                     'Fixation': -.5    }
-    #             }
-    # obs_bundle.reset(reset_dic)
 
-    class ChenEyeObservationEngineWrapper(ObservationEngine):
-        """ Not impleted yet.
-        """
+
+    class ChenEyeObservationEngineWrapper(WrapAsObservationEngine):
         def __init__(self, obs_bundle):
-            super().__init__()
-            self.type = 'process'
-            self.obs_bundle = obs_bundle
-            self.obs_bundle.reset()
+            super().__init__(obs_bundle)
 
         def observe(self, game_state):
-            # Cast to the box of the obs bundle
-            target = game_state['task_state']['Position'].cast(self.obs_bundle.game_state['task_state']['Targets'], inplace = False)
-            fixation = game_state['task_state']['OldPosition'].cast(self.obs_bundle.game_state['task_state']['Fixation'], inplace = False)
+            # set observation bundle to the right state and cast it to the right space
+            target = game_state['task_state']['Position'].cast(self.game_state['task_state']['Targets'])
+            fixation = game_state['task_state']['OldPosition'].cast(self.game_state['task_state']['Fixation'])
             reset_dic = {'task_state':
                             {   'Targets': target,
                                 'Fixation': fixation    }
                         }
+            self.reset(dic = reset_dic)
 
-            self.obs_bundle.reset(dic = reset_dic)
+            # perform the run
             is_done = False
             rewards = 0
             while True:
-                obs, reward, is_done, _doc = self.obs_bundle.step()
+                obs, reward, is_done, _doc = self.step()
                 rewards += reward
                 if is_done:
                     break
-            obs['task_state']['Fixation'].cast(game_state['task_state']['OldPosition'], inplace = True)
-            obs['task_state']['Targets'].cast(game_state['task_state']['Position'], inplace = True)
+
+
+            # cast back to initial space and return
+            obs['task_state']['Fixation'].cast(game_state['task_state']['OldPosition'])
+            obs['task_state']['Targets'].cast(game_state['task_state']['Position'])
+
             return game_state, rewards
 
-
-
-
-
+    # Define cascaded observation engine
     cursor_tracker = ChenEyeObservationEngineWrapper(obs_bundle)
     base_operator_engine_specification  =    [ ('turn_index', 'all'),
                                         ('task_state', 'all'),
@@ -350,8 +390,10 @@ if _str == 'careful-with-obs':
     default_observation_engine = RuleObservationEngine(
             deterministic_specification = base_operator_engine_specification,
             )
-
     observation_engine = CascadedObservationEngine([cursor_tracker, default_observation_engine])
+
+
+
     binary_operator = CarefulPointer(observation_engine = observation_engine)
     BIGpointer = BIGGain()
     bundle = PlayAssistant(pointing_task, binary_operator, BIGpointer)
@@ -362,68 +404,420 @@ if _str == 'careful-with-obs':
     bundle.render('plotext')
     rewards = []
     while True:
-        reward, is_done, reward_list = bundle.step()
+        obs, reward, is_done, reward_list = bundle.step()
+        print(reward)
         rewards.append(reward_list)
         bundle.render('plotext')
         if is_done:
             break
 
-    # exit()
-    #
-    # bundle.render('plotext')
-    # operator_obs_reward, operator_infer_reward, first_task_reward, is_done = bundle._operator_step()
-    # print(is_done)
-    # assistant_obs_reward, assistant_infer_reward, second_task_reward, is_done = bundle._assistant_step()
-    # print(is_done)
-    # bundle.render('plotext')
+
+if _str == 'LQR':
+    m, d, k = 1, 1.2, 3
+    Q = numpy.array([ [1,0], [0,0] ])
+    R = 1e-4*numpy.array([[1]])
+
+    Ac = numpy.array([   [0, 1],
+                        [-k/m, -d/m]    ])
+
+    Bc = numpy.array([[ 0, 1]]).reshape((-1,1))
+    task = ClassicControlTask(0.002, Ac, Bc, discrete_dynamics = False)
+    operator = IHDT_LQRController("operator", Q, R, None)
+    bundle = SinglePlayOperatorAuto(task, operator)
+    bundle.reset()
+    bundle.playspeed = 0.01
+    # bundle.render('plot')
+    for i in range(1500):
+        bundle.step()
+        print(i)
+        # if not i%10:
+        #     bundle.render("plot")
+
+if _str == 'LQRbis':
+    m, d, k = 1, 1.2, 3
+    Q = numpy.diag([1, 0.01, 0, 0])
+    R = numpy.array([[1e-3]])
+
+    I = 0.25
+    b = 0.2
+    ta = 0.03
+    te = 0.04
+
+    a1 = b/(ta*te*I)
+    a2 = 1/(ta*te) + (1/ta + 1/te)*b/I
+    a3 = b/I + 1/ta + 1/te
+    bu = 1/(ta*te*I)
+
+    timestep = 0.01
+    # Task dynamics
+    Ac = numpy.array([   [0, 1, 0, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 1],
+                        [0, -a1, -a2, -a3]    ])
+    Bc = numpy.array([[ 0, 0, 0, bu]]).reshape((-1,1))
+
+    task = ClassicControlTask(0.002, Ac, Bc, discrete_dynamics = False)
+    operator = IHDT_LQRController("operator", Q, R, None)
+    bundle = SinglePlayOperatorAuto(task, operator)
+    bundle.reset()
+    bundle.playspeed = 0.01
+    bundle.render('plot')
+    for i in range(1500):
+        bundle.step()
+        if not i%10:
+            bundle.render("plot")
+
+
+if _str == 'LQG':
+    I = 0.25
+    b = 0.2
+    ta = 0.03
+    te = 0.04
+
+    a1 = b/(ta*te*I)
+    a2 = 1/(ta*te) + (1/ta + 1/te)*b/I
+    a3 = b/I + 1/ta + 1/te
+    bu = 1/(ta*te*I)
+
+    timestep = 0.01
+    # Task dynamics
+    Ac = numpy.array([   [0, 1, 0, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 1],
+                        [0, -a1, -a2, -a3]    ])
+    Bc = numpy.array([[ 0, 0, 0, bu]]).reshape((-1,1))
+
+    # Task noise
+    F = numpy.diag([0, 0, 0, 0.001])
+    G = 0.03*numpy.diag([1,1,0,0])
+
+
+    # Determinstic Observation Filter
+    C = numpy.array([   [1, 0, 0, 0],
+                        [0, 1, 0, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 0]
+                            ])
+
+    # Motor and observation noise
+    Gamma = numpy.array(0.08)
+    D = numpy.array([   [0.01, 0, 0, 0],
+                        [0, 0.01, 0, 0],
+                        [0, 0, 0.05, 0],
+                        [0, 0, 0, 0]
+                        ])
+
+
+    # Cost matrices
+    Q = numpy.diag([1, 0.01, 0, 0])
+    R = numpy.array([[1e-3]])
+    U = numpy.diag([1, 0.1, 0.01, 0])
+
+    task = ClassicControlTask(timestep, Ac, Bc, F = F, G = G, discrete_dynamics = False, noise = 'on')
+    operator = IHCT_LQGController('operator', timestep, Q, R, U, C, Gamma, D, noise = 'on')
+    bundle = SinglePlayOperatorAuto(task, operator, onreset_deterministic_first_half_step = True,
+    start_at_action = True)
+    obs = bundle.reset( dic = {
+            'task_state': {'x':  numpy.array([[-0.5],[0],[0],[0]]) },
+            'operator_state': {'xhat':  numpy.array([[-0.5],[0],[0],[0]]) }
+                    } )
+    bundle.playspeed = 0.001
+    bundle.render('plot')
+    for i in range(250):
+        bundle.step()
+        print(i)
+        if not i%3:
+            bundle.render("plot")
+
+if _str == 'LQGpointer':
+
+    I = 0.25
+    b = 0.2
+    ta = 0.03
+    te = 0.04
+
+    a1 = b/(ta*te*I)
+    a2 = 1/(ta*te) + (1/ta + 1/te)*b/I
+    a3 = b/I + 1/ta + 1/te
+    bu = 1/(ta*te*I)
+
+    timestep = 0.01
+    # Task dynamics
+    Ac = numpy.array([   [0, 1, 0, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 1],
+                        [0, -a1, -a2, -a3]    ])
+    Bc = numpy.array([[ 0, 0, 0, bu]]).reshape((-1,1))
+
+    # Task noise
+    F = numpy.diag([0, 0, 0, 0.001])
+    G = 0.03*numpy.diag([1,1,0,0])
+
+
+    # Determinstic Observation Filter
+    C = numpy.array([   [1, 0, 0, 0],
+                        [0, 1, 0, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 0]
+                            ])
+
+    # Motor and observation noise
+    Gamma = numpy.array(0.08)
+    D = numpy.array([   [0.01, 0, 0, 0],
+                        [0, 0.01, 0, 0],
+                        [0, 0, 0.05, 0],
+                        [0, 0, 0, 0]
+                        ])
+
+
+    # Cost matrices
+    Q = numpy.diag([1, 0.01, 0, 0])
+    R = numpy.array([[1e-3]])
+    U = numpy.diag([1, 0.1, 0.01, 0])
+
+    task = ClassicControlTask(timestep, Ac, Bc, F = F, G = G, discrete_dynamics = False, noise = 'off')
+    operator = IHCT_LQGController('operator', timestep, Q, R, U, C, Gamma, D, noise = 'on')
+    action_bundle = SinglePlayOperatorAuto(task, operator, onreset_deterministic_first_half_step = True,
+    start_at_action = True)
 
 
 
-    # rewards = 0
-    # self = binary_operator.observation_engine
-    # engine = self.engine_list[0]
-    # game_state = bundle.game_state
-    # obs, reward = engine.observe(game_state)
-    # game_state.update(obs)
-    # engine = self.engine_list[1]
-    # obs, reward = engine.observe(game_state)
-    # game_state.update(obs)
-    # exit()
+    class LQGPointerPolicy(WrapAsPolicy):
+        def __init__(self, action_bundle, *args, **kwargs):
+            action_state = State()
+            action_state['action'] = StateElement(
+                values = [None],
+                spaces = [gym.spaces.Box(low = -numpy.inf, high = numpy.inf, shape = (1,1))])
+            super().__init__(action_bundle, action_state, *args, **kwargs)
 
-    # target = game_state['task_state']['Position'].cast(obs_bundle.game_state['task_state']['Targets'], inplace = False)
-    # fixation = game_state['task_state']['OldPosition'].cast(obs_bundle.game_state['task_state']['Fixation'], inplace = False)
-    #
-    # reset_dic = {'task_state':
-    #                 {   'Targets': target,
-    #                     'Fixation': fixation    }
-    #             }
-    #
-    #
-    # obs_bundle.reset(reset_dic)
-    # obs_bundle.render('plotext')
-    #
-    # obs_bundle.task.reset(reset_dic['task_state'])
-    # obs_bundle.operator.reset(None)
-    # print(obs_bundle.game_state)
-    # agent_observation, agent_reward = obs_bundle.operator.observe(obs_bundle.game_state)
-    # obs_bundle.operator.inference_engine.add_observation(agent_observation)
-    # agent_state, agent_infer_reward = obs_bundle.operator.inference_engine.infer()
-    # exit()
+        def sample(self):
+            logger.info('=============== Entering Sampler ================')
+            cursor = copy.copy(self.observation['task_state']['Position'])
+            target = copy.copy(self.observation['operator_state']['Goal'])
+            # allow temporarily
+            cursor.mode = 'warn'
+            target.mode = 'warn'
+
+            tmp_box = StateElement( values = [None],
+                spaces = gym.spaces.Box(-self.host.bundle.task.gridsize+1, self.host.bundle.task.gridsize-1 , shape = (1,)),
+                possible_values = [[None]],
+                mode = 'warn')
+
+            cursor_box = StateElement( values = [None],
+                spaces = gym.spaces.Box(-.5, .5, shape = (1,)),
+                possible_values = [[None]],
+                mode = 'none')
+
+
+            tmp_box['values'] = [float(v) for v in (target-cursor)['values']]
+            init_dist = tmp_box.cast(cursor_box)['values'][0]
+
+            _reset_x = self.xmemory
+            _reset_x[0] = init_dist
+            _reset_x_hat = self.xhatmemory
+            _reset_x_hat[0] = init_dist
+            action_bundle.reset( dic = {
+            'task_state': {'x':  _reset_x },
+            'operator_state': {'xhat': _reset_x_hat}
+                    } )
+
+            total_reward = 0
+            N = int(pointing_task.timestep/task.timestep)
+
+            for i in range(N):
+                observation, sum_rewards, is_done, rewards = self.step()
+                print(observation)
+                total_reward += sum_rewards
+                if is_done:
+                    break
+
+            # Store state for next usage
+            self.xmemory = observation['task_state']['x']['values'][0]
+            self.xhatmemory = observation['operator_state']['xhat']['values'][0]
+
+            # Cast as delta in right units
+            cursor_box['values'] = - self.xmemory[0] + init_dist
+            delta = cursor_box.cast(tmp_box)
+            possible_values = [-30 + i for i in range(61)]
+            value = possible_values.index(int(numpy.round(delta['values'][0])))
+            action = StateElement(values = value, spaces = gym.spaces.Discrete(61), possible_values = possible_values)
+            logger.info('{} Selected action {}'.format(self.__class__.__name__, str(action)))
+
+            return action, total_reward
+
+        def reset(self):
+            self.xmemory = numpy.array([[0.0],[0.0],[0.0],[0.0]])
+            self.xhatmemory = numpy.array([[0.0],[0.0],[0.0],[0.0]])
+
+
+    pointing_task = SimplePointingTask(gridsize = 31, number_of_targets = 8, mode = 'gain')
+    policy = LQGPointerPolicy(action_bundle)
+    binary_operator = CarefulPointer( agent_policy = policy )
+    unitcdgain = ConstantCDGain(1)
+    bundle = PlayNone(pointing_task, binary_operator, unitcdgain)
+    game_state = bundle.reset()
+    bundle.render('plotext')
+
+    while True:
+        obs, rewards, is_done, _ = bundle.step()
+        bundle.render('plotext')
+        if is_done:
+            break
+
+
+
+if _str == 'LQGpointer-chenobs':
+
+
+
+    # Add a state to the SimplePointingTask to memorize the old position
+    class OldPositionMemorizedSimplePointingTask(SimplePointingTask):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.memorized = None
+
+        def reset(self, dic = {}):
+            super().reset(dic = dic)
+            self.state['OldPosition'] = copy.deepcopy(self.state['Position'])
+
+        def operator_step(self, *args, **kwargs):
+            self.memorized = copy.deepcopy(self.state['Position'])
+            obs, rewards, is_done, _doc = super().operator_step(*args, **kwargs)
+            obs['OldPosition'] = self.memorized
+            return obs, rewards, is_done, _doc
+
+        def assistant_step(self, *args, **kwargs):
+            self.memorized = copy.deepcopy(self.state['Position'])
+            obs, rewards, is_done, _doc = super().assistant_step(*args, **kwargs)
+            obs['OldPosition'] = self.memorized
+            return obs, rewards, is_done, _doc
+
+    pointing_task = OldPositionMemorizedSimplePointingTask(gridsize = 31, number_of_targets = 8, mode = 'gain')
+
+
+    fitts_W = 4e-2
+    fitts_D = 0.8
+    perceptualnoise = 0.2
+    oculomotornoise = 0.2
+    task = ChenEyePointingTask(fitts_W, fitts_D, dimension = 1)
+    operator = ChenEye( perceptualnoise, oculomotornoise, dimension = 1)
+    obs_bundle = SinglePlayOperatorAuto(task, operator, start_at_action = True)
+
+
+
+    class ChenEyeObservationEngineWrapper(WrapAsObservationEngine):
+        def __init__(self, obs_bundle):
+            super().__init__(obs_bundle)
+
+        def observe(self, game_state):
+            # set observation bundle to the right state and cast it to the right space
+            target = game_state['task_state']['Position'].cast(self.game_state['task_state']['Targets'])
+            fixation = game_state['task_state']['OldPosition'].cast(self.game_state['task_state']['Fixation'])
+            reset_dic = {'task_state':
+                            {   'Targets': target,
+                                'Fixation': fixation    }
+                        }
+            self.reset(dic = reset_dic)
+
+            # perform the run
+            is_done = False
+            rewards = 0
+            while True:
+                obs, reward, is_done, _doc = self.step()
+                rewards += reward
+                if is_done:
+                    break
+
+
+            # cast back to initial space and return
+            obs['task_state']['Fixation'].cast(game_state['task_state']['OldPosition'])
+            obs['task_state']['Targets'].cast(game_state['task_state']['Position'])
+
+            return game_state, rewards
+
+    # Define cascaded observation engine
+    cursor_tracker = ChenEyeObservationEngineWrapper(obs_bundle)
+    base_operator_engine_specification  =    [ ('turn_index', 'all'),
+                                        ('task_state', 'all'),
+                                        ('operator_state', 'all'),
+                                        ('assistant_state', None),
+                                        ('operator_action', 'all'),
+                                        ('assistant_action', 'all')
+                                        ]
+    default_observation_engine = RuleObservationEngine(
+            deterministic_specification = base_operator_engine_specification,
+            )
+    observation_engine = CascadedObservationEngine([cursor_tracker, default_observation_engine])
+
+    lqg_operator = LQGPointer(observation_engine = observation_engine)
+    unitcdgain = ConstantCDGain(1)
+    bundle = PlayNone(pointing_task, lqg_operator, unitcdgain)
+    game_state = bundle.reset()
+    bundle.render('plotext')
+
+    while True:
+        obs, rewards, is_done, _ = bundle.step()
+        print(rewards, _)
+        bundle.render('plotext')
+        if is_done:
+            break
 
 
 
 if _str == 'screen':
     task = Screen_v0([800,500], 10,
         target_radius = 1e-1        )
-    bundle = _DevelopTask(task)
+    goal = StateElement(values = numpy.array([0,0]),
+                        spaces = [gym.spaces.Box(low = numpy.array([-1, -1/task.aspect_ratio]), high = numpy.array([1, 1/task.aspect_ratio]), shape = (2,) )],
+                        possible_values = [[None]]
+                        )
+
+    _state = State()
+    _state['Goal'] = goal
+    operator = DummyOperator(state = _state)
+    bundle = _DevelopTask(task, operator = operator)
     bundle.reset()
     bundle.render('plot')
     bundle.step([ numpy.array([-0.2,-0.2]), numpy.array([1,1]) ])
+    bundle.render('plot')
 
 
 
+if _str == 'basic-ws' or _str == 'all':
 
+    task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
+    wstask = WebsocketWrapper(task)
+    binary_operator = CarefulPointer()
+    unitcdgain = ConstantCDGain(1)
+    bundle = PlayNone(wstask, binary_operator, unitcdgain)
+    # game_state = bundle.reset(dic = {'task_state':
+    #                 {   'Position': [0] }
+    #             })
+    game_state = bundle.reset()
+    bundle.render('plotext')
+    k = 0
+    while True:
+        k += 1
+        game_state, sum_rewards, is_done, rewards = bundle.step()
+        bundle.render('plotext')
+        # bundle.fig.savefig("/home/jgori/Documents/img_tmp/{}.pdf".format(k))
+        if is_done:
+            bundle.close()
+            break
 
+if _str == 'js-ws' or _str == 'all':
+    from pointing.envs import HTMLSimplePointingTask
+
+    # task = WebSocketTask()
+    # # async def main():
+    # #     task = await create_websocket_task()
+
+    task = HTMLSimplePointingTask(gridsize = 15, number_of_targets = 3)
+
+    import asyncio, websockets
+    start_server = websockets.serve(task.interact, "localhost", 4000)
+    asyncio.get_event_loop().run_until_complete(start_server)
+    asyncio.get_event_loop().run_forever()
 
 
 
@@ -566,59 +960,9 @@ if _str == 'chen-train':
 
 
 
-if _str == 'LQR':
-    m, d, k = 1, 1.2, 3
-    Q = numpy.array([ [1,0], [0,0] ])
-    R = 1e-4*numpy.array([[1]])
 
-    Ac = numpy.array([   [0, 1],
-                        [-k/m, -d/m]    ])
 
-    Bc = numpy.array([[ 0, 1]]).reshape((-1,1))
-    task = ClassicControlTask(0.002, Ac, Bc, discrete_dynamics = False)
-    operator = IHDT_LQRController("operator", Q, R)
-    bundle = SinglePlayOperatorAuto(task, operator)
-    bundle.reset()
-    bundle.playspeed = 0.01
-    bundle.render('plot')
-    for i in range(1500):
-        bundle.step()
-        if not i%10:
-            bundle.render("plot")
 
-if _str == 'LQRbis':
-    m, d, k = 1, 1.2, 3
-    Q = numpy.diag([1, 0.01, 0, 0])
-    R = numpy.array([[1e-3]])
-
-    I = 0.25
-    b = 0.2
-    ta = 0.03
-    te = 0.04
-
-    a1 = b/(ta*te*I)
-    a2 = 1/(ta*te) + (1/ta + 1/te)*b/I
-    a3 = b/I + 1/ta + 1/te
-    bu = 1/(ta*te*I)
-
-    timestep = 0.01
-    # Task dynamics
-    Ac = numpy.array([   [0, 1, 0, 0],
-                        [0, 0, 1, 0],
-                        [0, 0, 0, 1],
-                        [0, -a1, -a2, -a3]    ])
-    Bc = numpy.array([[ 0, 0, 0, bu]]).reshape((-1,1))
-
-    task = ClassicControlTask(0.002, Ac, Bc, discrete_dynamics = False)
-    operator = IHDT_LQRController("operator", Q, R)
-    bundle = SinglePlayOperatorAuto(task, operator)
-    bundle.reset()
-    bundle.playspeed = 0.01
-    bundle.render('plot')
-    for i in range(1500):
-        bundle.step()
-        if not i%10:
-            bundle.render("plot")
 
 if _str == 'LQG':
     I = 0.25

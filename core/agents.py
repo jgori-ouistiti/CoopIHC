@@ -5,10 +5,10 @@ from collections import OrderedDict
 
 from core.core import Core, Handbook
 import core.observation
-from core.space import State
-from core.policy import Policy, LinearFeedback
+from core.space import State, StateElement
+from core.policy import BasePolicy, LinearFeedback
 from core.observation import RuleObservationEngine, base_operator_engine_specification, base_assistant_engine_specification, base_task_engine_specification
-from core.inference import InferenceEngine, GoalInferenceWithOperatorPolicyGiven, ContinuousKalmanUpdate
+from core.inference import BaseInferenceEngine, GoalInferenceWithOperatorPolicyGiven, ContinuousKalmanUpdate
 from core.helpers import flatten, sort_two_lists
 
 import matplotlib.pyplot as plt
@@ -19,6 +19,7 @@ import scipy.linalg
 
 import sys
 from loguru import logger
+import copy
 
 
 
@@ -55,7 +56,7 @@ class BaseAgent(Core):
         self.bundle = None
         self.ax = None
 
-        self.handbook = Handbook({'name': self.__class__.__name__, 'render_mode': [], 'parameters': []})
+        self.handbook = Handbook({'name': self.__class__.__name__, 'render_mode': [], 'parameters': [], 'kwargs': []})
 
         # Set role of agent
         if role not in ["operator", "assistant"]:
@@ -87,9 +88,25 @@ class BaseAgent(Core):
         logger.info('Using this Inference Engine:\n{}'.format(str(self.inference_engine.handbook)))
 
 
+    def __content__(self):
+        return {   "Name": self.__class__.__name__,
+                    "State": self.state.__content__(),
+                    "Observation Engine": self.observation_engine.__content__(),
+                    "Inference Engine": self.inference_engine.__content__(),
+                    "Policy": self.policy.__content__()}
+
+    @property
+    def observation(self):
+        return self.inference_engine.buffer[-1]
+
+    @property
+    def action(self):
+        return self.policy.action_state['action']
+
+
     def attach_policy(self, policy):
         if policy is None:
-            self.policy = Policy()
+            self.policy = BasePolicy()
         else:
             self.policy = policy
         self.policy.host = self
@@ -109,7 +126,7 @@ class BaseAgent(Core):
 
     def attach_inference_engine(self, inference_engine):
         if inference_engine is None:
-            self.inference_engine = InferenceEngine()
+            self.inference_engine = BaseInferenceEngine()
         else:
             self.inference_engine = inference_engine
         self.inference_engine.host = self
@@ -140,7 +157,7 @@ class BaseAgent(Core):
             if isinstance(value, StateElement):
                 value = value['values']
             if value is not None:
-                self.state[key]['value'] = value
+                self.state[key]['values'] = value
 
 
 
@@ -164,7 +181,7 @@ class BaseAgent(Core):
         :meta private:
         """
         # agent observes the state
-
+        logger.info('---- >>>> agent step')
         agent_observation, agent_obs_reward = self.observe(self.bundle.game_state)
 
         logger.info('{} observing ---result:\n{}'.format(self.__class__.__name__, str(agent_observation)))
@@ -305,29 +322,6 @@ class GoalDrivenDiscreteOperator(BaseAgent):
         self.state["Goal"] = [None, [gym.spaces.Discrete(len(target_space))], None]
 
         return
-    #
-    # def reset(self, dic = None):
-    #     """ Picks a random target as goal.
-    #
-    #     :meta public:
-    #     """
-    #     targets = self.bundle.game_state['task_state']['Targets'][0]
-    #     goal = numpy.random.choice([i for i in range(len(targets))])
-    #     self.state['Goal'] = [goal, None, None]
-    #     super().reset(dic)
-
-    # def sample(self):
-    #     """ Use policy provided by the operator model to select actions.
-    #
-    #     :meta public:
-    #     """
-    #
-    #
-    #     actions = self.operator_model.sample(self.inference_engine.buffer[-1])
-    #
-    #     if isinstance(actions, (int, float)):
-    #         actions = [actions]
-    #     return actions
 
     def render(self, *args, **kwargs):
         """ Similar to BaseAgent's render, but prints the "Goal" state in addition.
@@ -358,85 +352,6 @@ class GoalDrivenDiscreteOperator(BaseAgent):
             print(self.state['Goal'][0][0])
 
 
-
-
-#
-# # An agent that has handles Gaussian Continuous Beliefs
-# class GaussianLinearContinuousBeliefOperator(BaseAgent):
-#     """ An Operator that maintains a continuous Gaussian belief. It can be used in cases where the goal of the operator is not directly observable to it.
-#
-#     :param action_space: (list(gym.spaces)) space in which the actions of the operator take place, e.g.``[gym.spaces.Box(low=-1, high=1, shape=(2, ), dtype=numpy.float64)]``
-#     :param action_set: (list) possible action set for each subspace (None for Box) e.g. ``[None, None]``
-#     :param observation_engine: (core.observation_engine).
-#     :param dim: dimension of the multivariate Gaussian used to model the belief.
-#
-#     :meta public:
-#     """
-#     def __init__(self, action_space, action_set, observation_engine, dim = 1):
-#         self.dim = dim
-#         inference_engine = ContinuousGaussian()
-#         super().__init__("operator", action_space, action_set, observation_engine = observation_engine, inference_engine = inference_engine)
-#         self.append_state("MuBelief", [gym.spaces.Box(low=-1, high=1, shape=(dim, ), dtype=numpy.float64)])
-#         self.append_state("SigmaBelief", [gym.spaces.Box(low=-1, high=1, shape=(dim**2, ), dtype=numpy.float64)])
-#
-#
-#     def reset(self, dic = None):
-#         super().reset(dic)
-#
-#     def render(self, mode, *args, **kwargs):
-#         """ Similar to BaseAgent's render. In text mode, prints the parameters of the belief model. In plot, prints a 95% confidence ellipsis for the belief on the task axis.
-#
-#         :param args: (list) list of axes used in the bundle render, in order: axtask, axoperator, axassistant
-#         :param mode: (str) currently supports either 'plot' or 'text'. Both modes can be combined by having both modes in the same string e.g. 'plottext' or 'plotext'.
-#
-#         :meta public:
-#         """
-#
-#         if 'text' in mode:
-#             print(self.state['MuBelief'].tolist())
-#             print(self.state['SigmaBelief'].tolist())
-#         elif 'plot' in mode:
-#             if self.dim == 2:
-#                 # try:
-#                 #     self.patch.remove()
-#                 # except AttributeError:
-#                 #     pass
-#                 axtask, axoperator, axassistant = args[:3]
-#                 covariance = self.state['SigmaBelief']
-#                 mu = self.state['MuBelief']
-#                 self.patch = self.confidence_ellipse(mu, covariance, axtask)
-#             else:
-#                 raise NotImplementedError
-#
-#
-#     def confidence_ellipse(self, mu, covariance, ax, n_std=2.0, facecolor='#d1dcf0', edgecolor = 'b', **kwargs):
-#         """
-#         :meta private:
-#         """
-#         ## See https://matplotlib.org/devdocs/gallery/statistics/confidence_ellipse.html for source. Computing eigenvalues directly should lead to code that is more readily understandable
-#         rho = numpy.sqrt(covariance[0,1]**2/covariance[0,0]/covariance[1,1])
-#         ellipse_radius_x = numpy.sqrt(1 + rho)
-#         ellipse_radius_y = numpy.sqrt(1 - rho)
-#
-#         ellipse = Ellipse((0, 0), width=ellipse_radius_x * 2, height=ellipse_radius_y * 2, facecolor=facecolor, edgecolor = edgecolor, **kwargs)
-#         n_std = 2
-#         scale_x = numpy.sqrt(covariance[0, 0]) * n_std
-#         mean_x = mu[0]
-#
-#         scale_y = numpy.sqrt(covariance[1, 1]) * n_std
-#         mean_y = mu[1]
-#
-#         transf = transforms.Affine2D() \
-#             .rotate_deg(45) \
-#             .scale(scale_x, scale_y) \
-#             .translate(mean_x, mean_y)
-#
-#         ellipse.set_transform(transf + ax.transData)
-#         return ax.add_patch(ellipse)
-#
-
-
-# An agent that has a substate called Beliefs, which are updated in a Bayesian fashion. Requires a model of the operator as well as the potential target states that can serve as goals. Subclass this to implement various policies w/r beliefs.
 
 class BIGAssistant(BaseAgent):
     """ An Assistant that maintains a discrete belief, updated with Bayes' rule. It supposes that the task has targets, and that the operator selects one of these as a goal.
@@ -482,10 +397,6 @@ class BIGAssistant(BaseAgent):
         :meta public:
         """
         self.state.reset()
-        # targets = self.bundle.task.state['Targets']
-        # self.modify_state("Beliefs", value = [1/len(targets) for t in targets])
-        # self.inference_engine.reset()
-        # self.targets = targets
         super().reset(dic)
 
     def render(self, mode, *args, **kwargs):
@@ -574,150 +485,93 @@ class BIGAssistant(BaseAgent):
 
 
 
-#
-# class DiscreteBayesianBeliefAssistant(BaseAgent):
-#     """ An Assistant that maintains a discrete belief, updated with Bayes' rule. It supposes that the task has targets, and that the operator selects one of these as a goal.
-#
-#     :param action_space: (list(gym.spaces)) space in which the actions of the operator take place, e.g.``[gym.spaces.Box(low=-1, high=1, shape=(2, ), dtype=numpy.float64)]``
-#     :param action_set: (list) possible action set for each subspace (None for Box) e.g. ``[None, None]``
-#     :param operator_model: (core.operator_model) operator_model used by the assistant to form the likelihood in Bayes rule. It can be the exact same model that is used by the operator, or a different one (e.g. if the assistant has to learn the model)
-#     :param observation_engine: (core.observation_engine).
-#
-#     :meta public:
-#     """
-#     def __init__(self, action_space, action_set, operator_model, observation_engine = None):
-#         inference_engine = GoalInferenceWithOperatorModelGiven(operator_model)
-#         super().__init__("assistant", action_space, action_set, observation_engine = observation_engine, inference_engine = inference_engine)
-#
-#     def finit(self):
-#         """ Appends a Belief substate to the agent's internal state.
-#
-#         :meta public:
-#         """
-#         targets = self.bundle.task.state['Targets']
-#         self.append_state( "Beliefs", [gym.spaces.Box( low = numpy.zeros( len( targets ),), high = numpy.ones( len( targets), ) )] )
-#         self.targets = targets
-#
-#     def reset(self, dic = None):
-#         """ Resets the belief substate with Uniform prior.
-#
-#         :meta public:
-#         """
-#         targets = self.bundle.task.state['Targets']
-#         self.modify_state("Beliefs", value = [1/len(targets) for t in targets])
-#         self.inference_engine.reset()
-#         self.targets = targets
-#         super().reset(dic)
-#
-#     def render(self, mode, *args, **kwargs):
-#         """ Draws a boxplot of the belief substate in the assistant axes.
-#
-#         :param args: see other render methods
-#         :param mode: see other render methods
-#         """
-#     ## Begin Helper functions
-#         def set_box(ax, pos, draw = "k", fill = None, symbol = None, symbol_color = None, shortcut = None, box_width = 1, boxheight = 1, boxbottom = 0):
-#             if shortcut == 'void':
-#                 draw = 'k'
-#                 fill = '#aaaaaa'
-#                 symbol = None
-#             elif shortcut == 'target':
-#                 draw = '#96006c'
-#                 fill = "#913979"
-#                 symbol = "1"
-#                 symbol_color = 'k'
-#             elif shortcut == 'goal':
-#                 draw = '#009c08'
-#                 fill = '#349439'
-#                 symbol = "X"
-#                 symbol_color = 'k'
-#             elif shortcut == 'position':
-#                 draw = '#00189c'
-#                 fill = "#6573bf"
-#                 symbol = "X"
-#                 symbol_color = 'k'
-#
-#             BOX_HW = box_width/2
-#             _x = [pos-BOX_HW, pos+BOX_HW, pos + BOX_HW, pos - BOX_HW]
-#             _y = [boxbottom, boxbottom, boxbottom + boxheight, boxbottom + boxheight]
-#             x_cycle = _x + [_x[0]]
-#             y_cycle = _y + [_y[0]]
-#             if fill is not None:
-#                 fill = ax.fill_between(_x[:2], _y[:2], _y[2:], color = fill)
-#
-#             draw, = ax.plot(x_cycle,y_cycle, '-', color = draw, lw = 2)
-#             symbol = None
-#             if symbol is not None:
-#                 symbol = ax.plot(pos, 0, color = symbol_color, marker = symbol, markersize = 100)
-#
-#             return draw, fill, symbol
-#
-#         def draw_beliefs(ax):
-#             targets = self.targets
-#             beliefs = self.state['Beliefs']
-#             targets, beliefs = sort_two_lists(targets, beliefs)
-#             ticks = []
-#             ticklabels = []
-#             for i, (t,b) in enumerate(zip(targets, beliefs)):
-#                 draw, fill, symbol = set_box(ax, 2*i, shortcut = 'target', boxheight = b)
-#                 ticks.append(2*i)
-#                 try:
-#                     _label = [int(_t) for _t in t]
-#                 except TypeError:
-#                     _label = int(t)
-#                 ticklabels.append(_label)
-#             self.ax.set_xticks(ticks)
-#             self.ax.set_xticklabels(ticklabels, rotation = 90)
-#
-#     ## End Helper functions
-#
-#
-#         if 'plot' in mode:
-#             axtask, axoperator, axassistant = args[:3]
-#             ax = axassistant
-#             if self.ax is not None:
-#                 title = self.ax.get_title()
-#                 self.ax.clear()
-#                 draw_beliefs(ax)
-#                 ax.set_title(title)
-#
-#             else:
-#                 self.ax = ax
-#                 draw_beliefs(ax)
-#                 self.ax.set_title(type(self).__name__ + " Beliefs")
-#
-#         if 'text' in mode:
-#             targets = self.targets
-#             beliefs = self.state['Beliefs']
-#             targets, beliefs = sort_two_lists(targets, beliefs)
-#             print('Targets', targets)
-#             print("Beliefs", beliefs)
-#
-
-
 # ===================== Classic Control ==================== #
 
 # An LQR Controller (implements a linear feedback policy)
 
 class LQRController(BaseAgent):
-    def __init__(self, role, Q, R):
-        agent_state = State()
-        action_space = [gym.spaces.Box(-numpy.inf, numpy.inf, shape = (1,))]
-        action_set = [None]
-        agent_policy = LinearFeedback(('task_state','x'), action_space, action_set = action_set)
-        observation_engine = RuleObservationEngine(base_task_engine_specification)
+    '''
+    .. math::
 
-        super().__init__(   'operator',
-                            state = agent_state,
-                            policy = agent_policy,
-                            observation_engine = observation_engine
-                            )
+        action =  -K X + \Gamma  \mathcal{N}(\Mu, \Sigma)
+
+    '''
+    def __init__(self, role, Q, R, *args, **kwargs):
+
         self.R = R
         self.Q = Q
-        self.action = None
+        self.role = role
+
+        self.gamma = kwargs.get('Gamma')
+        self.mu = kwargs.get('Mu')
+        self.sigma = kwargs.get("Sigma")
+
+        agent_policy = kwargs.get('agent_policy')
+        if agent_policy is None:
+            action_state = State()
+            action_state['action'] = StateElement(
+                    values = [None],
+                    spaces = [gym.spaces.Box(-numpy.inf, numpy.inf, shape = (1,))],
+                    possible_values = [[None]]
+            )
+
+            def shaped_gaussian_noise(self, action, observation, *args):
+                gamma, mu, sigma = args[:3]
+                if gamma is None:
+                    return 0
+                if sigma is None:
+                    sigma = numpy.sqrt(self.host.timestep) # Wiener process
+                if mu is None:
+                    mu = 0
+                noise = gamma * numpy.random.normal(mu, sigma)
+                return noise
+
+
+
+            agent_policy = LinearFeedback(
+                ('task_state','x'),
+                0,
+                action_state,
+                noise_function = shaped_gaussian_noise,
+                noise_function_args = (self.gamma, self.mu, self.sigma)
+                )
+
+        observation_engine = kwargs.get('observation_engine')
+        if observation_engine is None:
+            observation_engine = RuleObservationEngine(base_task_engine_specification)
+
+        inference_engine = kwargs.get('inference_engine')
+        if inference_engine is None:
+            pass
+
+        state = kwargs.get('state')
+        if state is None:
+            pass
+
+        super().__init__('operator',
+                            state = state,
+                            policy = agent_policy,
+                            observation_engine = observation_engine,
+                            inference_engine = inference_engine
+                            )
+
+
+        self.handbook['render_mode'].extend(['plot', 'text'])
+        _role = {'value': role, 'meaning': 'Whether the agent is an operator or an assistant'}
+        _Q = {'value': Q, 'meaning': 'State cost matrix (X.T Q X)'}
+        _R = {'value': R, 'meaning': 'Control cost matrix (U.T R U)'}
+        self.handbook['parameters'].extend([_role, _Q, _R])
+
+
 
     def reset(self, dic = None):
-        super().reset(dic)
+        if dic is None:
+            super().reset()
+
+        # Nothing to reset
+
+        if dic is not None:
+            super().reset(dic = dic)
 
     def render(self, *args, **kwargs):
         mode = kwargs.get('mode')
@@ -730,8 +584,8 @@ class LQRController(BaseAgent):
                 self.ax = axoperator
                 self.ax.set_xlabel("Time (s)")
                 self.ax.set_ylabel("Action")
-            if self.action:
-                self.ax.plot(self.bundle.task.turn*self.bundle.task.timestep, self.action, 'bo')
+            if self.action['values'][0]:
+                self.ax.plot(self.bundle.task.turn*self.bundle.task.timestep, self.action['values'][0], 'bo')
         if 'text' in mode:
             print('Action')
             print(self.action)
@@ -740,10 +594,10 @@ class LQRController(BaseAgent):
 # Finite Horizon Discrete Time Controller
 # Outdated
 class FHDT_LQRController(LQRController):
-    def __init__(self, N, role, Q, R):
+    def __init__(self, N, role, Q, R, Gamma):
         self.N = N
         self.i = 0
-        super().__init__(role, Q, R)
+        super().__init__(role, Q, R, gamma = Gamma)
         self.timespace = 'discrete'
 
 
@@ -769,18 +623,14 @@ class FHDT_LQRController(LQRController):
             K = - invPart @ B.T @ Pcurrent @ A
             self.K.append(K)
 
-    def sample(self):
-        x = self.inference_engine.buffer[-1]['task_state']['x']
-        self.action = self.K[self.i] @ x
-        self.i += 1
-        return [self.action]
+
 
 # Infinite Horizon Discrete Time Controller
 # Uses Discrete Algebraic Ricatti Equation to get P
 
 class IHDT_LQRController(LQRController):
-    def __init__(self, role, Q, R):
-        super().__init__(role, Q, R)
+    def __init__(self, role, Q, R, Gamma):
+        super().__init__(role, Q, R, gamma = Gamma)
         self.timespace = 'discrete'
 
     def finit(self):
@@ -789,7 +639,7 @@ class IHDT_LQRController(LQRController):
         P = scipy.linalg.solve_discrete_are(A, B, self.Q, self.R)
         invPart = scipy.linalg.inv((self.R + B.T @ P @ B))
         K = invPart @ B.T @ P @ A
-        self.policy.feedback_gain = K
+        self.policy.set_feedback_gain(K)
 
 
 
@@ -798,7 +648,9 @@ class IHCT_LQGController(BaseAgent):
     """ An Infinite Horizon (Steady-state) LQG controller, based on Phillis 1985, using notations from Qian 2013.
 
     """
-    def __init__(self, role, timestep, Q, R, U, C, Gamma, D, noise = 'on'):
+
+
+    def __init__(self, role, timestep, Q, R, U, C, Gamma, D, *args, noise = 'on', **kwargs):
         self.C = C
         self.Gamma = numpy.array(Gamma)
         self.Q = Q
@@ -814,75 +666,113 @@ class IHCT_LQGController(BaseAgent):
         self.L = numpy.random.rand(1, Q.shape[1])
         self.noise = noise
 
-        # ====== Initialize agent ====== #
-        agent_state = State()
-        action_space = [gym.spaces.Box(-numpy.inf, numpy.inf, shape = (1,))]
-        action_set = [None]
-        agent_policy = LinearFeedback(("operator_state","xhat"), action_space, action_set = action_set, noise = noise, Gamma = self.Gamma)
+        # =================== Linear Feedback Policy ==========
+        self.gamma = kwargs.get('Gamma')
+        self.mu = kwargs.get('Mu')
+        self.sigma = kwargs.get("Sigma")
 
-        # ========== Observation Engine=========================
-        # Specify the selection of substates
-        operator_engine_specification  =    [ ('bundle_state', 'all'),
-                                    ('task_state', None),
+        agent_policy = kwargs.get('agent_policy')
+        if agent_policy is None:
+            action_state = State()
+            action_state['action'] = StateElement(
+                    values = [None],
+                    spaces = [gym.spaces.Box(-numpy.inf, numpy.inf, shape = (1,))],
+                    possible_values = [[None]]
+            )
+
+            def shaped_gaussian_noise(self, action, observation, *args):
+                gamma, mu, sigma = args[:3]
+                if gamma is None:
+                    return 0
+                if sigma is None:
+                    sigma = numpy.sqrt(self.host.timestep) # Wiener process
+                if mu is None:
+                    mu = 0
+                noise = gamma * numpy.random.normal(mu, sigma)
+                return noise
+
+
+
+            agent_policy = LinearFeedback(
+                ('operator_state','xhat'),
+                0,
+                action_state,
+                noise_function = shaped_gaussian_noise,
+                noise_function_args = (self.gamma, self.mu, self.sigma)
+                        )
+
+        # =========== Observation Engine: Task state unobservable, internal estimates observable ============
+
+        observation_engine = kwargs.get('observation_engine')
+        if observation_engine is None:
+            operator_engine_specification  =    [
+                                    ('turn_index', 'all'),
+                                    ('task_state', 'all'),
                                     ('operator_state', 'all'),
                                     ('assistant_state', None),
                                     ('operator_action', 'all'),
                                     ('assistant_action', 'all')
                                     ]
 
-        # Specify additional rules, including noise
+            obs_matrix = {('task_state', 'x'): (core.observation.observation_linear_combination, (C,))}
+            extradeterministicrules = {}
+            extradeterministicrules.update(obs_matrix)
 
-        # extradeterministicrules
-        obs_matrix = {('task_state', 'x'): (core.observation.f_obs_matrix, (C,))}
-        extradeterministicrules = {}
-        extradeterministicrules.update(obs_matrix)
+            # extraprobabilisticrule
+            agn_rule = {('task_state', 'x'): (core.observation.additive_gaussian_noise, (D, numpy.zeros((C.shape[0],1)).reshape(-1,), numpy.sqrt(timestep)*numpy.eye(C.shape[0])))}
 
-        # extraprobabilisticrule
-        agn_rule = {('task_state', 'x'): (core.observation.agn, (D, numpy.zeros((C.shape[0],1)).reshape(-1,), numpy.sqrt(timestep)*numpy.eye(C.shape[0])))}
+            extraprobabilisticrules = {}
+            extraprobabilisticrules.update(agn_rule)
 
-        extraprobabilisticrules = {}
-        extraprobabilisticrules.update(agn_rule)
+            observation_engine = RuleObservationEngine(deterministic_specification = operator_engine_specification, extradeterministicrules = extradeterministicrules, extraprobabilisticrules = extraprobabilisticrules)
 
-        # Instantiate the observation engine
-        observation_engine = RuleObservationEngine(deterministic_specification = operator_engine_specification, extradeterministicrules = extradeterministicrules, extraprobabilisticrules = extraprobabilisticrules)
 
-        # =========== Inference Engine ============================
-        inference_engine = ContinuousKalmanUpdate()
 
-        super().__init__(role,
-                        state = agent_state,
-                        policy = agent_policy,
-                        observation_engine = observation_engine,
-                        inference_engine = inference_engine
+        inference_engine = kwargs.get('inference_engine')
+        if inference_engine is None:
+            inference_engine = ContinuousKalmanUpdate()
+
+        state = kwargs.get('state')
+        if state is None:
+            pass
+
+        super().__init__('operator',
+                            state = state,
+                            policy = agent_policy,
+                            observation_engine = observation_engine,
+                            inference_engine = inference_engine
                             )
+
+
+        self.handbook['render_mode'].extend(['plot', 'text'])
+        _role = {'value': role, 'meaning': 'Whether the agent is an operator or an assistant'}
+        _Q = {'value': Q, 'meaning': 'State cost matrix (X.T Q X)'}
+        _R = {'value': R, 'meaning': 'Control cost matrix (U.T R U)'}
+        self.handbook['parameters'].extend([_role, _Q, _R])
+
 
     def finit(self):
         task = self.bundle.task
+        # ---- init xhat state
+        self.state['xhat'] = copy.deepcopy(self.bundle.task.state['x'])
+
+        # ---- Attach the model dynamics to the inference engine.
         self.A_c, self.B_c,  self.G = task.A_c, task.B_c, task.G
-        # Attach the model dynamics to the inference engine.
-        # self.state['_value_xhat'] = [None]
-        self.state['xhat'] =  [ [None], [core.space.Array(task.state['_value_x'])] , [None] ]
         self.inference_engine.set_forward_model_dynamics(self.A_c, self.B_c, self.C)
-        # Set K and L up
+
+        # ---- Set K and L up
         mc = self._MContainer(self.A_c, self.B_c, self.C, self.D, self.G, self.Gamma, self.Q, self.R, self.U)
         self.K, self.L = self._compute_Kalman_matrices(mc.pass_args())
         self.inference_engine.set_K(self.K)
-        self.policy.feedback_gain = self.L
+        self.policy.set_feedback_gain(self.L)
 
     def reset(self, dic = None):
-        self.state['xhat'] = self.bundle.task.state['x']
-        super().reset(dic)
+        if dic is None:
+            super().reset()
 
-    # def sample(self):
-    #     xhat = self.inference_engine.buffer[-1]['operator_state']['xhat']
-    #     if self.noise == 'off':
-    #         gamma = numpy.random.normal(0, 0)
-    #     else:
-    #         gamma = numpy.random.normal(0, numpy.sqrt(self.timestep))
-    #
-    #     self.action = -self.L @ xhat + self.Gamma * gamma
-    #
-    #     return [self.action]
+
+        if dic is not None:
+            super().reset(dic = dic)
 
 
 
@@ -990,27 +880,3 @@ class IHCT_LQGController(BaseAgent):
             K, L = self._compute_Kalman_matrices(matrices, N=int(20*1.3**self.check_KL.calls))
         else:
             return K, L
-
-
-
-class PackageToOperator(BaseAgent):
-    def __init__(self, bundle):
-        # Maybe don't check at all ?
-        if 'core.bundle.Bundle' not in bundle.__class__.__mro__.__str__():
-            return TypeError('The first argument bundle should be of type Bundle')
-
-        self.encapsulated_bundle = bundle
-        agent_state = self.encapsulated_bundle.game_state
-        agent_policy = BundlePolicy(self.encapsulated_bundle)
-        from core.observer import base_operator_engine_specification
-        observation_engine = RuleObservationEngine(deterministic_specification = base_operator_engine_specification)
-
-        super().__init__(    'operator',
-                            state = agent_state,
-                            policy = agent_policy,
-                            observation_engine = observation_engine
-                                    )
-
-
-    def step(self, action, convert = False):
-        pass

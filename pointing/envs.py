@@ -4,8 +4,30 @@ from collections import OrderedDict
 import gym
 from core.interactiontask import InteractionTask
 from core.space import StateElement
-
+from core.helpers import sort_two_lists
 from loguru import logger
+
+from core.interactiontask import  WebSocketTask
+
+class HTMLSimplePointingTask(WebSocketTask):
+    def __init__(self, gridsize = 31, number_of_targets = 10, mode = 'gain'):
+        super().__init__()
+        # define params
+        self.gridsize = gridsize
+        self.number_of_targets = number_of_targets
+        self.mode = mode
+        self.params = {'gridsize': gridsize, 'number_of_targets': number_of_targets, 'mode': mode}
+
+        # define state spaces (values are coming through WebSocket)
+        self.state['position'] = StateElement(
+                    values = None,
+                    spaces = [gym.spaces.Discrete(gridsize)],
+                    possible_values = None,
+                    mode = 'clip'  )
+
+        self.state['targets'] = StateElement(
+                    values = None,
+                    spaces = [gym.spaces.Discrete(gridsize) for i in range(self.number_of_targets)], possible_values = None  )
 
 class SimplePointingTask(InteractionTask):
     """ A 1D pointing task.
@@ -30,9 +52,15 @@ class SimplePointingTask(InteractionTask):
         self.handbook['parameters'].extend([_gridsize, _number_of_targets, _mode])
 
 
-        self.state['Position'] = StateElement(values = None, spaces = [gym.spaces.Discrete(gridsize)], possible_values = None)
-        # self.state['Targets'] = [None, [gym.spaces.Discrete(gridsize) for i in range(self.number_of_targets)], None]
-        self.state['Targets'] = StateElement(values = None, spaces = [gym.spaces.Discrete(gridsize) for i in range(self.number_of_targets)], possible_values = None)
+        self.state['Position'] = StateElement(
+                    values = None,
+                    spaces = [gym.spaces.Discrete(gridsize)],
+                    possible_values = None,
+                    mode = 'clip'  )
+
+        self.state['Targets'] = StateElement(
+                    values = None,
+                    spaces = [gym.spaces.Discrete(gridsize) for i in range(self.number_of_targets)], possible_values = None  )
 
 
     def reset(self, dic = None):
@@ -45,7 +73,7 @@ class SimplePointingTask(InteractionTask):
         :meta public:
         """
 
-
+        super().reset()
         self.grid = [' ' for i in range(self.gridsize)]
         targets = sorted(numpy.random.choice(list(range(self.gridsize)), size = self.number_of_targets, replace = False))
         for i in targets:
@@ -57,7 +85,8 @@ class SimplePointingTask(InteractionTask):
         position = int(numpy.random.choice(copy))
         self.state['Position']['values'] = position
         self.state['Targets']['values'] = targets
-        super().reset(dic = dic)
+        if dic is not None:
+            super().reset(dic = dic)
 
 
     def operator_step(self, *args, **kwargs):
@@ -97,11 +126,12 @@ class SimplePointingTask(InteractionTask):
         if self.mode == 'position':
             self.state['Position']['values'] = self.bundle.game_state['assistant_action']['action']['values']
         elif self.mode == 'gain':
-            assistant_action = self.bundle.game_state['assistant_action']['action']['values'][0]
+            assistant_action = self.bundle.game_state['assistant_action']['action']['human_values'][0]
             operator_action = self.bundle.game_state['operator_action']['action']['human_values'][0]
-            position = self.state['Position']['values'][0]
+            position = self.state['Position']['human_values'][0]
 
-            self.state['Position']['values'] = [int(numpy.clip(numpy.round(position + operator_action*assistant_action, decimals = 0), 0, self.gridsize-1))]
+            # self.state['Position']['values'] = [int(numpy.clip(numpy.round(position + operator_action*assistant_action, decimals = 0), 0, self.gridsize-1))]
+            self.state['Position']['values'] = int(numpy.round(position + operator_action*assistant_action))
 
 
         return self.state, -1/2, self._is_done_assistant(), {}
@@ -310,7 +340,7 @@ class SimplePointingTask(InteractionTask):
 
 
 class Screen_v0(InteractionTask):
-    def __init__(self, screen_size, number_of_targets, target_radius = 1e-2, max_cycle = 20, timestep = 0.1, mode = 'gain'):
+    def __init__(self, screen_size, number_of_targets, target_radius = 1e-2, max_cycle = 200, timestep = 0.1, mode = 'gain'):
         """ A 2D pointing.
 
         :param screen_size: (list) [width, height] in pixels
@@ -329,6 +359,16 @@ class Screen_v0(InteractionTask):
         self.target_radius = target_radius
         self.mode = mode
 
+
+        self.handbook['render_mode'].extend(['plot', 'text'])
+        _screen_size = {"name": 'screen_size', "value": screen_size, "meaning": 'Size of the screen. The aspect ratio will be computed from the screen size to calculate the height of the screen, the width being [-1,1]'}
+        _number_of_targets = { "name": 'number_of_targets', "value": number_of_targets, 'meaning': 'number of potential targets from which to choose a goal'}
+        _target_radius = { "name": 'target_radius', "value": target_radius, 'meaning': 'radius of the circular targets displayed on screen'}
+        _max_cycle = { "name": 'max_cycle', "value": max_cycle, 'meaning': 'Maximum number of steps possible in this environment before it finished'}
+        _timestep = { "name": 'timestep', "value": timestep, 'meaning': 'Duration of one step in this environment'}
+        _mode = { "name": 'mode','value': mode, 'meaning': "whether the assistant is expected to work as gain or as positioner. In the first case (gain), the operator's action is multiplied by the assistant's action to determine by how much to shift the old position of the cursor. In the second case (position) the assistant's action is directly the new position of the cursor."}
+        self.handbook['parameters'].extend([_screen_size, _number_of_targets, _target_radius, _max_cycle, _timestep, _mode])
+
         # Define state
         self.state['Position'] = StateElement(
             values = numpy.array([0.1,0.1]),
@@ -344,6 +384,85 @@ class Screen_v0(InteractionTask):
 
         # Rendering stuff
         self.ax = None
+
+
+
+
+    def reset(self, dic = None):
+        """ Randomly draw N+1 disjoint disks. The N first disks are used as targets, the last disk's center is used as cursor position.
+        """
+
+        super().reset()
+
+        targets = []
+        radius = self.target_radius
+        while len(targets)  < self.number_of_targets + 1: # generate targets as well as a start position
+            candidate_target = self.state['Position']['spaces'][0].sample()
+            x,y = candidate_target
+            passed = True
+            if (x > -1 + 2*radius) and (x < 1 -radius) and (y > -1/self.aspect_ratio + 2*radius) and (y < 1/self.aspect_ratio - 2*radius):
+                if not targets:
+                    targets.append(candidate_target)
+                else:
+                    for xt,yt in targets:
+                        if (xt-x)**2 + (yt-y)**2 <= 4*radius**2:
+                            passed = False
+                    if passed:
+                        targets.append(candidate_target)
+
+        position = targets.pop(-1)
+        self.targets = targets
+        radius = [numpy.sqrt(numpy.sum((target - numpy.array([-1,-1]))**2)) for target in targets]
+        sorted_targets, sorted_radii = sort_two_lists(targets, radius, lambda x: x[1])
+
+        self.state['Position']['values'] = position
+        self.state['Targets']['values'] = sorted_targets
+
+        if dic is not None:
+            super().reset(dic = dic)
+
+
+
+    def operator_step(self, *args, **kwargs):
+        return super().operator_step()
+
+    def assistant_step(self, assistant_action):
+        super().assistant_step()
+        is_done = False
+
+        if self.turn > self.max_cycle:
+            return self.state, -1/2, True, {}
+
+
+        if self.mode == 'position':
+            self.state['Position']['values'] =  self.bundle.game_state['assistant_action']['action']['values']
+        elif self.mode == 'gain':
+            assistant_action = self.bundle.game_state['assistant_action']['action']['values'][0]
+            operator_action = self.bundle.game_state['operator_action']['action']['values'][0]
+            position = self.state['Position']['values'][0]
+            newpos = position + operator_action*assistant_action
+
+            self.state['Position']['values'] = numpy.clip(newpos, self.screen_low, self.screen_high)
+
+
+        # if dist(self.bundle.operator.state['Goal']['values'][0]) < self.target_radius:
+        #     is_done = True
+
+        return self.state, -1/2, self._is_done_assistant(), {}
+
+    def _is_done_assistant(self):
+        is_done = False
+        speed = 0
+        threshold = 1
+        goal = self.bundle.operator.state['Goal']['values'][0]
+        position = self.state['Position']['values'][0]
+        dist = numpy.sqrt(numpy.sum((position-goal)**2))
+        if dist <= self.target_radius and speed < threshold:
+            is_done = True
+
+        logger.info("Task {} done: {}".format(self.__class__.__name__, is_done))
+        logger.info("Condition: dist(Cursor position ({}) - Operator Goal ({}) ) = {} < target radius {}".format(str(self.state['Position']['values'][0]), self.bundle.game_state['operator_state']['Goal']['values'][0] ,str(dist), str(self.target_radius)))
+        return is_done
 
 
     def render(self, *args, mode = 'plot'):
@@ -382,89 +501,20 @@ class Screen_v0(InteractionTask):
         self.ax.add_patch(self.cursor)
 
 
-
-
-    def reset(self, dic = None):
-        """ Randomly draw N+1 disjoint disks. The N first disks are used as targets, the last disk's center is used as cursor position.
-        """
-
-        # Forced reset
-
-
-        targets = []
-        radius = self.target_radius
-        while len(targets)  < self.number_of_targets + 1: # generate targets as well as a start position
-            candidate_target = self.state['Position']['spaces'][0].sample()
-            x,y = candidate_target
-            passed = True
-            if (x > -1 + 2*radius) and (x < 1 -radius) and (y > -1/self.aspect_ratio + 2*radius) and (y < 1/self.aspect_ratio - 2*radius):
-                if not targets:
-                    targets.append(candidate_target)
-                else:
-                    for xt,yt in targets:
-                        if (xt-x)**2 + (yt-y)**2 <= 4*radius**2:
-                            passed = False
-                    if passed:
-                        targets.append(candidate_target)
-
-
-        position = targets.pop(-1)
-        # targets.sort()
-
-
-
-        print(targets)
-        self.state['Position']['values'] = position
-        self.state['Targets']['values'] = targets
-
-
-
-    def operator_step(self, *args, **kwargs):
-        return super().operator_step()
-
-    def assistant_step(self, assistant_action):
-        super().assistant_step()
-        is_done = False
-
-        if self.turn > 50:
-            return self.state, -1/2, True, {}
-
-
-        if self.mode == 'position':
-            newpos = self.bundle.game_state['assistant_action']['action']
-        elif self.mode == 'gain':
-            assistant_action = self.bundle.game_state['assistant_action']['action']['values'][0]
-            operator_action = self.bundle.game_state['operator_action']['action']['values'][0]
-            position = self.state['Position']['values'][0]
-            newpos = position + operator_action*assistant_action
-
-        self.state['Position']['values'] = numpy.clip(newpos, self.screen_low, self.screen_high)
-
-
-        # if dist(self.bundle.operator.state['Goal']['values'][0]) < self.target_radius:
-        #     is_done = True
-
-        return self.state, -1/2, is_done, {}
-
-    def dist(self, target):
-        position = self.state['Position']['values'][0]
-        return numpy.sqrt(numpy.sum((position-target)**2))
-
-
-
-
-
-    def render(self,*args, mode="text"):
-
-        if 'text' in mode:
-            pass
-        if 'plot' in mode:
-            axtask, axoperator, axassistant = args[:3]
-            if self.ax is not None:
-                self.update_position()
-            else:
-                self.ax = axtask
-                self.init_grid(axoperator)
-                self.ax.set_aspect('equal')
-        if not ('plot' in mode or 'text' in mode):
-            raise NotImplementedError
+    #
+    #
+    #
+    # def render(self,*args, mode="text"):
+    #
+    #     if 'text' in mode:
+    #         pass
+    #     if 'plot' in mode:
+    #         axtask, axoperator, axassistant = args[:3]
+    #         if self.ax is not None:
+    #             self.update_position()
+    #         else:
+    #             self.ax = axtask
+    #             self.init_grid(axoperator)
+    #             self.ax.set_aspect('equal')
+    #     if not ('plot' in mode or 'text' in mode):
+    #         raise NotImplementedError

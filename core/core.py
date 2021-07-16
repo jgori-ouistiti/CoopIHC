@@ -23,10 +23,11 @@ class Handbook(OrderedDict):
         _str = 'Name: {}\n'.format(self['name'])
         _str += 'Render Modes: {}\nParameters:\n'.format(str(self['render_mode']))
         if self['parameters']:
+            print(self['parameters'][0], type(self['parameters'][0]))
             table_header = list(self['parameters'][0].keys())
             rows = []
             for row in self['parameters']:
                 rows.append(list([textwrap.fill(v, width = 50) if isinstance(v, str) else v for v in row.values()]))
             _str += tabulate.tabulate(rows, headers = table_header)
-            
+
         return _str

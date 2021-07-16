@@ -126,15 +126,13 @@ List of Modules in *interaction-agents*
 TODO list:
 ==============
 
-1. add a render method to the inference engine. Usually we would want to call that method at the agent level.
-2. Reorder (restructure) the various inference engines
-3. Come up with a common API for inference engines
-4. Ensure modularity, e.g. process observation engine.
-5. Evaluate overhead of using interaction-agents by profiling
-6. provide test code to ensure the engines and states are working properly
-7. Combine multiple inference engines and observation engines into one. This [this](https://rhettinger.wordpress.com/2011/05/26/super-considered-super/) might be useful.
-8. Think about Continuous/Discrete spaces + normalizing
-9. T
+* provide test code to ensure the engines are working properly
+* get rid of gym.spaces.Discrete and box, define own spaces (get rid of discrete annoyances with 0,N, possible values etc.)
+* Have a template class for each main component.
+* verify full arithmetic operations for StateElement
+* make a mapping object for RuleObservationEngine
+* profile interaction-agents
+
 
 Indices
 ===========

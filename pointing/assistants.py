@@ -1,5 +1,5 @@
 from core.agents import BaseAgent
-from core.policy import Policy,  BIGDiscretePolicy
+from core.policy import BasePolicy,  BIGDiscretePolicy
 from core.inference import GoalInferenceWithOperatorPolicyGiven
 from core.space import State, StateElement
 
@@ -19,7 +19,7 @@ class ConstantCDGain(BaseAgent):
         self.gain = gain
         action_space = [gym.spaces.Discrete(1)]
         action_set = [[gain]]
-        agent_policy = Policy(action_space = action_space, action_set = action_set)
+        agent_policy = BasePolicy(action_space = action_space, action_set = action_set)
 
 
         super().__init__( 'assistant',

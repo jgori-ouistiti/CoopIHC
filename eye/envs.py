@@ -38,18 +38,21 @@ class ChenEyePointingTask(InteractionTask):
         _fitts_W = { "name": 'W', "value": fitts_W, 'meaning': 'radius of the circular target used'}
         _fitts_D = { "name": 'D','value': fitts_D, 'meaning': 'distance between targets'}
         _dimension = {'name': 'dimension', 'value': dimension, 'meaning': 'Dimension of the task used. In 1D the targets appear alternatively left or right, while in 2D the targets appear at a random angle and fixed radius.'}
-        self.handbook['parameters'].extend([_threshold, _fitts_W, _dimension])
+        self.params = [_threshold, _fitts_W, _dimension]
+        self.handbook['parameters'].extend(self.params)
 
 
         self.state['Targets'] = StateElement(
             values = [numpy.array([0 for i in range(dimension)])],
             spaces = [gym.spaces.Box(-1,1, shape = (dimension,))],
-            possible_values = [None]
+            possible_values = [None],
+            mode = 'warn'
         )
         self.state["Fixation"] = StateElement(
             values = [numpy.array([0 for i in range(dimension)])],
             spaces = [gym.spaces.Box(-1,1, shape = (dimension,))],
-            possible_values = [None])
+            possible_values = [None],
+            mode = 'warn')
 
 
 

@@ -7,13 +7,14 @@ import matplotlib.pyplot as plt
 from core.space import State, StateElement
 from core.helpers import flatten, hard_flatten
 from core.agents import DummyAssistant, DummyOperator
-from core.observation import ObservationEngine
+from core.observation import BaseObservationEngine
 from core.core import Handbook
 
 import copy
 
 import sys
 from loguru import logger
+import yaml
 
 
 
@@ -95,6 +96,16 @@ class Bundle:
         logger.info('\n\n========================\n')
 
         self.handbook = Handbook({'name': self.__class__.__name__, 'render_mode': [], 'parameters': []})
+
+    def __repr__(self):
+        return yaml.safe_dump(self.__content__())
+
+
+    def __content__(self):
+        return {"Task": self.task.__content__(), "Operator": self.operator.__content__(), "Assistant": self.assistant.__content__()}
+
+
+
 
     def reset(self, dic = {}):
         """ Reset the bundle. When subclassing Bundle, make sure to call super().reset() in the new reset method
@@ -214,6 +225,8 @@ class Bundle:
             self.operator.observation_engine.extraprobabilisticrules = store
             self.operator.observation_engine.mapping = None
 
+
+        self.kwargs['onreset_deterministic_first_half_step'] = False
         logger.info('Observation rewards: {} / Inference rewards: {}'.format( operator_obs_reward, operator_infer_reward))
 
         return operator_obs_reward, operator_infer_reward
@@ -233,6 +246,8 @@ class Bundle:
 
         logger.info('Applying action to task ---')
         # Play operator's turn in the task
+        ret = self.task.operator_step(operator_action)
+        print(ret)
         task_state, task_reward, is_done, _ = self.task.operator_step(operator_action)
 
         # update task state (likely not needed, remove ?)
@@ -293,18 +308,20 @@ class Bundle:
 
         :meta public:
         """
+        logger.info(' ---------- >>>> operator {} step'.format(self.operator.__class__.__name__))
         operator_obs_reward, operator_infer_reward = self._operator_first_half_step()
         try:
             # If human input is provided
             operator_action = args[0]
         except IndexError:
             # else sample from policy
-            operator_action = self.operator.take_action()
+            operator_action, operator_policy_reward = self.operator.take_action()
 
         self.broadcast_action('operator', operator_action)
 
         task_reward, is_done = self._operator_second_half_step(operator_action)
-        return operator_obs_reward, operator_infer_reward, task_reward, is_done
+        logger.info(' <<<<<<<< operator {} step'.format(self.operator.__class__.__name__))
+        return operator_obs_reward, operator_infer_reward, operator_policy_reward, task_reward, is_done
 
 
 
@@ -325,30 +342,29 @@ class Bundle:
             manual = True
         except IndexError:
             # else sample from policy
-            assistant_action = self.assistant.take_action()
+            assistant_action, assistant_policy_reward = self.assistant.take_action()
             manual = False
-
-
-        print(assistant_action)
 
         self.broadcast_action('assistant', assistant_action)
 
         task_reward, is_done = self._assistant_second_half_step(assistant_action)
-        return assistant_obs_reward, assistant_infer_reward, task_reward, is_done
+        return assistant_obs_reward, assistant_infer_reward, assistant_policy_reward, task_reward, is_done
 
 
     def broadcast_state(self, role, state_key, state):
         self.game_state[state_key] = state
-        getattr(self, role).inference_engine.buffer[-1][state_key] = state
+        getattr(self, role).observation[state_key] = state
 
     def broadcast_action(self, role, action, key = None):
         # update game state and observations
         if key is None:
             getattr(self, role).policy.action_state['action'] = action
-            getattr(self, role).inference_engine.buffer[-1]['{}_action'.format(role)]["action"] = action
+            getattr(self, role).observation['{}_action'.format(role)]["action"] = action
         else:
             getattr(self, role).policy.action_state['action'][key] = action
-            getattr(self, role).inference_engine.buffer[-1]['{}_action'.format(role)]["action"][key] = action
+            getattr(self, role).observation['{}_action'.format(role)]["action"][key] = action
+
+
 
 
 
@@ -372,7 +388,7 @@ class PlayNone(Bundle):
 
         :meta public:
         """
-        full_obs = super().reset(dic)
+        full_obs = super().reset(dic = dic)
 
 
     def step(self):
@@ -384,11 +400,11 @@ class PlayNone(Bundle):
         """
         super().step(None)
 
-        operator_obs_reward, operator_infer_reward, first_task_reward, is_done = self._operator_step()
+        operator_obs_reward, operator_infer_reward, operator_policy_reward, first_task_reward, is_done = self._operator_step()
         if is_done:
             return operator_obs_reward, operator_infer_reward, task_reward, is_done
-        assistant_obs_reward, assistant_infer_reward, second_task_reward, is_done = self._assistant_step()
-        return sum([operator_obs_reward, operator_infer_reward, first_task_reward, assistant_obs_reward, assistant_infer_reward, second_task_reward]), is_done, [operator_obs_reward, operator_infer_reward, first_task_reward, assistant_obs_reward, assistant_infer_reward, second_task_reward]
+        assistant_obs_reward, assistant_infer_reward, assistant_policy_reward, second_task_reward,  is_done = self._assistant_step()
+        return self.game_state, sum([operator_obs_reward, operator_infer_reward, operator_policy_reward, first_task_reward, assistant_obs_reward, assistant_infer_reward, assistant_policy_reward, second_task_reward]), is_done, [operator_obs_reward, operator_infer_reward, operator_policy_reward, first_task_reward, assistant_obs_reward, assistant_infer_reward, assistant_policy_reward, second_task_reward]
 
 class PlayOperator(Bundle):
     """ A bundle which samples assistant actions directly from the assistant but uses operator actions provided externally in the step() method.
@@ -403,13 +419,6 @@ class PlayOperator(Bundle):
         super().__init__(task, operator, assistant, **kwargs)
         self.action_space = copy.copy(self.operator.policy.action_state['action']['spaces'])
 
-        # operator.policy.action_state['action'] = StateElement(
-        #     values = None,
-        #     spaces = [gym.spaces.Box(low = -numpy.inf, high = numpy.inf, shape = (1,)) for i in range(len(operator.policy.action_state['action']))],
-        #     possible_values = None
-        #      )
-
-
 
     def reset(self, dic = {}):
         """ Reset the bundle. A first observation and inference is performed.
@@ -418,9 +427,10 @@ class PlayOperator(Bundle):
 
         :meta public:
         """
-        full_obs = super().reset(dic)
+        full_obs = super().reset(dic = dic)
         self._operator_first_half_step()
-        return self.operator.inference_engine.buffer[-1]
+        return self.operator.observation
+        # return self.operator.inference_engine.buffer[-1]
 
     def step(self, operator_action):
         """ Play a step, assistant actions are obtained by sampling the agent's policy and operator actions are given externally in the step() method.
@@ -437,9 +447,12 @@ class PlayOperator(Bundle):
         first_task_reward, is_done = self._operator_second_half_step(operator_action)
         if is_done:
             return self.operator.inference_engine.buffer[-1], first_task_reward, is_done, [first_task_reward]
-        assistant_obs_reward, assistant_infer_reward, second_task_reward, is_done = self._assistant_step()
+        assistant_obs_reward, assistant_infer_reward,  assistant_policy_reward, second_task_reward, is_done = self._assistant_step()
         operator_obs_reward, operator_infer_reward = self._operator_first_half_step()
-        return self.operator.inference_engine.buffer[-1], sum([operator_obs_reward, operator_infer_reward, first_task_reward, assistant_obs_reward, assistant_infer_reward, second_task_reward]), is_done, [operator_obs_reward, operator_infer_reward, first_task_reward, assistant_obs_reward, assistant_infer_reward, second_task_reward]
+        return self.operator.inference_engine.buffer[-1], sum([operator_obs_reward, operator_infer_reward, first_task_reward, assistant_obs_reward, assistant_infer_reward, assistant_policy_reward, second_task_reward]), is_done, [operator_obs_reward, operator_infer_reward, first_task_reward, assistant_obs_reward, assistant_infer_reward, assistant_policy_reward, second_task_reward]
+
+
+
 
 
 class PlayAssistant(Bundle):
@@ -468,7 +481,7 @@ class PlayAssistant(Bundle):
 
         :meta public:
         """
-        full_obs = super().reset(dic)
+        full_obs = super().reset(dic = dic)
         self._operator_step()
         self._assistant_first_half_step()
         return self.assistant.inference_engine.buffer[-1]
@@ -488,9 +501,9 @@ class PlayAssistant(Bundle):
         second_task_reward, is_done = self._assistant_second_half_step(assistant_action)
         if is_done:
             return self.assistant.inference_engine.buffer[-1], second_task_reward, is_done, [second_task_reward]
-        operator_obs_reward, operator_infer_reward, first_task_reward, is_done = self._operator_step()
+        operator_obs_reward, operator_infer_reward, operator_policy_reward, first_task_reward, is_done = self._operator_step()
         assistant_obs_reward, assistant_infer_reward = self._assistant_first_half_step()
-        return self.assistant.inference_engine.buffer[-1], sum([operator_obs_reward, operator_infer_reward, first_task_reward, assistant_obs_reward, assistant_infer_reward, second_task_reward]), is_done, [operator_obs_reward, operator_infer_reward, first_task_reward, assistant_obs_reward, assistant_infer_reward, second_task_reward]
+        return self.assistant.inference_engine.buffer[-1], sum([operator_obs_reward, operator_infer_reward, operator_policy_reward, first_task_reward, assistant_obs_reward, assistant_infer_reward, second_task_reward]), is_done, [operator_obs_reward, operator_infer_reward, operator_policy_reward, first_task_reward, assistant_obs_reward, assistant_infer_reward, second_task_reward]
 
 class PlayBoth(Bundle):
     """ A bundle which samples both actions directly from the operator and assistant.
@@ -505,14 +518,14 @@ class PlayBoth(Bundle):
         super().__init__(task, operator, assistant, **kwargs)
         self.action_space = self._tuple_to_flat_space(gym.spaces.Tuple([self.operator.action_space, self.assistant.action_space]))
 
-    def reset(self, dic = None):
+    def reset(self, dic = {}):
         """ Reset the bundle. Operator observation and inference is performed.
 
         :param args: see Bundle
 
         :meta public:
         """
-        full_obs = super().reset(dic)
+        full_obs = super().reset(dic = dic)
         self._operator_first_half_step()
         return self.task.state
 
@@ -532,7 +545,7 @@ class PlayBoth(Bundle):
         first_task_reward, is_done = self._operator_second_half_step(operator_action)
         if is_done:
             return self.task.state, first_task_reward, is_done, [first_task_reward]
-        assistant_obs_reward, assistant_infer_reward, second_task_reward, is_done = self._assistant_step(assistant_action)
+        assistant_obs_reward, assistant_infer_reward, assistant_policy_reward, second_task_reward,  is_done = self._assistant_step()
         operator_obs_reward, operator_infer_reward = self._operator_first_half_step()
         return self.task.state, sum([operator_obs_reward, operator_infer_reward, first_task_reward, assistant_obs_reward, assistant_infer_reward, second_task_reward]), is_done, [operator_obs_reward, operator_infer_reward, first_task_reward, assistant_obs_reward, assistant_infer_reward, second_task_reward]
 
@@ -549,6 +562,10 @@ class SinglePlayOperator(Bundle):
         super().__init__(task, operator, DummyAssistant(), **kwargs)
 
 
+    @property
+    def observation(self):
+        return self.operator.observation
+
     def reset(self, dic = {}):
         """ Reset the bundle. A first observation and inference is performed.
 
@@ -556,9 +573,9 @@ class SinglePlayOperator(Bundle):
 
         :meta public:
         """
-        full_obs = super().reset(dic)
+        full_obs = super().reset(dic = dic)
         self._operator_first_half_step()
-        return self.operator.inference_engine.buffer[-1]
+        return self.observation
 
     def step(self, operator_action):
         """ Play a step, operator actions are given externally in the step() method.
@@ -601,6 +618,10 @@ class SinglePlayOperatorAuto(Bundle):
         self.handbook['kwargs'] = [_start_at_action]
 
 
+    @property
+    def observation(self):
+        return self.operator.observation
+
     def reset(self, dic = {}):
         """ Reset the bundle. A first observation and inference is performed.
 
@@ -612,7 +633,7 @@ class SinglePlayOperatorAuto(Bundle):
 
         if self.kwargs.get('start_at_action'):
             self._operator_first_half_step()
-            return self.operator.inference_engine.buffer[-1]
+            return self.observation
 
         return self.game_state
         # Return observation
@@ -625,18 +646,18 @@ class SinglePlayOperatorAuto(Bundle):
 
         :meta public:
         """
-        if self.kwargs.get('start_at_action'):
+        if not self.kwargs.get('start_at_action'):
             operator_obs_reward, operator_infer_reward = self._operator_first_half_step()
-        operator_action = self.operator.take_action()
+        operator_action, operator_policy_reward = self.operator.take_action()
         self.broadcast_action('operator', operator_action)
 
         first_task_reward, is_done = self._operator_second_half_step(operator_action)
         if is_done:
-            return self.operator.inference_engine.buffer[-1], first_task_reward, is_done, [first_task_reward]
-        self.task.assistant_step([0])
-        if not self.kwargs.get('start_at_action'):
+            return self.observation, first_task_reward, is_done, [first_task_reward]
+        _,_,_,_ = self.task.assistant_step([0])
+        if self.kwargs.get('start_at_action'):
             operator_obs_reward, operator_infer_reward = self._operator_first_half_step()
-        return self.operator.inference_engine.buffer[-1], sum([operator_obs_reward, operator_infer_reward, first_task_reward]), is_done, [operator_obs_reward, operator_infer_reward, first_task_reward]
+        return self.observation, sum([operator_obs_reward, operator_infer_reward, first_task_reward]), is_done, [operator_obs_reward, operator_infer_reward, first_task_reward]
 
 
 ## Wrappers
@@ -722,23 +743,14 @@ class Train(gym.Env):
         return observation.filter('values', self.observation_dict)
 
 
-    # def squeeze_output(self, extract_object):
-    #     """ Call this on the environment to remove some of the outputs to lower the dimension of the observation space for the RL algorithms. To know which substates to keep, use get_state_mapping(). Call this right after initializing the environment.
-    #
-    #     :param extract_object: (slice, array) a set of indices which will be extracted from the flattened observation. extract_object can be any type used for indexing i.e. a slice or a numpy.ndarray e.g. ``env.squeeze_output(slice(3,5,1))`` to keep the substates at index 3 and 4 in the flattened game_state.
-    #     """
-    #     self.extract_object = extract_object
-    #     self.observation_space = gym.spaces.Tuple(Flextuple(self.observation_space)[extract_object])
-
-
-    def reset(self, dic = None):
+    def reset(self, dic = {}):
         """ Reset the environment.
 
         :return: observation (numpy.ndarray) observation of the flattened game_state
 
         :meta public:
         """
-        obs = self.bundle.reset(dic)
+        obs = self.bundle.reset(dic = dic)
         return self.convert_observation(obs)
 
     def step(self, action):
@@ -778,7 +790,19 @@ class _DevelopTask(Bundle):
     """ A bundle without operator or assistant. It can be used when developping tasks to facilitate some things like rendering
     """
     def __init__(self, task, **kwargs):
-        super().__init__(task, DummyOperator(), DummyAssistant(), **kwargs)
+        operator = kwargs.get("operator")
+        if operator is None:
+            operator = DummyOperator()
+        else:
+            kwargs.pop('operator')
+
+        assistant = kwargs.get('assistant')
+        if assistant is None:
+            assistant = DummyAssistant()
+        else:
+            kwargs.pop("assistant")
+
+        super().__init__(task, operator, assistant, **kwargs)
 
     def reset(self, dic = {}):
         super().reset(dic = dic)

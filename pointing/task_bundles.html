@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>WebSocket Bundles Demo</title>
+        <style type="text/css">
+            body {
+                font-family: "Courier New", sans-serif;
+                text-align: center;
+            }
+            .buttons {
+                font-size: 4em;
+                display: flex;
+                justify-content: center;
+            }
+            .button, .value {
+                line-height: 1;
+                padding: 2rem;
+                margin: 2rem;
+                border: medium solid;
+                min-height: 1em;
+                min-width: 1em;
+            }
+            .button {
+                cursor: pointer;
+                user-select: none;
+            }
+            .minus {
+                color: red;
+            }
+            .plus {
+                color: green;
+            }
+            .value {
+                min-width: 2em;
+            }
+
+            .indicators {
+                font-size: 1em
+            }
+            .targets {
+                color: purple;
+            }
+            .position {
+                color: blue;
+            }
+            .goal {
+                color: green;
+            }
+            .param {
+                color: red;
+            }
+            .state {
+                font-size: 2em;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="buttons">
+            <div class="minus button">-</div>
+            <div class="plus button">+</div>
+        </div>
+        <div class="indicators">
+            Targets:
+            <div class="targets">unknown</div>
+            Position:
+            <div class="position">unknown</div>
+            Goal:
+            <div class="goal">unknown</div>
+            Parameters:
+            <div class="param">unknown</div>
+        </div>
+
+        <div class="state">
+            <span class="users">?</span> online
+        </div>
+        <script>
+
+            // ========================== functions and classes def =============
+
+            function getRandomFromBucket(bucket) {
+               var randomIndex = Math.floor(Math.random()*bucket.length);
+               return bucket.splice(randomIndex, 1)[0];
+            }
+            function getRandomTargets(ptparamsObject){
+                var bucket = [];
+                for (var i=0;i<ptparamsObject.gridsize;i++) {
+                    bucket.push(i);
+                }
+                var targetArray = new Array(ptparamsObject.number_of_targets + 1);
+                for (var i=0;i<ptparamsObject.number_of_targets+1;i++){
+                    targetArray[i] = getRandomFromBucket(bucket);
+                }
+                let position = targetArray.pop();
+                let randomIndex = Math.floor(Math.random()*targetArray.length);
+                let goal = targetArray[randomIndex];
+                return [position, targetArray.sort(function(a,b){return a-b;}), goal];
+            }
+
+            class PointingTaskParameters{
+                constructor(gridsize = 31, number_of_targets = 8, mode = 'gain'){
+                    this.gridsize = gridsize;
+                    this.number_of_targets = number_of_targets;
+                    this.mode = mode;
+                }
+
+                form_string(){
+                    var _str = '-'
+                    for (const item in this){
+                        _str += item.toString() + ':' + this[item].toString() + '-';
+                    }
+                    return _str;
+                }
+            }
+
+            class PointingTaskManager{
+                constructor(){
+                    this.__position_text = document.querySelector('.position');
+                    this.__targets_text = document.querySelector('.targets');
+                    this.__position = null;
+                    this.__targets = null;
+                }
+
+                get position(){
+                    return this.__position;
+                }
+
+                get targets(){
+                    return this.__targets;
+                }
+
+                set position(value){
+                    this.__position = value;
+                    this.__position_text.textContent = value.toString();
+                }
+
+                set targets(value){
+                    this.__targets = value;
+                    this.__targets_text.textContent = value.toString();
+                }
+            }
+
+
+            function send_msg(msg) {
+                websocket.send(JSON.stringify(msg))
+            }
+
+            function update_state(received_dic){
+                console.log("updating state" + received_dic);
+                for (const [key, value] of Object.entries(received_dic)){
+                    document.querySelector('.' + key).textContent = value;
+                }
+
+            }
+
+            function on_init(dic_sent){
+                let params = dic_sent['params'];
+                var ptparams = new PointingTaskParameters();
+                for (const [key, value] of Object.entries(params)){
+                    ptparams[key] = value;
+                }
+                parameters.textContent = ptparams.form_string();
+                let [_position, _targets, _goal] = getRandomTargets(ptparams);
+                tm = new PointingTaskManager();
+                tm.position = _position;
+                tm.targets = _targets;
+                goal.textContent = _goal.toString();
+
+                state = {};
+                state['Position'] = _position;
+                state['Targets'] = _targets;
+                send_msg(state);
+            }
+
+
+
+
+            // ========================== Start ========================
+
+            minus = document.querySelector('.minus'),
+            plus = document.querySelector('.plus'),
+            users = document.querySelector('.users'),
+            // targets = document.querySelector('.targets'),
+            // position = document.querySelector('.position'),
+            goal = document.querySelector('.goal'),
+            parameters = document.querySelector('.param'),
+            websocket = new WebSocket("ws://127.0.0.1:4000/");
+
+
+            minus.onclick = function (event) {
+                websocket.send(JSON.stringify({action: 'minus'}));
+            }
+            plus.onclick = function (event) {
+                websocket.send(JSON.stringify({action: 'plus'}));
+            }
+            websocket.onmessage = function (event) {
+                let dic_received = JSON.parse(event.data);
+                let data_type = dic_received.type
+                delete dic_received.type
+
+                switch (data_type) {
+                    case 'init':
+                        on_init(dic_received)
+                        break;
+
+                    case 'state':
+                        update_state(dic_received);
+                        break;
+                    case 'users':
+                        users.textContent = (
+                            dic_received.count.toString() + " user" +
+                            (dic_received.count == 1 ? "" : "s"));
+                        break;
+                    default:
+                        console.error(
+                            "unsupported event", data);
+                }
+            };
+        </script>
+    </body>
+</html>

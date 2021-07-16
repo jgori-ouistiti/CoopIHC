@@ -7,7 +7,7 @@ from core.core import Handbook
 
 from loguru import logger
 
-class ObservationEngine:
+class BaseObservationEngine:
     """ Base Class for Observation Engine.
 
     Does nothing but specify a type for the observation engine and return the full game state.
@@ -22,6 +22,20 @@ class ObservationEngine:
         self.type = 'base'
         self.handbook = Handbook({'name': self.__class__.__name__, 'render_mode': [], 'parameters': []})
 
+    def __content__(self):
+        return self.__class__.__name__
+
+    @property
+    def observation(self):
+        return self.host.inference_engine.buffer[-1]
+
+    @property
+    def action(self):
+        return self.host.policy.action_state['action']
+
+    @property
+    def unwrapped(self):
+        return self
 
     def observe(self, game_state):
         return copy.deepcopy(game_state), 0
@@ -82,7 +96,7 @@ custom_example_specification =      [('turn_index', 'all'),
                                     ('assistant_action', 'all')
                                     ]
 
-class RuleObservationEngine(ObservationEngine):
+class RuleObservationEngine(BaseObservationEngine):
     """ Base Class for Observation Engine.
 
     Does nothing but specify a type for the observation engine and return the full game state.
@@ -107,8 +121,9 @@ class RuleObservationEngine(ObservationEngine):
         self.handbook['parameters'].extend([_deterministic_specification, _extradeterministicrules, _extraprobabilisticrules] )
 
 
+
+
     def observe(self, game_state):
-        game_state = copy.deepcopy(game_state)
         if self.mapping is None:
             self.mapping = self.create_mapping(game_state)
         obs = self.apply_mapping(game_state)
@@ -135,6 +150,7 @@ class RuleObservationEngine(ObservationEngine):
                 logger.info('Noise applied for {}/{}: {}'.format(substate, subsubstate, str(noise)))
             else:
                 _obs = _obs
+
 
             observation[substate][subsubstate] = copy.copy(game_state[substate][subsubstate])
             observation[substate][subsubstate]['values'] = [_obs]
@@ -197,48 +213,25 @@ class RuleObservationEngine(ObservationEngine):
 
 
 
-# ==================== Determinstic functions
+# ==================== Deterministic functions
 # A linear combination of observation components
 
-def f_obs_matrix(_obs, C):
-    list_converted = False
-    if isinstance(_obs, (float, int)):
-        # This case should never occur
-        return NotImplementedError
-    elif isinstance(_obs, list):
-        list_converted = True
-        _obs = numpy.array(_obs)
-    if not isinstance(_obs, numpy.ndarray):
-        return NotImplementedError
-    _obs = C @ _obs
-    if list_converted:
-        _obs = _obs.tolist()
-    return _obs
+def observation_linear_combination(_obs, game_state, C):
+    return C @ _obs[0]
 
 
 # ==================== Noise functions
-# Additive Gaussian Noise (Wiener process) where C selects substates and D shapes the Noise
-def agn(_obs, D, *args):
-    list_converted = False
-    if isinstance(_obs, (float, int)):
-        # This case should never occur
-        return NotImplementedError
-    elif isinstance(_obs, list):
-        list_converted = True
-        _obs = numpy.array(_obs)
-    if not isinstance(_obs, numpy.ndarray):
-        return NotImplementedError
+# Additive Gaussian Noise where D shapes the Noise
+def additive_gaussian_noise(_obs, gamestate, D, *args):
     try:
         mu,sigma = args
     except ValueError:
         mu, sigma = numpy.zeros(_obs.shape), numpy.eye( max(_obs.shape) )
-    _obs = _obs + D @ numpy.random.multivariate_normal(mu, sigma, size = 1).reshape(-1,1)
-    if list_converted:
-        _obs = _obs.tolist()
-    return _obs
+    return _obs + D @ numpy.random.multivariate_normal(mu, sigma, size = 1).reshape(-1,1), D @ numpy.random.multivariate_normal(mu, sigma, size = 1).reshape(-1,1)
 
 
-class CascadedObservationEngine(ObservationEngine):
+
+class CascadedObservationEngine(BaseObservationEngine):
     def __init__(self, engine_list):
         super().__init__()
         self.engine_list = engine_list
@@ -248,6 +241,9 @@ class CascadedObservationEngine(ObservationEngine):
         _engine_list = {"name": 'engine_list', "value": str(engine_list), "meaning": 'A list of observation engines to be cascaded'}
 
         self.handbook['parameters'].extend([_engine_list])
+
+    def __content__(self):
+        return { self.__class__.__name__:         {"Engine{}".format(ni): i.__content__() for ni, i in enumerate(self.engine_list)} }
 
     def observe(self, game_state):
         game_state = copy.deepcopy(game_state)
@@ -260,164 +256,36 @@ class CascadedObservationEngine(ObservationEngine):
         return game_state, rewards
 
 
+class WrapAsObservationEngine(BaseObservationEngine):
+    def __init__(self, obs_bundle):
+        self.type = 'process'
+        self.bundle = obs_bundle
+        self.bundle.reset()
 
-# agn_mapping = {('task_state', 'x'): (agn, (C, D, numpy.array([0,0]).reshape(-1,), numpy.sqrt(timestep)*numpy.eye(2)))}
+    def __content__(self):
+        return { 'Name': self.__class__.__name__, 'Bundle': self.bundle.__content__() }
 
+    @property
+    def unwrapped(self):
+        return self.bundle.unwrapped
 
-# observation_engine_specification = [
-#     ('task_state', 'x', slice(0,2,1) ),
-#     ('operator_state', 'all'),
-#     ('assistant_state', None)   ]
-#
-# noiserules = {('task_state', 'x'): (awgn, None)}
-#
-#
-# # Create mappings
-#
-#
-#
-#
-# mapping = [     ('task_state', 'x', slice(0,1,1), func1, args),
-#                 ('operator_state', 'y', slice(0,2,1), func2, args)
-#                 ]
-# # Order mapping according to game_state order
-#
-#
-#
-#
-#
-# # Apply mapping
+    @property
+    def game_state(self):
+        return self.bundle.game_state
 
+    def reset(self, *args, **kwargs):
+        return self.bundle.reset(*args, **kwargs)
 
-# class RuleObservationEngine(ObservationEngine):
-#     """ A Rule Observation Engine.
-#
-#     A rule Observation Engine is a deterministic observation engine. The rule specifies which substates are fully visible and which are fully invisible.
-#
-#     :param rule: (OrderedDict) The observation rule, with (key,value) pairs where key is the label of the substate and the following possible value:
-#
-#     * if value == 'all', then the whole substate is observed
-#     * if value == None, then none of the substate is observed
-#     * if type(value) == slice(), then only part of the substate as specified by slice is observed
-#
-#     .. warning::
-#
-#         Note to self: verify if using a slice as value still works
-#
-#     See below for predefined, common observation rules.
-#
-#     .. code-block:: python
-#
-#         OracleObservationRule = OrderedDict([('b_state', 'all'), ('task_state', 'all'), ('operator_state', 'all'), ('assistant_state', 'all') ])
-#         BaseBlindRule = OrderedDict([('b_state', 'all'), ('task_state', None), ('operator_state', None), ('assistant_state', None) ])
-#         TaskObservationRule = OrderedDict([('b_state', 'all'), ('task_state', 'all'), ('operator_state', None), ('assistant_state', None) ])
-#         BaseOperatorObservationRule = OrderedDict([('b_state', 'all'), ('task_state', 'all'), ('operator_state', 'all'), ('assistant_state', None) ])
-#         BaseAssistantObservationRule = OrderedDict([('b_state', 'all'), ('task_state', 'all'), ('operator_state', None), ('assistant_state', 'all') ])
-#         CustomRule = OrderedDict([('b_state', 'all'), ('task_state', slice(1,3, None)), ('operator_state', 'all'), ('assistant_state', None) ])
-#
-#     :meta public:
-#
-#     """
-#     def __init__(self, rule):
-#         super().__init__('rule')
-#         self.rule = rule
-#
-#     def observe(self, game_state):
-#         """ Observe the game state.
-#
-#         :params game_state: (OrderedDict) the game_state to be observed.
-#
-#         :return: observation (OrderedDict) obtained by applying the rule, reward (float) associated with the observation.
-#
-#         :meta public:
-#         """
-#         observation = OrderedDict({})
-#         for nk,(k,v) in enumerate(list(self.rule.items())):
-#             if v == None:
-#                 pass
-#             elif v == 'all':
-#                 observation[k] = game_state[k]
-#             # Not tested
-#             elif isinstance(v, slice):
-#                 observation[k] = game_state[k][v]
-#             else:
-#                 raise NotImplementedError
-#         return (observation, 0)
-#
-#
-#
-# class NoisyRuleObservationEngine(RuleObservationEngine):
-#     """ A noisy Rule Observation Engine.
-#
-#     An observation is obtained by passing through a rule observation engine first, and then additive noise.
-#
-#     The rule specifies the rule observation engine, while the noiserules specify the additive noise. Several noise rules can be passed at once.
-#
-#     :param rule: (OrderedDict) see RuleObservationEngine
-#     :param noiserules: (list). A list of tuples where each tuple specifies a noiserule. A noiserule is expressed as (substate, subsubstate, index, method)
-#
-#     Example noiserules:
-#
-#     .. code-block:: python
-#
-#         noiserules = [('task_state', 'Targets', 0, method)]
-#
-#         def method():
-#             return numpy.random.multivariate_normal( numpy.zeros(shape = (2,)), numpy.ones(shape = (2,)))
-#
-#     :meta public:
-#     """
-#     def __init__(self, rule, noiserules):
-#         super(RuleObservationEngine, self).__init__('noisyrule')
-#         self.rule = rule
-#         self.noiserules = noiserules
-#
-#
-#     ## Maybe clipping should be enforced here, to ensure the noise doesn't make the signal go out of bounds.
-#     def observe(self, game_state):
-#         """ Observe the game_state.
-#
-#         Call the super() method to apply the deterministic rule and apply the additive noise specified by the noiserules.
-#
-#         .. warning::
-#
-#             Clipping is not enforced, the noise signal can go out of bounds.
-#
-#         :param game_state: (OrderedDict) the state of the game
-#
-#         observation (OrderedDict) obtained by applying the rule, reward (float) associated with the observation.
-#
-#         :meta public:
-#         """
-#         observation, reward = super().observe( game_state)
-#         # Don't forget to use copies here, otherwise the noise will be propagated to the game_state as well
-#         obs = copy.deepcopy(observation)
-#         for substate, subsubstate, index, method, args in self.noiserules:
-#             obs[substate][subsubstate][index] += method(args)
-#         return obs, reward
+    def step(self, *args, **kwargs):
+        return self.bundle.step(*args, **kwargs)
 
+    def observe(self, game_state):
+        pass
+        # Do something
+        # return observation, rewards
 
+    def __str__(self):
+        return '{} <[ {} ]>'.format(self.__class__.__name__, self.bundle.__str__())
 
-
-
-
-
-
-
-
-
-#
-# CustomGaussianNoiseRule = ('CustomGaussian', OrderedDict({
-#     'b_state': ('all', None),
-#     'task_state': ('all', None),
-#     'operator_state': ('all', {'mu': [0], 'sigma': [1]}),
-#     'assistant_state': ('all', None)
-#         }))
-#
-# # SubstateGaussianNoiseRule = ('SubstateGaussian', OrderedDict([('b_state', ([0], [0])), ('task_state', ([0,0], [1,1])), ('operator_state', ([0], [0])), ('assistant_state', ([0], [1])) ]) )
-# GaussianNoiseRule = ('Gaussian', (0,1))
-#
-# def func(observation, arguments = {}):
-#     noise = [ni for ni, i in enumerate(observation)]
-#     return noise
-# CustomNoiseRule = ('Custom', func, {})
+    def __repr__(self):
+        return self.__str__()

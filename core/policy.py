@@ -11,10 +11,11 @@ from tabulate import tabulate
 from core.core import Handbook
 import time
 import importlib
+from collections import OrderedDict
 
 # ============== General Policies ===============
 
-class Policy:
+class BasePolicy:
     """Policy to subclass. Provide either an action state used for initialization, or specify action_spaces and action_sets
     """
     def __init__(self, *args, **kwargs):
@@ -47,66 +48,114 @@ class Policy:
         setattr(self, as_name, bound_method)
         return bound_method
 
+    def __content__(self):
+        return self.__class__.__name__
+
     @property
     def observation(self):
         return self.host.inference_engine.buffer[-1]
+
+    @property
+    def action(self):
+        return self.action_state['action']
+
+    @property
+    def unwrapped(self):
+        return self
 
     def reset(self):
         pass
 
     def sample(self):
-        return  StateElement(values = [u.sample() for u in self.action_state['action'].spaces], spaces = self.action_state['action'].spaces, possible_values = self.action_state['action'].possible_values)
+        return  StateElement(values = [u.sample() for u in self.action_state['action'].spaces], spaces = self.action_state['action'].spaces, possible_values = self.action_state['action'].possible_values), 0
 
-class StatePolicy(Policy):
-    def __init__(self, state_indicator, index, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+
+class LinearFeedback(BasePolicy):
+    def __init__(self, state_indicator, index, action_state, *args, feedback_gain = 'identity', **kwargs):
+        super().__init__(action_state, *args, **kwargs)
         self.state_indicator = state_indicator
         self.index = index
         self.noise_function = kwargs.get('noise_function')
         # bind the noise function
         if self.noise_function is not None:
-            self._bind(self.noise_function, None)
+            self._bind(self.noise_function, as_name = 'noise_function')
 
         self.noise_args = kwargs.get('noise_function_args')
+        self.feedback_gain = feedback_gain
+
 
 
 
         _state_indicator = {"name": 'state_indicator', "value": state_indicator, "meaning": 'Indicates which substate of the internal state will be used as action'}
         _index =  {"name": 'index', "value": index, "meaning": 'Index that is applied to the state_indicator'}
+        _feedback_gain =  {"name": 'feedback_gain', "value": feedback_gain, "meaning": 'Gain (K) applied to the selected substate: output of sample = -K @ state[state_indicator][index].'}
         _noise_function = {"name": 'noise_function', "value": self.noise_function.__name__, "meaning": 'A function that is applied to the action to produce noisy actions. The signature of the function is "def noise_function(self, action, observation, *args):" and it should return a noise vector'}
         _noise_args = {"name": 'noise_args', "value": self.noise_args, "meaning": 'args that need to be supplied to the noise function'}
 
-        self.handbook['render_mode'].extend(['plot', 'text', 'log'])
-        self.handbook['parameters'].extend([_state_indicator, _index, _noise_function, _noise_args])
+        self.handbook['parameters'].extend([_state_indicator, _index, _feedback_gain, _noise_function, _noise_args])
+
+    def set_feedback_gain(self, gain):
+        self.feedback_gain = gain
 
 
     def sample(self):
         if isinstance(self.index, list):
             raise NotImplementedError
-        _get = self.host.inference_engine.buffer[-1]
+        substate = self.observation
         for key in self.state_indicator:
-            _get = _get[key]
-        noise = self.noise_function(_get[0], self.host.inference_engine.buffer[-1], *self.noise_args)
-        action = _get[0] + noise
+            substate = substate[key]
+        substate = substate[self.index]
 
-        header = ['action', 'noiseless', 'noise']
-        rows = [action, _get[0], noise]
-        logger.info('Policy {} selected action\n{})'.format(self.__class__.__name__, tabulate(rows, header) ))
-        return action
+        if isinstance(self.feedback_gain, str):
+            if self.feedback_gain == 'identity':
+                self.feedback_gain = -numpy.eye(max(substate['values'][0].shape))
 
-    def noise_function(self, action, observation, *args):
-        return None
+        noiseless_feedback = - self.feedback_gain @ substate
+        noise = self.noise_function(noiseless_feedback, self.observation, *self.noise_args)
+        action = noiseless_feedback + noise
+        # if not hasattr(noise, '__iter__'):
+        #     noise = [noise]
+        # header = ['action', 'noiseless', 'noise']
+        # rows = [action, noiseless_feedback , noise]
+        # logger.info('Policy {} selected action\n{})'.format(self.__class__.__name__, tabulate(rows, header) ))
+        return action, 0
 
+class WrapAsPolicy(BasePolicy):
+    def __init__(self, action_bundle, action_state, *args, **kwargs):
+        super().__init__(action_state, *args, **kwargs)
+        self.bundle = action_bundle
 
+    def __content__(self):
+        return { 'Name': self.__class__.__name__, 'Bundle': self.bundle.__content__() }
+    @property
+    def unwrapped(self):
+        return self.bundle.unwrapped
 
+    @property
+    def game_state(self):
+        return self.bundle.game_state
 
+    def reset(self, *args, **kwargs):
+        return self.bundle.reset(*args, **kwargs)
 
+    def step(self, *args, **kwargs):
+        return self.bundle.step(*args, **kwargs)
 
+    def sample(self):
+        pass
+        # Do something
+        # return action, rewards
+
+    def __str__(self):
+        return '{} <[ {} ]>'.format(self.__class__.__name__, self.bundle.__str__())
+
+    def __repr__(self):
+        return self.__str__()
 
 # ============= Discrete Policies =================
 
 # ----------- Bayesian Information Gain Policy ---------
-class BIGDiscretePolicy(Policy):
+class BIGDiscretePolicy(BasePolicy):
     def __init__(self, action_state, assistant_action_space, operator_policy_model):
         assistant_action_possible_values = list(range(assistant_action_space[0].n))
         super().__init__(action_state, action_space = assistant_action_space, action_set = assistant_action_possible_values)
@@ -249,15 +298,13 @@ class BIGDiscretePolicy(Policy):
         return action, _IG
 
     def sample(self):
-        print(self.host.bundle.task.state)
-        print(self.host.state)
         self._actions, self._IG = self.find_best_action()
         # logger.info('Actions and associated expected information gain:\n{}'.format(tabulate(list(zip(self._actions['values'], self._IG)), headers = ['action', 'Expected Information Gain']) ))
-        return self._actions[0]
+        return self._actions[0], 0
 
 
 # ----------- Explicit Likelihood Discrete Policy
-class ELLDiscretePolicy(Policy):
+class ELLDiscretePolicy(BasePolicy):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.explicit_likelihood = True
@@ -265,7 +312,7 @@ class ELLDiscretePolicy(Policy):
     @classmethod
     def attach_likelihood_function(cls, _function):
         cls.compute_likelihood = _function
-        print('Attached {} to {}'.format(_function, cls.__name__))
+        logger.info('Attached {} to {}'.format(_function, cls.__name__))
 
     def sample(self):
         """ Select the most likely action.
@@ -278,7 +325,7 @@ class ELLDiscretePolicy(Policy):
         actions, llh = self.forward_summary(observation)
         action = actions[numpy.random.choice(len(llh), p = llh)]
         self.action_state['action'] = action
-        return action
+        return action, 0
 
     def forward_summary(self, observation):
         """ Compute the likelihood of each action, given the current observation
@@ -304,7 +351,7 @@ class ELLDiscretePolicy(Policy):
 
 # ======================= Continuous Policies
 
-class RLPolicy(Policy):
+class RLPolicy(BasePolicy):
     """ Code works as proof of concept, but should be tested and augmented to deal with arbitrary wrappers. Possibly the wrapper class should be augmented with a reverse method, or something like that.
 
     """
@@ -332,7 +379,8 @@ class RLPolicy(Policy):
         super().__init__(action_state, *args, **kwargs)
 
     def sample(self):
-        observation = self.host.inference_engine.buffer[-1]
+        # observation = self.host.inference_engine.buffer[-1]
+        observation = self.observation
         nn_obs = self.training_env.unwrapped.convert_observation(observation)
         _action = self.model.predict(nn_obs)[0]
         for wrappers_name, (_cls, _args) in reversed(self.wrappers['actionwrappers'].items()):
@@ -340,85 +388,4 @@ class RLPolicy(Policy):
             _action = aw.action(_action)
         action = self.action_state['action']
         action['values'] = _action
-        return action
-
-
-
-class LinearFeedback(Policy):
-    """ host_state_key = tuple(substate, subsubstate) e.g. ('task_state', 'x')
-    """
-    def __init__(self, host_state_key, action_space, action_set = None, **kwargs):
-
-        self.noise = kwargs.get('noise')
-        self.Gamma = kwargs.get('Gamma')
-
-        action_state = State()
-        action_state['action'] = [None, action_space, action_set]
-        self.action_state = action_state
-        self.host = None
-        self.feedback_gain = None
-        self.host_state_key = host_state_key
-
-    def sample(self):
-        if self.feedback_gain is None:
-            raise ValueError('{} attribute "feedback_gain" is None. You have to set the feedback gain on this policy before using it.')
-
-        noiseless_feedback = - self.feedback_gain @ self.host.inference_engine.buffer[-1][self.host_state_key[0]]['_value_{}'.format(self.host_state_key[1])]
-
-        if self.noise and self.Gamma:
-            gamma = numpy.random.normal(0, numpy.sqrt(self.host.timestep))
-            return noiseless_feedback + self.Gamma * gamma
-        else:
-            return noiseless_feedback
-
-
-
-
-# class BundlePolicy(Policy):
-#     """
-#     """
-#     def __init__(self, bundle, *args):
-#         super().__init__(None, None)
-#         self.bundle = bundle
-#         self.substate_list = args
-#         substate = bundle.game_state
-#         for arg in args:
-#             substate = substate[arg]
-#         self.action_state['action'] = substate
-#         self.host = None
-#
-#     def sample(self, nsteps, reset):
-#         if reset:
-#             self.reset(reset)
-#             print(self.bundle.game_state)
-#
-#         if nsteps == 'end':
-#             total_rewards = []
-#             while True:
-#                 observation, rewards, is_done, breakdown_rewards = self.bundle.step()
-#                 total_rewards += [rewards]
-#                 if is_done:
-#                     break
-#
-#
-#
-#         elif isinstance(nsteps, int):
-#             print("passing here")
-#             total_rewards = []
-#             for i in range(nsteps):
-#                 observation, rewards, is_done, breakdown_rewards = self.bundle.step()
-#                 total_rewards += [rewards]
-#                 if is_done:
-#                     break
-#
-#         else:
-#             raise NotImplementedError('nsteps should be either "end" or an interfer specifying the number of steps')
-#
-#         substate = self.bundle.game_state
-#         print(substate)
-#         for arg in self.substate_list:
-#             substate = substate[arg]
-#         self.action_state['action'] = substate
-#
-#     def reset(self, dic):
-#         self.bundle.reset(dic)
+        return action, 0

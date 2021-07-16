@@ -1,9 +1,12 @@
-from core.agents import BaseAgent
+from core.agents import BaseAgent, IHCT_LQGController
 from core.observation import RuleObservationEngine, base_operator_engine_specification
+from core.bundle import SinglePlayOperatorAuto
 from core.space import State, StateElement
-from core.policy import ELLDiscretePolicy
+from core.policy import ELLDiscretePolicy, WrapAsPolicy
+from core.interactiontask import ClassicControlTask
 import gym
 import numpy
+import copy
 
 class CarefulPointer(BaseAgent):
     """ An operator that only indicates the right direction, with a fixed amplitude.
@@ -107,71 +110,157 @@ class CarefulPointer(BaseAgent):
 
 
 
-class HeuristicPointer(BaseAgent):
-    def __init__(self, *args, **kwargs):
+class LQGPointer(BaseAgent):
+    """ Use this class as template to build your new agent.
+
+    :param myparameter(type): explain the parameter here
+    :return: what is returned
+    :meta public:
+    """
+    def __init__(self,
+            timestep = 0.01,
+            I = 0.25,
+            b = 0.2,
+            ta = 0.03,
+            te = 0.04,
+            F = numpy.diag([0, 0, 0, 0.001]),
+            G = 0.03*numpy.diag([1,1,0,0]),
+            C = numpy.array([   [1, 0, 0, 0],
+                    [0, 1, 0, 0],
+                    [0, 0, 1, 0],
+                    [0, 0, 0, 0]
+                        ]),
+            Gamma = numpy.array(0.08),
+            D = numpy.array([   [0.01, 0, 0, 0],
+                        [0, 0.01, 0, 0],
+                        [0, 0, 0.05, 0],
+                        [0, 0, 0, 0]
+                        ]),
+            Q = numpy.diag([1, 0.01, 0, 0]),
+            R = numpy.array([[1e-3]]),
+            U = numpy.diag([1, 0.1, 0.01, 0]),
+            *args, **kwargs):
+
+        self.timestep = timestep
+        self.I = I
+        self.b = b
+        self.ta = ta
+        self.te = te
+        a1 = b/(ta*te*I)
+        a2 = 1/(ta*te) + (1/ta + 1/te)*b/I
+        a3 = b/I + 1/ta + 1/te
+        bu = 1/(ta*te*I)
+        Ac = numpy.array([   [0, 1, 0, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 1],
+                        [0, -a1, -a2, -a3]    ])
+        Bc = numpy.array([[ 0, 0, 0, bu]]).reshape((-1,1))
+
+        # Define the bundle with LQG control
+        action_task = ClassicControlTask(timestep, Ac, Bc, F = F, G = G, discrete_dynamics = False, noise = 'off')
+        action_operator = IHCT_LQGController('operator', timestep, Q, R, U, C, Gamma, D, noise = 'on')
+        action_bundle = SinglePlayOperatorAuto(action_task, action_operator, onreset_deterministic_first_half_step = True,
+        start_at_action = True)
+
+        # Wrap it up in the LQGPointerPolicy
+        class LQGPointerPolicy(WrapAsPolicy):
+            def __init__(self, action_bundle, *args, **kwargs):
+                action_state = State()
+                action_state['action'] = StateElement(
+                    values = [None],
+                    spaces = [gym.spaces.Box(low = -numpy.inf, high = numpy.inf, shape = (1,1))])
+                super().__init__(action_bundle, action_state, *args, **kwargs)
+
+            def sample(self):
+                # logger.info('=============== Entering Sampler ================')
+                cursor = copy.copy(self.observation['task_state']['Position'])
+                target = copy.copy(self.observation['operator_state']['Goal'])
+                # allow temporarily
+                cursor.mode = 'warn'
+                target.mode = 'warn'
+
+                tmp_box = StateElement( values = [None],
+                    spaces = gym.spaces.Box(-self.host.bundle.task.gridsize+1, self.host.bundle.task.gridsize-1 , shape = (1,)),
+                    possible_values = [[None]],
+                    mode = 'warn')
+
+                cursor_box = StateElement( values = [None],
+                    spaces = gym.spaces.Box(-.5, .5, shape = (1,)),
+                    possible_values = [[None]],
+                    mode = 'none')
+
+
+                tmp_box['values'] = [float(v) for v in (target-cursor)['values']]
+                init_dist = tmp_box.cast(cursor_box)['values'][0]
+
+                _reset_x = self.xmemory
+                _reset_x[0] = init_dist
+                _reset_x_hat = self.xhatmemory
+                _reset_x_hat[0] = init_dist
+                action_bundle.reset( dic = {
+                'task_state': {'x':  _reset_x },
+                'operator_state': {'xhat': _reset_x_hat}
+                        } )
+
+                total_reward = 0
+                N = int(self.host.bundle.task.timestep/self.host.timestep)
+
+                for i in range(N):
+                    observation, sum_rewards, is_done, rewards = self.step()
+                    total_reward += sum_rewards
+                    if is_done:
+                        break
+
+                # Store state for next usage
+                self.xmemory = observation['task_state']['x']['values'][0]
+                self.xhatmemory = observation['operator_state']['xhat']['values'][0]
+
+                # Cast as delta in right units
+                cursor_box['values'] = - self.xmemory[0] + init_dist
+                delta = cursor_box.cast(tmp_box)
+                possible_values = [-30 + i for i in range(61)]
+                value = possible_values.index(int(numpy.round(delta['values'][0])))
+                action = StateElement(values = value, spaces = gym.spaces.Discrete(61), possible_values = possible_values)
+                # logger.info('{} Selected action {}'.format(self.__class__.__name__, str(action)))
+
+                return action, total_reward
+
+            def reset(self):
+                self.xmemory = numpy.array([[0.0],[0.0],[0.0],[0.0]])
+                self.xhatmemory = numpy.array([[0.0],[0.0],[0.0],[0.0]])
+
         agent_policy = kwargs.get('agent_policy')
         if agent_policy is None:
-            agent_policy = ELLDiscretePolicy(action_space = [gym.spaces.Discrete(2)], action_set = [[-1, 1]])
+            agent_policy = LQGPointerPolicy(action_bundle)
+
+        observation_engine = kwargs.get('observation_engine')
+        if observation_engine is None:
+            observation_engine = RuleObservationEngine(base_operator_engine_specification)
+            # give observation engine
 
 
 
+        super().__init__('operator',
+                            policy = agent_policy,
+                            observation_engine = observation_engine,
+                            )
 
-# class LQGPointer(LQG_SS):
-#     def __init__(self, dim, depth,  *args):
-#         self.dim = dim
-#         self.depth = depth
-#         self.timestep = 0.1
-#         if depth == 4:
-#             I, b, ta, te = args
-#         else:
-#             raise NotImplementedError
-#         a1 = b/(ta*te*I)
-#         a2 = 1/(ta*te) + (1/ta + 1/te)*b/I
-#         a3 = b/I + 1/ta + 1/te
-#         bu = 1/(ta*te*I)
-#
-#         A = numpy.array([   [0, 1, 0, 0],
-#                         [0, 0, 1, 0],
-#                         [0, 0, 0, 1],
-#                         [0, -a1, -a2, -a3]    ])
-#
-#         B = numpy.array([[ 0, 0, 0, bu]]).reshape((-1,1))
-#
-#         C = numpy.array([   [1, 0, 0, 0],
-#                             [0, 1, 0, 0],
-#                             [0, 0, 1, 0]
-#                                 ])
-#
-#
-#
-#         D = numpy.array([   [0.01, 0, 0],
-#                             [0, 0.01, 0],
-#                             [0, 0, 0.05]
-#                             ])
-#
-#         F = numpy.diag([0, 0, 0, 0.001])
-#         Gamma = numpy.array([[0.08]])
-#         G = 0.03*numpy.diag([1,1,0,0])
-#
-#         Q = numpy.diag([1, 0.01, 0, 0])
-#         R = numpy.array([[1e-3]])
-#         U = numpy.diag([1, 0.1, 0.01, 0])
-#
-#
-#         D = D*0.35
-#         G = G*0.35
-#
-#         super().__init__('operator', A, B, C, D, F, G, Q, R, U, Gamma)
-#         self.state = OrderedDict({'x': numpy.array([0 for i in range(self.depth*self.dim)]), 'xhat': numpy.array([0 for i in range(self.depth*self.dim)])})
-#
-#     def reset(self, *args):
-#         if args:
-#             print(args)
-#             raise NotImplementedError
-#         else:
-#             # select starting position
-#             x0 = -.5
-#             # Start from still
-#             x_array = [-.5] + [0 for i in (range(self.depth*self.dim-1))]
-#
-#             self.state = OrderedDict({'x': numpy.array(x_array), 'xhat': numpy.array([0 for i in range(self.depth*self.dim)])})
+
+    def finit(self):
+        self.target_values = self.bundle.task.state['Targets']['values']
+        target_spaces = self.bundle.task.state['Targets']['spaces']
+
+        self.state['Goal'] =  StateElement( values = [None],
+                                            spaces = [gym.spaces.Discrete(self.bundle.task.gridsize)],
+                                            possible_values = [[None]])
+
+
+    def reset(self, dic = None):
+        if dic is None:
+            super().reset()
+
+        self.target_values = self.bundle.task.state['Targets']['values']
+        self.state['Goal']["values"] = numpy.random.choice(self.target_values)
+
+        if dic is not None:
+            super().reset(dic = dic)

@@ -2,22 +2,34 @@ from collections import OrderedDict
 import copy
 import gym
 import numpy
+import json
 
 numpy.set_printoptions(precision = 3, suppress = True)
 
 from core.helpers import flatten, hard_flatten
 import itertools
 from tabulate import tabulate
-
+import operator
 
 def remove_prefix(text, prefix):
     # from Python 3.9 use str.removeprefix() directly
     # copied from https://stackoverflow.com/questions/16891340/remove-a-prefix-from-a-string
     return text[text.startswith(prefix) and len(prefix):]
 
+class Box(gym.spaces.Box):
+    def __init__(self, *args, **kwargs):
+        super().__init__(self, *args, **kwargs)
+
+
+
+
 
 class StateElement:
-    def __init__(self, values = None, spaces = None, possible_values = None):
+
+    __array_priority__ = 1 # to make __rmatmul__ possible with numpy arrays
+
+    def __init__(self, values = None, spaces = None, possible_values = None, mode = 'error'):
+        self.mode = mode
         self.values, self.spaces, self.possible_values = None, None, None
         self.spaces = self.check_spaces(spaces)
         self.possible_values = self.check_possible_values(possible_values)
@@ -30,7 +42,7 @@ class StateElement:
 
     def __next__(self):
         if self.n < self.max:
-            result = StateElement(values = self.values[self.n], spaces = self.spaces[self.n], possible_values = self.possible_values[self.n])
+            result = StateElement(values = self.values[self.n], spaces = self.spaces[self.n], possible_values = self.possible_values[self.n], mode = self.mode)
             self.n += 1
             return result
         else:
@@ -39,6 +51,166 @@ class StateElement:
     def __len__(self):
         return len(self.spaces)
 
+    def __setitem__(self, key, item):
+        if key == 'values':
+            setattr(self, key, self.check_values(item))
+        elif key == 'spaces':
+            setattr(self, key, self.check_spaces(item))
+        elif key == 'possible_values':
+            setattr(self, key, self.check_possible_values(item))
+        else:
+            raise ValueError('Key should belong to ["values", "spaces", "possible_values"]')
+
+    def __getitem__(self, key):
+        if key in ["values", "spaces", "possible_values"]:
+            return getattr(self, key)
+        elif key == 'human_values':
+            return self.get_human_values()
+        elif isinstance(key, (int, numpy.int)):
+            return StateElement(values = self.values[key],
+                                spaces = self.spaces[key],
+                                possible_values = self.possible_values[key], mode = self.mode)
+
+    def __neg__(self):
+        return StateElement(values = [-u for u in self['values']], spaces = self.spaces, possible_values = self.possible_values, mode = self.mode)
+
+    def __add__(self, other):
+        if isinstance(other, StateElement):
+            other = other['values']
+        _elem = StateElement(values = self.values, spaces = self.spaces, possible_values = self.possible_values, mode = self.mode)
+        if not hasattr(other, '__len__'):
+            other = [other]
+
+
+        if len(_elem['values']) == len(other):
+            out = [_elem['values'][k] + v for k,v in enumerate(other)]
+        elif len(_elem['values']) == 1:
+            out = _elem.values[0] + other
+        elif len(_elem['values']) != 1 and len(other) == 1:
+            out = [v + other[0] for k,v in enumerate(_elem['values'])]
+        else:
+            out = _elem['values'] + other
+        # _copy['values'] = self.clip(out)
+        _elem['values'] = out
+        return _elem
+
+
+    def __radd__(self, other):
+        return self.__add__(other)
+
+    def __sub__(self, other):
+        return self.__add__(-other)
+
+    def __rsub__(self, other):
+        return self.__radd__(-other)
+
+    def __mul__(self, other):
+        _copy = copy.deepcopy(self)
+        if not hasattr(other, '__len__'):
+            other = [other]
+
+        if len(_copy['values']) == 1:
+            out = _copy.values[0] * other
+        elif len(_copy['values']) == len(other):
+            out = [_copy['values'][k] * v for k,v in enumerate(other)]
+        elif len(_copy['values']) != 1 and len(other) == 1:
+            out = [v * other[0] for k,v in enumerate(_copy['values'])]
+        else:
+            out = _copy['values'] * other
+        # _copy['values'] = self.clip(out)
+        _copy['values'] = out
+        return _copy
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
+    def __str__(self):
+        return "[StateElement - {}] - Value {} in {}, with possible_values {}".format(self.mode, self.values, self.spaces, self.possible_values)
+
+    def __repr__(self):
+        return 'StateElement([{}] - {},...)'.format(self.mode, self.values.__repr__())
+
+    # https://stackoverflow.com/questions/1500718/how-to-override-the-copy-deepcopy-operations-for-a-python-object
+    # Here we override copy and deepcopy simply because there seems to be a huge overhead in the default deepcopy implementation.
+    def __copy__(self):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        return result
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            setattr(result, k, copy.deepcopy(v, memo))
+        return result
+
+
+    def __matmul__(self, other):
+        """
+        Coarse implementation. Does not deal with all cases
+        """
+        se = copy.copy(self)
+        if isinstance(other, StateElement):
+            matA = self.values[0]
+            matB = other.values[0]
+        elif isinstance(other, numpy.ndarray):
+            matA = self.values[0]
+            matB = other
+        else:
+            raise TypeError('rhs of {}@{} should be either a StateElement containing a numpy.ndarray or a numpy.ndarray')
+
+        values = matA @ matB
+        low = se.spaces[0].low[:values.shape[0], :values.shape[1]]
+        high = se.spaces[0].high[:values.shape[0], :values.shape[1]]
+
+        se.spaces = [gym.spaces.Box(low, high, shape = values.shape)]
+        se['values'] = [values]
+
+        return se
+
+    def __rmatmul__(self, other):
+        se = copy.copy(self)
+        if isinstance(other, StateElement):
+            matA = self.values[0]
+            matB = other.values[0]
+        elif isinstance(other, numpy.ndarray):
+            matA = self.values[0]
+            matB = other
+        else:
+            raise TypeError('lhs of {}@{} should be either a StateElement containing a numpy.ndarray or a numpy.ndarray')
+        values = matB @ matA
+        if values.shape == se.spaces[0].shape:
+            se['values'] = [values]
+            return se
+
+        else:
+            low = -numpy.inf * numpy.ones(values.shape)
+            high = numpy.inf * numpy.ones(values.shape)
+
+            se.spaces = [gym.spaces.Box(low, high, shape = values.shape)]
+            se['values'] = [values]
+            return se
+
+
+    def serialize(self):
+        ret_list = []
+        for v in self['values']:
+            try:
+                json.dumps(v)
+                ret_list.append(v)
+            except TypeError as msg:
+                if isinstance(v, numpy.ndarray):
+                    ret_list.extend(v.tolist())
+                elif isinstance(v, numpy.generic):
+                    ret_list.append(v.item())
+                else:
+                    print(v, type(v))
+                    raise TypeError("".format(msg))
+        return ret_list
+
+
     def cartesian_product(self):
         lists = []
         for value, space, possible_value in zip(self.values, self.spaces, self.possible_values):
@@ -46,7 +218,7 @@ class StateElement:
                 lists.append(list(range(space.n)))
             elif isinstance(space, gym.spaces.Box):
                 lists.append([value])
-        return [StateElement(values = list(element), spaces = self.spaces, possible_values = self.possible_values) for element in itertools.product(*lists)]
+        return [StateElement(values = list(element), spaces = self.spaces, possible_values = self.possible_values, mode = self.mode) for element in itertools.product(*lists)]
 
 
     def reset(self, dic = None):
@@ -87,7 +259,6 @@ class StateElement:
                     return [None]
         except ValueError:
             pass
-            # print('warning: you might want to check whether the values {} have been initialized correctly in {}'.format(values.__str__(), self.__repr__() ) )
 
         if self.spaces is not None and self.spaces != [None]:
             # check whether values has the same number of elements as spaces
@@ -95,17 +266,31 @@ class StateElement:
                 raise ValueError('You are assigning a value of length {:d}, which mismatches the length {:d} of the space'.format(len(values), len(self.spaces)))
             # check whether values conform to the spaces
             for n, (value, space) in enumerate(zip(values, self.spaces)):
+                if isinstance(space, gym.spaces.Discrete):
+                    low = 0
+                    high = space.n
+                elif isinstance(space, gym.spaces.Box):
+                    low = space.low
+                    high = space.high
                 try:
                     if value is None:
                         pass
                     else:
-                        if value not in space:# and value is not None:
-                            raise ValueError('You are assigning an invalid value: value number {} ({}) is not contained in {} (low: {}, high: {})'.format(str(n), str(value), str(space), str(space.low), str(space.high)))
+                        if value not in space:
+                            if self.mode == 'error':
+                                raise ValueError('You are assigning an invalid value: value number {} ({}) is not contained in {} (low: {}, high: {})'.format(str(n), str(value), str(space), str(low), str(high)))
+                            elif self.mode == 'warn':
+                                print('Warning: You are assigning an invalid value: value number {} ({}) is not contained in {} (low: {}, high: {})'.format(str(n), str(value), str(space), str(low), str(high)))
+                            elif self.mode == 'clip':
+                                values[n] = self._clip(value, space)
+                            else:
+                                pass
+
                 except AttributeError:
                     if numpy.array(value).reshape(space.shape) in space:
                         values[n] = numpy.array(value).reshape(space.shape)
                     else:
-                        raise ValueError('You are assigning an invalid value: value number {} ({}) is not contained in {}'.format(str(n), str(value), str(space)))
+                        raise ValueError('AttributeError triggered: You are assigning an invalid value: value number {} ({}) is not contained in {}'.format(str(n), str(value), str(space)))
         if self.possible_values is not None and len(values) != len(self.possible_values):
             raise ValueError('You are assigning a value of length {}, which mismatches the length {} of the possible values'.format(len(value), len(self.possible_values)))
         return values
@@ -161,12 +346,17 @@ class StateElement:
     def clip(self, values):
         values = flatten([values])
         for n, (value, space) in enumerate(zip(values, self.spaces)):
-            if value not in space:
-                if isinstance(space, gym.spaces.Box):
-                    values[n] = numpy.clip( value, space.low, space.high)
-                elif isinstance(space, gym.spaces.Discrete):
-                    values[n] = max(0,min(space.n -1, value))
+            values[n] = self._clip(value, space)
         return values
+
+    def _clip(self, value, space):
+        if value not in space:
+            if isinstance(space, gym.spaces.Box):
+                return numpy.clip( value, space.low, space.high)
+            elif isinstance(space, gym.spaces.Discrete):
+                return max(0,min(space.n -1, value))
+            else:
+                raise NotImplementedError
 
 
 
@@ -192,7 +382,7 @@ class StateElement:
         return value
 
     # works only for 1D
-    def cast(self, other, inplace = False):
+    def cast(self, other):
         if not isinstance(other, StateElement):
             raise TypeError("other {} must be of type StateElement".format(str(other)))
 
@@ -212,103 +402,16 @@ class StateElement:
             else:
                 raise NotImplementedError
             values.append(value)
-        if inplace:
-            other['values'] = values
-            return
-        else:
-            _copy = copy.deepcopy(other)
-            _copy['values'] = values
-            return _copy
 
-
-
-
-
-    def __setitem__(self, key, item):
-        if key == 'values':
-            setattr(self, key, self.check_values(item))
-        elif key == 'spaces':
-            setattr(self, key, self.check_spaces(item))
-        elif key == 'possible_values':
-            setattr(self, key, self.check_possible_values(item))
-        else:
-            raise ValueError('Key should belong to ["values", "spaces", "possible_values"]')
-
-    def __getitem__(self, key):
-        if key in ["values", "spaces", "possible_values"]:
-            return getattr(self, key)
-        elif key == 'human_values':
-            return self.get_human_values()
-        elif isinstance(key, (int, numpy.int)):
-            return StateElement(values = self.values[key],
-                                spaces = self.spaces[key],
-                                possible_values = self.possible_values[key])
-
-    def __add__(self, other):
-        _copy = copy.deepcopy(self)
-        if not hasattr(other, '__len__'):
-            other = [other]
-
-        if len(_copy['values']) == 1:
-            out = _copy.values[0] + other
-        elif len(_copy['values']) == len(other):
-            out = [_copy['values'][k] + v for k,v in enumerate(other)]
-        elif len(_copy['values']) != 1 and len(other) == 1:
-            out = [v + other[0] for k,v in enumerate(_copy['values'])]
-        else:
-            out = _copy['values'] + other
-        _copy['values'] = self.clip(out)
+        _copy = copy.deepcopy(other)
+        _copy['values'] = values
         return _copy
 
-    def __radd__(self, other):
-        raise NotImplementedError
 
-    def __sub__(self, other):
-        return self.__add__(-other)
 
-    def __rsub__(self, other):
-        raise NotImplementedError
 
-    def __str__(self):
-        _str = '\n'
-        _str += 'value:\t'
-        if self.values:
-            _str += str(self.values) + '\n'
-        else:
-            _str += 'None\n'
 
-        _str += 'spaces:\t'
-        if self.spaces:
-            _str += str(self.spaces) + '\n'
-        else:
-            _str += 'None\n'
 
-        _str += 'possible values:\t'
-        if self.possible_values:
-            _str += str(self.possible_values) + '\n'
-        else:
-            _str += 'None\n'
-
-        return _str
-
-    def __repr__(self):
-        return 'StateElement({},...)'.format(self.values.__repr__())
-
-    # https://stackoverflow.com/questions/1500718/how-to-override-the-copy-deepcopy-operations-for-a-python-object
-    # Here we override copy and deepcopy simply because there seems to be a huge overhead in the default deepcopy implementation.
-    def __copy__(self):
-        cls = self.__class__
-        result = cls.__new__(cls)
-        result.__dict__.update(self.__dict__)
-        return result
-
-    def __deepcopy__(self, memo):
-        cls = self.__class__
-        result = cls.__new__(cls)
-        memo[id(self)] = result
-        for k, v in self.__dict__.items():
-            setattr(result, k, copy.deepcopy(v, memo))
-        return result
 
 
 
@@ -338,11 +441,11 @@ class State(OrderedDict):
         return values, spaces, possible_values, labels
         # return hard_flatten(values), spaces, possible_values, labels
 
-    def filter(self, mode, ordereddict):
+    def filter(self, mode, filterdict = None):
         new_state = OrderedDict()
-        if ordereddict is None:
-            ordereddict = self
-        for key, values in ordereddict.items():
+        if filterdict is None:
+            filterdict = self
+        for key, values in filterdict.items():
             if isinstance(self[key], State):
                 new_state[key] = self[key].filter(mode, values)
             elif isinstance(self[key], StateElement):
@@ -359,6 +462,9 @@ class State(OrderedDict):
             return gym.spaces.Dict(new_state)
         return new_state
 
+
+    def __content__(self):
+        return list(self.keys())
 
     # Here we override copy and deepcopy simply because there seems to be some overhead in the default deepcopy implementation. Adapted from StateElement code
     def __copy__(self):
@@ -377,6 +483,22 @@ class State(OrderedDict):
             deepcopy_object[k] = copy.deepcopy(v, memodict)
         return deepcopy_object
 
+    def serialize(self):
+        ret_dict = {}
+        for key, value in dict(self).items():
+            print(key)
+            try:
+                value_ = json.dumps(value)
+            except TypeError:
+                try:
+                    value_ = value.serialize()
+                except AttributeError:
+                    print("warning: I don't know how to serialize {}. I'm sending the whole internal dictionnary of the object. Consider adding a _serialize() method to your custom object".format(value.__str__()))
+                    value_ = value.__dict__
+            ret_dict[key] = value_
+        return ret_dict
+
+
 
     def __str__(self):
         """ Print out the game_state and the name of each substate with according indices.
@@ -388,6 +510,5 @@ class State(OrderedDict):
                 table_rows.append([str(i), l, str(v), str(s), str(p)])
 
         _str = tabulate(table_rows, table_header)
-
 
         return _str

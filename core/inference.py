@@ -18,7 +18,7 @@ import scipy.linalg
 
 
 
-class InferenceEngine:
+class BaseInferenceEngine:
     """ An Inference Engine. Subclass this to define new Inference Engines.
 
     An inference_engine provides a buffer, whose depth is defined during initializing. The buffer automatically stores the newest observation and pushes back the oldest one.
@@ -38,6 +38,21 @@ class InferenceEngine:
 
         _buffer_depth = {"name": 'buffer_depth', "value": buffer_depth, "meaning": 'Depth of the buffer used by the inference_engine to store observations'}
         self.handbook = Handbook({'name': self.__class__.__name__,'render_mode': [], 'parameters': [_buffer_depth]})
+
+    def __content__(self):
+        return self.__class__.__name__
+
+    @property
+    def observation(self):
+        return self.buffer[-1]
+
+    @property
+    def action(self):
+        return self.host.policy.action_state['action']
+
+    @property
+    def unwrapped(self):
+        return self
 
     def add_observation(self, observation):
         """ add an observation  to the buffer. Currently poorly performing implementation
@@ -109,7 +124,7 @@ class InferenceEngine:
 
 
 # The operatormodel is not updated with this assistant
-class GoalInferenceWithOperatorPolicyGiven(InferenceEngine):
+class GoalInferenceWithOperatorPolicyGiven(BaseInferenceEngine):
     """ An Inference Engine used by an assistant to infer the goal of an operator.
 
     The inference is based on an operator_model which has to be provided to this engine.
@@ -245,7 +260,6 @@ class GoalInferenceWithOperatorPolicyGiven(InferenceEngine):
             print("warning: beliefs sum up to 0 after updating. I'm resetting to uniform to continue behavior. You should check if the behavior model makes sense. Here are the latest results from the model")
             old_beliefs = [1 for i in old_beliefs]
         new_beliefs = [i/sum(old_beliefs) for i in old_beliefs]
-        print(new_beliefs)
         state['Beliefs']['values'] = new_beliefs
         return state, 0
 
@@ -255,13 +269,11 @@ class GoalInferenceWithOperatorPolicyGiven(InferenceEngine):
 
 
 
-class LinearGaussianContinuous(InferenceEngine):
+class LinearGaussianContinuous(BaseInferenceEngine):
     """ An Inference Engine that handles a Gaussian Belief. It assumes a Gaussian prior and a Gaussian likelihood. ---- Currently the covariance matrix for the likelihood is assumed to be contained by the host as self.Sigma. Maybe change this ----
 
     The mean and covariance matrices of Belief are stored in the substates 'MuBelief' and 'SigmaBelief'.
 
-    .. warning::
-        This inference engine requires a function yms to be attached via attach_yms() which specifies which component of the observation to use as observation for the updating part i.e. which substate is modeled by the belief.
 
     :meta public:
     """
@@ -391,11 +403,16 @@ class LinearGaussianContinuous(InferenceEngine):
 
 
 
-class ContinuousKalmanUpdate(InferenceEngine):
+class ContinuousKalmanUpdate(BaseInferenceEngine):
     def __init__(self):
         super().__init__()
         self.fmd_flag = False
         self.K_flag = False
+
+        _K = {'name': 'K', 'meaning': 'Prediction/observation gain. Set with set_K()'}
+        _ABC = {'name': 'ABC', 'meaning': 'dynamics of the forward model. Set A, B, C at once with set_forward_model_dynamics()'}
+        self.handbook["required_bindings"] = []
+        self.handbook['required_bindings'].extend([_K, _ABC])
 
     def set_forward_model_dynamics(self, A, B, C):
         self.fmd_flag = True
@@ -413,8 +430,8 @@ class ContinuousKalmanUpdate(InferenceEngine):
             raise RuntimeError('You have to set the forward model dynamics, by calling the set_forward_model_dynamics() method with inference engine {}  before using it'.format(type(self).__name__))
         if not self.K_flag:
             raise RuntimeError('You have to set the K Matrix, by calling the set_K() method with inference engine {}  before using it'.format(type(self).__name__))
-        observation = self.buffer[-1]
-        dy = observation['task_state']['_value_x']*self.host.timestep
+        observation = self.observation
+        dy = observation['task_state']['x']['values'][0]*self.host.timestep
 
         if isinstance(dy, list):
             dy = dy[0]
@@ -423,35 +440,21 @@ class ContinuousKalmanUpdate(InferenceEngine):
 
 
         state = observation['{}_state'.format(self.host.role)]
-        u = observation['{}_action'.format(self.host.role)]['_value_action']
+        u = self.action['values'][0]
 
 
-        xhat = state["_value_xhat"]
-        if isinstance(xhat, list):
-            xhat = xhat[0]
-        if not isinstance(xhat, numpy.ndarray):
-            raise TypeError("Substate Xhat of {} is expected to be of type numpy.ndarray".format(type(self.host).__name__))
-
-        if isinstance(u, list):
-            u = u[0]
-        if not isinstance(u, numpy.ndarray):
-            raise TypeError("Substate Xhat of {} is expected to be of type numpy.ndarray".format(type(self.host).__name__))
+        xhat = state["xhat"]['values'][0]
 
         xhat = xhat.reshape(-1,1)
         u = u.reshape(-1,1)
         deltaxhat = (self.A @ xhat + self.B @ u)*self.host.timestep + self.K @ (dy - self.C @ xhat * self.host.timestep)
         xhat += deltaxhat
-        state['_value_xhat'] = xhat
+        state['xhat']['values'] = xhat
 
         # Here, we use the classical definition of rewards in the LQG setup, but this requires having the true value of the state. This may or may not realistic...
         # ====================== Rewards ===============
 
-        x = self.host.bundle.task.state['_value_x']
-        if isinstance(x, list):
-            x = x[0]
-        if not isinstance(x, numpy.ndarray):
-            raise TypeError("Substate Xhat of {} is expected to be of type numpy.ndarray".format(type(self.host).__name__))
-
+        x = self.host.bundle.task.state['x']['values'][0]
         reward = (x-xhat).T @ self.host.U @ (x-xhat)
 
         return state, reward

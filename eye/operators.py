@@ -1,6 +1,6 @@
 from core.agents import BaseAgent
 from core.observation import RuleObservationEngine, base_operator_engine_specification
-from core.policy import StatePolicy
+from core.policy import LinearFeedback
 from core.space import State, StateElement
 from core.inference import LinearGaussianContinuous
 import eye.noise
@@ -30,7 +30,8 @@ class ChenEye(BaseAgent):
             action_state['action'] = StateElement(
                         values = [None],
                         spaces = [gym.spaces.Box(low=-1, high=1, shape=(self.dimension, ))],
-                        possible_values = [None]
+                        possible_values = [None],
+                        mode = 'warn'
                                         )
 
             def noise_function(self, action, observation, *args):
@@ -42,13 +43,15 @@ class ChenEye(BaseAgent):
                 noise = self.host.eccentric_noise_gen(noise_obs, oculomotornoise)[0]
                 return noise
 
-            agent_policy = StatePolicy(
+            agent_policy = LinearFeedback(
                 ('operator_state','belief'),
                 0,
                 action_state,
                 noise_function = noise_function,
                 noise_function_args = (self.oculomotornoise,)
-                        )
+            )
+
+
 
         observation_engine = kwargs.get('observation_engine')
 
@@ -77,7 +80,8 @@ class ChenEye(BaseAgent):
             belief = StateElement(
                 values = [None, None],
                 spaces = [gym.spaces.Box(low=-1, high=1, shape=(self.dimension, )), gym.spaces.Box(low = -numpy.inf, high = numpy.inf, shape = (self.dimension,self.dimension))],
-                possible_values = [[None], [None]]
+                possible_values = [[None], [None]],
+                mode = 'warn'
             )
             state = State()
             state['belief'] = belief
@@ -142,10 +146,8 @@ class ChenEye(BaseAgent):
         target = observation['task_state']['Targets']['values'][0]
         position = observation['task_state']['Fixation']['values'][0]
         Sigma = eye.noise.eccentric_noise(target, position, noise_std)
-        print(Sigma, Sigma.shape, numpy.zeros(shape = (self.dimension,)), numpy.zeros(shape = (self.dimension,)).shape )
         noise = numpy.random.multivariate_normal( numpy.zeros(shape = (self.dimension,)), Sigma)
         self.Sigma = Sigma
-        print("generated noise {} from covariance matrix {}".format(str(noise), str(Sigma)))
         return noise, Sigma
 
 
