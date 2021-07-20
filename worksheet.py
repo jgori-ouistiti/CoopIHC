@@ -1,7 +1,7 @@
 import gym
 import numpy
 
-from core.bundle import PlayNone, PlayOperator, PlayAssistant, PlayBoth, Train, SinglePlayOperator, SinglePlayOperatorAuto, _DevelopTask
+from core.bundle import PlayNone, PlayOperator, PlayAssistant, PlayBoth, Train, SinglePlayOperator, SinglePlayOperatorAuto, _DevelopTask, AsyncWrapper
 from pointing.envs import SimplePointingTask, Screen_v0
 from pointing.operators import CarefulPointer, LQGPointer
 from pointing.assistants import ConstantCDGain, BIGGain
@@ -13,12 +13,14 @@ from core.models import LinearEstimatedFeedback
 from core.helpers import flatten
 from core.agents import BaseAgent, FHDT_LQRController, IHDT_LQRController, IHCT_LQGController, DummyAssistant, DummyOperator
 from core.observation import base_task_engine_specification, base_operator_engine_specification, RuleObservationEngine, BaseObservationEngine, CascadedObservationEngine, WrapAsObservationEngine
-from core.interactiontask import ClassicControlTask,  InteractionTask, TaskWrapper, WebsocketWrapper, WebsocketInteractionTask, create_websocket_task, WebSocketTask
+from core.interactiontask import ClassicControlTask,  InteractionTask, TaskWrapper
 from core.policy import ELLDiscretePolicy, BasePolicy, BIGDiscretePolicy, RLPolicy, WrapAsPolicy
 from core.space import State, StateElement
+from core.wsbundle import Server
 import matplotlib.pyplot as plt
 import copy
 import asyncio
+
 
 import sys
 _str = sys.argv[1]
@@ -813,12 +815,26 @@ if _str == 'js-ws' or _str == 'all':
     # #     task = await create_websocket_task()
 
     task = HTMLSimplePointingTask(gridsize = 15, number_of_targets = 3)
+    binary_operator = CarefulPointer()
+    unitcdgain = ConstantCDGain(1)
+    bundle = PlayNone(task, binary_operator, unitcdgain)
+    game_state = bundle.reset()
+    # bundle.render('plotext')
+    bdl = PlayOperator(task, binary_operator, unitcdgain)
+    bundle = AsyncWrapper(bdl)
 
     import asyncio, websockets
-    start_server = websockets.serve(task.interact, "localhost", 4000)
+    start_server = websockets.serve(bundle.serve, host = "localhost", port = 4000)
     asyncio.get_event_loop().run_until_complete(start_server)
     asyncio.get_event_loop().run_forever()
 
+if _str == 'js-ws-bis':
+    task = SimplePointingTask(gridsize = 18, number_of_targets = 4)
+    operator = CarefulPointer()
+    assistant = ConstantCDGain(1)
+    bundle = PlayOperator(task, operator, assistant)
+    server = Server(bundle, address='localhost', port = 4000)
+    server.start()
 
 
 

@@ -154,7 +154,7 @@
             }
 
             function on_init(dic_sent){
-                let params = dic_sent['params'];
+                let params = dic_sent['parameters'];
                 var ptparams = new PointingTaskParameters();
                 for (const [key, value] of Object.entries(params)){
                     ptparams[key] = value;
@@ -165,10 +165,15 @@
                 tm.position = _position;
                 tm.targets = _targets;
                 goal.textContent = _goal.toString();
+                var msg = {};
+                msg['type'] = 'operator_state';
+                msg['goal'] = _goal;
+                send_msg(msg)
 
-                state = {};
-                state['Position'] = _position;
-                state['Targets'] = _targets;
+                var state = {};
+                state['type'] = 'task_state';
+                state['position'] = _position;
+                state['targets'] = _targets;
                 send_msg(state);
             }
 
@@ -202,7 +207,8 @@
                     case 'init':
                         on_init(dic_received)
                         break;
-
+                    case 'reset':
+                        console.log(dic_received)
                     case 'state':
                         update_state(dic_received);
                         break;

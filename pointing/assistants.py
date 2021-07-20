@@ -60,7 +60,7 @@ class BIGGain(BaseAgent):
         self.state['Beliefs'] = StateElement(values = [1/self.bundle.task.number_of_targets for i in range(self.bundle.task.number_of_targets)], spaces = [gym.spaces.Box(0, 1, shape = (1,)) for i in range(self.bundle.task.number_of_targets)], possible_values = None)
 
         # change theta for inference engine
-        set_theta = [{('operator_state', 'Goal'): StateElement(values = [t],
+        set_theta = [{('operator_state', 'goal'): StateElement(values = [t],
                 spaces = [gym.spaces.Discrete(self.bundle.task.gridsize)],
                 possible_values =  self.bundle.task.state['Targets']['values'])  } for t in self.bundle.task.state['Targets']['values'] ]
 

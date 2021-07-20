@@ -11,7 +11,7 @@ import copy
 class CarefulPointer(BaseAgent):
     """ An operator that only indicates the right direction, with a fixed amplitude.
 
-    Works with a task that has a 'Targets' substate. At each reset, it selects a new goal from the possible 'Targets'. When sampled, the operator will issue an action that is either +1 or -1 in the direction of the target.
+    Works with a task that has a 'targets' substate. At each reset, it selects a new goal from the possible 'targets'. When sampled, the operator will issue an action that is either +1 or -1 in the direction of the target.
     The operator observes everything perfectly except for the assistant state.
 
 
@@ -30,8 +30,8 @@ class CarefulPointer(BaseAgent):
             def compute_likelihood(self, action, observation):
                 # convert actions and observations
                 action = action['human_values'][0]
-                goal = observation['operator_state']['Goal']['values'][0]
-                position = observation['task_state']['Position']['values'][0]
+                goal = observation['operator_state']['goal']['values'][0]
+                position = observation['task_state']['position']['values'][0]
 
                 # Write down all possible cases (5)
                 # (1) Goal to the right, positive action
@@ -88,10 +88,10 @@ class CarefulPointer(BaseAgent):
 
 
     def finit(self):
-        self.target_values = self.bundle.task.state['Targets']['values']
-        target_spaces = self.bundle.task.state['Targets']['spaces']
+        self.target_values = self.bundle.task.state['targets']['values']
+        target_spaces = self.bundle.task.state['targets']['spaces']
 
-        self.state['Goal'] =  StateElement( values = [None],
+        self.state['goal'] =  StateElement( values = [None],
                                             spaces = [gym.spaces.Discrete(self.bundle.task.gridsize)],
                                             possible_values = [[None]])
 
@@ -100,8 +100,8 @@ class CarefulPointer(BaseAgent):
         if dic is None:
             super().reset()
 
-        self.target_values = self.bundle.task.state['Targets']['values']
-        self.state['Goal']["values"] = numpy.random.choice(self.target_values)
+        self.target_values = self.bundle.task.state['targets']['values']
+        self.state['goal']["values"] = numpy.random.choice(self.target_values)
 
         if dic is not None:
             super().reset(dic = dic)
@@ -173,8 +173,8 @@ class LQGPointer(BaseAgent):
 
             def sample(self):
                 # logger.info('=============== Entering Sampler ================')
-                cursor = copy.copy(self.observation['task_state']['Position'])
-                target = copy.copy(self.observation['operator_state']['Goal'])
+                cursor = copy.copy(self.observation['task_state']['position'])
+                target = copy.copy(self.observation['operator_state']['goal'])
                 # allow temporarily
                 cursor.mode = 'warn'
                 target.mode = 'warn'
@@ -247,10 +247,10 @@ class LQGPointer(BaseAgent):
 
 
     def finit(self):
-        self.target_values = self.bundle.task.state['Targets']['values']
-        target_spaces = self.bundle.task.state['Targets']['spaces']
+        self.target_values = self.bundle.task.state['targets']['values']
+        target_spaces = self.bundle.task.state['targets']['spaces']
 
-        self.state['Goal'] =  StateElement( values = [None],
+        self.state['goal'] =  StateElement( values = [None],
                                             spaces = [gym.spaces.Discrete(self.bundle.task.gridsize)],
                                             possible_values = [[None]])
 
@@ -259,8 +259,8 @@ class LQGPointer(BaseAgent):
         if dic is None:
             super().reset()
 
-        self.target_values = self.bundle.task.state['Targets']['values']
-        self.state['Goal']["values"] = numpy.random.choice(self.target_values)
+        self.target_values = self.bundle.task.state['targets']['values']
+        self.state['goal']["values"] = numpy.random.choice(self.target_values)
 
         if dic is not None:
             super().reset(dic = dic)

@@ -9,13 +9,15 @@ from core.helpers import flatten, hard_flatten
 from core.agents import DummyAssistant, DummyOperator
 from core.observation import BaseObservationEngine
 from core.core import Handbook
+from core.interactiontask import PipeTaskWrapper
 
 import copy
 
 import sys
 from loguru import logger
 import yaml
-
+import time
+import json
 
 
 ######### List of kwargs for bundles init()
@@ -57,6 +59,8 @@ class Bundle:
         self.game_state = State()
 
         turn_index = StateElement(values = [0], spaces = [gym.spaces.Discrete(2)], possible_values = [None])
+
+
         self.game_state['turn_index'] = turn_index
         self.game_state["task_state"] = task.state
         self.game_state["operator_state"] = operator.state
@@ -72,6 +76,17 @@ class Bundle:
         else:
             self.game_state["assistant_action"] = State()
             self.game_state["assistant_action"]['action'] = StateElement()
+
+
+        print("turn index")
+        print(turn_index)
+        print("task.state")
+        print(task.state)
+        print("operator.state")
+        print(operator.state)
+        print("assistant.state")
+        print(assistant.state)
+
 
 
         logger.info('Finish Initializing task, operator and assistant')
@@ -668,6 +683,91 @@ class BundleWrapper(Bundle):
     def __init__(self, bundle):
         self.__class__ = type(bundle.__class__.__name__, (self.__class__, bundle.__class__), {})
         self.__dict__ = bundle.__dict__
+
+
+class PipedTaskBundleWrapper(Bundle):
+    def __init__(self, bundle, pipe):
+        self.__dict__ = bundle.__dict__ # take over bundles dict
+        self.bundle = bundle
+        self.pipe = pipe
+        pipedtask = PipeTaskWrapper(bundle.task, pipe)
+        self.bundle.task = pipedtask # replace the task with the piped task
+        bundle_kwargs = bundle.kwargs
+        bundle_class = self.bundle.__class__
+        self.bundle = bundle_class(pipedtask, bundle.operator, bundle.assistant, **bundle_kwargs)
+
+        self.framerate = 10
+        self.iter = 0
+        self.done = False
+
+        self.run()
+
+    def run(self, reset_dic = {}):
+        self.reset(dic = reset_dic)
+        while not self.done:
+            self.iter += 1
+            message = self.check_message()
+            if message:
+                self.handle_message(message)
+            time.sleep(1/self.framerate)
+
+    def end(self):
+        self.pipe.send("done")
+
+    def check_message(self):
+        '''
+        Checks pipe for messages from websocket, tries to parse message from
+        json. Retruns message or error message if unable to parse json.
+        Expects some poorly formatted or incomplete messages.
+        '''
+        if self.pipe.poll():
+            message = self.pipe.recv()
+            msg =  json.loads(message)
+            print(msg)
+            return msg
+
+        return None
+
+    def send_message(self, msg):
+        self.pipe.send(msg)
+
+
+    def handle_message(self, message):
+        '''
+        Reads messages sent from websocket, handles commands as priority then
+        actions. Logs entire message in self.nextEntry
+        '''
+        print("handling message: {}".format(message))
+        msg = 'assistant_action {:d}'.format(self.iter)
+        self.send_message(msg)
+
+
+
+
+
+
+class AsyncWrapper(Bundle):
+    def __init__(self, bundle):
+        self.__dict__ = bundle.__dict__
+        self.bundle = bundle
+
+
+    async def reset(self, dic = {}):
+        await super().reset(dic = dic)
+
+
+    async def serve(self, websocket, path, extra_argument):
+        await self.task.register(websocket)
+        await self.task._init()
+        await self.reset()
+
+
+
+
+        async for message in websocket:
+            data = json.loads(message)
+            print(data)
+
 
 
 
