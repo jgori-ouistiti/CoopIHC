@@ -1,12 +1,186 @@
+import core
 from core.agents import BaseAgent, IHCT_LQGController
 from core.observation import RuleObservationEngine, base_operator_engine_specification
 from core.bundle import SinglePlayOperatorAuto
 from core.space import State, StateElement
-from core.policy import ELLDiscretePolicy, WrapAsPolicy
+from core.policy import ELLDiscretePolicy, WrapAsPolicy, BadlyDefinedLikelihoodError
 from core.interactiontask import ClassicControlTask
 import gym
 import numpy
 import copy
+
+
+class TwoDCarefulPointer(BaseAgent):
+    """ An operator that only indicates the right direction, with a fixed amplitude.
+
+    Works with a task that has a 'targets' substate. At each reset, it selects a new goal from the possible 'targets'. When sampled, the operator will issue an action that is either +1 or -1 in the direction of the target.
+    The operator observes everything perfectly except for the assistant state.
+
+
+    :meta public:
+    """
+    def __init__(self, **kwargs):
+
+        # --------- Defining the agent's policy ----------
+
+        agent_policy = kwargs.get('agent_policy')
+        if agent_policy is None:
+
+            # 0 = no action
+            # 1 = up
+            # 2 = left
+            # 3 = down
+            # 4 = right
+
+            agent_policy = ELLDiscretePolicy(
+                action_space = [core.space.Discrete(5)],
+                action_set = [  [   [0,0],
+                                    [0,1],
+                                    [-1,0],
+                                    [0,-1],
+                                    [1,0]   ]   ],
+                clipping_mode = 'clip')
+
+            def leftrightupdown_likelihood(self, action, observation):
+                # Actions are in human values, i.e. they are not necessarily in range(0,N)
+                # convert actions and observations
+                action = action['values'][0]
+                # first component selected
+                goal = observation['operator_state']['goal']['values'][0]
+                position = observation['task_state']['position']['values'][0]
+
+                if action == 0:
+                    if (goal == position).all():
+                        return 1
+                    else:
+                        return 0
+
+                if goal[0] < position[0] and goal[1] < position[1]:
+                    if action == 3 or action == 2:
+                        return 0.99/2
+                    else:
+                        return 0.01/2
+
+                elif goal[0] < position[0] and goal[1] > position[1]:
+                    if action == 1 or action == 2:
+                        return .99/2
+                    else:
+                        return .01/2
+
+                elif goal[0] < position[0] and goal[1] == position[1]:
+                    if action == 2:
+                        return .99
+                    else:
+                        return .01/3
+
+
+                elif goal[0] > position[0] and goal[1] < position[1]:
+                    if action == 3 or action == 4:
+                        return .99/2
+                    else:
+                        return .01/2
+
+                elif goal[0] > position[0] and goal[1] > position[1]:
+                    if action == 4 or action == 1:
+                        return .99/2
+                    else:
+                        return .01/2
+
+                elif goal[0] > position[0] and goal[1] == position[1]:
+                    if action == 4:
+                        return .99
+                    else:
+                        return .01/3
+
+                elif goal[0] == position[0] and goal[1] < position[1]:
+                    if action == 3:
+                        return .99
+                    else:
+                        return .01/3
+
+                elif goal[0] == position[0] and goal[1] > position[1]:
+                    if action == 1:
+                        return .99
+                    else:
+                        return .01/3
+
+                elif goal[0] == position[0] and goal[1] == position[1]:
+                    return 0
+
+                else:
+                    raise BadlyDefinedLikelihoodError("warning, unable to compute likelihood with action: {} and observation: {} You may have not covered all cases in the likelihood definition".format(str(action), str(observation)))
+
+
+            # Attach likelihood function to the policy
+            agent_policy.attach_likelihood_function(leftrightupdown_likelihood)
+
+
+
+        # ---------- Observation engine ------------
+        # High-level specification
+        observation_engine = kwargs.get('observation_engine')
+
+        if observation_engine is None:
+            base_operator_engine_specification  =    [ ('turn_index', 'all'),
+                                                ('task_state', 'all'),
+                                                ('operator_state', 'all'),
+                                                ('assistant_state', None),
+                                                ('operator_action', 'all'),
+                                                ('assistant_action', 'all')
+                                                ]
+            # Additional deterministic and probabilistic 'rules' that can be added to the engine: for example, to add noise to a component, or to target one component in particular
+            extradeterministicrules = {}
+            extraprobabilisticrules = {}
+            observation_engine = RuleObservationEngine(
+                    deterministic_specification = base_operator_engine_specification,
+                    extradeterministicrules = extradeterministicrules,
+                    extraprobabilisticrules = extraprobabilisticrules   )
+
+        # ---------- Calling BaseAgent class -----------
+        # Calling an agent, set as an operator, which uses our previously defined observation engine and without an inference engine.
+
+        super().__init__(
+                            'operator',
+                            policy = agent_policy,
+                            observation_engine = observation_engine,
+                            inference_engine = None)
+
+
+
+    def finit(self):
+        self.target_values = self.bundle.task.state['targets']['values']
+        target_spaces = self.bundle.task.state['targets']['spaces']
+
+        self.state['goal'] =  StateElement( values = [None],
+                                            spaces = copy.deepcopy(self.bundle.task.state['position']['spaces']),
+                                            possible_values = [[None]])
+
+
+    def reset(self, dic = None):
+        if dic is None:
+            super().reset()
+
+        self.target_values = self.bundle.task.state['targets']['values']
+        selected_target = numpy.random.choice(len(self.target_values))
+        self.state['goal']["values"] = self.target_values[selected_target]
+
+        if dic is not None:
+            super().reset(dic = dic)
+
+
+    def render(self, *args, mode = 'text'):
+        if 'text' in mode:
+            print('\n')
+            print('Goal')
+            print(self.state['goal']['values'])
+            print('Action')
+            print(self.policy.action['values'])
+        else:
+            raise NotImplementedError
+
+
+
+
 
 class CarefulPointer(BaseAgent):
     """ An operator that only indicates the right direction, with a fixed amplitude.
@@ -24,7 +198,7 @@ class CarefulPointer(BaseAgent):
 
         agent_policy = kwargs.get('agent_policy')
         if agent_policy is None:
-            agent_policy = ELLDiscretePolicy(action_space = [gym.spaces.Discrete(2)], action_set = [[-1, 1]])
+            agent_policy = ELLDiscretePolicy(action_space = [core.space.Discrete(2)], action_set = [[-1, 1]])
 
             # Actions are in human values, i.e. they are not necessarily in range(0,N)
             def compute_likelihood(self, action, observation):
@@ -92,7 +266,7 @@ class CarefulPointer(BaseAgent):
         target_spaces = self.bundle.task.state['targets']['spaces']
 
         self.state['goal'] =  StateElement( values = [None],
-                                            spaces = [gym.spaces.Discrete(self.bundle.task.gridsize)],
+                                            spaces = [core.space.Discrete(self.bundle.task.gridsize)],
                                             possible_values = [[None]])
 
 
@@ -168,7 +342,7 @@ class LQGPointer(BaseAgent):
                 action_state = State()
                 action_state['action'] = StateElement(
                     values = [None],
-                    spaces = [gym.spaces.Box(low = -numpy.inf, high = numpy.inf, shape = (1,1))])
+                    spaces = [core.space.Box(low = -numpy.inf, high = numpy.inf, shape = (1,1))])
                 super().__init__(action_bundle, action_state, *args, **kwargs)
 
             def sample(self):
@@ -180,12 +354,12 @@ class LQGPointer(BaseAgent):
                 target.mode = 'warn'
 
                 tmp_box = StateElement( values = [None],
-                    spaces = gym.spaces.Box(-self.host.bundle.task.gridsize+1, self.host.bundle.task.gridsize-1 , shape = (1,)),
+                    spaces = core.space.Box(-self.host.bundle.task.gridsize+1, self.host.bundle.task.gridsize-1 , shape = (1,)),
                     possible_values = [[None]],
                     mode = 'warn')
 
                 cursor_box = StateElement( values = [None],
-                    spaces = gym.spaces.Box(-.5, .5, shape = (1,)),
+                    spaces = core.space.Box(-.5, .5, shape = (1,)),
                     possible_values = [[None]],
                     mode = 'none')
 
@@ -220,7 +394,7 @@ class LQGPointer(BaseAgent):
                 delta = cursor_box.cast(tmp_box)
                 possible_values = [-30 + i for i in range(61)]
                 value = possible_values.index(int(numpy.round(delta['values'][0])))
-                action = StateElement(values = value, spaces = gym.spaces.Discrete(61), possible_values = possible_values)
+                action = StateElement(values = value, spaces = core.space.Discrete(61), possible_values = possible_values)
                 # logger.info('{} Selected action {}'.format(self.__class__.__name__, str(action)))
 
                 return action, total_reward
@@ -251,7 +425,7 @@ class LQGPointer(BaseAgent):
         target_spaces = self.bundle.task.state['targets']['spaces']
 
         self.state['goal'] =  StateElement( values = [None],
-                                            spaces = [gym.spaces.Discrete(self.bundle.task.gridsize)],
+                                            spaces = [core.space.Discrete(self.bundle.task.gridsize)],
                                             possible_values = [[None]])
 
 

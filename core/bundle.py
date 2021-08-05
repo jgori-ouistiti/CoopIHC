@@ -78,21 +78,11 @@ class Bundle:
             self.game_state["assistant_action"]['action'] = StateElement()
 
 
-        print("turn index")
-        print(turn_index)
-        print("task.state")
-        print(task.state)
-        print("operator.state")
-        print(operator.state)
-        print("assistant.state")
-        print(assistant.state)
-
-
-
         logger.info('Finish Initializing task, operator and assistant')
         self.task.finit()
         self.operator.finit()
         self.assistant.finit()
+
 
         logger.info('Task state:\n{}'.format(str(self.task.state)))
         logger.info('Operator state:\n{}'.format(str(self.operator.state)))
@@ -113,7 +103,7 @@ class Bundle:
         self.handbook = Handbook({'name': self.__class__.__name__, 'render_mode': [], 'parameters': []})
 
     def __repr__(self):
-        return yaml.safe_dump(self.__content__())
+        return "{}\n".format(self.__class__.__name__) + yaml.safe_dump(self.__content__())
 
 
     def __content__(self):
@@ -122,7 +112,7 @@ class Bundle:
 
 
 
-    def reset(self, dic = {}):
+    def reset(self, task = True, operator = True, assistant = True, dic = {}):
         """ Reset the bundle. When subclassing Bundle, make sure to call super().reset() in the new reset method
 
         :param dic: (dictionnary) Reset the bundle with a game_state
@@ -131,12 +121,17 @@ class Bundle:
 
         :meta private:
         """
-        task_dic = dic.get('task_state')
-        operator_dic = dic.get('operator_state')
-        assistant_dic = dic.get("assistant_state")
-        task_state = self.task.reset(dic = task_dic)
-        operator_state = self.operator.reset(dic = operator_dic)
-        assistant_state = self.assistant.reset(dic = assistant_dic)
+        if task:
+            task_dic = dic.get('task_state')
+            task_state = self.task.reset(dic = task_dic)
+
+        if operator:
+            operator_dic = dic.get('operator_state')
+            operator_state = self.operator.reset(dic = operator_dic)
+
+        if assistant:
+            assistant_dic = dic.get("assistant_state")
+            assistant_state = self.assistant.reset(dic = assistant_dic)
 
         logger.info('Resetting {}'.format(self.__class__.__name__))
         logger.info('Reset dic used:\n{}'.format(str(dic)))
@@ -247,8 +242,6 @@ class Bundle:
         return operator_obs_reward, operator_infer_reward
 
 
-
-
     def _operator_second_half_step(self, operator_action):
         """ This is the second half of the operator step. The operaror takes an action, which is applied to the task leading to a new game state.
 
@@ -261,8 +254,6 @@ class Bundle:
 
         logger.info('Applying action to task ---')
         # Play operator's turn in the task
-        ret = self.task.operator_step(operator_action)
-        print(ret)
         task_state, task_reward, is_done, _ = self.task.operator_step(operator_action)
 
         # update task state (likely not needed, remove ?)
@@ -305,7 +296,7 @@ class Bundle:
 
         task_state, task_reward, is_done, _ = self.task.assistant_step(assistant_action)
         # update task state
-        self.broadcast_state('operator', 'task_state', task_state)
+        self.broadcast_state('assistant', 'task_state', task_state)
 
         logger.info('Applied {} to task, which resulted in the new state'.format(str(assistant_action)))
         logger.info(str(task_state))
@@ -370,6 +361,8 @@ class Bundle:
         self.game_state[state_key] = state
         getattr(self, role).observation[state_key] = state
 
+
+
     def broadcast_action(self, role, action, key = None):
         # update game state and observations
         if key is None:
@@ -396,14 +389,14 @@ class PlayNone(Bundle):
         super().__init__(task, operator, assistant, **kwargs)
         self.action_state = None
 
-    def reset(self, dic = {}):
+    def reset(self, dic = {}, **kwargs):
         """ Reset the bundle.
 
         :param args: see Bundle
 
         :meta public:
         """
-        full_obs = super().reset(dic = dic)
+        full_obs = super().reset(dic = dic, **kwargs)
 
 
     def step(self):
@@ -417,7 +410,7 @@ class PlayNone(Bundle):
 
         operator_obs_reward, operator_infer_reward, operator_policy_reward, first_task_reward, is_done = self._operator_step()
         if is_done:
-            return operator_obs_reward, operator_infer_reward, task_reward, is_done
+            return self.game_state, sum ([operator_obs_reward, operator_infer_reward, operator_policy_reward, first_task_reward]), is_done, [operator_obs_reward, operator_infer_reward, operator_policy_reward, first_task_reward]
         assistant_obs_reward, assistant_infer_reward, assistant_policy_reward, second_task_reward,  is_done = self._assistant_step()
         return self.game_state, sum([operator_obs_reward, operator_infer_reward, operator_policy_reward, first_task_reward, assistant_obs_reward, assistant_infer_reward, assistant_policy_reward, second_task_reward]), is_done, [operator_obs_reward, operator_infer_reward, operator_policy_reward, first_task_reward, assistant_obs_reward, assistant_infer_reward, assistant_policy_reward, second_task_reward]
 
@@ -435,14 +428,14 @@ class PlayOperator(Bundle):
         self.action_space = copy.copy(self.operator.policy.action_state['action']['spaces'])
 
 
-    def reset(self, dic = {}):
+    def reset(self, dic = {}, **kwargs):
         """ Reset the bundle. A first observation and inference is performed.
 
         :param args: see Bundle
 
         :meta public:
         """
-        full_obs = super().reset(dic = dic)
+        full_obs = super().reset(dic = dic, **kwargs)
         self._operator_first_half_step()
         return self.operator.observation
         # return self.operator.inference_engine.buffer[-1]
@@ -489,14 +482,14 @@ class PlayAssistant(Bundle):
         #     possible_values = None
         #      )
 
-    def reset(self, dic = {}):
+    def reset(self, dic = {}, **kwargs):
         """ Reset the bundle. A first  operator step and assistant observation and inference is performed.
 
         :param args: see Bundle
 
         :meta public:
         """
-        full_obs = super().reset(dic = dic)
+        full_obs = super().reset(dic = dic, **kwargs)
         self._operator_step()
         self._assistant_first_half_step()
         return self.assistant.inference_engine.buffer[-1]
@@ -533,14 +526,14 @@ class PlayBoth(Bundle):
         super().__init__(task, operator, assistant, **kwargs)
         self.action_space = self._tuple_to_flat_space(gym.spaces.Tuple([self.operator.action_space, self.assistant.action_space]))
 
-    def reset(self, dic = {}):
+    def reset(self, dic = {}, **kwargs):
         """ Reset the bundle. Operator observation and inference is performed.
 
         :param args: see Bundle
 
         :meta public:
         """
-        full_obs = super().reset(dic = dic)
+        full_obs = super().reset(dic = dic, **kwargs)
         self._operator_first_half_step()
         return self.task.state
 
@@ -581,14 +574,14 @@ class SinglePlayOperator(Bundle):
     def observation(self):
         return self.operator.observation
 
-    def reset(self, dic = {}):
+    def reset(self, dic = {}, **kwargs):
         """ Reset the bundle. A first observation and inference is performed.
 
         :param args: see Bundle
 
         :meta public:
         """
-        full_obs = super().reset(dic = dic)
+        full_obs = super().reset(dic = dic, **kwargs)
         self._operator_first_half_step()
         return self.observation
 
@@ -637,14 +630,14 @@ class SinglePlayOperatorAuto(Bundle):
     def observation(self):
         return self.operator.observation
 
-    def reset(self, dic = {}):
+    def reset(self, dic = {}, **kwargs):
         """ Reset the bundle. A first observation and inference is performed.
 
         :param args: see Bundle
 
         :meta public:
         """
-        super().reset(dic = dic)
+        super().reset(dic = dic, **kwargs)
 
         if self.kwargs.get('start_at_action'):
             self._operator_first_half_step()
@@ -686,87 +679,38 @@ class BundleWrapper(Bundle):
 
 
 class PipedTaskBundleWrapper(Bundle):
-    def __init__(self, bundle, pipe):
-        self.__dict__ = bundle.__dict__ # take over bundles dict
+    # Wrap it by taking over bundles attribute via the instance __dict__. Methods can not be taken like that since they belong to the class __dict__ and have to be called via self.bundle.method()
+    def __init__(self, bundle, taskwrapper, pipe):
+        self.__dict__ = bundle.__dict__ # take over bundles attributes
         self.bundle = bundle
         self.pipe = pipe
-        pipedtask = PipeTaskWrapper(bundle.task, pipe)
+        pipedtask = taskwrapper(bundle.task, pipe)
         self.bundle.task = pipedtask # replace the task with the piped task
         bundle_kwargs = bundle.kwargs
         bundle_class = self.bundle.__class__
         self.bundle = bundle_class(pipedtask, bundle.operator, bundle.assistant, **bundle_kwargs)
 
-        self.framerate = 10
+        self.framerate = 1000
         self.iter = 0
-        self.done = False
 
         self.run()
 
-    def run(self, reset_dic = {}):
-        self.reset(dic = reset_dic)
-        while not self.done:
-            self.iter += 1
-            message = self.check_message()
-            if message:
-                self.handle_message(message)
+    def run(self, reset_dic = {}, **kwargs):
+        reset_kwargs = kwargs.get('reset_kwargs')
+        if reset_kwargs is None:
+            reset_kwargs = {}
+        self.bundle.reset(dic = reset_dic, **reset_kwargs)
+        time.sleep(1/self.framerate)
+        while True:
+            obs, sum_reward, is_done, rewards = self.bundle.step()
             time.sleep(1/self.framerate)
+            if is_done:
+                break
+        self.end()
 
     def end(self):
         self.pipe.send("done")
 
-    def check_message(self):
-        '''
-        Checks pipe for messages from websocket, tries to parse message from
-        json. Retruns message or error message if unable to parse json.
-        Expects some poorly formatted or incomplete messages.
-        '''
-        if self.pipe.poll():
-            message = self.pipe.recv()
-            msg =  json.loads(message)
-            print(msg)
-            return msg
-
-        return None
-
-    def send_message(self, msg):
-        self.pipe.send(msg)
-
-
-    def handle_message(self, message):
-        '''
-        Reads messages sent from websocket, handles commands as priority then
-        actions. Logs entire message in self.nextEntry
-        '''
-        print("handling message: {}".format(message))
-        msg = 'assistant_action {:d}'.format(self.iter)
-        self.send_message(msg)
-
-
-
-
-
-
-class AsyncWrapper(Bundle):
-    def __init__(self, bundle):
-        self.__dict__ = bundle.__dict__
-        self.bundle = bundle
-
-
-    async def reset(self, dic = {}):
-        await super().reset(dic = dic)
-
-
-    async def serve(self, websocket, path, extra_argument):
-        await self.task.register(websocket)
-        await self.task._init()
-        await self.reset()
-
-
-
-
-        async for message in websocket:
-            data = json.loads(message)
-            print(data)
 
 
 
@@ -843,14 +787,14 @@ class Train(gym.Env):
         return observation.filter('values', self.observation_dict)
 
 
-    def reset(self, dic = {}):
+    def reset(self, dic = {}, **kwargs):
         """ Reset the environment.
 
         :return: observation (numpy.ndarray) observation of the flattened game_state
 
         :meta public:
         """
-        obs = self.bundle.reset(dic = dic)
+        obs = self.bundle.reset(dic = dic, **kwargs)
         return self.convert_observation(obs)
 
     def step(self, action):
@@ -904,8 +848,8 @@ class _DevelopTask(Bundle):
 
         super().__init__(task, operator, assistant, **kwargs)
 
-    def reset(self, dic = {}):
-        super().reset(dic = dic)
+    def reset(self, dic = {}, **kwargs):
+        super().reset(dic = dic, **kwargs)
 
     def step(self, joint_action):
         operator_action, assistant_action = joint_action

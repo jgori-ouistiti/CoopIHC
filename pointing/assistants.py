@@ -1,3 +1,4 @@
+import core
 from core.agents import BaseAgent
 from core.policy import BasePolicy,  BIGDiscretePolicy
 from core.inference import GoalInferenceWithOperatorPolicyGiven
@@ -17,16 +18,18 @@ class ConstantCDGain(BaseAgent):
     """
     def __init__(self, gain):
         self.gain = gain
-        action_space = [gym.spaces.Discrete(1)]
-        action_set = [[gain]]
-        agent_policy = BasePolicy(action_space = action_space, action_set = action_set)
 
 
         super().__init__( 'assistant',
-                                policy = agent_policy,
                                 observation_engine = None,
-                                inference_engine = None
+                                inference_engine = None#,
+                                # policy = agent_policy
                                 )
+
+    def finit(self):
+        action_space = [core.space.Box(low = self.gain, high = self.gain, shape = (self.bundle.task.dim,))]
+        self.policy.action_state['action']['spaces'] = action_space
+        self.policy.action_state['action']['clipping_mode'] = 'clip'
 
 class BIGGain(BaseAgent):
     def __init__(self):
@@ -38,7 +41,7 @@ class BIGGain(BaseAgent):
 
     def finit(self):
 
-        assistant_action_space = [gym.spaces.Discrete(self.bundle.task.gridsize)]
+        assistant_action_space = [core.space.Discrete(self.bundle.task.gridsize)]
         operator_policy_model = self.bundle.operator.policy
 
 
@@ -57,11 +60,11 @@ class BIGGain(BaseAgent):
         if dic is None:
             super().reset()
 
-        self.state['Beliefs'] = StateElement(values = [1/self.bundle.task.number_of_targets for i in range(self.bundle.task.number_of_targets)], spaces = [gym.spaces.Box(0, 1, shape = (1,)) for i in range(self.bundle.task.number_of_targets)], possible_values = None)
+        self.state['Beliefs'] = StateElement(values = [1/self.bundle.task.number_of_targets for i in range(self.bundle.task.number_of_targets)], spaces = [core.space.Box(0, 1, shape = (1,)) for i in range(self.bundle.task.number_of_targets)], possible_values = None)
 
         # change theta for inference engine
         set_theta = [{('operator_state', 'goal'): StateElement(values = [t],
-                spaces = [gym.spaces.Discrete(self.bundle.task.gridsize)],
+                spaces = [core.space.Discrete(self.bundle.task.gridsize)],
                 possible_values =  self.bundle.task.state['Targets']['values'])  } for t in self.bundle.task.state['Targets']['values'] ]
 
         self.inference_engine.attach_set_theta(set_theta)

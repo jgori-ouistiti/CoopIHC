@@ -18,22 +18,71 @@ def remove_prefix(text, prefix):
 
 class Box(gym.spaces.Box):
     def __init__(self, *args, **kwargs):
-        super().__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
+
+class Discrete(gym.spaces.Discrete):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    @property
+    def low(self):
+        return 0
+
+    @property
+    def high(self):
+        return self.n
 
 
 
+class SpaceNotDefinedError(Exception):
+    pass
 
+class StateLengthError(Exception):
+    pass
+
+class BadSpaceError(Exception):
+    pass
+
+class StateNotContainedError(Exception):
+    pass
 
 class StateElement:
 
     __array_priority__ = 1 # to make __rmatmul__ possible with numpy arrays
+    __precedence__ = ['error', 'warning', 'clip']
 
-    def __init__(self, values = None, spaces = None, possible_values = None, mode = 'error'):
-        self.mode = mode
-        self.values, self.spaces, self.possible_values = None, None, None
-        self.spaces = self.check_spaces(spaces)
-        self.possible_values = self.check_possible_values(possible_values)
-        self.values = self.check_values(values)
+    def __init__(self, values = None, spaces = None, possible_values = None, clipping_mode = 'warning'):
+        self.clipping_mode = clipping_mode
+        self.__values, self.__spaces, self.__possible_values = None, None, None
+        self.spaces = spaces
+        self.possible_values = possible_values
+        self.values = values
+
+
+    @property
+    def values(self):
+        return self.__values
+
+    @values.setter
+    def values(self, values):
+        self.__values = self.check_values(values)
+
+    @property
+    def spaces(self):
+        return self.__spaces
+
+    @spaces.setter
+    def spaces(self, values):
+        self.__spaces = self.check_spaces(values)
+
+    @property
+    def possible_values(self):
+        return self.__possible_values
+
+    @possible_values.setter
+    def possible_values(self, values):
+        self.__possible_values = self.check_possible_values(values)
+
 
     def __iter__(self):
         self.n = 0
@@ -42,7 +91,7 @@ class StateElement:
 
     def __next__(self):
         if self.n < self.max:
-            result = StateElement(values = self.values[self.n], spaces = self.spaces[self.n], possible_values = self.possible_values[self.n], mode = self.mode)
+            result = StateElement(values = self.values[self.n], spaces = self.spaces[self.n], possible_values = [self.possible_values[self.n]], clipping_mode = self.clipping_mode)
             self.n += 1
             return result
         else:
@@ -58,30 +107,38 @@ class StateElement:
             setattr(self, key, self.check_spaces(item))
         elif key == 'possible_values':
             setattr(self, key, self.check_possible_values(item))
+        elif key == 'clipping_mode':
+            setattr(self, key, item)
         else:
-            raise ValueError('Key should belong to ["values", "spaces", "possible_values"]')
+            raise ValueError('Key should belong to ["values", "spaces", "possible_values", "clipping_mode"]')
 
     def __getitem__(self, key):
-        if key in ["values", "spaces", "possible_values"]:
+        if key in ["values", "spaces", "possible_values", "clipping_mode"]:
             return getattr(self, key)
         elif key == 'human_values':
             return self.get_human_values()
         elif isinstance(key, (int, numpy.int)):
             return StateElement(values = self.values[key],
                                 spaces = self.spaces[key],
-                                possible_values = self.possible_values[key], mode = self.mode)
+                                possible_values = self.possible_values[key], clipping_mode = self.clipping_mode)
 
     def __neg__(self):
-        return StateElement(values = [-u for u in self['values']], spaces = self.spaces, possible_values = self.possible_values, mode = self.mode)
+        return StateElement(values = [-u for u in self['values']], spaces = self.spaces, possible_values = self.possible_values, clipping_mode = self.clipping_mode)
+
+    def mix_modes(self, other):
+        if hasattr(other, 'clipping_mode'):
+            return self.__precedence__[min(self.__precedence__.index(self.clipping_mode), self.__precedence__.index(other.clipping_mode))]
+        else:
+            return self.clipping_mode
 
     def __add__(self, other):
         if isinstance(other, StateElement):
             other = other['values']
-        _elem = StateElement(values = self.values, spaces = self.spaces, possible_values = self.possible_values, mode = self.mode)
+
+        _elem = StateElement(values = self.values, spaces = self.spaces, possible_values = self.possible_values, clipping_mode = self.mix_modes(other))
+
         if not hasattr(other, '__len__'):
             other = [other]
-
-
         if len(_elem['values']) == len(other):
             out = [_elem['values'][k] + v for k,v in enumerate(other)]
         elif len(_elem['values']) == 1:
@@ -90,7 +147,6 @@ class StateElement:
             out = [v + other[0] for k,v in enumerate(_elem['values'])]
         else:
             out = _elem['values'] + other
-        # _copy['values'] = self.clip(out)
         _elem['values'] = out
         return _elem
 
@@ -125,10 +181,10 @@ class StateElement:
         return self.__mul__(other)
 
     def __str__(self):
-        return "[StateElement - {}] - Value {} in {}, with possible_values {}".format(self.mode, self.values, self.spaces, self.possible_values)
+        return "[StateElement - {}] - Value {} in {}, with possible_values {}".format(self.clipping_mode, self.values, self.spaces, self.possible_values)
 
     def __repr__(self):
-        return 'StateElement([{}] - {},...)'.format(self.mode, self.values.__repr__())
+        return 'StateElement([{}] - {},...)'.format(self.clipping_mode, self.values.__repr__())
 
     # https://stackoverflow.com/questions/1500718/how-to-override-the-copy-deepcopy-operations-for-a-python-object
     # Here we override copy and deepcopy simply because there seems to be a huge overhead in the default deepcopy implementation.
@@ -195,20 +251,50 @@ class StateElement:
 
 
     def serialize(self):
-        ret_list = []
-        for v in self['values']:
+        v_list = []
+        pv_list = []
+        for v,pv in zip(self['values'], self['possible_values']):
             try:
                 json.dumps(v)
-                ret_list.append(v)
-            except TypeError as msg:
+                v_list.append(v)
+            except TypeError:
                 if isinstance(v, numpy.ndarray):
-                    ret_list.extend(v.tolist())
+                    v_list.extend(v.tolist())
                 elif isinstance(v, numpy.generic):
-                    ret_list.append(v.item())
+                    v_list.append(v.item())
                 else:
-                    print(v, type(v))
                     raise TypeError("".format(msg))
-        return ret_list
+            try:
+                json.dumps(pv)
+                pv_list.append(pv)
+            except TypeError:
+                _pv_list = []
+                for _pv in pv:
+                    if isinstance(_pv, numpy.ndarray):
+                        _pv_list.extend(_pv.tolist())
+                    elif isinstance(_pv, numpy.generic):
+                        _pv_list.append(_pv.item())
+                    else:
+                        raise TypeError("".format(msg))
+                pv_list.append(_pv_list)
+        return {"values": v_list, "spaces" : str(self['spaces']), 'possible_values' : pv_list}
+
+
+
+
+            #
+            #
+            # try:
+            #     json.dumps({"values": v, "spaces" = str(s), 'possible_values' = pv})
+            #     ret_list.append(v)
+            # except TypeError as msg:
+            #     if isinstance(v, numpy.ndarray):
+            #         ret_list.extend(v.tolist())
+            #     elif isinstance(v, numpy.generic):
+            #         ret_list.append(v.item())
+            #     else:
+            #         raise TypeError("".format(msg))
+        # return ret_list
 
 
     def cartesian_product(self):
@@ -218,7 +304,7 @@ class StateElement:
                 lists.append(list(range(space.n)))
             elif isinstance(space, gym.spaces.Box):
                 lists.append([value])
-        return [StateElement(values = list(element), spaces = self.spaces, possible_values = self.possible_values, mode = self.mode) for element in itertools.product(*lists)]
+        return [StateElement(values = list(element), spaces = self.spaces, possible_values = self.possible_values, clipping_mode = self.clipping_mode) for element in itertools.product(*lists)]
 
 
     def reset(self, dic = None):
@@ -245,103 +331,94 @@ class StateElement:
         return values
 
 
-
-    def check_values(self, values):
-        values = flatten([values])
-
-        try:
-            if values == [None]:
-                if not(self.values is None or self.values == [None]):
-                    return self.values
-                if self.values == [None] and not(self.spaces is None or self.spaces == [None]):
-                    return [None for space in self.spaces]
-                else:
-                    return [None]
-        except ValueError:
-            pass
-
-        if self.spaces is not None and self.spaces != [None]:
-            # check whether values has the same number of elements as spaces
-            if len(values) != len(self.spaces):
-                raise ValueError('You are assigning a value of length {:d}, which mismatches the length {:d} of the space'.format(len(values), len(self.spaces)))
-            # check whether values conform to the spaces
-            for n, (value, space) in enumerate(zip(values, self.spaces)):
-                if isinstance(space, gym.spaces.Discrete):
-                    low = 0
-                    high = space.n
-                elif isinstance(space, gym.spaces.Box):
-                    low = space.low
-                    high = space.high
-                try:
-                    if value is None:
-                        pass
-                    else:
-                        if value not in space:
-                            if self.mode == 'error':
-                                raise ValueError('You are assigning an invalid value: value number {} ({}) is not contained in {} (low: {}, high: {})'.format(str(n), str(value), str(space), str(low), str(high)))
-                            elif self.mode == 'warn':
-                                print('Warning: You are assigning an invalid value: value number {} ({}) is not contained in {} (low: {}, high: {})'.format(str(n), str(value), str(space), str(low), str(high)))
-                            elif self.mode == 'clip':
-                                values[n] = self._clip(value, space)
-                            else:
-                                pass
-
-                except AttributeError:
-                    if numpy.array(value).reshape(space.shape) in space:
-                        values[n] = numpy.array(value).reshape(space.shape)
-                    else:
-                        raise ValueError('AttributeError triggered: You are assigning an invalid value: value number {} ({}) is not contained in {}'.format(str(n), str(value), str(space)))
-        if self.possible_values is not None and len(values) != len(self.possible_values):
-            raise ValueError('You are assigning a value of length {}, which mismatches the length {} of the possible values'.format(len(value), len(self.possible_values)))
-        return values
-
     def check_spaces(self, spaces):
         if spaces is None:
-            if self.spaces is None:
-                return [None]
-            else:
+            if self.spaces is not None:
                 return self.spaces
         spaces = flatten([spaces])
-        if (self.values is not None) and (self.values != [None]):
-            if len(self.values) != len(spaces):
-                raise ValueError('You are assigning a space of length {:d}, which mismatches the length {:d} of the value'.format(len(spaces), len(self.values)))
-            for n, (value, space) in enumerate(zip(self.values, spaces)):
-                try:
-                    if value not in space:
-                        raise ValueError('You are assigning an invalid value: value number {} ({}) is not contained in {}'.format(str(n), str(value), str(space)))
-                except AttributeError:
-                    raise ValueError('You are assigning an invalid value: value number {} ({}) is not contained in {}'.format(str(n), str(value), str(space)))
-
-        if self.possible_values is not None and len(spaces) != len(self.possible_values):
-            raise ValueError('You are assigning a space of length {:d}, which mismatches the length {:d} of the possible values'.format(len(space), len(self.possible_values)))
         return spaces
 
+    def check_values(self, values):
+        # make sure spaces are defined
+        if flatten([self.spaces]) == None:
+            raise SpaceNotDefinedError('Values of a state can not be instantiated before having defined the corresponding space')
+        # Deal with non rigorous inputs
+        values = flatten([values])
+        # Allow a single None syntax
+        try:
+            if values == [None]:
+                values = [None for s in self.spaces]
+        except ValueError:
+            pass
+        # Check for length match
+        if len(values) != len(self.spaces):
+            raise StateLengthError('The size of the values ({}) being instantiated does not match the size of the space ({})'.format(len(values), len(self.spaces)))
+        # Make sure values are contained
+        for ni, (v,s) in enumerate(zip(values, self.spaces)):
+            if v is None:
+                continue
+            if isinstance(s, Box):
+                v = numpy.array(v).reshape(s.shape)
+            elif isinstance(s, Discrete):
+                v = int(v)
+            if v not in s:
+                if self.clipping_mode == 'error':
+                    raise StateNotContainedError('Instantiated Value {}({}) is not contained in corresponding space {} (low = {}, high = {})'.format(str(v), type(v), str(s), str(s.low), str(s.high)))
+                elif self.clipping_mode == 'warn':
+                    print('Warning: Instantiated Value {}({}) is not contained in corresponding space {} (low = {}, high = {})'.format(str(v), type(v), str(s), str(s.low), str(s.high)))
+                elif self.clipping_mode == 'clip':
+                    v = self._clip(v, s)
+                else:
+                    pass
+            values[ni] = v
+        return values
+
+
+
+
     def check_possible_values(self, possible_values):
-        if possible_values is None:
-            if self.possible_values is not None:
-                return self.possible_values
-            elif self.possible_values is None and self.spaces is not None:
-                return [[None] for space in self.spaces]
+
+        def checker(self, possible_values):
+            for pv,s in zip(possible_values, self.spaces):
+                if not isinstance(s, Discrete) and pv != [None]:
+                    raise BadSpaceError('Setting possible value {} for spaces {}({}): Possible values can only be specified for core.space.Discrete Spaces'.format(pv, s, s.__module__))
+                if pv != [None]:
+                    if len(pv) != s.n:
+                        raise StateLengthError('The size of the possible values ({}) provided does not match the size of the space ({})'.format(len(pv), s.n))
+            return possible_values
+
+        # -----------     Start checking
+        # make sure spaces are defined
+        if flatten([self.spaces]) == [None]:
+            if possible_values is None:
+                return [[None]]
             else:
-                return [None]
+                raise SpaceNotDefinedError('Possible values of a state can not be instantiated before having defined the corresponding space')
 
-        if not isinstance(possible_values, list):
-            raise TypeError('Possible values of type {} should be of type list'.format(type(possible_values)))
-
-        if self.spaces is not None and len(self.spaces) != len(possible_values):
-            if len(possible_values) != 1 and len(self.spaces) == 1:
+        try:
+            return checker(self, possible_values)
+        except:
+            # Deal with non rigorous inputs
+            # - single unlisted None
+            if possible_values is None:
+                possible_values = [[None]]
+            # - mix of listed and unlisted values
+            possible_values = [flatten([v]) for v in possible_values]
+            # - unlisted single sequence:
+            try:
+                possible_values[0][0]
+            except IndexError:
                 possible_values = [possible_values]
-                self.check_possible_values(possible_values)
-            else:
-                raise ValueError('You are assigning possible values of length {:d}, which mismatches the length {:d} of the space'.format(len(possible_values), len(self.spaces)))
+            # - single None syntax
+            if possible_values  == [[None]]:
+                possible_values = [[None] for s in self.spaces]
 
-        if self.values is not None and len(self.values)!= len(possible_values):
-            raise ValueError('You are assigning possible values of length {:d}, which mismatches the length {:d} of the values'.format(len(possible_values), len(self.spaces)))
-        return possible_values
+            return checker(self, possible_values)
 
 
     def flat(self):
         return self['values'], self['spaces'], self['possible_values'], [str(i) for i,v in enumerate(self['values'])]
+
 
     def clip(self, values):
         values = flatten([values])
@@ -405,6 +482,7 @@ class StateElement:
 
         _copy = copy.deepcopy(other)
         _copy['values'] = values
+        _copy.clipping_mode = self.mix_modes(other)
         return _copy
 
 
@@ -438,6 +516,7 @@ class State(OrderedDict):
             spaces.extend(_spaces)
             possible_values.extend(_possible_values)
             labels.extend([k[n] + '|' + label for label in _labels])
+
         return values, spaces, possible_values, labels
         # return hard_flatten(values), spaces, possible_values, labels
 
@@ -486,14 +565,13 @@ class State(OrderedDict):
     def serialize(self):
         ret_dict = {}
         for key, value in dict(self).items():
-            print(key)
             try:
                 value_ = json.dumps(value)
             except TypeError:
                 try:
                     value_ = value.serialize()
                 except AttributeError:
-                    print("warning: I don't know how to serialize {}. I'm sending the whole internal dictionnary of the object. Consider adding a _serialize() method to your custom object".format(value.__str__()))
+                    print("warning: I don't know how to serialize {}. I'm sending the whole internal dictionnary of the object. Consider adding a serialize() method to your custom object".format(value.__str__()))
                     value_ = value.__dict__
             ret_dict[key] = value_
         return ret_dict

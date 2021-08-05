@@ -1,7 +1,7 @@
 import gym
 import numpy
 
-from core.bundle import PlayNone, PlayOperator, PlayAssistant, PlayBoth, Train, SinglePlayOperator, SinglePlayOperatorAuto, _DevelopTask, AsyncWrapper
+from core.bundle import PlayNone, PlayOperator, PlayAssistant, PlayBoth, Train, SinglePlayOperator, SinglePlayOperatorAuto, _DevelopTask
 from pointing.envs import SimplePointingTask, Screen_v0
 from pointing.operators import CarefulPointer, LQGPointer
 from pointing.assistants import ConstantCDGain, BIGGain
@@ -267,21 +267,23 @@ if _str == 'chen-play-1D':
 if _str == 'chen-play':
     fitts_W = 4e-2
     fitts_D = 0.8
-    ocular_std = 0.09
-    swapping_std = 0.09
+    perceptualnoise = 0.09
+    oculomotornoise = 0.04
     task = ChenEyePointingTask(fitts_W, fitts_D)
-    operator = ChenEye(swapping_std, ocular_std)
+    operator = ChenEye(perceptualnoise, oculomotornoise)
     bundle = SinglePlayOperator(task, operator)
     obs = bundle.reset()
     bundle.render('plotext')
     while True:
         _action = copy.deepcopy(obs['operator_state']['belief'])
         action = _action[0]
+        print(action)
+        input()
         noise_obs = State()
         noise_obs['task_state'] = State()
         noise_obs['task_state']['Targets'] = action
         noise_obs['task_state']['Fixation'] = obs['task_state']['Fixation']
-        noise = operator.eccentric_noise_gen(noise_obs, ocular_std)[0]
+        noise = operator.eccentric_noise_gen(noise_obs, oculomotornoise)[0]
         noisy_action = action + noise
         obs, reward, is_done, _ = bundle.step(noisy_action)
         bundle.render('plotext')
@@ -783,60 +785,74 @@ if _str == 'screen':
     bundle.step([ numpy.array([-0.2,-0.2]), numpy.array([1,1]) ])
     bundle.render('plot')
 
+if _str == 'js-ws':
+    import core
+    task = SimplePointingTask(gridsize = 20, number_of_targets = 5)
 
+    policy = ELLDiscretePolicy(action_space = [core.space.Discrete(3)], action_set = [[-1, 0, 1]])
+    # Actions are in human values, i.e. they are not necessarily in range(0,N)
+    def compute_likelihood(self, action, observation):
+        # convert actions and observations
+        action = action['human_values'][0]
+        goal = observation['operator_state']['goal']['values'][0]
+        position = observation['task_state']['position']['values'][0]
 
-if _str == 'basic-ws' or _str == 'all':
+        # Write down all possible cases (5)
+        # (1) Goal to the right, positive action
+        if goal > position and action > 0 :
+            return .99
+        # (2) Goal to the right, negative action
+        elif goal > position and action <= 0 :
+            return .005
+        # (3) Goal to the left, positive action
+        if goal < position and action >= 0 :
+            return .005
+        # (4) Goal to the left, negative action
+        elif goal < position and action < 0 :
+            return .99
+        elif goal == position and action == 0:
+            return 1
+        elif goal == position and action != 0:
+            return 0
+        else:
+            print(goal, position, action)
+            raise RunTimeError("warning, unable to compute likelihood. You may have not covered all cases in the likelihood definition")
 
-    task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-    wstask = WebsocketWrapper(task)
-    binary_operator = CarefulPointer()
-    unitcdgain = ConstantCDGain(1)
-    bundle = PlayNone(wstask, binary_operator, unitcdgain)
-    # game_state = bundle.reset(dic = {'task_state':
-    #                 {   'Position': [0] }
-    #             })
-    game_state = bundle.reset()
-    bundle.render('plotext')
-    k = 0
-    while True:
-        k += 1
-        game_state, sum_rewards, is_done, rewards = bundle.step()
-        bundle.render('plotext')
-        # bundle.fig.savefig("/home/jgori/Documents/img_tmp/{}.pdf".format(k))
-        if is_done:
-            bundle.close()
-            break
+    # Attach likelihood function to the policy
+    policy.attach_likelihood_function(compute_likelihood)
 
-if _str == 'js-ws' or _str == 'all':
-    from pointing.envs import HTMLSimplePointingTask
-
-    # task = WebSocketTask()
-    # # async def main():
-    # #     task = await create_websocket_task()
-
-    task = HTMLSimplePointingTask(gridsize = 15, number_of_targets = 3)
-    binary_operator = CarefulPointer()
-    unitcdgain = ConstantCDGain(1)
-    bundle = PlayNone(task, binary_operator, unitcdgain)
-    game_state = bundle.reset()
-    # bundle.render('plotext')
-    bdl = PlayOperator(task, binary_operator, unitcdgain)
-    bundle = AsyncWrapper(bdl)
-
-    import asyncio, websockets
-    start_server = websockets.serve(bundle.serve, host = "localhost", port = 4000)
-    asyncio.get_event_loop().run_until_complete(start_server)
-    asyncio.get_event_loop().run_forever()
-
-if _str == 'js-ws-bis':
-    task = SimplePointingTask(gridsize = 18, number_of_targets = 4)
-    operator = CarefulPointer()
+    operator = CarefulPointer(agent_policy = policy)
     assistant = ConstantCDGain(1)
-    bundle = PlayOperator(task, operator, assistant)
+    bundle = PlayNone(task, operator, assistant)
     server = Server(bundle, address='localhost', port = 4000)
     server.start()
 
+if _str == 'js-2d':
+    from pointing.envs import DiscretePointingTask, DiscretePointingTaskPipeWrapper
+    from pointing.operators import TwoDCarefulPointer
+    task = DiscretePointingTask(dim = 2, gridsize = (31,31), number_of_targets = 5)
+    operator = TwoDCarefulPointer()
+    assistant = ConstantCDGain(1)
+    bundle = PlayNone(task, operator, assistant)
+    bundle.reset()
+    server = Server(bundle, DiscretePointingTaskPipeWrapper, address='localhost', port = 4000)
+    server.start()
 
+
+if _str == 'ndtask':
+    from pointing.envs import DiscretePointingTask
+    from pointing.operators import TwoDCarefulPointer
+    task = DiscretePointingTask(dim = 2, gridsize = (31,31), number_of_targets = 5)
+    operator = TwoDCarefulPointer()
+    assistant = ConstantCDGain(1)
+    bundle = PlayNone(task, operator, assistant)
+    bundle.reset()
+    bundle.render('text')
+    while True:
+        state, rewards, is_done, reward_list = bundle.step()
+        print(state['task_state']['position']['values'])
+        if is_done:
+            break
 
 
 

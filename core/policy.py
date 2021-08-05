@@ -36,6 +36,10 @@ class BasePolicy:
             values = kwargs.get('action_values')
             if values is not None:
                 self.action_state['action']['values'] = values
+            clipping_mode = kwargs.get('clipping_mode')
+            if clipping_mode is not None:
+                self.action_state['action']['clipping_mode'] = clipping_mode
+
 
         self.host = None
         self.handbook = Handbook({'name': self.__class__.__name__, 'render_mode': [], 'parameters': []})
@@ -67,7 +71,11 @@ class BasePolicy:
         pass
 
     def sample(self):
-        return  StateElement(values = [u.sample() for u in self.action_state['action'].spaces], spaces = self.action_state['action'].spaces, possible_values = self.action_state['action'].possible_values), 0
+        return  StateElement(
+            values = [u.sample() for u in self.action_state['action'].spaces],
+            spaces = self.action_state['action'].spaces,
+            possible_values = self.action_state['action'].possible_values,
+            clipping_mode = self.action_state['action'].clipping_mode), 0
 
 
 class LinearFeedback(BasePolicy):
@@ -304,6 +312,10 @@ class BIGDiscretePolicy(BasePolicy):
 
 
 # ----------- Explicit Likelihood Discrete Policy
+
+class BadlyDefinedLikelihoodError(Exception):
+    pass
+
 class ELLDiscretePolicy(BasePolicy):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -340,6 +352,10 @@ class ELLDiscretePolicy(BasePolicy):
         for action in self.action_state["action"].cartesian_product():
             llh.append(self.compute_likelihood(action, observation))
             actions.append(action)
+        if sum(llh) != 1:
+            print('Warning, llh does not sum to 1')
+            print(llh)
+            print(observation)
         return actions, llh
 
 

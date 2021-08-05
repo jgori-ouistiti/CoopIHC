@@ -49,7 +49,7 @@ class BaseAgent(Core):
 
     # def __init__(self, role, action_space, action_set = None, observation_engine = None, inference_engine = None):
 
-    def __init__(self, role, policy = None, state = None, observation_engine = None, inference_engine = None):
+    def __init__(self, role, policy = None, state = None, observation_engine = None, inference_engine = None, state_kwargs = {}, policy_kwargs = {}, observation_engine_kwargs = {}, inference_engine_kwargs = {}):
 
         # Bundles stuff
         self.encapsulation = False #Deprecated ?
@@ -65,22 +65,22 @@ class BaseAgent(Core):
             self.role = role
 
         # Define policy
-        self.attach_policy(policy)
+        self.attach_policy(policy, **policy_kwargs)
 
 
         # Init state
         if state is None:
-            self.state = State()
+            self.state = State(**state_kwargs)
         else:
             self.state = state
 
 
         # Define observation engine
-        self.attach_observation_engine(observation_engine)
+        self.attach_observation_engine(observation_engine, **observation_engine_kwargs)
 
 
         # Define inference engine
-        self.attach_inference_engine(inference_engine)
+        self.attach_inference_engine(inference_engine, **inference_engine_kwargs)
 
         logger.info('Initializing {}: {}'.format(self.role, self.__class__.__name__))
         logger.info('Using this Policy:\n{}'.format(str(self.policy.handbook)))
@@ -104,7 +104,7 @@ class BaseAgent(Core):
         return self.policy.action_state['action']
 
 
-    def attach_policy(self, policy):
+    def attach_policy(self, policy, **kwargs):
         if policy is None:
             self.policy = BasePolicy()
         else:
@@ -112,7 +112,7 @@ class BaseAgent(Core):
         self.policy.host = self
 
 
-    def attach_observation_engine(self, observation_engine):
+    def attach_observation_engine(self, observation_engine, **kwargs):
         if observation_engine is None:
             if self.role == "operator":
                 self.observation_engine = RuleObservationEngine(base_operator_engine_specification)
@@ -124,7 +124,7 @@ class BaseAgent(Core):
             self.observation_engine = observation_engine
         self.observation_engine.host = self
 
-    def attach_inference_engine(self, inference_engine):
+    def attach_inference_engine(self, inference_engine, **kwargs):
         if inference_engine is None:
             self.inference_engine = BaseInferenceEngine()
         else:

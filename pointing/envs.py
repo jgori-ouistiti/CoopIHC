@@ -2,32 +2,215 @@ import numpy
 import matplotlib.pyplot as plt
 from collections import OrderedDict
 import gym
-from core.interactiontask import InteractionTask
+import core
+from core.interactiontask import InteractionTask, PipeTaskWrapper
 from core.space import StateElement
 from core.helpers import sort_two_lists
 from loguru import logger
+import functools
 
-# from core.interactiontask import  WebSocketTask
 
-# class HTMLSimplePointingTask(WebSocketTask):
-#     def __init__(self, gridsize = 31, number_of_targets = 10, mode = 'gain'):
-#         super().__init__()
-#         # define params
-#         self.gridsize = gridsize
-#         self.number_of_targets = number_of_targets
-#         self.mode = mode
-#         self.params = {'gridsize': gridsize, 'number_of_targets': number_of_targets, 'mode': mode}
-#
-#         # define state spaces (values are coming through WebSocket)
-#         self.state['position'] = StateElement(
-#                     values = None,
-#                     spaces = [gym.spaces.Discrete(gridsize)],
-#                     possible_values = None,
-#                     mode = 'clip'  )
-#
-#         self.state['targets'] = StateElement(
-#                     values = None,
-#                     spaces = [gym.spaces.Discrete(gridsize) for i in range(self.number_of_targets)], possible_values = None  )
+class DiscretePointingTaskPipeWrapper(PipeTaskWrapper):
+
+    def update_task_state(self, state):
+        for key in self.state:
+            try:
+                value = state.pop(key)
+                if key == 'position':
+                    self.state[key]['values'] = numpy.array(value)
+                elif key == 'targets':
+                    self.state[key]['values'] = [numpy.array(v) for v in value]
+            except KeyError:
+                raise KeyError('Key "{}" defined in task state was not found in the received data'.format(key))
+        if state:
+            print("warning: the received data has not been consumed. {} does not match any current task state".format(str(state)))
+
+
+    def update_operator_state(self, state):
+        for key in state:
+            try:
+                self.bundle.operator.state[key]
+            except KeyError:
+                raise KeyError('Key "{}" sent in received data was not found in operator state'.format(key))
+            self.bundle.operator.state[key]['values'] = state[key]
+
+
+class DiscretePointingTask(InteractionTask):
+    def __init__(self, dim = 2, gridsize = (31,31), number_of_targets = 10, mode = 'gain', layout = 'uniform'):
+        super().__init__()
+        self.dim = dim
+        self.gridsize = gridsize
+        self.number_of_targets = number_of_targets
+        self.mode = mode
+        self.layout = 'uniform'
+
+        self.handbook['render_mode'].extend(['plot', 'text'])
+        _dim = {"name": 'dim', 'value': dim, "meaning": 'dimension of the gridworld. Only 1 and 2 supported for now'}
+        _gridsize = {"name": 'gridsize', "value": gridsize, "meaning": 'Size of the gridworld'}
+        _number_of_targets = { "name": 'number_of_targets', "value": number_of_targets, 'meaning': 'number of potential targets from which to choose a goal'}
+        _mode = { "name": 'mode','value': mode, 'meaning': "whether the assistant is expected to work as gain or as positioner. In the first case (gain), the operator's action is multiplied by the assistant's action to determine by how much to shift the old position of the cursor. In the second case (position) the assistant's action is directly the new position of the cursor."}
+        self.handbook['parameters'].extend([_dim, _gridsize, _number_of_targets, _mode])
+
+
+        self.state['position'] = StateElement(
+                    values = None,
+                    spaces = [core.space.Box(
+                            low = numpy.array([0 for i in range(dim)]),
+                            high = numpy.array([gridsize[i] for i in range(dim)]),
+                            dtype = numpy.int8 )],
+                    possible_values = None,
+                    clipping_mode = 'clip'  )
+
+        self.state['targets'] = StateElement(
+                    values = None,
+                    spaces = [[core.space.Box(
+                            low = numpy.array([0 for i in range(dim)]),
+                            high = numpy.array([gridsize[i] for i in range(dim)]),
+                            dtype = numpy.int8 )] for j in range(self.number_of_targets)],
+                    possible_values = None,
+                    clipping_mode = 'error')
+
+
+        self.Coordinates = functools.partial(self.GCoordinates, gridsize)
+
+    class GCoordinates:
+        def __init__(self, gridsize = None, index = None, coords = None):
+            self.__index = None
+            self.__coords = None
+            if gridsize is None:
+                raise ValueError("gridsize has to be provided to Coordinates __init__")
+            self.__gridsize = gridsize
+            if index is None and coords is None:
+                raise ValueError("either index or coords have to be provided")
+            if index is not None:
+                self.__index = int(index)
+            if coords is not None:
+                self.__coords = tuple(coords)
+
+        def index_to_coords(self, index):
+            nl,nc = self.__gridsize
+            ci = index%nc
+            li = int((index-ci)/nc)
+            return (li,ci)
+
+        def coords_to_index(self, coords):
+            li,ci = coords
+            nl,nc = self.__gridsize
+            return int(li*nc + ci)
+
+        @property
+        def coords(self):
+            if not self.__coords:
+                self.__coords = self.index_to_coords(self.__index)
+            return self.__coords
+
+        @coords.setter
+        def coords(self, value):
+            self.__coords = tuple(value)
+            self.__index = self.coords_to_index(tuple(value))
+
+        @property
+        def index(self):
+            if not self.__index:
+                self.__index = self.coords_to_index(self.__coords)
+            return self.__index
+
+        @index.setter
+        def index(self, value):
+            self.__index = int(value)
+            self.__coords = self.index_to_coords(int(value))
+
+
+    def reset(self, dic = None):
+        """ Reset the task.
+
+        Reset the grid used for rendering, define new targets, select a starting position
+
+        :param args: reset to the given state
+
+        :meta public:
+        """
+
+        super().reset()
+        self.grid = numpy.full(self.gridsize, ' ', dtype = numpy.str_)
+        self.gridindex = numpy.arange(numpy.prod(self.gridsize)).reshape(self.gridsize)
+        if self.layout == 'uniform':
+            selected = numpy.random.choice(self.gridindex.reshape(-1), size = self.number_of_targets+1, replace = False)
+            position = self.Coordinates(index = selected[0])
+            targets = [self.Coordinates(index = v) for v in sorted(selected[1:])]
+        else:
+            raise NotImplementedError
+        nl, nc = self.gridsize
+        for i in targets:
+            self.grid[i.coords] = 'T'
+
+        self.state['position']['values'] = numpy.array(position.coords)
+        self.state['targets']['values'] = [numpy.array(t.coords) for t in targets]
+
+        if dic is not None:
+            super().reset(dic = dic)
+
+
+    def is_done_operator(self):
+        # env ends when operator inputs action 0 or when too many turns have been played
+        if self.turn > 50:
+            return True
+        if self.operator_action['values'][0] == 0:
+            return True
+        return False
+
+    def operator_step(self, *args, **kwargs):
+        state, sumrewards, is_done, reward_list = super().operator_step()
+        return state, sumrewards, self.is_done_operator(), reward_list
+
+    def is_done_assistant(self):
+        return False
+
+    def assistant_step(self, *args, **kwargs):
+        super().assistant_step()
+
+        if self.mode == 'position':
+            self.state['position']['values'] = self.bundle.game_state['assistant_action']['action']['values']
+        elif self.mode == 'gain':
+            assistant_action = self.bundle.game_state['assistant_action']['action']['values'][0]
+            operator_action = self.bundle.game_state['operator_action']['action']['human_values'][0]
+            position = self.state['position']['values'][0]
+
+            # Clipping and numpy dtype means we don't have to deal with edge cases, rounding etc.
+            self.state['position']['values'] = position + operator_action*assistant_action
+
+        return self.state, -1/2, self.is_done_assistant(), {}
+
+
+
+    def render(self,*args, mode="text"):
+        """ Render the task.
+
+        Plot or print the grid, with cursor and target positions.
+
+        :param ax:
+        :param args:
+        :param mode: 'text' or 'plot'
+
+
+        :meta public:
+        """
+
+
+
+
+        if 'text' in mode:
+            print('\n')
+            print("Turn number {:f}".format(self.turn))
+            print('Current position')
+            print(self.state['position']['values'])
+            print('Targets:')
+            print(self.state['targets']['values'])
+        else:
+            raise NotImplementedError
+
+
+
 
 class SimplePointingTask(InteractionTask):
     """ A 1D pointing task.
@@ -44,6 +227,7 @@ class SimplePointingTask(InteractionTask):
         self.gridsize = gridsize
         self.number_of_targets = number_of_targets
         self.mode = mode
+        self.dim = 1
 
         self.handbook['render_mode'].extend(['plot', 'text'])
         _gridsize = {"name": 'gridsize', "value": gridsize, "meaning": 'Size of the gridworld'}
@@ -54,13 +238,21 @@ class SimplePointingTask(InteractionTask):
 
         self.state['position'] = StateElement(
                     values = None,
-                    spaces = [gym.spaces.Discrete(gridsize)],
+                    spaces = [core.space.Discrete(gridsize)],
                     possible_values = None,
-                    mode = 'clip'  )
+                    clipping_mode = 'clip'  )
 
         self.state['targets'] = StateElement(
                     values = None,
-                    spaces = [gym.spaces.Discrete(gridsize) for i in range(self.number_of_targets)], possible_values = None  )
+                    spaces = [core.space.Discrete(gridsize) for i in range(self.number_of_targets)], possible_values = None  )
+
+
+    def operator_step(self, *args, **kwargs):
+        """ Do nothing, increment turns, return half a timestep
+
+        :meta public:
+        """
+        return super().operator_step()
 
 
     def reset(self, dic = None):
@@ -96,7 +288,7 @@ class SimplePointingTask(InteractionTask):
         """
         return super().operator_step()
 
-    def _is_done_assistant(self):
+    def is_done_assistant(self):
         is_done = False
         if self.state['position']['values'][0] == self.bundle.game_state['operator_state']['goal']['values'][0]:
             is_done = True
@@ -134,7 +326,7 @@ class SimplePointingTask(InteractionTask):
             self.state['position']['values'] = int(numpy.round(position + operator_action*assistant_action))
 
 
-        return self.state, -1/2, self._is_done_assistant(), {}
+        return self.state, -1/2, self.is_done_assistant(), {}
 
     def render(self,*args, mode="text"):
         """ Render the task.
@@ -372,13 +564,13 @@ class Screen_v0(InteractionTask):
         # Define state
         self.state['position'] = StateElement(
             values = numpy.array([0.1,0.1]),
-            spaces = [  gym.spaces.Box( low = self.screen_low, high = self.screen_high )  ],
+            spaces = [  core.space.Box( low = self.screen_low, high = self.screen_high )  ],
             possible_values = None
                 )
 
         self.state['targets'] = StateElement(
             values = [numpy.array([-1 + 2*i/self.number_of_targets, -1/self.aspect_ratio + i/self.aspect_ratio/self.number_of_targets]) for i in range(self.number_of_targets)],
-            spaces = [  gym.spaces.Box( low = self.screen_low, high = self.screen_high )  for i in range(self.number_of_targets)],
+            spaces = [  core.space.Box( low = self.screen_low, high = self.screen_high )  for i in range(self.number_of_targets)],
             possible_values = None
         )
 
@@ -448,9 +640,9 @@ class Screen_v0(InteractionTask):
         # if dist(self.bundle.operator.state['goal']['values'][0]) < self.target_radius:
         #     is_done = True
 
-        return self.state, -1/2, self._is_done_assistant(), {}
+        return self.state, -1/2, self.is_done_assistant(), {}
 
-    def _is_done_assistant(self):
+    def is_done_assistant(self):
         is_done = False
         speed = 0
         threshold = 1

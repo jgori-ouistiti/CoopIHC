@@ -18,23 +18,24 @@ def partialback(func, *extra_args):
 
 
 class Server:
-    def __init__(self, bundle, address = 'localhost', port = 4000):
-        self.start_server = websockets.serve(partialback(self.bundlehandler, bundle), address, port)
+    def __init__(self, bundle, taskwrapper, address = 'localhost', port = 4000):
+        self.start_server = websockets.serve(partialback(self.bundlehandler, bundle, taskwrapper), address, port)
         self.user = None
+        self.bundle = bundle
 
     def start(self):
         asyncio.get_event_loop().run_until_complete(self.start_server)
         asyncio.get_event_loop().run_forever()
 
-    async def bundlehandler(self, websocket, path, bundle):
+    async def bundlehandler(self, websocket, path, bundle, taskwrapper):
         '''
         On websocket connection, starts a new userTrial in a new Process.
         Then starts async listeners for sending and recieving messages.
         '''
         await self.register(websocket)
         bundlepipeup, bundlepipedown = Pipe()
-        bundle = Process(target = PipedTaskBundleWrapper, args = (bundle, bundlepipedown))
-        bundle.start()
+        process = Process(target = PipedTaskBundleWrapper, args = (bundle, taskwrapper, bundlepipedown))
+        process.start()
         consumerTask = asyncio.ensure_future(self.consumer_handler(websocket, bundlepipeup))
         producerTask = asyncio.ensure_future(self.producer_handler(websocket, bundlepipeup))
         done, pending = await asyncio.wait(
@@ -53,7 +54,8 @@ class Server:
     async def consumer_handler(self, websocket, pipe):
         async for message in websocket:
             print('received message {}'.format(message))
-            pipe.send(message)
+            # print("json", [[key, value, type(value)] for key, value in json.loads(message).items()])
+            pipe.send(json.loads(message))
 
     async def producer_handler(self, websocket, pipe):
         '''
@@ -81,10 +83,9 @@ class Server:
         if pipe.poll():
             message = pipe.recv()
             if message == 'done':
-                await websocket.send('done')
+                await websocket.send(json.dumps({'type': 'done'}))
                 return True
             else:
                 print("sending message: \t {}".format(json.dumps(message)))
-
                 await websocket.send(json.dumps(message))
         return False

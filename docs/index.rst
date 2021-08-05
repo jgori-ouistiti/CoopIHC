@@ -126,12 +126,16 @@ List of Modules in *interaction-agents*
 TODO list:
 ==============
 
+* have a task possess an observation engine for cleaner separability between modules
+* Make agents and tasks inherit from core. Have core deal with handbooks in the simplest way possible. Add properties to the base classes for useful attributes
+* think about standardized logging capabilities
 * provide test code to ensure the engines are working properly
-* get rid of gym.spaces.Discrete and box, define own spaces (get rid of discrete annoyances with 0,N, possible values etc.)
-* Have a template class for each main component.
+* possibly define own spaces rather than rely on gym spaces
+* Have a template for each main component (possibly using metaclasses)
 * verify full arithmetic operations for StateElement
-* make a mapping object for RuleObservationEngine
-* profile interaction-agents
+* make a mapping object for RuleObservationEngine, smoothen the ruleObservationEngine specification
+* profile interaction-agents to see whether there are any bottlenecks (deepcopies are one)
+* make sure attach_policy and such can be called whenever and not just on init
 
 
 Indices

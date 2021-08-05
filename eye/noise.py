@@ -21,7 +21,7 @@ def eccentric_noise(target, position, sdn_level):
         cosalpha = (target - position)[0] / eccentricity
         sinalpha = (target - position)[1] / eccentricity
         _sigma = sdn_level * eccentricity
-        sigma = numpy.array([[_sigma, 0], [0, 4*_sigma/3]])
+        sigma = numpy.array([[_sigma, 0], [0, 3*_sigma/4]])
         P = numpy.array([[cosalpha, -sinalpha], [sinalpha, cosalpha]])
         return P @ sigma @ P.T
     elif target.shape == (1,) or target.shape == (1,1):

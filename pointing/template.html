@@ -8,29 +8,8 @@
                 font-family: "Courier New", sans-serif;
                 text-align: center;
             }
-            .buttons {
-                font-size: 4em;
-                display: flex;
-                justify-content: center;
-            }
-            .button, .value {
-                line-height: 1;
-                padding: 2rem;
-                margin: 2rem;
-                border: medium solid;
-                min-height: 1em;
-                min-width: 1em;
-            }
-            .button {
-                cursor: pointer;
-                user-select: none;
-            }
-            .minus {
-                color: red;
-            }
-            .plus {
-                color: green;
-            }
+
+
             .value {
                 min-width: 2em;
             }
@@ -56,10 +35,7 @@
         </style>
     </head>
     <body>
-        <div class="buttons">
-            <div class="minus button">-</div>
-            <div class="plus button">+</div>
-        </div>
+
         <div class="indicators">
             Targets:
             <div class="targets">unknown</div>
@@ -294,14 +270,7 @@
             var users_actions = {};
             var iter = 0;
 
-            minus.onclick = function (event) {
-                users_actions['action'+iter.toString()] = {'action': 'minus', 'timestamp': Date.now()};
-                // websocket.send(JSON.stringify({action: 'minus'}));
-            }
-            plus.onclick = function (event) {
-                users_actions['action'+iter.toString()] = {'action': 'plus', 'timestamp': Date.now()};
-                // websocket.send(JSON.stringify({action: 'plus'}));
-            }
+        
             websocket.onmessage = function (event) {
                 console.log(event)
                 let dic_received = JSON.parse(event.data);

@@ -1,86 +1,3 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8"/>
-        <title>WebSocket Bundles Demo</title>
-        <style type="text/css">
-            body {
-                font-family: "Courier New", sans-serif;
-                text-align: center;
-            }
-            .buttons {
-                font-size: 4em;
-                display: flex;
-                justify-content: center;
-            }
-            .button, .value {
-                line-height: 1;
-                padding: 2rem;
-                margin: 2rem;
-                border: medium solid;
-                min-height: 1em;
-                min-width: 1em;
-            }
-            .button {
-                cursor: pointer;
-                user-select: none;
-            }
-            .minus {
-                color: red;
-            }
-            .plus {
-                color: green;
-            }
-            .value {
-                min-width: 2em;
-            }
-
-            .indicators {
-                font-size: 1em
-            }
-            .targets {
-                color: purple;
-            }
-            .position {
-                color: blue;
-            }
-            .goal {
-                color: green;
-            }
-            .param {
-                color: red;
-            }
-            .state {
-                font-size: 2em;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="buttons">
-            <div class="minus button">-</div>
-            <div class="plus button">+</div>
-        </div>
-        <div class="indicators">
-            Targets:
-            <div class="targets">unknown</div>
-            Position:
-            <div class="position">unknown</div>
-            Goal:
-            <div class="goal">Determined by Operator inside Bundle</div>
-            Parameters:
-            <div class="param">unknown</div>
-        </div>
-
-        <div class='actions'>
-            Operator Action:
-            <div class='operator_action'>None Received</div>
-            Assistant Action:
-            <div class='assistant_action'>None Received</div>
-
-        <div class="state">
-            <span class="users">?</span> online
-        </div>
-        <script>
 
             // ========================== functions and classes def =============
 
@@ -88,23 +5,50 @@
                var randomIndex = Math.floor(Math.random()*bucket.length);
                return bucket.splice(randomIndex, 1)[0];
             }
+
+            function index_to_coords(index, gridsize){
+                var nl = gridsize[0],
+                    nc =  gridsize[1];
+                var ci = index%nc;
+                var li = (index-ci)/nc;
+                return [li,ci];
+
+            }
+            function coords_to_index(coords, gridsize){
+                var li = coords[0],
+                    ci = coords[1],
+                    nl = gridsize[0],
+                    nc = gridsize[1];
+                return li*nc + ci;
+
+
+            }
+
             function getRandomTargets(pointing_task_parametersObject){
                 var bucket = [];
-                for (var i=0;i<pointing_task_parametersObject.gridsize;i++) {
+                var gridindex = pointing_task_parametersObject.gridsize[0]*pointing_task_parametersObject.gridsize[1];
+                for (var i=0;i<gridindex;i++) {
                     bucket.push(i);
                 }
+                var targetArray_index = new Array(pointing_task_parametersObject.number_of_targets + 1);
                 var targetArray = new Array(pointing_task_parametersObject.number_of_targets + 1);
+
                 for (var i=0;i<pointing_task_parametersObject.number_of_targets+1;i++){
-                    targetArray[i] = getRandomFromBucket(bucket);
+                    var random_index = getRandomFromBucket(bucket)
+                    targetArray_index[i] = random_index;
+                    targetArray[i] = index_to_coords(random_index, pointing_task_parametersObject.gridsize );
                 }
-                let position = targetArray.pop();
-                let randomIndex = Math.floor(Math.random()*targetArray.length);
-                let goal = targetArray[randomIndex];
-                return [position, targetArray.sort(function(a,b){return a-b;}), goal];
+                let position = index_to_coords(targetArray_index.pop(), pointing_task_parametersObject.gridsize );
+                // Don't forget to pop the targetArray as well
+                targetArray.pop();
+                let randomIndex = Math.floor(Math.random()*targetArray_index.length);
+                let goal = index_to_coords(targetArray_index[randomIndex], pointing_task_parametersObject.gridsize);
+
+                return [position, targetArray.sort(function(a,b){return coords_to_index(a,pointing_task_parametersObject.gridsize )-coords_to_index(b,pointing_task_parametersObject.gridsize);}), goal];
             }
 
             class PointingTaskParameters{
-                constructor(gridsize = 31, number_of_targets = 8, mode = 'gain'){
+                constructor(gridsize = [31,31], number_of_targets = 8, mode = 'gain'){
                     this.gridsize = gridsize;
                     this.number_of_targets = number_of_targets;
                     this.mode = mode;
@@ -147,12 +91,14 @@
 
                 set position(value){
                     this.__position = value;
-                    this.__position_text.textContent = value.toString();
+                    this.__position_text.textContent = "["+value.toString()+"]";
                 }
 
                 set targets(value){
                     this.__targets = value;
-                    this.__targets_text.textContent = value.toString();
+                    this.__targets_text.textContent = "["+ value.join('] [') + ']';
+                    // this.__targets_text.textContent = value;
+
                 }
 
                 get operator_action(){
@@ -192,6 +138,20 @@
             var pointing_task_parameters = new PointingTaskParameters();
             var pointing_task_manager = new PointingTaskManager();
 
+
+
+
+            function draw(){
+                var canvas = document.getElementById('render-canvas');
+                var context = canvas.getContext("2d");
+            }
+
+
+
+
+
+
+
             function on_init(received_dic){
                 let params = received_dic['parameters'];
                 for (const [key, value] of Object.entries(params)){
@@ -205,7 +165,7 @@
                 let [_position, _targets, _goal] = getRandomTargets(pointing_task_parameters);
                 pointing_task_manager.position = _position;
                 pointing_task_manager.targets = _targets;
-
+                console.log(pointing_task_manager);
                 send_msg(pointing_task_manager.state);
             }
 
@@ -294,14 +254,7 @@
             var users_actions = {};
             var iter = 0;
 
-            minus.onclick = function (event) {
-                users_actions['action'+iter.toString()] = {'action': 'minus', 'timestamp': Date.now()};
-                // websocket.send(JSON.stringify({action: 'minus'}));
-            }
-            plus.onclick = function (event) {
-                users_actions['action'+iter.toString()] = {'action': 'plus', 'timestamp': Date.now()};
-                // websocket.send(JSON.stringify({action: 'plus'}));
-            }
+
             websocket.onmessage = function (event) {
                 console.log(event)
                 let dic_received = JSON.parse(event.data);
@@ -331,6 +284,3 @@
                             "unsupported event", data);
                 }
             };
-        </script>
-    </body>
-</html>

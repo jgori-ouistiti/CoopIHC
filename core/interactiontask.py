@@ -66,6 +66,16 @@ class InteractionTask(Core):
     def state(self, value):
         self._state = value
 
+    @property
+    def operator_action(self):
+        if self.bundle:
+            return self.bundle.game_state['operator_action']['action']
+
+    @property
+    def assistant_action(self):
+        if self.bundle:
+            return self.bundle.game_state['assistant_action']['action']
+
 
     def __content__(self):
         return {'Name': self.__class__.__name__, "State": self.state.__content__()}
@@ -146,74 +156,8 @@ class InteractionTask(Core):
                 self.state[key]['values'] = value
 
 
-class WebsocketInteractionTask(InteractionTask):
-    def __init__(self):
-        pass
-    # def __init__(self, pathname = 'localhost', portnumber = 4000):
-    #     self.users = set()
-    #     await self.register(websocket)
-    #     super().__init__()
-    #
-    #
-    # async def register(websocket):
-    #     self.users.add(websocket)
-    #     await self.notify_users()
-    #
-    # @property
-    # def state(self):
-    #     return self._state
-    #
-    # @state.setter
-    # def state(self, value):
-    #     self._state = value
-    #     print("sending {}".format(json.dumps.serialize()))
-    #     await asyncio.wait([user.send(json.dumps(value.serialize())) for user in self.users])
 
-
-
-class MyWebsocket:
-    async def __aenter__(self, pathname = 'localhost', portnumber = '4000'):
-        self._conn = websockets.connect('ws://{}:{}'.format(pathname, portnumber))
-        self.websocket = await self._conn.__aenter__()
-        return self
-
-    async def __aexit__(self, *args, **kwargs):
-        await self._conn.__aexit__(*args, **kwargs)
-
-    async def send(self, message):
-        await self.websocket.send(message)
-
-    async def receive(self):
-        return await self.websocket.recv()
-
-
-# class PipedTask(InteractionTask):
-#     def __init__(self, task):
-#         self.__dict__['task'] = task
-#
-#     def __getattr__(self, attr):
-#         return getattr(self.__dict__['task'], attr)
-#
-#     def __setattr__(self, name, value):
-#         setattr(self.__dict__['task'], name, value)
-#
-#     def check_message(self, timeout = 0.005):
-#         if self.pipe.poll(timeout):
-#             msg = self.pipe.recv()
-#             print('received {}'.format(msg))
-#             return json.loads(msg)
-#
-#
-#     def reset(self, dic = None):
-#         self.turn = 0
-#         self.round = 0
-#         self.pipe.send({'reset': dic})
-#         return_state = self.check_message(self, timeout = None)
-#         print(return_state)
-
-
-
-class PipeTaskWrapper(InteractionTask):
+class PipeTaskWrapper(InteractionTask, ABC):
     def __init__(self, task, pipe):
         self.__dict__ = task.__dict__
         self.task = task
@@ -223,15 +167,12 @@ class PipeTaskWrapper(InteractionTask):
         while True:
             self.pipe.poll(None)
             received_state = self.pipe.recv()
-            msg = json.loads(received_state)
             # This assumes that the final message sent by the client is a task_state message. Below should be changed to remove that assumption (i.e. client can send whatever order)
-            if msg['type'] == 'task_state':
+            if received_state['type'] == 'task_state':
                 is_done = True
-            self.update_state(msg)
+            self.update_state(received_state)
             if is_done:
                 break
-
-
 
     def __getattr__(self, attr):
         if self.__dict__:
@@ -247,6 +188,7 @@ class PipeTaskWrapper(InteractionTask):
         if self.__dict__:
             setattr(self.__dict__['task'], name, value)
 
+
     def update_state(self, state):
         print("updating state")
         if state['type'] == 'task_state':
@@ -257,236 +199,46 @@ class PipeTaskWrapper(InteractionTask):
             self.update_operator_state(state)
 
 
-
+    @abstractmethod
     def update_task_state(self, state):
-        for key in self.state:
-            try:
-                value = state.pop(key)
-                self.state[key]['values'] = value
-            except KeyError:
-                raise KeyError('Key "{}" defined in task state was not found in the received data'.format(key))
-        if state:
-            print("warning: the received data has not been consumed. {} does not match any current task state".format(str(state)))
+        pass
 
-
+    @abstractmethod
     def update_operator_state(self, state):
-        for key in state:
-            try:
-                self.bundle.operator.state[key]
-            except KeyError:
-                raise KeyError('Key "{}" sent in received data was not found in operator state'.format(key))
-            self.bundle.operator.state[key]['values'] = state[key]
+        pass
 
 
     def operator_step(self,  *args, **kwargs):
         super().operator_step(*args, **kwargs)
-        operator_action_msg = {"operator_action": self.bundle.game_state["operator_action"]['action']}
+        operator_action_msg = { 'type': "operator_action", 'value': self.bundle.game_state["operator_action"]['action'].serialize()}
         self.pipe.send(operator_action_msg)
         self.pipe.poll(None)
-        received_state, reward, is_done, _ = self.pipe.recv()
-        return received_state, reward, is_done, _
+        received_dic = self.pipe.recv()
+        received_state = received_dic['state']
+        self.update_state(received_state)
+        return self.state, received_dic['reward'], received_dic['is_done'], {}
 
     def assistant_step(self,  *args, **kwargs):
         super().assistant_step(*args, **kwargs)
-        assistant_action_msg = {"assistant_action": self.bundle.game_state["assistant_action"]['action']}
+        assistant_action_msg = { 'type': "assistant_action", 'value': self.bundle.game_state["assistant_action"]['action'].serialize()}
         self.pipe.send(assistant_action_msg)
         self.pipe.poll(None)
-        received_state, reward, is_done, _ = self.pipe.recv()
-        return received_state, reward, is_done, _
+        received_dic = self.pipe.recv()
+        received_state = received_dic['state']
+        self.update_state(received_state)
+        return self.state, received_dic['reward'], received_dic['is_done'], {}
 
 
     def reset(self, dic = None):
         super().reset(dic = dic)
-        reset_msg = {'reset': dic}
+        reset_msg = {'type':'reset', 'reset_dic': dic}
         self.pipe.send(reset_msg)
         self.pipe.poll(None)
         received_state = self.pipe.recv()
-        return received_state
+        self.update_state(received_state)
+        self.bundle.reset(task = False)
+        return self.state
 
-
-# class WebsocketWrapper(InteractionTask):
-#     def __init__(self, task):
-#         # self.__dict__['task'] = task # get around the __setattr__ override
-#         self.__dict__['task'] = task
-#         self.ws = MyWebsocket()
-#         self.loop = asyncio.get_event_loop()
-#
-#
-#     # @property
-#     # def state(self):
-#     #     print('accessing')
-#     #     return self.task._state
-#
-#
-#     def send_state_decorator(func):
-#         def function_wrapper(self, *args, **kwargs):
-#             ret = func(self, *args, **kwargs)
-#             serialized_state = json.dumps(self.state.serialize())
-#             print("in {}, sending {}".format(func.__name__, serialized_state))
-#             self.loop.run_until_complete(self.__async__send_state(serialized_state))
-#             return ret
-#         return function_wrapper
-#
-#     async def __async__send_state(self, serialized_state):
-#         async with self.ws as ws:
-#             await ws.send(serialized_state)
-#             # return await ws.receive()
-#
-#     def __getattr__(self, attr):
-#         return getattr(self.__dict__['task'], attr)
-#
-#     def __setattr__(self, name, value):
-#         # handle data descriptor invocation (i.e. the state property), see https://stackoverflow.com/questions/15750522/class-properties-and-setattr
-#         # if isinstance(getattr(type(self), name, None), property):
-#         #     print('here')
-#         #     # super().__setattr__(name, value)
-#         #     self._state_setter(name, value)
-#         # else:
-#         #     setattr(self.__dict__['task'], name, value)
-#         setattr(self.__dict__['task'], name, value)
-#
-#
-#     def __content__(self):
-#         return self.task.__content__()
-#
-#     @send_state_decorator
-#     def finit(self):
-#         self.task.finit()
-#
-#     def _is_done_operator(self, *args, **kwargs):
-#         return self.task._is_done_operator(*args, **kwargs)
-#
-#     def _is_done_assistant(self, *args, **kwargs):
-#         return self.task._is_done_assistant(*args, **kwargs)
-#
-#     @send_state_decorator
-#     def operator_step(self,  *args, **kwargs):
-#         return self.task.operator_step(*args, **kwargs)
-#
-#     @send_state_decorator
-#     def assistant_step(self,  *args, **kwargs):
-#         return self.task.assistant_step(*args, **kwargs)
-#
-#     def render(self, *args, **kwargs):
-#         return self.task.render(*args, **kwargs)
-#
-#     @send_state_decorator
-#     def reset(self, dic = None):
-#         return self.task.reset(dic = dic)
-
-
-# class WebSocketTask(InteractionTask):
-#
-#     def __init__(self):
-#         super().__init__()
-#         self.users = set()
-#
-#     def state_event(self):
-#         # return json.dumps({"type": "state", 'state': self.state.serialize()})
-#         return json.dumps({"type": "state"})
-#
-#     def users_event(self):
-#         return json.dumps({"type": "users", "count": len(self.users)})
-#
-#     def update_state(self, JSON_stringified_state):
-#         print("updating state")
-#         state = json.loads(JSON_stringified_state)
-#         for element in self.state:
-#             try:
-#                 value = state.pop(element)
-#                 self.state[element]['values'] = value
-#             except KeyError('Key {} defined in task state was not found in the received data'):
-#                 # trigger error regardless
-#                 value = state.pop(element)
-#         if state:
-#             print("warning: the received data has not been consumed. {} does not match any current task state".format(str(state)))
-#
-#     async def exchange(self, msg_dict):
-#         if self.users:
-#             await asyncio.wait([user.send(json.dumps(msg_dict)) for user in self.users])
-#             # select first user (i.e. only dealing with a single user case for now)
-#             user = next(iter(self.users))
-#             return await user.recv()
-#
-#     async def reset(self, dic = None):
-#         self.turn = 0
-#         self.round = 0
-#         ret_state = await self.exchange({'type': 'reset', 'params': dic})
-#         self.update_state(ret_state)
-#
-#     async def _init(self):
-#         if self.users:
-#             JSON_stringified_init_state = await self.exchange({'type': 'init', 'params': self.params})
-#             self.update_state(JSON_stringified_init_state)
-#
-#     async def notify_state(self):
-#         if self.users:  # asyncio.wait doesn't accept an empty list
-#             message = self.state_event()
-#             await asyncio.wait([user.send(message) for user in self.users])
-#
-#
-#     async def notify_users(self):
-#         if self.users:  # asyncio.wait doesn't accept an empty list
-#             message = self.users_event()
-#             await asyncio.wait([user.send(message) for user in self.users])
-#
-#
-#     async def register(self, websocket):
-#         self.users.add(websocket)
-#         print("added user")
-#         await self.notify_users()
-#
-#
-#     async def unregister(self, websocket):
-#         self.users.remove(websocket)
-#         print('removed user')
-#         await self.notify_users()
-#
-#
-#     async def interact(self, websocket, path):
-#         # register(websocket) sends user_event() to websocket
-#         await self.register(websocket)
-#         await self._init()
-#         try:
-#             await websocket.send(self.state_event())
-#             # await self.send_state({'Position': 2})
-#             async for message in websocket:
-#                 data = json.loads(message)
-#                 print(data)
-#                 if data["action"] == "minus":
-#                     self.state["value"] -= 1
-#                     await self.notify_state()
-#                 elif data["action"] == "plus":
-#                     self.state["value"] += 1
-#                     await self.notify_state()
-#                 else:
-#                     logging.error("unsupported event: %s", data)
-#         finally:
-#             await self.unregister(websocket)
-#
-#     async def send_state(self, state):
-#         if self.users:
-#             print('sending state')
-#             await asyncio.wait([user.send(json.dumps({'type': 'state', **state})) for user in self.users])
-
-# class WebSocketTask(InteractionTask):
-#     def __init__(self):
-#         super().__init__()
-#         self.ws = MyWebsocket()
-#
-#     async def _init(self):
-#         await self.__async__send_msg(json.dumps({'init': None}))
-#
-#     async def __async__send_msg(self, msg):
-#         async with self.ws as ws:
-#             await ws.send(msg)
-#             print('sent ' + msg)
-#
-# async def create_websocket_task(*args, **kwargs):
-#     task = WebSocketTask(*args, **kwargs)
-#     await task._init()
-#     print("finished waiting")
-#     return task
 
 class ClassicControlTask(InteractionTask):
     """ verify F and G conversions.
