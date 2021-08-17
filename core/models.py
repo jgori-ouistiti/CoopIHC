@@ -3,6 +3,7 @@ import numpy
 
 from core.helpers import sort_two_lists
 
+
 class DiscreteOperatorModelMax(ABC):
     """ A Discrete Operator Model.
 
@@ -64,6 +65,7 @@ class GoalDrivenBinaryOperatorModel(DiscreteOperatorModelMax):
 
     :param action: the set of actions for the binary operator is ``[-action, action]`` If the actions are discrete actions, enter the real value of actions.
     """
+
     def __init__(self, action):
         super().__init__([-action, action])
 
@@ -83,16 +85,16 @@ class GoalDrivenBinaryOperatorModel(DiscreteOperatorModelMax):
         """
         # Write down all possible cases (4)
         # (1) Goal to the right, positive action
-        if observation['operator_state']['Goal'][0] > observation['task_state']['Position'][0] and action > 0 :
+        if observation['operator_state']['Goal'][0] > observation['task_state']['Position'][0] and action > 0:
             return .99
         # (2) Goal to the right, negative action
-        elif observation['operator_state']['Goal'][0] > observation['task_state']['Position'][0] and action < 0 :
+        elif observation['operator_state']['Goal'][0] > observation['task_state']['Position'][0] and action < 0:
             return .01
         # (3) Goal to the left, positive action
-        if observation['operator_state']['Goal'][0] < observation['task_state']['Position'][0] and action > 0 :
+        if observation['operator_state']['Goal'][0] < observation['task_state']['Position'][0] and action > 0:
             return .01
         # (4) Goal to the left, negative action
-        elif observation['operator_state']['Goal'][0] < observation['task_state']['Position'][0] and action < 0 :
+        elif observation['operator_state']['Goal'][0] < observation['task_state']['Position'][0] and action < 0:
             return .99
         elif observation['operator_state']['Goal'][0] == observation['task_state']['Position'][0]:
             return 0
@@ -112,13 +114,16 @@ class ContinuousGaussianOperatorModel(ABC):
     def compute_likelihood(self, action, observation):
         mu = self.compute_mu(observation)
         k = max(mu.shape)
-        prefactor = (2*numpy.pi)**(-k/2)/numpy.sqrt(numpy.linalg.det(Sigma))
-        expfactor = -1/2*(action-mu).T @ numpy.linalg.inv(Sigma) @ (action-mu)
+        prefactor = (2*numpy.pi)**(-k/2) / \
+            numpy.sqrt(numpy.linalg.det(self.Sigma))
+        expfactor = -1/2 * \
+            (action-mu).T @ numpy.linalg.inv(self.Sigma) @ (action-mu)
         return prefactor*numpy.exp(expfactor)
 
     def sample(self, observation):
         mu = self.compute_mu(observation)
         return numpy.random.multivariate_normal(mu, self.Sigma)
+
 
 class LinearEstimatedFeedback(ContinuousGaussianOperatorModel):
     """ A linear Feedback from the estimated state.
@@ -128,6 +133,7 @@ class LinearEstimatedFeedback(ContinuousGaussianOperatorModel):
     :param L: (numpy.ndarray) Kalman Feedback Gain matrix
     :param Sigma: (numpy.ndarray) covariance matrix of noise used to specify the likelihood :math:`\mathcal{N}(-L \hat{x}, \Sigma)`
     """
+
     def __init__(self, L, Gamma):
         self.L = L
         super().__init__(Gamma)
