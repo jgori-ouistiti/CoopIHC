@@ -19,8 +19,14 @@ Cycler = "==0.10.0"
 Cython = "==0.28.1"
 Pillow = "==7.2.0"
 interactionagents = {editable = true, path = "."}
+tabulate = "*"
+loguru = "*"
+websockets = "*"
+pyyaml = "*"
+stable-baselines3 = "*"
 
 [dev-packages]
+autopep8 = "*"
 
 [requires]
 python_version = "3.8"
