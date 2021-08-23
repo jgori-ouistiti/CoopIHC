@@ -44,11 +44,12 @@ class BIGGain(BaseAgent):
         assistant_action_space = [core.space.Discrete(self.bundle.task.gridsize)]
         operator_policy_model = self.bundle.operator.policy
 
-
         action_state = self.bundle.game_state['assistant_action']
+
         agent_policy = BIGDiscretePolicy(       action_state,
+                                                operator_policy_model,
                                                 assistant_action_space,
-                                                operator_policy_model                                                )
+                                                )
 
         self.attach_policy(agent_policy)
         self.inference_engine.attach_policy(agent_policy.operator_policy_model)
@@ -63,9 +64,10 @@ class BIGGain(BaseAgent):
         self.state['Beliefs'] = StateElement(values = [1/self.bundle.task.number_of_targets for i in range(self.bundle.task.number_of_targets)], spaces = [core.space.Box(0, 1, shape = (1,)) for i in range(self.bundle.task.number_of_targets)], possible_values = None)
 
         # change theta for inference engine
+
         set_theta = [{('operator_state', 'goal'): StateElement(values = [t],
                 spaces = [core.space.Discrete(self.bundle.task.gridsize)],
-                possible_values =  self.bundle.task.state['Targets']['values'])  } for t in self.bundle.task.state['Targets']['values'] ]
+                possible_values =  [list(range(self.bundle.task.gridsize))] )  } for t in self.bundle.task.state['targets']['values'] ]
 
         self.inference_engine.attach_set_theta(set_theta)
         self.policy.attach_set_theta(set_theta)
@@ -79,7 +81,7 @@ class BIGGain(BaseAgent):
             # always do this
             observation['assistant_action']['action'] = assistant_action
             # specific to BIGpointer
-            observation['task_state']['Position'] = assistant_action
+            observation['task_state']['position'] = assistant_action
 
             return observation
 

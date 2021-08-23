@@ -20,6 +20,7 @@ class BasePolicy:
     """
     def __init__(self, *args, **kwargs):
         # If a state is provided, use it; else create one (important not to lose the reference w/r the game_state)
+        print(args, kwargs)
         if args:
             self.action_state = args[0]
         else:
@@ -164,9 +165,14 @@ class WrapAsPolicy(BasePolicy):
 
 # ----------- Bayesian Information Gain Policy ---------
 class BIGDiscretePolicy(BasePolicy):
-    def __init__(self, action_state, assistant_action_space, operator_policy_model):
-        assistant_action_possible_values = list(range(assistant_action_space[0].n))
+    def __init__(self, action_state, operator_policy_model, assistant_action_space = [None]):
+        try:
+            assistant_action_possible_values = [list(range(assistant_action_space[0].n))]
+        except AttributeError:
+            assistant_action_possible_values = None
+
         super().__init__(action_state, action_space = assistant_action_space, action_set = assistant_action_possible_values)
+
 
         self.assistant_action_set = self.action_state['action'].cartesian_product()
         self.operator_policy_model = operator_policy_model
@@ -247,9 +253,12 @@ class BIGDiscretePolicy(BasePolicy):
         H = 0
         for operator_action in self.operator_action_set:
             for potential_state, belief in zip(potential_states, beliefs):
+
                 pYy__OoXx = self.operator_policy_likelihood_function(operator_action, potential_state)
+
                 if pYy__OoXx != 0: # convention: 0 log 0 = 0
                     H += -belief*pYy__OoXx*math.log(pYy__OoXx,2)
+
         return H
 
 
@@ -267,6 +276,7 @@ class BIGDiscretePolicy(BasePolicy):
 
         :meta public:
         """
+
         observation = self.transition_function(assistant_action, observation)
         potential_states = []
         for nt,t in enumerate(self.set_theta):
@@ -281,7 +291,6 @@ class BIGDiscretePolicy(BasePolicy):
                     _state[key[1]] = value
                     potential_state[key[0]] = _state
             potential_states.append(potential_state)
-
 
         return self.HY__Xx(potential_states, assistant_action, beliefs) - self.HY__OoXx(potential_states, assistant_action, beliefs)
 
@@ -298,6 +307,7 @@ class BIGDiscretePolicy(BasePolicy):
         #     return [hp_target], [None]
         # else:
         observation = self.host.inference_engine.buffer[-1]
+
 
         IG_storage = [self.IG(action, observation, beliefs) for action in self.assistant_action_set]
 

@@ -7,7 +7,7 @@ from pointing.operators import CarefulPointer, LQGPointer
 from pointing.assistants import ConstantCDGain, BIGGain
 from eye.envs import ChenEyePointingTask
 from eye.operators import ChenEye
-
+import core
 from collections import OrderedDict
 from core.models import LinearEstimatedFeedback
 from core.helpers import flatten
@@ -62,16 +62,15 @@ if _str == 'basic-PlayNone' or _str == 'all':
             break
 
 if _str == 'biggain-PlayNone' or _str == 'all':
-    task = SimplePointingTask(gridsize = 31, number_of_targets = 10, mode = 'position')
+    task = SimplePointingTask(gridsize = 15, number_of_targets = 8, mode = 'position')
     binary_operator = CarefulPointer()
-
     BIGpointer = BIGGain()
 
     bundle = PlayNone(task, binary_operator, BIGpointer)
-
     game_state = bundle.reset()
     bundle.render('plotext')
     plt.tight_layout()
+
     # k = 0
     # plt.savefig('/home/jgori/Documents/img_tmp/biggain_{}.png'.format(k))
     #
@@ -95,8 +94,8 @@ if _str == 'basic-TrainOperator' or _str == 'all':
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
     unitcdgain = ConstantCDGain(1)
 
-    policy = Policy(    action_space = [gym.spaces.Discrete(10)],
-                        action_set = [-5 + i for i in range (5)] + [i+1 for i in range(5)],
+    policy = BasePolicy(    action_space = [core.space.Discrete(10)],
+                        action_set = [[-5 + i for i in range (5)] + [i+1 for i in range(5)]],
                         action_values = None
     )
 
@@ -104,7 +103,7 @@ if _str == 'basic-TrainOperator' or _str == 'all':
     bundle = PlayOperator(task, operator, unitcdgain)
     observation = bundle.reset()
 
-    observation_dict = OrderedDict({'task_state': OrderedDict({'Position': 0}), 'operator_state': OrderedDict({'Goal': 0})})
+    observation_dict = OrderedDict({'task_state': OrderedDict({'position': 0}), 'operator_state': OrderedDict({'goal': 0})})
 
 
     class ThisActionWrapper(gym.ActionWrapper):
@@ -131,22 +130,21 @@ if _str == 'basic-TrainOperator' or _str == 'all':
     obs = md_env.reset()
     print(obs)
     print(md_env.bundle.game_state)
-
     # =============
     def make_env(rank, seed = 0):
         def _init():
             task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
             unitcdgain = ConstantCDGain(1)
 
-            policy = Policy(    action_space = [gym.spaces.Discrete(10)],
-                                action_set = [-5 + i for i in range (5)] + [i+1 for i in range(5)],
+            policy = BasePolicy(    action_space = [core.space.Discrete(10)],
+                                action_set = [[-5 + i for i in range (5)] + [i+1 for i in range(5)]],
                                 action_values = None
             )
 
             operator = CarefulPointer(agent_policy = policy)
             bundle = PlayOperator(task, operator, unitcdgain)
 
-            observation_dict = OrderedDict({'task_state': OrderedDict({'Position': 0}), 'operator_state': OrderedDict({'Goal': 0})})
+            observation_dict = OrderedDict({'task_state': OrderedDict({'position': 0}), 'operator_state': OrderedDict({'goal': 0})})
             env = ThisActionWrapper( Train(
                     bundle,
                     observation_mode = 'multidiscrete',
@@ -160,11 +158,13 @@ if _str == 'basic-TrainOperator' or _str == 'all':
     # =============
 
     if __name__ == '__main__':
+        print('inside main')
         num_cpu = 3
         env = SubprocVecEnv([make_env(i) for i in range(num_cpu)])
 
         model = PPO('MlpPolicy', env, verbose=1)
-        # model.learn(total_timesteps=100000)
+        print('start training')
+        model.learn(total_timesteps=10000)
 
 
 
@@ -193,15 +193,15 @@ if _str == 'loadNNpolicy' or _str == 'all':
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
     unitcdgain = ConstantCDGain(1)
 
-    policy = Policy(    action_space = [gym.spaces.Discrete(10)],
-                        action_set = [-5 + i for i in range (5)] + [i+1 for i in range(5)],
+    policy = BasePolicy(    action_space = [core.space.Discrete(10)],
+                        action_set = [[-5 + i for i in range (5)] + [i+1 for i in range(5)]],
                         action_values = None
     )
 
     operator = CarefulPointer(agent_policy = policy)
     bundle = PlayOperator(task, operator, unitcdgain)
 
-    observation_dict = OrderedDict({'task_state': OrderedDict({'Position': 0}), 'operator_state': OrderedDict({'Goal': 0})})
+    observation_dict = OrderedDict({'task_state': OrderedDict({'position': 0}), 'operator_state': OrderedDict({'goal': 0})})
     training_env = ThisActionWrapper( Train(
             bundle,
             observation_mode = 'multidiscrete',
@@ -215,7 +215,7 @@ if _str == 'loadNNpolicy' or _str == 'all':
     unitcdgain = ConstantCDGain(1)
 
     # specifying operator policy
-    observation_dict = OrderedDict({'task_state': OrderedDict({'Position': 0}), 'operator_state': OrderedDict({'Goal': 0})})
+    observation_dict = OrderedDict({'task_state': OrderedDict({'position': 0}), 'operator_state': OrderedDict({'goal': 0})})
     action_wrappers = OrderedDict()
     action_wrappers['ThisActionWrapper'] = (ThisActionWrapper, ())
     policy = RLPolicy(
@@ -241,7 +241,7 @@ if _str == 'loadNNpolicy' or _str == 'all':
 if _str == 'chen-play-1D':
     fitts_W = 4e-2
     fitts_D = 0.8
-    perceptualnoise = 0.09
+    perceptualnoise = 0.15
     oculomotornoise = 0.09
     task = ChenEyePointingTask(fitts_W, fitts_D, dimension = 1)
     operator = ChenEye(perceptualnoise, oculomotornoise, dimension = 1)
@@ -253,8 +253,8 @@ if _str == 'chen-play-1D':
         action = _action[0]
         noise_obs = State()
         noise_obs['task_state'] = State()
-        noise_obs['task_state']['Targets'] = action
-        noise_obs['task_state']['Fixation'] = obs['task_state']['Fixation']
+        noise_obs['task_state']['targets'] = action
+        noise_obs['task_state']['fixation'] = obs['task_state']['fixation']
         noise = operator.eccentric_noise_gen(noise_obs, oculomotornoise)[0]
 
         noisy_action = action + noise
@@ -267,8 +267,8 @@ if _str == 'chen-play-1D':
 if _str == 'chen-play':
     fitts_W = 4e-2
     fitts_D = 0.8
-    perceptualnoise = 0.09
-    oculomotornoise = 0.04
+    perceptualnoise = 0.15
+    oculomotornoise = 0.09
     task = ChenEyePointingTask(fitts_W, fitts_D)
     operator = ChenEye(perceptualnoise, oculomotornoise)
     bundle = SinglePlayOperator(task, operator)
@@ -277,12 +277,10 @@ if _str == 'chen-play':
     while True:
         _action = copy.deepcopy(obs['operator_state']['belief'])
         action = _action[0]
-        print(action)
-        input()
         noise_obs = State()
         noise_obs['task_state'] = State()
-        noise_obs['task_state']['Targets'] = action
-        noise_obs['task_state']['Fixation'] = obs['task_state']['Fixation']
+        noise_obs['task_state']['targets'] = action
+        noise_obs['task_state']['fixation'] = obs['task_state']['fixation']
         noise = operator.eccentric_noise_gen(noise_obs, oculomotornoise)[0]
         noisy_action = action + noise
         obs, reward, is_done, _ = bundle.step(noisy_action)
@@ -316,29 +314,29 @@ if _str == 'chen-play-auto':
 if _str == 'careful-with-obs':
 
     # Add a state to the SimplePointingTask to memorize the old position
-    class OldPositionMemorizedSimplePointingTask(SimplePointingTask):
+    class oldpositionMemorizedSimplePointingTask(SimplePointingTask):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.memorized = None
 
         def reset(self, dic = {}):
             super().reset(dic = dic)
-            self.state['OldPosition'] = copy.deepcopy(self.state['Position'])
+            self.state['oldposition'] = copy.deepcopy(self.state['position'])
 
         def operator_step(self, *args, **kwargs):
-            self.memorized = copy.deepcopy(self.state['Position'])
+            self.memorized = copy.deepcopy(self.state['position'])
             obs, rewards, is_done, _doc = super().operator_step(*args, **kwargs)
-            obs['OldPosition'] = self.memorized
+            obs['oldposition'] = self.memorized
             return obs, rewards, is_done, _doc
 
         def assistant_step(self, *args, **kwargs):
-            self.memorized = copy.deepcopy(self.state['Position'])
+            self.memorized = copy.deepcopy(self.state['position'])
             obs, rewards, is_done, _doc = super().assistant_step(*args, **kwargs)
-            obs['OldPosition'] = self.memorized
+            obs['oldposition'] = self.memorized
             return obs, rewards, is_done, _doc
 
     logger.info('Pointing task definition')
-    pointing_task = OldPositionMemorizedSimplePointingTask(gridsize = 31, number_of_targets = 8, mode = 'position')
+    pointing_task = oldpositionMemorizedSimplePointingTask(gridsize = 31, number_of_targets = 8, mode = 'position')
     # bundle = _DevelopTask(pointing_task)
     # bundle.reset()
 
@@ -358,11 +356,11 @@ if _str == 'careful-with-obs':
 
         def observe(self, game_state):
             # set observation bundle to the right state and cast it to the right space
-            target = game_state['task_state']['Position'].cast(self.game_state['task_state']['Targets'])
-            fixation = game_state['task_state']['OldPosition'].cast(self.game_state['task_state']['Fixation'])
+            target = game_state['task_state']['position'].cast(self.game_state['task_state']['targets'])
+            fixation = game_state['task_state']['oldposition'].cast(self.game_state['task_state']['fixation'])
             reset_dic = {'task_state':
-                            {   'Targets': target,
-                                'Fixation': fixation    }
+                            {   'targets': target,
+                                'fixation': fixation    }
                         }
             self.reset(dic = reset_dic)
 
@@ -377,8 +375,8 @@ if _str == 'careful-with-obs':
 
 
             # cast back to initial space and return
-            obs['task_state']['Fixation'].cast(game_state['task_state']['OldPosition'])
-            obs['task_state']['Targets'].cast(game_state['task_state']['Position'])
+            obs['task_state']['fixation'].cast(game_state['task_state']['oldposition'])
+            obs['task_state']['targets'].cast(game_state['task_state']['position'])
 
             return game_state, rewards
 
@@ -434,8 +432,8 @@ if _str == 'LQR':
     for i in range(1500):
         bundle.step()
         print(i)
-        # if not i%10:
-        #     bundle.render("plot")
+        if not i%20:
+            bundle.render("plot")
 
 if _str == 'LQRbis':
     m, d, k = 1, 1.2, 3
@@ -468,7 +466,7 @@ if _str == 'LQRbis':
     bundle.render('plot')
     for i in range(1500):
         bundle.step()
-        if not i%10:
+        if not i%20:
             bundle.render("plot")
 
 
@@ -534,7 +532,7 @@ if _str == 'LQG':
             bundle.render("plot")
 
 if _str == 'LQGpointer':
-
+    # Malfunctions (pointer can not go left)
     I = 0.25
     b = 0.2
     ta = 0.03
@@ -596,8 +594,8 @@ if _str == 'LQGpointer':
 
         def sample(self):
             logger.info('=============== Entering Sampler ================')
-            cursor = copy.copy(self.observation['task_state']['Position'])
-            target = copy.copy(self.observation['operator_state']['Goal'])
+            cursor = copy.copy(self.observation['task_state']['position'])
+            target = copy.copy(self.observation['operator_state']['goal'])
             # allow temporarily
             cursor.mode = 'warn'
             target.mode = 'warn'
@@ -605,15 +603,15 @@ if _str == 'LQGpointer':
             tmp_box = StateElement( values = [None],
                 spaces = gym.spaces.Box(-self.host.bundle.task.gridsize+1, self.host.bundle.task.gridsize-1 , shape = (1,)),
                 possible_values = [[None]],
-                mode = 'warn')
+                clipping_mode = 'warning')
 
             cursor_box = StateElement( values = [None],
                 spaces = gym.spaces.Box(-.5, .5, shape = (1,)),
                 possible_values = [[None]],
-                mode = 'none')
+                clipping_mode = 'warning')
 
 
-            tmp_box['values'] = [float(v) for v in (target-cursor)['values']]
+            tmp_box['values'] = [numpy.array(v) for v in (target-cursor)['values']]
             init_dist = tmp_box.cast(cursor_box)['values'][0]
 
             _reset_x = self.xmemory
@@ -639,12 +637,12 @@ if _str == 'LQGpointer':
             self.xmemory = observation['task_state']['x']['values'][0]
             self.xhatmemory = observation['operator_state']['xhat']['values'][0]
 
-            # Cast as delta in right units
+            # Cast as delta in correct units
             cursor_box['values'] = - self.xmemory[0] + init_dist
             delta = cursor_box.cast(tmp_box)
             possible_values = [-30 + i for i in range(61)]
             value = possible_values.index(int(numpy.round(delta['values'][0])))
-            action = StateElement(values = value, spaces = gym.spaces.Discrete(61), possible_values = possible_values)
+            action = StateElement(values = value, spaces = core.space.Discrete(61), possible_values = [possible_values])
             logger.info('{} Selected action {}'.format(self.__class__.__name__, str(action)))
 
             return action, total_reward
@@ -671,32 +669,30 @@ if _str == 'LQGpointer':
 
 
 if _str == 'LQGpointer-chenobs':
-
-
-
+    # Error linked to LQGpointer
     # Add a state to the SimplePointingTask to memorize the old position
-    class OldPositionMemorizedSimplePointingTask(SimplePointingTask):
+    class oldpositionMemorizedSimplePointingTask(SimplePointingTask):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.memorized = None
 
         def reset(self, dic = {}):
             super().reset(dic = dic)
-            self.state['OldPosition'] = copy.deepcopy(self.state['Position'])
+            self.state['oldposition'] = copy.deepcopy(self.state['position'])
 
         def operator_step(self, *args, **kwargs):
-            self.memorized = copy.deepcopy(self.state['Position'])
+            self.memorized = copy.deepcopy(self.state['position'])
             obs, rewards, is_done, _doc = super().operator_step(*args, **kwargs)
-            obs['OldPosition'] = self.memorized
+            obs['oldposition'] = self.memorized
             return obs, rewards, is_done, _doc
 
         def assistant_step(self, *args, **kwargs):
-            self.memorized = copy.deepcopy(self.state['Position'])
+            self.memorized = copy.deepcopy(self.state['position'])
             obs, rewards, is_done, _doc = super().assistant_step(*args, **kwargs)
-            obs['OldPosition'] = self.memorized
+            obs['oldposition'] = self.memorized
             return obs, rewards, is_done, _doc
 
-    pointing_task = OldPositionMemorizedSimplePointingTask(gridsize = 31, number_of_targets = 8, mode = 'gain')
+    pointing_task = oldpositionMemorizedSimplePointingTask(gridsize = 31, number_of_targets = 8, mode = 'gain')
 
 
     fitts_W = 4e-2
@@ -715,11 +711,11 @@ if _str == 'LQGpointer-chenobs':
 
         def observe(self, game_state):
             # set observation bundle to the right state and cast it to the right space
-            target = game_state['task_state']['Position'].cast(self.game_state['task_state']['Targets'])
-            fixation = game_state['task_state']['OldPosition'].cast(self.game_state['task_state']['Fixation'])
+            target = game_state['task_state']['position'].cast(self.game_state['task_state']['targets'])
+            fixation = game_state['task_state']['oldposition'].cast(self.game_state['task_state']['fixation'])
             reset_dic = {'task_state':
-                            {   'Targets': target,
-                                'Fixation': fixation    }
+                            {   'targets': target,
+                                'fixation': fixation    }
                         }
             self.reset(dic = reset_dic)
 
@@ -734,8 +730,8 @@ if _str == 'LQGpointer-chenobs':
 
 
             # cast back to initial space and return
-            obs['task_state']['Fixation'].cast(game_state['task_state']['OldPosition'])
-            obs['task_state']['Targets'].cast(game_state['task_state']['Position'])
+            obs['task_state']['fixation'].cast(game_state['task_state']['oldposition'])
+            obs['task_state']['targets'].cast(game_state['task_state']['position'])
 
             return game_state, rewards
 
@@ -777,7 +773,7 @@ if _str == 'screen':
                         )
 
     _state = State()
-    _state['Goal'] = goal
+    _state['goal'] = goal
     operator = DummyOperator(state = _state)
     bundle = _DevelopTask(task, operator = operator)
     bundle.reset()
@@ -786,7 +782,7 @@ if _str == 'screen':
     bundle.render('plot')
 
 if _str == 'js-ws':
-    import core
+    from pointing.envs import DiscretePointingTaskPipeWrapper
     task = SimplePointingTask(gridsize = 20, number_of_targets = 5)
 
     policy = ELLDiscretePolicy(action_space = [core.space.Discrete(3)], action_set = [[-1, 0, 1]])
@@ -824,9 +820,11 @@ if _str == 'js-ws':
     operator = CarefulPointer(agent_policy = policy)
     assistant = ConstantCDGain(1)
     bundle = PlayNone(task, operator, assistant)
-    server = Server(bundle, address='localhost', port = 4000)
+    server = Server(bundle, DiscretePointingTaskPipeWrapper, address='localhost', port = 4000)
     server.start()
 
+
+# WIP
 if _str == 'js-2d':
     from pointing.envs import DiscretePointingTask, DiscretePointingTaskPipeWrapper
     from pointing.operators import TwoDCarefulPointer

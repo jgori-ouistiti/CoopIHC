@@ -356,12 +356,12 @@ class LQGPointer(BaseAgent):
                 tmp_box = StateElement( values = [None],
                     spaces = core.space.Box(-self.host.bundle.task.gridsize+1, self.host.bundle.task.gridsize-1 , shape = (1,)),
                     possible_values = [[None]],
-                    mode = 'warn')
+                    clipping_mode = 'warning')
 
                 cursor_box = StateElement( values = [None],
                     spaces = core.space.Box(-.5, .5, shape = (1,)),
                     possible_values = [[None]],
-                    mode = 'none')
+                    clipping_mode = 'warning')
 
 
                 tmp_box['values'] = [float(v) for v in (target-cursor)['values']]

@@ -42,17 +42,17 @@ class ChenEyePointingTask(InteractionTask):
         self.handbook['parameters'].extend(self.params)
 
 
-        self.state['Targets'] = StateElement(
+        self.state['targets'] = StateElement(
             values = [numpy.array([0 for i in range(dimension)])],
             spaces = [gym.spaces.Box(-1,1, shape = (dimension,))],
             possible_values = [None],
-            mode = 'warn'
+            clipping_mode = 'warning'
         )
-        self.state["Fixation"] = StateElement(
+        self.state["fixation"] = StateElement(
             values = [numpy.array([0 for i in range(dimension)])],
             spaces = [gym.spaces.Box(-1,1, shape = (dimension,))],
             possible_values = [None],
-            mode = 'warn')
+            clipping_mode = 'warning')
 
 
 
@@ -94,19 +94,19 @@ class ChenEyePointingTask(InteractionTask):
         :meta public:
         """
 
-        self.state['Targets']['values'] = [self.get_new_target(self.fitts_D)]
-        self.state['Fixation']['values'] = [numpy.array([0 for i in range(self.dimension)])]
+        self.state['targets']['values'] = [self.get_new_target(self.fitts_D)]
+        self.state['fixation']['values'] = [numpy.array([0 for i in range(self.dimension)])]
         super().reset(dic)
 
 
 
     def _is_done_operator(self):
-        if numpy.sqrt(numpy.sum((self.state['Fixation']['values'] - self.state['Targets']['values'][0])**2)) - self.fitts_W/2 < self.threshold:
+        if numpy.sqrt(numpy.sum((self.state['fixation']['values'] - self.state['targets']['values'][0])**2)) - self.fitts_W/2 < self.threshold:
             is_done = True
         else:
             is_done = False
         logger.info("Task {} done: {}".format(self.__class__.__name__, is_done))
-        logger.info('Condition: distance(Fixation,Targets) < threshold + half target width ---- {} < {} + {}'.format(str(numpy.sqrt(numpy.sum((self.state['Fixation']['values'] - self.state['Targets']['values'][0])**2))), str(self.threshold), str(self.fitts_W/2)  ))
+        logger.info('Condition: distance(fixation,targets) < threshold + half target width ---- {} < {} + {}'.format(str(numpy.sqrt(numpy.sum((self.state['fixation']['values'] - self.state['targets']['values'][0])**2))), str(self.threshold), str(self.fitts_W/2)  ))
         return is_done
 
     def operator_step(self, operator_action):
@@ -122,7 +122,7 @@ class ChenEyePointingTask(InteractionTask):
         """
         self.turn += 1/2
         action = operator_action['values'][0]
-        self.state['Fixation']['values'] = action
+        self.state['fixation']['values'] = action
 
         reward = -1
 
@@ -149,15 +149,15 @@ class ChenEyePointingTask(InteractionTask):
 
         :meta public:
         """
-        goal = self.state['Targets']['values'][0].tolist()
-        fx = self.state['Fixation']['values'][0].tolist()
+        goal = self.state['targets']['values'][0].tolist()
+        fx = self.state['fixation']['values'][0].tolist()
 
         if 'text' in mode:
             print('\n')
             print("Turn number {:f}".format(self.turn))
             print('Target:')
             print(goal)
-            print('Fixation:')
+            print('fixation:')
             print(fx)
 
         if 'plot' in mode:

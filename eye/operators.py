@@ -31,15 +31,15 @@ class ChenEye(BaseAgent):
                         values = [None],
                         spaces = [gym.spaces.Box(low=-1, high=1, shape=(self.dimension, ))],
                         possible_values = [None],
-                        mode = 'warn'
+                        clipping_mode = 'warning'
                                         )
 
             def noise_function(self, action, observation, *args):
                 oculomotornoise = args[0]
                 noise_obs = State()
                 noise_obs['task_state'] = State()
-                noise_obs['task_state']['Targets'] = action
-                noise_obs['task_state']['Fixation'] = observation['task_state']['Fixation']
+                noise_obs['task_state']['targets'] = action
+                noise_obs['task_state']['fixation'] = observation['task_state']['fixation']
                 noise = self.host.eccentric_noise_gen(noise_obs, oculomotornoise)[0]
                 return noise
 
@@ -56,7 +56,7 @@ class ChenEye(BaseAgent):
         observation_engine = kwargs.get('observation_engine')
 
         if observation_engine is None:
-            extraprobabilisticrules = {('task_state', 'Targets'): (self._eccentric_noise_gen, ())}
+            extraprobabilisticrules = {('task_state', 'targets'): (self._eccentric_noise_gen, ())}
 
             observation_engine = RuleObservationEngine(base_operator_engine_specification,                                  extraprobabilisticrules = extraprobabilisticrules)
 
@@ -67,7 +67,7 @@ class ChenEye(BaseAgent):
             def provide_likelihood_to_inference_engine(self):
                 ## specify here what part of the internal observation will be used as observation sample
                 observation = self.buffer[-1]
-                mu = observation['task_state']['Targets']['values'][0]
+                mu = observation['task_state']['targets']['values'][0]
                 sigma = self.host.Sigma + 1e-4*toeplitz([1] + [0.1 for i in range(self.host.dimension -1)]) # Avoid null sigma
                 return mu, sigma
 
@@ -81,7 +81,7 @@ class ChenEye(BaseAgent):
                 values = [None, None],
                 spaces = [gym.spaces.Box(low=-1, high=1, shape=(self.dimension, )), gym.spaces.Box(low = -numpy.inf, high = numpy.inf, shape = (self.dimension,self.dimension))],
                 possible_values = [[None], [None]],
-                mode = 'warn'
+                clipping_mode = 'warning'
             )
             state = State()
             state['belief'] = belief
@@ -97,7 +97,7 @@ class ChenEye(BaseAgent):
         self.handbook['render_mode'] = ['plot', 'text', 'log']
         _oculomotornoise = {'value': oculomotornoise, 'meaning': 'perceptual noise related to the eccentricity of the target w/r current fixation'}
         _perceptualnoise = {'value': perceptualnoise, 'meaning': 'motor noise related to the distance convered by the fixation'}
-        _dimension = {'value': dimension, 'meaning': 'Dimension of the Fixation used.'}
+        _dimension = {'value': dimension, 'meaning': 'Dimension of the fixation used.'}
         self.handbook['parameters'] = [_oculomotornoise, _perceptualnoise, _dimension]
 
 
@@ -116,8 +116,8 @@ class ChenEye(BaseAgent):
         # Initialize here the start position of the eye as well as initial uncertainty
         observation = State()
         observation['task_state'] = State()
-        observation['task_state']['Targets'] = self.bundle.task.state['Targets']
-        observation['task_state']['Fixation'] = self.bundle.task.state['Fixation']
+        observation['task_state']['targets'] = self.bundle.task.state['targets']
+        observation['task_state']['fixation'] = self.bundle.task.state['fixation']
         # Initialize with a huge Gaussian noise so that the first observation massively outweights the prior. Put more weight on the pure variance components to ensure that it will behave well.
         Sigma = toeplitz([1000] + [100 for i in range(self.dimension -1)])
         self.state['belief']['values'] = [numpy.array([0 for i in range(self.dimension)]), Sigma]
@@ -130,7 +130,7 @@ class ChenEye(BaseAgent):
         # clip the noisy observation --> this makes sense e.g. on a screen, were we know that the observation has to be on screen at all times.
         noise = self.eccentric_noise_gen(observation,   *args)[0]
         return numpy.clip(  _obs[0] + noise,
-                        observation['task_state']['Targets']['spaces'][0].low, observation['task_state']['Targets']['spaces'][0].high), noise
+                        observation['task_state']['targets']['spaces'][0].low, observation['task_state']['targets']['spaces'][0].high), noise
 
     def eccentric_noise_gen(self, observation, *args):
         """ Define eccentric noise that will be used in the noisyrule
@@ -143,8 +143,8 @@ class ChenEye(BaseAgent):
             noise_std = args[0]
         except IndexError:
             noise_std = self.perceptualnoise
-        target = observation['task_state']['Targets']['values'][0]
-        position = observation['task_state']['Fixation']['values'][0]
+        target = observation['task_state']['targets']['values'][0]
+        position = observation['task_state']['fixation']['values'][0]
         Sigma = eye.noise.eccentric_noise(target, position, noise_std)
         noise = numpy.random.multivariate_normal( numpy.zeros(shape = (self.dimension,)), Sigma)
         self.Sigma = Sigma
