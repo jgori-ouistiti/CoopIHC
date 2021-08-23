@@ -24,9 +24,11 @@ loguru = "*"
 websockets = "*"
 pyyaml = "*"
 stable-baselines3 = "*"
+jupyter = "*"
 
 [dev-packages]
 autopep8 = "*"
+ipykernel = "*"
 
 [requires]
 python_version = "3.8"
