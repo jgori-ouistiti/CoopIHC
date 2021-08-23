@@ -70,7 +70,7 @@ class BasePolicy:
         pass
 
     def sample(self):
-        return StateElement(values=[u.sample() for u in self.action_state['action'].spaces], spaces=self.action_state['action'].spaces, possible_values=self.action_state['action'].possible_values), 0
+        return StateElement(values=[u.sample() if u is not None else None for u in self.action_state['action'].spaces], spaces=self.action_state['action'].spaces, possible_values=self.action_state['action'].possible_values), 0
 
 
 class LinearFeedback(BasePolicy):
