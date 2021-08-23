@@ -1,3 +1,5 @@
+import gym
+from core.space import StateElement
 from core.interactiontask import InteractionTask
 import numpy as np
 
@@ -11,6 +13,11 @@ class MultiBanditTask(InteractionTask):
         self.P = P
         self.T = T
 
+        self.state["last_reward"] = StateElement(
+            values=None, spaces=[gym.spaces.Discrete(2)], possible_values=[[0, 1]])
+        self.state["last_action"] = StateElement(
+            values=None, spaces=[gym.spaces.Discrete(self.N)], possible_values=[list(range(self.N))])
+
     def _is_done(self):
         return self.round >= self.T
 
@@ -19,8 +26,12 @@ class MultiBanditTask(InteractionTask):
         choice = operator_action['values'][0]
 
         success = self.P[choice] > np.random.random()
+        reward = int(success)
 
-        return self.state, int(success), self._is_done(), {}
+        self.state["last_action"]["values"] = [choice]
+        self.state["last_reward"]["values"] = [reward]
+
+        return self.state, reward, self._is_done(), {}
 
     def assistant_step(self, _assistant_action):
         self.turn += 1/2
@@ -35,3 +46,8 @@ class MultiBanditTask(InteractionTask):
             print()
         else:
             raise NotImplementedError
+
+    def reset(self, dic=None):
+        self.state["last_reward"]["values"] = None
+        self.state["last_action"]["values"] = None
+        super().reset(dic=dic)
