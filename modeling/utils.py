@@ -144,26 +144,26 @@ def _simulate(task, operator):
 
     bundle.reset()
 
-    rewards = []
-    choices = []
+    data = []
 
     done = False
 
     while not done:
+        round = bundle.task.round
+
         game_state, reward, done, _ = bundle.step()
 
-        choice = copy(game_state["task_state"]["last_action"])
+        choice = copy(game_state["operator_action"]["action"])
 
-        choices.append(choice)
-        rewards.append(reward)
+        data.append({
+            "time": round,
+            "choice": choice,
+            "reward": reward
+        })
 
     # If done or maximum number of steps reached
     # Create and return DataFrame
-    simulated_data = pd.DataFrame({
-        "time": np.arange(task.round + 1),
-        "choice": choices,
-        "reward": rewards
-    })
+    simulated_data = pd.DataFrame(data)
 
     # Return the simulated data
     return simulated_data

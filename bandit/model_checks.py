@@ -15,7 +15,7 @@ logger.remove()
 # Task parameters definition
 N = 2
 P = [0.5, 0.75]
-T = 100
+T = 500
 
 # Task definition
 multi_bandit_task = MultiBanditTask(N=N, P=P, T=T)
@@ -29,7 +29,7 @@ wsls_parameter_fit_bounds = OrderedDict()
 wsls_parameter_fit_bounds["epsilon"] = (0., 1.)
 
 # Population size
-N_SIMULATIONS = 20
+N_SIMULATIONS = 30
 
 # %%
 # Parameter Recovery: WSLS
