@@ -6,19 +6,27 @@ from modeling.parameter_recovery import correlations
 from modeling.model_recovery import robustness
 
 from tabulate import tabulate
+from collections import OrderedDict
+
+from loguru import logger
+logger.remove()
 
 # %%
 # Task parameters definition
 N = 2
 P = [0.5, 0.75]
-T = 500
+T = 100
 
 # Task definition
 multi_bandit_task = MultiBanditTask(N=N, P=P, T=T)
 
 # Parameter recovery correlations for operator
-rw_parameter_fit_bounds = [("q_alpha", (0., 1.)), ("q_beta", (0., 20.))]
-wsls_parameter_fit_bounds = [("epsilon", (0., 1.))]
+rw_parameter_fit_bounds = OrderedDict()
+rw_parameter_fit_bounds["q_alpha"] = (0., 1.)
+rw_parameter_fit_bounds["q_beta"] = (0., 20.)
+
+wsls_parameter_fit_bounds = OrderedDict()
+wsls_parameter_fit_bounds["epsilon"] = (0., 1.)
 
 # Population size
 N_SIMULATIONS = 20

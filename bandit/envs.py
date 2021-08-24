@@ -6,7 +6,7 @@ import numpy as np
 
 class MultiBanditTask(InteractionTask):
 
-    def __init__(self, N=2, P=[0.5, 0.75], T=100):
+    def __init__(self, N=2, P=[0.5, 0.75], T=100, seed=12345):
         super().__init__()
 
         self.N = N
@@ -14,18 +14,22 @@ class MultiBanditTask(InteractionTask):
         self.T = T
 
         self.state["last_reward"] = StateElement(
-            values=None, spaces=[gym.spaces.Discrete(2)], possible_values=[[0, 1]])
+            values=[None], spaces=[gym.spaces.Discrete(2)], possible_values=[[0, 1]])
         self.state["last_action"] = StateElement(
-            values=None, spaces=[gym.spaces.Discrete(self.N)], possible_values=[list(range(self.N))])
+            values=[None], spaces=[gym.spaces.Discrete(self.N)], possible_values=[list(range(self.N))])
+
+        self.seed = seed
+        self.rng = np.random.default_rng(seed=seed)
 
     def _is_done(self):
         return self.round >= self.T
 
     def operator_step(self, operator_action):
-        self.turn += 1/2
+        super().operator_step()
+
         choice = operator_action['values'][0]
 
-        success = self.P[choice] > np.random.random()
+        success = self.P[choice] > self.rng.random()
         reward = int(success)
 
         self.state["last_action"]["values"] = [choice]
@@ -34,11 +38,13 @@ class MultiBanditTask(InteractionTask):
         return self.state, reward, self._is_done(), {}
 
     def assistant_step(self, _assistant_action):
-        self.turn += 1/2
-        self.round += 1
+        super().assistant_step()
+
         return self.state, 0, self._is_done(), {}
 
     def render(self, *_args, mode="text"):
+        # super().render()
+
         if "text" in mode:
             print()
             print(f"Round: {self.round}")
@@ -48,6 +54,8 @@ class MultiBanditTask(InteractionTask):
             raise NotImplementedError
 
     def reset(self, dic=None):
-        self.state["last_reward"]["values"] = None
-        self.state["last_action"]["values"] = None
         super().reset(dic=dic)
+
+        self.state["last_reward"]["values"] = [None]
+        self.state["last_action"]["values"] = [None]
+        self.rng = np.random.default_rng(seed=self.seed)

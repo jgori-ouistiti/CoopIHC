@@ -15,7 +15,7 @@ class GenericPlayer(BaseAgent):
         super().__init__('operator')
 
     def render(self, *args, **kwargs):
-        super().render(*args, **kwargs)
+        # super().render(*args, **kwargs)
         print()
         print(f"Action: {self.action.values[0]}")
         print()
@@ -76,13 +76,12 @@ class RW(GenericPlayer):
         self.q_beta = q_beta
         self.initial_value = initial_value
 
-        def user_model(_self, action, _observation):
-            q_values = self.state["q_values"]["values"][0]
+        def user_model(_self, action, observation):
+            q_values = observation["operator_state"]["q_values"]["values"][0]
 
-            if q_values is None:
-                return self.initial_value
+            choice = action["values"][0]
 
-            num = np.exp(self.q_beta * q_values[action["values"][0]])
+            num = np.exp(self.q_beta * q_values[choice])
             denom = np.sum(np.exp(self.q_beta * q_values))
 
             return num / denom

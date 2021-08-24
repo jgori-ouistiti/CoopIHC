@@ -25,6 +25,9 @@ websockets = "*"
 pyyaml = "*"
 stable-baselines3 = "*"
 jupyter = "*"
+tqdm = "*"
+seaborn = "*"
+statsmodels = "*"
 
 [dev-packages]
 autopep8 = "*"

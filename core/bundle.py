@@ -74,14 +74,14 @@ class Bundle:
             self.game_state["assistant_action"] = State()
             self.game_state["assistant_action"]['action'] = StateElement()
 
-        print("turn index")
-        print(turn_index)
-        print("task.state")
-        print(task.state)
-        print("operator.state")
-        print(operator.state)
-        print("assistant.state")
-        print(assistant.state)
+        # print("turn index")
+        # print(turn_index)
+        # print("task.state")
+        # print(task.state)
+        # print("operator.state")
+        # print(operator.state)
+        # print("assistant.state")
+        # print(assistant.state)
 
         logger.info('Finish Initializing task, operator and assistant')
         self.task.finit()
@@ -256,8 +256,8 @@ class Bundle:
 
         logger.info('Applying action to task ---')
         # Play operator's turn in the task
-        ret = self.task.operator_step(operator_action)
-        print(ret)
+        # ret = self.task.operator_step(operator_action)
+        # print(ret)
         task_state, task_reward, is_done, _ = self.task.operator_step(
             operator_action)
 
@@ -314,7 +314,7 @@ class Bundle:
 
         return task_reward, is_done
 
-    def _operator_step(self, *args):
+    def _operator_step(self, *args, infer=True):
         """ Combines the first and second half step of the operator.
 
         :param args: (None or list) either provide the operator action or not. If no action is provided the action is determined by the agent's policy using sample()
@@ -325,7 +325,8 @@ class Bundle:
         """
         logger.info(
             ' ---------- >>>> operator {} step'.format(self.operator.__class__.__name__))
-        operator_obs_reward, operator_infer_reward = self._operator_first_half_step()
+        operator_obs_reward, operator_infer_reward = self._operator_first_half_step(
+            infer=infer)
         try:
             # If human input is provided
             operator_action = args[0]
@@ -405,7 +406,7 @@ class PlayNone(Bundle):
         """
         full_obs = super().reset(dic=dic)
 
-    def step(self):
+    def step(self, infer=True):
         """ Play a step, actions are obtained by sampling the agent's policies.
 
         :return: sum_rewards (float), is_done (bool), rewards (list). Returns the sum of all intermediate rewards, the is_done flag to indicate whether or not the task has finisged, and the list of intermediate rewards.
@@ -414,7 +415,8 @@ class PlayNone(Bundle):
         """
         super().step(None)
 
-        operator_obs_reward, operator_infer_reward, operator_policy_reward, first_task_reward, is_done = self._operator_step()
+        operator_obs_reward, operator_infer_reward, operator_policy_reward, first_task_reward, is_done = self._operator_step(
+            infer=infer)
         if is_done:
             return operator_obs_reward, operator_infer_reward, first_task_reward, is_done
         assistant_obs_reward, assistant_infer_reward, assistant_policy_reward, second_task_reward, is_done = self._assistant_step()
