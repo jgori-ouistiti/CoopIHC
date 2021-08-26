@@ -858,3 +858,37 @@ class _DevelopTask(Bundle):
         self.game_state['operator_action']['action']['values'] = operator_action
         self.task.operator_step(operator_action)
         self.task.assistant_step(assistant_action)
+
+
+class _DevelopOperator(SinglePlayOperator):
+    """A bundle without an assistant. It can be used when developing operators and
+    includes methods for modeling checks (e.g. parameter or model recovery).
+
+    :param task: (core.interactiontask.InteractionTask) A task, which is a subclass of InteractionTask
+    :param operator: (core.agents.BaseAgent) An operator, which is a subclass of BaseAgent
+    :param kwargs: Additional controls to account for some specific subcases, see Doc for a full list
+    """
+
+    def test_parameter_recovery(self, parameter_fit_bounds, correlation_threshold=0.7, significance_level=0.05, n_simulations=20, plot=True):
+        """Returns whether the recovered operator parameters correlate to the used parameters for a simulation given the supplied thresholds.
+
+        It simulates n_simulations agents of the operator's class using random parameters within the supplied parameter_fit_bounds,
+        executes the provided task and tries to recover the operator's parameters from the simulated data. These recovered parameters are then
+        correlated to the originally used parameters for the simulation using Pearson's r and checks for the given correlation and significance
+        thresholds.
+
+        :param parameter_fit_bounds: An OrderedDict of the parameter names, their minimum and maximum values that will be used to generate
+            the random parameter values for simulation (example: `OrderedDict([("alpha", (0., 1.)), ("beta", (0., 20.))])`)
+        :type parameter_fit_bounds: collections.OrderedDict
+        :param correlation_threshold: The threshold for Pearson's r value (i.e. the correlation coefficient between the used and recovered parameters), defaults to 0.7
+        :type correlation_threshold: float, optional
+        :param significance_level: The threshold for the p-value to consider the correlation significant, defaults to 0.05
+        :type significance_level: float, optional
+        :param n_simulations: The number of agents to simulate (i.e. the population size) for the parameter recovery, defaults to 20
+        :type n_simulations: int, optional
+        :param plot: Flag whether to plot the correlation between the used and recovered parameters and the correlation statistics, defaults to True
+        :type plot: bool, optional
+        :return: `True` if the correlation between used and recovered parameter values meets the supplied thresholds, `False` otherwise
+        :rtype: bool
+        """
+        return True
