@@ -308,7 +308,7 @@ class Bundle:
 
         return task_reward, is_done
 
-    def _operator_step(self, *args):
+    def _operator_step(self, *args, infer=True):
         """ Combines the first and second half step of the operator.
 
         :param args: (None or list) either provide the operator action or not. If no action is provided the action is determined by the agent's policy using sample()
@@ -399,7 +399,7 @@ class PlayNone(Bundle):
         """
         full_obs = super().reset(dic=dic, **kwargs)
 
-    def step(self):
+    def step(self, infer=True):
         """ Play a step, actions are obtained by sampling the agent's policies.
 
         :return: sum_rewards (float), is_done (bool), rewards (list). Returns the sum of all intermediate rewards, the is_done flag to indicate whether or not the task has finisged, and the list of intermediate rewards.
@@ -408,7 +408,8 @@ class PlayNone(Bundle):
         """
         super().step(None)
 
-        operator_obs_reward, operator_infer_reward, operator_policy_reward, first_task_reward, is_done = self._operator_step()
+        operator_obs_reward, operator_infer_reward, operator_policy_reward, first_task_reward, is_done = self._operator_step(
+            infer=infer)
         if is_done:
             return self.game_state, sum([operator_obs_reward, operator_infer_reward, operator_policy_reward, first_task_reward]), is_done, [operator_obs_reward, operator_infer_reward, operator_policy_reward, first_task_reward]
         assistant_obs_reward, assistant_infer_reward, assistant_policy_reward, second_task_reward,  is_done = self._assistant_step()
