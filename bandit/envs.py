@@ -14,9 +14,9 @@ class MultiBanditTask(InteractionTask):
         self.T = T
 
         self.state["last_reward"] = StateElement(
-            values=[None], spaces=[gym.spaces.Discrete(2)], possible_values=[[0, 1]])
+            values=[None], spaces=[gym.spaces.Discrete(2)])
         self.state["last_action"] = StateElement(
-            values=[None], spaces=[gym.spaces.Discrete(self.N)], possible_values=[list(range(self.N))])
+            values=[None], spaces=[gym.spaces.Discrete(self.N)])
 
         self.seed = seed
         self.rng = np.random.default_rng(seed=seed)

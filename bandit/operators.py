@@ -24,7 +24,7 @@ class GenericPlayer(BaseAgent):
         self.N = self.bundle.task.N
 
         agent_policy = ELLDiscretePolicy(action_values=[None], action_space=[
-                                         gym.spaces.Discrete(self.N)], action_set=[list(range(self.N))])
+                                         gym.spaces.Discrete(self.N)])
 
         agent_policy.attach_likelihood_function(self.user_model)
 
