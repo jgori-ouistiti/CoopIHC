@@ -39,3 +39,57 @@ We associate a ChenEye operator to the task, also in 1D. It gets as input the sc
     bundle = SinglePlayOperator(task, operator)
 
     
+Parameter Recovery
+-------------------
+
+In parameter recovery, a user model is tested on its ability to infer known parameters from an artificial experiment dataset.
+If a model fails to do so, it is unlikely to be useful for inferring parameters from a dataset created with human users.
+
+In the code below, we define a new kind of interaction task--in this case a risky choice task called `MultiBanditTask`--and test an operator class, namely Win-Stay-Lose-Switch (`WSLS`) for its ability to recover the single parameter `epsilon`.
+
+
+.. code-block:: python
+
+    # Imports
+    from envs import MultiBanditTask
+    from operators import WSLS
+
+    from core.bundle import _DevelopOperator
+
+    # Task parameters definition
+    N = 2
+    P = [0.5, 0.75]
+    T = 100
+
+    # Task definition
+    multi_bandit_task = MultiBanditTask(N=N, P=P, T=T)
+
+    # Operator definition
+    wsls = WSLS(epsilon=0.1)
+
+
+In order to test the model for parameter recovery, we need to use the `_DevelopOperator` bundle and pass it both the operator as well as the task.
+In turn, it gives us access to a method called `test_parameter_recovery` that can be used to evaluate parameter recovery for the given operator class and task.
+
+The `test_parameter_recovery` expects an argument called `parameter_fit_bounds` which is a `dict` containing the parameter name and its minimum and maximum value (i.e. its fit bounds).
+These fit bounds will be used to create `n_simulations` artificial agents with random parameters within them.
+Each of the artificial agents will execute the task to create simulated data which in turn can be used to infer the best-fit parameter values using an evaluation method, in this case BIC-score.
+
+The result of calling `test_parameter_recovery` is a boolean whether all parameter correlations (i.e. Pearson's r for the correlation between the used and recovered parameter values) meet the specified `correlation_threshold` at the specified `significance_level`.
+
+.. code-block:: python
+
+    # Parameter fit bounds for operator
+    wsls_parameter_fit_bounds = {"epsilon": (0., 1.)}
+
+    # Population size
+    N_SIMULATIONS = 20
+
+    # Bundle defintion
+    wsls_bundle = _DevelopOperator(task=multi_bandit_task, operator=wsls)
+
+    # Parameter recovery check
+    wsls_can_recover_parameters = wsls_bundle.test_parameter_recovery(parameter_fit_bounds=wsls_parameter_fit_bounds, correlation_threshold=0.6, significance_level=0.1, n_simulations=N_SIMULATIONS, plot=True)
+
+    # Print result
+    print(f"WSLS: Parameter recovery was {'successful' if wsls_can_recover_parameters else 'unsuccessful'}.")
