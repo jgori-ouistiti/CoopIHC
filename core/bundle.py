@@ -1,3 +1,4 @@
+import operator
 import gym
 import numpy
 from abc import ABC, abstractmethod
@@ -18,6 +19,15 @@ from loguru import logger
 import yaml
 import time
 import json
+
+from tabulate import tabulate
+from tqdm import tqdm
+import pandas as pd
+import scipy.optimize
+import scipy.stats
+import inspect
+import seaborn as sns
+from copy import copy
 
 
 # List of kwargs for bundles init()
@@ -878,9 +888,9 @@ class _DevelopOperator(SinglePlayOperator):
         correlated to the originally used parameters for the simulation using Pearson's r and checks for the given correlation and significance
         thresholds.
 
-        :param parameter_fit_bounds: An OrderedDict of the parameter names, their minimum and maximum values that will be used to generate
-            the random parameter values for simulation (example: `OrderedDict([("alpha", (0., 1.)), ("beta", (0., 20.))])`)
-        :type parameter_fit_bounds: collections.OrderedDict
+        :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
+            the random parameter values for simulation (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
+        :type parameter_fit_bounds: dict
         :param correlation_threshold: The threshold for Pearson's r value (i.e. the correlation coefficient between the used and recovered parameters), defaults to 0.7
         :type correlation_threshold: float, optional
         :param significance_level: The threshold for the p-value to consider the correlation significant, defaults to 0.05
@@ -892,4 +902,406 @@ class _DevelopOperator(SinglePlayOperator):
         :return: `True` if the correlation between used and recovered parameter values meets the supplied thresholds, `False` otherwise
         :rtype: bool
         """
-        return True
+        # Calculate the correlations between used and recovered parameters for and from simulation
+        correlations = self._correlations(
+            parameter_fit_bounds=parameter_fit_bounds, correlation_threshold=correlation_threshold, significance_level=significance_level, n_simulations=n_simulations, plot=plot)
+
+        # If wanted, ...
+        if plot:
+            # Print the correlations between the used and recovered parameters as a table
+            correlations_table = tabulate(
+                correlations, headers="keys", tablefmt="psql", showindex=False)
+            print(correlations_table)
+
+        # Check that all correlations meet the threshold and are significant and return the result
+        all_correlations_meet_threshold = correlations[f"r>{correlation_threshold}"].all(
+        )
+        all_correlations_significant = correlations[f"p<{significance_level}"].all(
+        )
+
+        return all_correlations_meet_threshold and all_correlations_significant
+
+    def _correlations(self, parameter_fit_bounds, correlation_threshold=0.7, significance_level=0.05, n_simulations=20, plot=True):
+        """Returns a DataFrame containing the correlation information for the recovery of each specified parameter.
+
+        :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
+            the random parameter values for simulation (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
+        :type parameter_fit_bounds: dict
+        :param n_simulations: The number of agents to simulate (i.e. the population size) for the parameter recovery, defaults to 20
+        :type n_simulations: int, optional
+        :param plot: Flag whether to plot the correlation between the used and recovered parameters, defaults to True
+        :type plot: bool, optional
+        :return: A DataFrame containing the correlation information for the recovery of each specified parameter.
+        :rtype: pandas.DataFrame
+        """
+        # Transform the specified dict of parameter fit bounds into an OrderedDict
+        # based on the order of parameters in the operator class constructor
+        ordered_parameter_fit_bounds = self._ordered_parameter_fit_bounds(
+            unordered_parameter_fit_bounds=parameter_fit_bounds)
+
+        # Compute the likelihood data (i.e. the used and recovered parameter pairs)
+        likelihood = self._likelihood(
+            parameter_fit_bounds=ordered_parameter_fit_bounds, n_simulations=n_simulations)
+
+        # If wanted, ...
+        if plot:
+            # Plot the correlations between the used and recovered parameters as a graph
+            self._plot_correlations(
+                parameter_fit_bounds=ordered_parameter_fit_bounds, data=likelihood)
+
+        # Compute the correlation metric Pearson's r and its significance for each parameter pair and return it
+        pearsons_r = self._pearsons_r(parameter_fit_bounds=ordered_parameter_fit_bounds, data=likelihood,
+                                      correlation_threshold=correlation_threshold, significance_level=significance_level)
+
+        return pearsons_r
+
+    def _ordered_parameter_fit_bounds(self, unordered_parameter_fit_bounds):
+        """Returns an OrderedDict representing the parameter fit bounds based on the order of the
+        operator class parameters and the unordered parameter fit bounds.
+
+        :param unordered_parameter_fit_bounds: A dictionary of the parameter names and their associated fit bounds.
+        :type unordered_parameter_fit_bounds: dict
+        :return: An OrderedDict representing the parameter fit bounds based on the order of the
+            operator class parameters and the unordered parameter fit bounds
+        :rtype: collections.OrderedDict
+        """
+        # Create an OrderedDict to store the parameter fit bounds
+        ordered_parameter_fit_bounds = OrderedDict()
+
+        # Get an OrderedDict of the parameter names and types of the operator class constructor
+        operator_parameters = inspect.signature(
+            self.operator.__class__).parameters
+
+        # For each parameter in the operator class instructor...
+        for param_name, _ in operator_parameters.items():
+
+            # If the parameter name is included in the provided unordered parameter fit bounds...
+            if param_name in unordered_parameter_fit_bounds.keys():
+
+                # Add the parameter fit bounds to the OrderedDict
+                ordered_parameter_fit_bounds[param_name] = unordered_parameter_fit_bounds[param_name]
+
+        # And return the ordered parameter fit bounds
+        return ordered_parameter_fit_bounds
+
+    def _likelihood(self, parameter_fit_bounds, n_simulations=20):
+        """Returns a DataFrame containing the likelihood of each recovered parameter.
+
+        :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
+            the random parameter values for simulation (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
+        :type parameter_fit_bounds: dict
+        :param n_simulations: The number of agents to simulate (i.e. the population size) for the parameter recovery, defaults to 20
+        :type n_simulations: int, optional
+        :return: A DataFrame containing the likelihood of each recovered parameter.
+        :rtype: pandas.DataFrame
+        """
+        # Data container
+        likelihood_data = []
+
+        # For each agent...
+        for _ in tqdm(range(n_simulations), file=sys.stdout):
+
+            # Generate a random agent
+            random_agent = None
+            if not len(parameter_fit_bounds) > 0:
+                random_agent = self.operator.__class__()
+            else:
+                random_parameters = self._random_parameters(
+                    parameter_fit_bounds=parameter_fit_bounds)
+                random_agent = self.operator.__class__(**random_parameters)
+
+            # Simulate the task
+            simulated_data = self._simulate(operator=random_agent)
+
+            # Determine best-fit parameter values
+            best_fit_parameters, _ = self._best_fit_parameters(
+                parameter_fit_bounds=parameter_fit_bounds, data=simulated_data)
+
+            # Backup parameter values
+            for parameter_index, (parameter_name, parameter_value) in enumerate(random_parameters.items()):
+                _, best_fit_parameter_value = best_fit_parameters[parameter_index]
+                likelihood_data.append({
+                    "Parameter": parameter_name,
+                    "Used to simulate": parameter_value,
+                    "Recovered": best_fit_parameter_value
+                })
+
+        # Create dataframe and return it
+        likelihood = pd.DataFrame(likelihood_data)
+
+        return likelihood
+
+    def _random_parameters(self, parameter_fit_bounds):
+        """Returns a dictionary of parameter-value pairs where the value is random within the specified fit bounds.
+
+        :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
+            the random parameter values for simulation (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
+        :type parameter_fit_bounds: dict
+        :return: A dictionary of parameter-value pairs where the value is random within the specified fit bounds
+        :rtype: dict
+        """
+        # Data container
+        random_parameters = {}
+
+        # If parameters and their fit bounds were specified
+        if len(parameter_fit_bounds) > 0:
+
+            # For each parameter and their fit bounds
+            for (current_parameter_name, current_parameter_fit_bounds) in parameter_fit_bounds.items():
+
+                # Compute a random parameter value within the fit bounds
+                random_parameters[current_parameter_name] = numpy.random.uniform(
+                    *current_parameter_fit_bounds)
+
+        # Return the parameter-value pairs
+        return random_parameters
+
+    def _simulate(self, operator=None):
+        """Returns a DataFrame containing the behavioral data from simulating the given task with
+        the specified operator.
+
+        :param operator: The operator to use for the simulation (if None is specified, will use the operator
+            of the bundle (i.e. self.operator)), defaults to None
+        :type operator: core.agents.BaseAgent, optional
+        :return: A DataFrame containing the behavioral data from simulating the given task with
+            the specified operator
+        :rtype: pandas.DataFrame
+        """
+        # Bundle definition
+        operator_to_use_for_simulation = operator if operator is not None else self.operator
+        bundle = SinglePlayOperatorAuto(
+            self.task, operator_to_use_for_simulation)
+
+        # Reset the bundle to default values
+        bundle.reset()
+
+        # Data container
+        data = []
+
+        # Flag whether the task has been completed
+        done = False
+
+        # While the task is not finished...
+        while not done:
+
+            # Save the current round number
+            round = bundle.task.round
+
+            # Simulate a round of the operator executing the task
+            game_state, reward, done, _ = bundle.step()
+
+            # Save the choice that the artificial agent made
+            choice = copy(game_state["operator_action"]["action"])
+
+            # Store this round's data
+            data.append({
+                "time": round,
+                "choice": choice,
+                "reward": reward
+            })
+
+        # When the task is done, create and return DataFrame
+        simulated_data = pd.DataFrame(data)
+        return simulated_data
+
+    def _best_fit_parameters(self, parameter_fit_bounds, data):
+        """Returns a list of the parameters with their best-fit values based on the supplied data.
+
+        :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
+            the random parameter values for simulation (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
+        :type parameter_fit_bounds: dict
+        :param data: The behavioral data to infer the best-fit parameters from
+        :type data: pandas.DataFrame
+        :return: A list of the parameters with their best-fit values based on the supplied data
+        :rtype: list
+        """
+        # If no parameters are specified...
+        if not len(parameter_fit_bounds) > 0:
+            # Calculate the negative log likelihood for the data without parameters...
+            best_parameters = []
+            ll = self._log_likelihood(
+                parameter_values=best_parameters, data=data)
+            best_objective_value = -ll
+
+            # ...and return an empty list and the negative log-likelihood
+            return best_parameters, best_objective_value
+
+        # Define an initital guess
+        random_initial_guess = self._random_parameters(
+            parameter_fit_bounds=parameter_fit_bounds)
+        initial_guess = [parameter_value for _,
+                         parameter_value in random_initial_guess.items()]
+
+        # Run the optimizer
+        res = scipy.optimize.minimize(
+            fun=self._objective,
+            x0=initial_guess,
+            bounds=[fit_bounds for _,
+                    fit_bounds in parameter_fit_bounds.items()],
+            args=(data))
+
+        # Make sure that the optimizer ended up with success
+        assert res.success
+
+        # Get the best parameter value from the result
+        best_parameter_values = res.x
+        best_objective_value = res.fun
+
+        # Construct a list for the best parameters and return it
+        best_parameters = [(current_parameter_name, best_parameter_values[current_parameter_index])
+                           for current_parameter_index, (current_parameter_name, _) in enumerate(parameter_fit_bounds.items())]
+
+        return best_parameters, best_objective_value
+
+    def _log_likelihood(self, parameter_values, data):
+        """Returns the log-likelihood of the specified parameter values given the provided data.
+
+        :param parameter_values: A list of the parameter values to compute the log-likelihood for
+        :type parameter_values: list
+        :param data: The behavioral data to compute the log-likelihood for
+        :type data: pandas.DataFrame
+        :return: The log-likelihood of the specified parameter values given the provided data
+        :rtype: float
+        """
+        # Data container
+        ll = []
+
+        # Create a new agent with the current parameters
+        agent = self.operator.__class__() if not len(
+            parameter_values) > 0 else self.operator.__class__(*parameter_values)
+
+        # Bundle definition
+        bundle = SinglePlayOperator(task=self.task, operator=agent)
+
+        bundle.reset()
+
+        # Simulate the task
+        for _, row in data.iterrows():
+
+            # Get choice and success for t
+            choice, reward = row["choice"], row["reward"]
+
+            # Get probability of this choice
+            observation = agent.inference_engine.buffer[-1]
+            p = agent.policy.compute_likelihood(choice, observation)
+
+            # Compute log
+            log = numpy.log(p + numpy.finfo(float).eps)
+            ll.append(log)
+
+            # Make operator take specified action
+            _, resulting_reward, _, _ = bundle.step(operator_action=choice)
+
+            # Compare simulated and resulting reward
+            failure_message = """The provided operator action did not yield the same reward from the task.
+            Maybe there is some randomness involved that could be solved by seeding."""
+            assert reward == resulting_reward, failure_message
+
+        return numpy.sum(ll)
+
+    def _objective(self, parameter_values, data):
+        """Returns the negative log-likelihood of the specified parameter values given the provided data.
+
+        :param parameter_values: A list of the parameter values to compute the log-likelihood for
+        :type parameter_values: list
+        :param data: The behavioral data to compute the log-likelihood for
+        :type data: pandas.DataFrame
+        :return: The negative log-likelihood of the specified parameter values given the provided data
+        :rtype: float
+        """
+        # Since we will look for the minimum,
+        # let's return -LLS instead of LLS
+        return - self._log_likelihood(parameter_values=parameter_values, data=data)
+
+    def _plot_correlations(self, parameter_fit_bounds, data):
+        """Plot the correlation between the true and recovered parameters.
+
+        :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
+            the random parameter values for simulation (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
+        :type parameter_fit_bounds: dict
+        :param data: The correlation data including each parameter value used and recovered
+        :type data: pandas.DataFrame
+        """
+        # Containers
+        param_names = []
+        param_bounds = []
+
+        # Store parameter names and fit bounds in separate lists
+        for (parameter_name, fit_bounds) in parameter_fit_bounds.items():
+            param_names.append(parameter_name)
+            param_bounds.append(fit_bounds)
+
+        # Calculate number of parameters
+        n_param = len(parameter_fit_bounds)
+
+        # Define colors
+        colors = [f'C{i}' for i in range(n_param)]
+
+        # Create fig and axes
+        _, axes = plt.subplots(ncols=n_param,
+                               figsize=(10, 9))
+
+        # For each parameter...
+        for i in range(n_param):
+
+            # Select ax
+            ax = axes
+            if n_param > 1:
+                ax = axes[i]
+
+            # Get param name
+            p_name = param_names[i]
+
+            # Set title
+            ax.set_title(p_name)
+
+            # Create scatter
+            sns.scatterplot(data=data[data["Parameter"] == p_name],
+                            x="Used to simulate", y="Recovered",
+                            alpha=0.5, color=colors[i],
+                            ax=ax)
+
+            # Plot identity function
+            ax.plot(param_bounds[i], param_bounds[i],
+                    linestyle="--", alpha=0.5, color="black", zorder=-10)
+
+            # Set axes limits
+            ax.set_xlim(*param_bounds[i])
+            ax.set_ylim(*param_bounds[i])
+
+            # Square aspect
+            ax.set_aspect(1)
+
+        # Display plot
+        plt.tight_layout()
+        plt.show()
+
+    def _pearsons_r(self, parameter_fit_bounds, data, correlation_threshold=0.7, significance_level=0.05):
+        def pearson_r_data(parameter_name):
+            # Get the elements to compare
+            x = data.loc[data["Parameter"] ==
+                         parameter_name, "Used to simulate"]
+            y = data.loc[data["Parameter"] == parameter_name, "Recovered"]
+
+            # Compute a Pearson correlation
+            r, p = scipy.stats.pearsonr(x, y)
+
+            # Return
+            pearson_r_data = {
+                "parameter": parameter_name,
+                "r": r,
+                f"r>{correlation_threshold}": r > correlation_threshold,
+                "p": p,
+                f"p<{significance_level}": p < significance_level
+            }
+
+            return pearson_r_data
+
+        # Compute correlation data
+        correlation_data = [pearson_r_data(parameter_name)
+                            for parameter_name, _ in parameter_fit_bounds.items()]
+
+        # Create dataframe
+        pearsons_r = pd.DataFrame(correlation_data)
+
+        return pearsons_r
