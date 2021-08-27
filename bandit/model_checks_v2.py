@@ -12,7 +12,7 @@
 
 # %%
 from envs import MultiBanditTask
-from operators import RW, WSLS
+from operators import RW, WSLS, RandomOperator
 
 from core.bundle import _DevelopOperator
 
@@ -51,6 +51,26 @@ wsls_parameter_fit_bounds = {"epsilon": (0., 1.)}
 N_SIMULATIONS = 20
 
 print("Parameter recovery definitions complete.")
+
+# %% [markdown]
+# ## Model Recovery
+
+# %%
+# Model Recovery: RW
+print("## Model Recovery: RW")
+
+rw_bundle = _DevelopOperator(task=multi_bandit_task, operator=rw)
+
+other_competing_models = [
+    {"model": RandomOperator, "parameter_fit_bounds": {}},
+    {"model": WSLS, "parameter_fit_bounds": wsls_parameter_fit_bounds},
+]
+
+rw_can_be_recovered = rw_bundle.test_model_recovery(
+    other_competing_models=other_competing_models, this_parameter_fit_bounds=rw_parameter_fit_bounds, f1_threshold=0.8, n_simulations=N_SIMULATIONS, plot=True)
+
+print(
+    f"RW: Model recovery was {'successful' if rw_can_be_recovered else 'unsuccessful'}.")
 
 # %% [markdown]
 # ## Parameter Recovery: RW

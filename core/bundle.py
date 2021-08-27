@@ -28,6 +28,7 @@ import scipy.stats
 import inspect
 import seaborn as sns
 from copy import copy
+import statsmodels.stats.proportion
 
 
 # List of kwargs for bundles init()
@@ -880,8 +881,30 @@ class _DevelopOperator(SinglePlayOperator):
     :param kwargs: Additional controls to account for some specific subcases, see Doc for a full list
     """
 
+    def _operator_can_compute_likelihood(operator):
+        """Returns whether the specified operator's policy has a method called "compute_likelihood".
+
+        :param operator: An operator, which is a subclass of BaseAgent
+        :type operator: core.agents.BaseAgent
+        """
+        # Method name
+        COMPUTE_LIKELIHOOD = "compute_likelihood"
+
+        # Method exists
+        policy_has_attribute_compute_likelihood = hasattr(
+            operator.policy, COMPUTE_LIKELIHOOD)
+
+        # Method is callable
+        compute_likelihood_is_a_function = callable(
+            getattr(operator.policy, COMPUTE_LIKELIHOOD))
+
+        # Return that both exists and is callable
+        operator_can_compute_likelihood = policy_has_attribute_compute_likelihood and compute_likelihood_is_a_function
+        return operator_can_compute_likelihood
+
     def test_parameter_recovery(self, parameter_fit_bounds, correlation_threshold=0.7, significance_level=0.05, n_simulations=20, plot=True):
-        """Returns whether the recovered operator parameters correlate to the used parameters for a simulation given the supplied thresholds.
+        """Returns whether the recovered operator parameters correlate to the used parameters for a simulation given the supplied thresholds
+        (only available for operators with a policy that has a compute_likelihood method).
 
         It simulates n_simulations agents of the operator's class using random parameters within the supplied parameter_fit_bounds,
         executes the provided task and tries to recover the operator's parameters from the simulated data. These recovered parameters are then
@@ -902,6 +925,16 @@ class _DevelopOperator(SinglePlayOperator):
         :return: `True` if the correlation between used and recovered parameter values meets the supplied thresholds, `False` otherwise
         :rtype: bool
         """
+        # Make sure operator has a policy that can compute likelihood of an action given an observation
+        operator_can_compute_likelihood = _DevelopOperator._operator_can_compute_likelihood(
+            self.operator)
+
+        # If it cannot compute likelihood...
+        if not operator_can_compute_likelihood:
+            # Raise an exception
+            raise ValueError(
+                "Sorry, the given checks are only implemented for operator's with a policy that has a compute_likelihood method so far.")
+
         # Calculate the correlations between used and recovered parameters for and from simulation
         correlations = self._correlations(
             parameter_fit_bounds=parameter_fit_bounds, correlation_threshold=correlation_threshold, significance_level=significance_level, n_simulations=n_simulations, plot=plot)
@@ -1006,7 +1039,7 @@ class _DevelopOperator(SinglePlayOperator):
             if not len(parameter_fit_bounds) > 0:
                 random_agent = self.operator.__class__()
             else:
-                random_parameters = self._random_parameters(
+                random_parameters = _DevelopOperator._random_parameters(
                     parameter_fit_bounds=parameter_fit_bounds)
                 random_agent = self.operator.__class__(**random_parameters)
 
@@ -1015,7 +1048,7 @@ class _DevelopOperator(SinglePlayOperator):
 
             # Determine best-fit parameter values
             best_fit_parameters, _ = self._best_fit_parameters(
-                parameter_fit_bounds=parameter_fit_bounds, data=simulated_data)
+                operator_class=self.operator.__class__, parameter_fit_bounds=parameter_fit_bounds, data=simulated_data)
 
             # Backup parameter values
             for parameter_index, (parameter_name, parameter_value) in enumerate(random_parameters.items()):
@@ -1031,7 +1064,7 @@ class _DevelopOperator(SinglePlayOperator):
 
         return likelihood
 
-    def _random_parameters(self, parameter_fit_bounds):
+    def _random_parameters(parameter_fit_bounds):
         """Returns a dictionary of parameter-value pairs where the value is random within the specified fit bounds.
 
         :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
@@ -1104,9 +1137,11 @@ class _DevelopOperator(SinglePlayOperator):
         simulated_data = pd.DataFrame(data)
         return simulated_data
 
-    def _best_fit_parameters(self, parameter_fit_bounds, data):
+    def _best_fit_parameters(self, operator_class, parameter_fit_bounds, data):
         """Returns a list of the parameters with their best-fit values based on the supplied data.
 
+        :param operator_class: The operator class to find best-fit parameters for
+        :type operator_class: core.agents.BaseAgent
         :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
             the random parameter values for simulation (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
         :type parameter_fit_bounds: dict
@@ -1120,14 +1155,14 @@ class _DevelopOperator(SinglePlayOperator):
             # Calculate the negative log likelihood for the data without parameters...
             best_parameters = []
             ll = self._log_likelihood(
-                parameter_values=best_parameters, data=data)
+                operator_class=operator_class, parameter_values=best_parameters, data=data)
             best_objective_value = -ll
 
             # ...and return an empty list and the negative log-likelihood
             return best_parameters, best_objective_value
 
         # Define an initital guess
-        random_initial_guess = self._random_parameters(
+        random_initial_guess = _DevelopOperator._random_parameters(
             parameter_fit_bounds=parameter_fit_bounds)
         initial_guess = [parameter_value for _,
                          parameter_value in random_initial_guess.items()]
@@ -1138,7 +1173,7 @@ class _DevelopOperator(SinglePlayOperator):
             x0=initial_guess,
             bounds=[fit_bounds for _,
                     fit_bounds in parameter_fit_bounds.items()],
-            args=(data))
+            args=(operator_class, data))
 
         # Make sure that the optimizer ended up with success
         assert res.success
@@ -1153,9 +1188,11 @@ class _DevelopOperator(SinglePlayOperator):
 
         return best_parameters, best_objective_value
 
-    def _log_likelihood(self, parameter_values, data):
+    def _log_likelihood(self, operator_class, parameter_values, data):
         """Returns the log-likelihood of the specified parameter values given the provided data.
 
+        :param operator_class: The operator class to compute the log-likelihood for
+        :type operator_class: core.agents.BaseAgent
         :param parameter_values: A list of the parameter values to compute the log-likelihood for
         :type parameter_values: list
         :param data: The behavioral data to compute the log-likelihood for
@@ -1167,8 +1204,11 @@ class _DevelopOperator(SinglePlayOperator):
         ll = []
 
         # Create a new agent with the current parameters
-        agent = self.operator.__class__() if not len(
-            parameter_values) > 0 else self.operator.__class__(*parameter_values)
+        agent = None
+        if not len(parameter_values) > 0:
+            agent = operator_class()
+        else:
+            agent = operator_class(*parameter_values)
 
         # Bundle definition
         bundle = SinglePlayOperator(task=self.task, operator=agent)
@@ -1182,8 +1222,7 @@ class _DevelopOperator(SinglePlayOperator):
             choice, reward = row["choice"], row["reward"]
 
             # Get probability of this choice
-            observation = agent.inference_engine.buffer[-1]
-            p = agent.policy.compute_likelihood(choice, observation)
+            p = agent.policy.compute_likelihood(choice, agent.observation)
 
             # Compute log
             log = numpy.log(p + numpy.finfo(float).eps)
@@ -1199,11 +1238,13 @@ class _DevelopOperator(SinglePlayOperator):
 
         return numpy.sum(ll)
 
-    def _objective(self, parameter_values, data):
+    def _objective(self, parameter_values, operator_class, data):
         """Returns the negative log-likelihood of the specified parameter values given the provided data.
 
         :param parameter_values: A list of the parameter values to compute the log-likelihood for
         :type parameter_values: list
+        :param operator_class: The operator class to calculate the negative log-likelihood for
+        :type operator_class: core.agents.BaseAgent
         :param data: The behavioral data to compute the log-likelihood for
         :type data: pandas.DataFrame
         :return: The negative log-likelihood of the specified parameter values given the provided data
@@ -1211,7 +1252,7 @@ class _DevelopOperator(SinglePlayOperator):
         """
         # Since we will look for the minimum,
         # let's return -LLS instead of LLS
-        return - self._log_likelihood(parameter_values=parameter_values, data=data)
+        return - self._log_likelihood(operator_class=operator_class, parameter_values=parameter_values, data=data)
 
     def _plot_correlations(self, parameter_fit_bounds, data):
         """Plot the correlation between the true and recovered parameters.
@@ -1277,7 +1318,26 @@ class _DevelopOperator(SinglePlayOperator):
         plt.show()
 
     def _pearsons_r(self, parameter_fit_bounds, data, correlation_threshold=0.7, significance_level=0.05):
+        """Returns a DataFrame containing the correlation value (Pearson's r) and significance for each parameter.
+
+        :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
+            the random parameter values for simulation (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
+        :type parameter_fit_bounds: dict
+        :param data: The correlation data including each parameter value used and recovered
+        :type data: pandas.DataFrame
+        :param correlation_threshold: The threshold for Pearson's r value (i.e. the correlation coefficient between the used and recovered parameters), defaults to 0.7
+        :type correlation_threshold: float, optional
+        :param significance_level: The threshold for the p-value to consider the correlation significant, defaults to 0.05
+        :type significance_level: float, optional
+        """
         def pearson_r_data(parameter_name):
+            """Returns a dictionary containing the parameter name and its correlation value and significance.
+
+            :param parameter_name: The name of the parameter
+            :type parameter_name: str
+            :return: A dictionary containing the parameter name and its correlation value and significance
+            :rtype: dict
+            """
             # Get the elements to compare
             x = data.loc[data["Parameter"] ==
                          parameter_name, "Used to simulate"]
@@ -1305,3 +1365,286 @@ class _DevelopOperator(SinglePlayOperator):
         pearsons_r = pd.DataFrame(correlation_data)
 
         return pearsons_r
+
+    def test_model_recovery(self, other_competing_models, this_parameter_fit_bounds, f1_threshold=0.7, n_simulations=20, plot=True):
+        """Returns whether the bundle's operator model can be recovered from simulated data using the specified competing models
+        meeting the specified F1-score threshold (only available for operators with a policy that has a compute_likelihood method).
+
+        It simulates n_simulations agents for each of the operator's class and the competing models using random parameters within the supplied
+        parameter_fit_bounds, executes the provided task and tries to recover the operator's best-fit parameters from the simulated data. Each of
+        the best-fit models is then evaluated for fit using the BIC-score. The model recovery is then evaluated using recall, precision and
+        the F1-score which is finally evaluated against the specified threshold.
+
+        :param other_competing_models: A list of dictionaries for the other competing models including their parameter fit bounds (i.e. their names,
+            their minimum and maximum values) that will be used for simulation (example: `[{"model": OperatorClass, "parameter_fit_bounds": {"alpha": (0., 1.), ...}}, ...]`)
+        :type other_competing_models: list(dict)
+        :param this_parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
+            the random parameter values for simulation of the bundle operator class (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
+        :type this_parameter_fit_bounds: dict
+        :param f1_threshold: The threshold for F1-score, defaults to 0.7
+        :type f1_threshold: float, optional
+        :param n_simulations: The number of agents to simulate (i.e. the population size) for each model, defaults to 20
+        :type n_simulations: int, optional
+        :param plot: Flag whether to plot the confusion matrix and robustness statistics, defaults to True
+        :type plot: bool, optional
+        :return: `True` if the F1-score for the model recovery meets the supplied threshold, `False` otherwise
+        :rtype: bool
+        """
+        # Transform this_parameter_fit_bounds to empty dict if falsy (e.g. [], {}, None, False)
+        if not this_parameter_fit_bounds:
+            this_parameter_fit_bounds = {}
+
+        # All operator models that are competing
+        all_operator_classes = other_competing_models + \
+            [{"model": self.operator.__class__,
+                "parameter_fit_bounds": this_parameter_fit_bounds}]
+
+        # Calculate the confusion matrix between used and recovered models for and from simulation
+        confusion_matrix = self._confusion_matrix(
+            all_operator_classes=all_operator_classes, this_parameter_fit_bounds=this_parameter_fit_bounds, n_simulations=n_simulations)
+
+        # If wanted, ...
+        if plot:
+            # Plot the confusion matrix
+            _DevelopOperator._plot_confusion_matrix(data=confusion_matrix)
+
+        # Get the model names
+        model_names = [m["model"].__name__ for m in all_operator_classes]
+
+        # Compute the model recovery statistics (recall, precision, f1)
+        robustness = self._robustness_statistics(
+            model_names=model_names, f1_threshold=f1_threshold, data=confusion_matrix)
+
+        # If wanted, ...
+        if plot:
+            # Print the model recovery statistics (recall, precision, f1) as a table
+            robustness_table = tabulate(
+                robustness, headers="keys", tablefmt="psql", showindex=False)
+            print(robustness_table)
+
+        # Check that all correlations meet the threshold and are significant and return the result
+        all_f1_meet_threshold = robustness[f"f1>{f1_threshold}"].all()
+        return all_f1_meet_threshold
+
+    def _bic(log_likelihood, k, n):
+        """Returns the score for the Bayesian information criterion (BIC-score) for the given log-likelihood, number of parameters k and and number of observations n
+
+        :param log_likelihood: The maximized value of the likelihood function for the model
+        :type log_likelihood: float
+        :param k: The number of parameters
+        :type k: int
+        :param n: The number of observations or rounds of the task that were played
+        :type n: int
+        :return: The score for the Bayesian information criterion (BIC-score) for the given log-likelihood, number of parameters k and and number of observations n
+        :rtype: float
+        """
+        return -2 * log_likelihood + k * numpy.log(n)
+
+    def _confusion_matrix(self, all_operator_classes, n_simulations=20):
+        """Returns a DataFrame with the model recovery data (used to simulate vs recovered model) based on the BIC-score.
+
+        :param all_operator_classes: The user models that are competing and can be recovered (example: `[{"model": OperatorClass, "parameter_fit_bounds": {"alpha": (0., 1.), ...}}, ...]`)
+        :type all_operator_classes: list(dict)
+        :param n_simulations: The number of agents to simulate (i.e. the population size) for each model, defaults to 20
+        :type n_simulations: int, optional
+        :return: A DataFrame with the model recovery data (used to simulate vs recovered model) based on the BIC-score
+        :rtype: pandas.DataFrame
+        """
+        # Number of models
+        n_models = len(all_operator_classes)
+
+        # Data container
+        confusion_matrix = numpy.zeros((n_models, n_models))
+
+        # Set up progress bar
+        with tqdm(total=n_simulations*n_models**2, file=sys.stdout) as pbar:
+
+            # Loop over each model
+            for i, operator_class_to_sim in enumerate(all_operator_classes):
+
+                m_to_sim = operator_class_to_sim["model"]
+                parameters_for_sim = operator_class_to_sim["parameter_fit_bounds"]
+
+                for _ in range(n_simulations):
+
+                    # Generate a random agent
+                    random_agent = None
+                    if not len(parameters_for_sim) > 0:
+                        random_agent = m_to_sim()
+                    else:
+                        random_parameters = _DevelopOperator._random_parameters(
+                            parameter_fit_bounds=parameters_for_sim)
+                        random_agent = m_to_sim(**random_parameters)
+
+                    # Simulate the task
+                    simulated_data = self._simulate(
+                        operator=random_agent)
+
+                    # Container for BIC scores
+                    bs_scores = numpy.zeros(n_models)
+
+                    # For each model
+                    for k, operator_class_to_fit in enumerate(all_operator_classes):
+
+                        m_to_fit = operator_class_to_fit["model"]
+                        parameters_for_fit = operator_class_to_fit["parameter_fit_bounds"]
+
+                        # Determine best-fit parameter values
+                        _, best_fit_objective_value = self._best_fit_parameters(
+                            operator_class=m_to_fit, parameter_fit_bounds=parameters_for_fit, data=simulated_data)
+
+                        # Get log-likelihood for best param
+                        ll = -best_fit_objective_value
+
+                        # Compute the BIC score
+                        n_param_m_to_fit = len(parameters_for_fit)
+                        bs_scores[k] = _DevelopOperator._bic(
+                            log_likelihood=ll, k=n_param_m_to_fit, n=len(simulated_data))
+
+                        # Update progress bar
+                        pbar.update(1)
+
+                    # Get minimum value for bic (min => best)
+                    min_score = numpy.min(bs_scores)
+
+                    # Get index(es) of models that get best bic
+                    idx_min = numpy.flatnonzero(bs_scores == min_score)
+
+                    # Add result in matrix
+                    confusion_matrix[i, idx_min] += 1/len(idx_min)
+
+        # Get the model names
+        model_names = [m["model"].__name__ for m in all_operator_classes]
+
+        # Create dataframe
+        confusion = pd.DataFrame(confusion_matrix,
+                                 index=model_names,
+                                 columns=model_names)
+
+        return confusion
+
+    def _plot_confusion_matrix(data):
+        """Plots the confusion matrix for the model recovery comparison.
+
+        :param data: The confusion matrix (model used to simulate vs recovered model) as a DataFrame
+        :type data: pandas.DataFrame
+        """
+        # Create figure and axes
+        _, ax = plt.subplots(figsize=(12, 10))
+
+        # Display the results using a heatmap
+        sns.heatmap(data=data, cmap='viridis', annot=True, ax=ax)
+
+        # Set x-axis and y-axis labels
+        ax.set_xlabel("Predicted")
+        ax.set_ylabel("Actual")
+
+        plt.show()
+
+    def _recall(model_name, data):
+        """Returns the recall value and its confidence interval for the given model and confusion matrix.
+
+        :param model_name: The name of the model to compute the recall for
+        :type model_name: str
+        :param data: The confusion matrix as a DataFrame
+        :type data: pandas.DataFrame
+        :return: The recall value and its confidence interval for the given model and confusion matrix
+        :rtype: tuple[float, tuple[float, float]]
+        """
+        # Get the number of true positive
+        k = data.at[model_name, model_name]
+
+        # Get the number of true positive + false NEGATIVE
+        n = numpy.sum(data.loc[model_name])
+
+        # Compute the recall and return it
+        recall = k/n
+
+        # Compute the confidence interval
+        ci_recall = statsmodels.stats.proportion.proportion_confint(
+            count=k, nobs=n)
+
+        return recall, ci_recall
+
+    def _precision(model_name, data):
+        """Returns the precision value and its confidence interval for the given model and confusion matrix.
+
+        :param model_name: The name of the model to compute the precision for
+        :type model_name: str
+        :param data: The confusion matrix as a DataFrame
+        :type data: pandas.DataFrame
+        :return: The precision value and its confidence interval for the given model and confusion matrix
+        :rtype: tuple[float, tuple[float, float]]
+        """
+        # Get the number of true positive
+        k = data.at[model_name, model_name]
+
+        # Get the number of true positive + false POSITIVE
+        n = numpy.sum(data[model_name])
+
+        # Compute the precision
+        precision = k/n
+
+        # Compute the confidence intervals
+        ci_pres = statsmodels.stats.proportion.proportion_confint(k, n)
+
+        return precision, ci_pres
+
+    def _f1(precision, recall):
+        """Returns the F1-score for the given precision and recall.
+
+        :param precision: The precision value.
+        :type precision: float
+        :param recall: The recall value.
+        :type recall: float
+        :return: The F1-score for the given precision and recall
+        :rtype: float
+        """
+        # Compute the f score
+        f_score = 2*(precision * recall)/(precision+recall)
+        return f_score
+
+    def _robustness_statistics(self, model_names, f1_threshold, data):
+        """Returns a DataFrame with the robustness statistics (precision, recall, F1-score) based on the supplied confusion data and user models.
+
+        :param model_names: The names of the user models that are competing and could be recovered
+        :type all_operator_classes: list(str)
+        :param f1_threshold: The threshold for F1-score, defaults to 0.7
+        :type f1_threshold: float, optional
+        :param data: The confusion matrix as a DataFrame
+        :type data: pandas.DataFrame
+        :return: A DataFrame with the robustness statistics (precision, recall, F1-score) based on the supplied confusion data and user models
+        :rtype: pandas.DataFrame
+        """
+        # Results container
+        row_list = []
+
+        # For each model...
+        for m in model_names:
+
+            # Compute the recall
+            recall, ci_recall = _DevelopOperator._recall(
+                model_name=m, data=data)
+
+            # Compute the precision and confidence intervals
+            precision, ci_pres = _DevelopOperator._precision(
+                model_name=m, data=data)
+
+            # Compute the f score
+            f_score = _DevelopOperator._f1(precision=precision, recall=recall)
+
+            # Backup
+            row_list.append({
+                "model": m,
+                "Recall": recall,
+                "Recall [CI]": ci_recall,
+                "Precision": precision,
+                "Precision [CI]": ci_pres,
+                "F1 score": f_score,
+                f"f1>{f1_threshold}": f_score > f1_threshold
+            })
+
+        # Create dataframe and display it
+        stats = pd.DataFrame(row_list, index=model_names)
+
+        return stats
