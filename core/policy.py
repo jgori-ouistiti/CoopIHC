@@ -375,7 +375,8 @@ class ELLDiscretePolicy(BasePolicy):
         for action in self.action_state["action"].cartesian_product():
             llh.append(self.compute_likelihood(action, observation))
             actions.append(action)
-        if sum(llh) != 1:
+        tolerance = 1e-13
+        if abs(1 - sum(llh)) > tolerance:
             print('Warning, llh does not sum to 1')
             print(llh)
             print(observation)
