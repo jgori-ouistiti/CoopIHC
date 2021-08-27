@@ -22,7 +22,6 @@ class BasePolicy:
 
     def __init__(self, *args, **kwargs):
         # If a state is provided, use it; else create one (important not to lose the reference w/r the game_state)
-        print(args, kwargs)
         if args:
             self.action_state = args[0]
         else:
