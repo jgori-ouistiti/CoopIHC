@@ -1,4 +1,4 @@
-from inference import RWInference
+from .inference import RWInference
 
 import gym
 import numpy as np
