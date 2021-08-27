@@ -73,7 +73,7 @@ In turn, it gives us access to a method called `test_parameter_recovery` that ca
 
 The `test_parameter_recovery` expects an argument called `parameter_fit_bounds` which is a `dict` containing the parameter name and its minimum and maximum value (i.e. its fit bounds).
 These fit bounds will be used to create `n_simulations` artificial agents with random parameters within them.
-Each of the artificial agents will execute the task to create simulated data which in turn can be used to infer the best-fit parameter values using an evaluation method, in this case BIC-score.
+Each of the artificial agents will execute the task to create simulated data which in turn can be used to infer the best-fit parameter values using an evaluation method, in this case maximum log-likelihood.
 
 The result of calling `test_parameter_recovery` is a boolean whether all parameter correlations (i.e. Pearson's r for the correlation between the used and recovered parameter values) meet the specified `correlation_threshold` at the specified `significance_level`.
 
@@ -93,3 +93,68 @@ The result of calling `test_parameter_recovery` is a boolean whether all paramet
 
     # Print result
     print(f"WSLS: Parameter recovery was {'successful' if wsls_can_recover_parameters else 'unsuccessful'}.")
+
+
+Model Recovery
+-------------------
+
+In model recovery, a user model is tested on its ability to be inferred from an artificial experiment dataset in competition to alternative user models.
+If a model fails to do so, it is unlikely to be successfully recovered from a dataset created with human users.
+
+In the code below, we use the same interaction task as above--again a risky choice task called `MultiBanditTask`--and test the operator class used above, namely Win-Stay-Lose-Switch (`WSLS`), against two new operator classes, a random operator (`RandomOperator`) and Rescorla-Wagner (`RW`), for its ability to be recovered from an artificial dataset.
+
+
+.. code-block:: python
+
+    # Imports
+    from envs import MultiBanditTask
+    from operators import WSLS, RW, RandomOperator
+
+    from core.bundle import _DevelopOperator
+
+    # Task parameters definition
+    N = 2
+    P = [0.5, 0.75]
+    T = 100
+
+    # Task definition
+    multi_bandit_task = MultiBanditTask(N=N, P=P, T=T)
+
+    # Operator definition
+    wsls = WSLS(epsilon=0.1)
+    rw = RW(q_alpha=0.1, q_beta=1.)
+
+
+In order to test the model for model recovery, we need to, again, use the `_DevelopOperator` bundle and pass it both the operator as well as the task.
+In turn, it gives us access to a method called `test_model_recovery` that can be used to evaluate model recovery for the given operator classes and task.
+
+The `test_model_recovery` expects an argument called `other_competing_models` which is a list of dictionaries specifying the competing models and their parameter fit bounds (e.g. `[{"model": OperatorClass, "parameter_fit_bounds": {"alpha": (0., 1.), ...}}, ...]`) as well as `this_parameter_fit_bounds` which is a `dict` containing the parameter name and its minimum and maximum value (i.e. its fit bounds) for the operator class to test.
+These fit bounds will be used to create `n_simulations` artificial agents for all specified models with random parameters within them.
+Each of the artificial agents will execute the task to create simulated data which in turn can be used to infer the best-fit model using an evaluation method, in this case BIC-score.
+
+The result of calling `test_model_recovery` is a boolean whether all robustness statistics (i.e. F1-score for the precision and recall between the used and recovered models) meet the specified `f1_threshold`.
+
+.. code-block:: python
+
+    # Parameter fit bounds for operators
+    wsls_parameter_fit_bounds = {"epsilon": (0., 1.)}
+    rw_parameter_fit_bounds = {"q_alpha": (0., 1.), "q_beta": (0., 20.)}
+
+    # Population size
+    N_SIMULATIONS = 20
+
+    # Bundle defintion
+    wsls_bundle = _DevelopOperator(task=multi_bandit_task, operator=wsls)
+
+    # Competing models definitions
+    other_competing_models = [
+        {"model": RandomOperator, "parameter_fit_bounds": {}},
+        {"model": RW, "parameter_fit_bounds": rw_parameter_fit_bounds},
+    ]
+
+    # Model recovery check
+    wsls_can_be_recovered = wsls_bundle.test_model_recovery(
+        other_competing_models=other_competing_models, this_parameter_fit_bounds=wsls_parameter_fit_bounds, f1_threshold=0.8, n_simulations=N_SIMULATIONS, plot=True)
+
+    print(
+        f"WSLS: Model recovery was {'successful' if wsls_can_be_recovered else 'unsuccessful'}.")
