@@ -1401,7 +1401,7 @@ class _DevelopOperator(SinglePlayOperator):
 
         # Calculate the confusion matrix between used and recovered models for and from simulation
         confusion_matrix = self._confusion_matrix(
-            all_operator_classes=all_operator_classes, this_parameter_fit_bounds=this_parameter_fit_bounds, n_simulations=n_simulations)
+            all_operator_classes=all_operator_classes, n_simulations=n_simulations)
 
         # If wanted, ...
         if plot:
