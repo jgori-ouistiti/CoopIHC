@@ -45,6 +45,9 @@ print("Imports complete.")
 # We additionally initialise the operators that we will test.
 
 # %%
+# Seed for reproduceability of the 'true' parameters
+RANDOM_SEED = 12345
+
 # Task parameters definition
 N = 2
 P = [0.5, 0.75]
@@ -101,7 +104,13 @@ wsls_bundle = _DevelopOperator(task=multi_bandit_task, operator=wsls)
 
 # Check if WSLS can recover parameters
 wsls_can_recover_parameters = wsls_bundle.test_parameter_recovery(
-    parameter_fit_bounds=wsls_parameter_fit_bounds, correlation_threshold=0.6, significance_level=0.1, n_simulations=N_SIMULATIONS, plot=True, save_plot_to="wsls_parameter_recovery.png")
+    parameter_fit_bounds=wsls_parameter_fit_bounds,
+    correlation_threshold=0.6,
+    significance_level=0.1,
+    n_simulations=N_SIMULATIONS,
+    plot=True,
+    save_plot_to="wsls_parameter_recovery_2.png",
+    seed=RANDOM_SEED)
 
 # Print result
 print(
@@ -123,7 +132,13 @@ rw_bundle = _DevelopOperator(task=multi_bandit_task, operator=rw)
 
 # Check if WSLS can recover parameters
 rw_can_recover_parameters = rw_bundle.test_parameter_recovery(
-    parameter_fit_bounds=rw_parameter_fit_bounds, correlation_threshold=0.6, significance_level=0.1, n_simulations=N_SIMULATIONS, plot=True, save_plot_to="rw_parameter_recovery.png")
+    parameter_fit_bounds=rw_parameter_fit_bounds,
+    correlation_threshold=0.6,
+    significance_level=0.1,
+    n_simulations=N_SIMULATIONS,
+    plot=True,
+    save_plot_to="rw_parameter_recovery_2.png",
+    seed=RANDOM_SEED)
 
 # Print result
 print(
@@ -155,7 +170,13 @@ other_competing_models = [
 
 # Check if RW can be recovered when competing with other models
 rw_can_be_recovered = rw_bundle.test_model_recovery(
-    other_competing_models=other_competing_models, this_parameter_fit_bounds=rw_parameter_fit_bounds, f1_threshold=0.8, n_simulations_per_model=N_SIMULATIONS, plot=True, save_plot_to="model_recovery.png")
+    other_competing_models=other_competing_models,
+    this_parameter_fit_bounds=rw_parameter_fit_bounds,
+    f1_threshold=0.8,
+    n_simulations_per_model=N_SIMULATIONS,
+    plot=True,
+    save_plot_to="model_recovery_2.png",
+    seed=RANDOM_SEED)
 
 # Print result
 print(

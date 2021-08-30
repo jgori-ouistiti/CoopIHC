@@ -902,7 +902,7 @@ class _DevelopOperator(SinglePlayOperator):
         operator_can_compute_likelihood = policy_has_attribute_compute_likelihood and compute_likelihood_is_a_function
         return operator_can_compute_likelihood
 
-    def test_parameter_recovery(self, parameter_fit_bounds, correlation_threshold=0.7, significance_level=0.05, n_simulations=20, plot=True, save_plot_to=None):
+    def test_parameter_recovery(self, parameter_fit_bounds, correlation_threshold=0.7, significance_level=0.05, n_simulations=20, plot=True, save_plot_to=None, seed=None):
         """Returns whether the recovered operator parameters correlate to the used parameters for a simulation given the supplied thresholds
         (only available for operators with a policy that has a compute_likelihood method).
 
@@ -924,6 +924,8 @@ class _DevelopOperator(SinglePlayOperator):
         :type plot: bool, optional
         :param save_plot_to: String of path where to save the resulting correlation scatter plot (None if not saved), defaults to None
         :type save_plot_to: str, optional
+        :param seed: The seed for the random number generator which controls how the 'true' parameter values are generated, defaults to None
+        :type seed: int, optional
         :return: `True` if the correlation between used and recovered parameter values meets the supplied thresholds, `False` otherwise
         :rtype: bool
         """
@@ -939,7 +941,13 @@ class _DevelopOperator(SinglePlayOperator):
 
         # Calculate the correlations between used and recovered parameters for and from simulation
         correlations = self._correlations(
-            parameter_fit_bounds=parameter_fit_bounds, correlation_threshold=correlation_threshold, significance_level=significance_level, n_simulations=n_simulations, plot=plot, save_plot_to=save_plot_to)
+            parameter_fit_bounds=parameter_fit_bounds,
+            correlation_threshold=correlation_threshold,
+            significance_level=significance_level,
+            n_simulations=n_simulations,
+            plot=plot,
+            save_plot_to=save_plot_to,
+            seed=seed)
 
         # If wanted, ...
         if plot:
@@ -956,7 +964,7 @@ class _DevelopOperator(SinglePlayOperator):
 
         return all_correlations_meet_threshold and all_correlations_significant
 
-    def _correlations(self, parameter_fit_bounds, correlation_threshold=0.7, significance_level=0.05, n_simulations=20, plot=True, save_plot_to=None):
+    def _correlations(self, parameter_fit_bounds, correlation_threshold=0.7, significance_level=0.05, n_simulations=20, plot=True, save_plot_to=None, seed=None):
         """Returns a DataFrame containing the correlation information for the recovery of each specified parameter.
 
         :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
@@ -968,6 +976,8 @@ class _DevelopOperator(SinglePlayOperator):
         :type plot: bool, optional
         :param save_plot_to: String of path where to save the resulting correlation scatter plot (None if not saved), defaults to None
         :type save_plot_to: str, optional
+        :param seed: The seed for the random number generator which controls how the 'true' parameter values are generated, defaults to None
+        :type seed: int, optional
         :return: A DataFrame containing the correlation information for the recovery of each specified parameter.
         :rtype: pandas.DataFrame
         """
@@ -978,18 +988,25 @@ class _DevelopOperator(SinglePlayOperator):
 
         # Compute the likelihood data (i.e. the used and recovered parameter pairs)
         likelihood = self._likelihood(
-            parameter_fit_bounds=ordered_parameter_fit_bounds, n_simulations=n_simulations)
+            parameter_fit_bounds=ordered_parameter_fit_bounds,
+            n_simulations=n_simulations,
+            seed=seed)
 
         # If wanted, ...
         if plot:
             # Plot the correlations between the used and recovered parameters as a graph
             path_for_file_output = save_plot_to
             self._plot_correlations(
-                parameter_fit_bounds=ordered_parameter_fit_bounds, data=likelihood, save_to=path_for_file_output)
+                parameter_fit_bounds=ordered_parameter_fit_bounds,
+                data=likelihood,
+                save_to=path_for_file_output)
 
         # Compute the correlation metric Pearson's r and its significance for each parameter pair and return it
-        pearsons_r = self._pearsons_r(parameter_fit_bounds=ordered_parameter_fit_bounds, data=likelihood,
-                                      correlation_threshold=correlation_threshold, significance_level=significance_level)
+        pearsons_r = self._pearsons_r(
+            parameter_fit_bounds=ordered_parameter_fit_bounds,
+            data=likelihood,
+            correlation_threshold=correlation_threshold,
+            significance_level=significance_level)
 
         return pearsons_r
 
@@ -1022,7 +1039,7 @@ class _DevelopOperator(SinglePlayOperator):
         # And return the ordered parameter fit bounds
         return ordered_parameter_fit_bounds
 
-    def _likelihood(self, parameter_fit_bounds, n_simulations=20):
+    def _likelihood(self, parameter_fit_bounds, n_simulations=20, seed=None):
         """Returns a DataFrame containing the likelihood of each recovered parameter.
 
         :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
@@ -1030,11 +1047,16 @@ class _DevelopOperator(SinglePlayOperator):
         :type parameter_fit_bounds: dict
         :param n_simulations: The number of agents to simulate (i.e. the population size) for the parameter recovery, defaults to 20
         :type n_simulations: int, optional
+        :param seed: The seed for the random number generator which controls how the 'true' parameter values are generated, defaults to None
+        :type seed: int, optional
         :return: A DataFrame containing the likelihood of each recovered parameter.
         :rtype: pandas.DataFrame
         """
         # Data container
         likelihood_data = []
+
+        # Random number generator
+        random_number_generator = numpy.random.default_rng(seed)
 
         # For each agent...
         for _ in tqdm(range(n_simulations), file=sys.stdout):
@@ -1045,7 +1067,8 @@ class _DevelopOperator(SinglePlayOperator):
                 random_agent = self.operator.__class__()
             else:
                 random_parameters = _DevelopOperator._random_parameters(
-                    parameter_fit_bounds=parameter_fit_bounds)
+                    parameter_fit_bounds=parameter_fit_bounds,
+                    random_number_generator=random_number_generator)
                 random_agent = self.operator.__class__(**random_parameters)
 
             # Simulate the task
@@ -1053,7 +1076,10 @@ class _DevelopOperator(SinglePlayOperator):
 
             # Determine best-fit parameter values
             best_fit_parameters, _ = self._best_fit_parameters(
-                operator_class=self.operator.__class__, parameter_fit_bounds=parameter_fit_bounds, data=simulated_data)
+                operator_class=self.operator.__class__,
+                parameter_fit_bounds=parameter_fit_bounds,
+                data=simulated_data,
+                random_number_generator=random_number_generator)
 
             # Backup parameter values
             for parameter_index, (parameter_name, parameter_value) in enumerate(random_parameters.items()):
@@ -1069,12 +1095,14 @@ class _DevelopOperator(SinglePlayOperator):
 
         return likelihood
 
-    def _random_parameters(parameter_fit_bounds):
+    def _random_parameters(parameter_fit_bounds, random_number_generator=None):
         """Returns a dictionary of parameter-value pairs where the value is random within the specified fit bounds.
 
         :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
             the random parameter values for simulation (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
         :type parameter_fit_bounds: dict
+        :param random_number_generator: The random number generator which controls how the 'true' parameter values are generated, defaults to None
+        :type random_number_generator: numpy.random.Generator, optional
         :return: A dictionary of parameter-value pairs where the value is random within the specified fit bounds
         :rtype: dict
         """
@@ -1088,7 +1116,7 @@ class _DevelopOperator(SinglePlayOperator):
             for (current_parameter_name, current_parameter_fit_bounds) in parameter_fit_bounds.items():
 
                 # Compute a random parameter value within the fit bounds
-                random_parameters[current_parameter_name] = numpy.random.uniform(
+                random_parameters[current_parameter_name] = random_number_generator.uniform(
                     *current_parameter_fit_bounds)
 
         # Return the parameter-value pairs
@@ -1142,7 +1170,7 @@ class _DevelopOperator(SinglePlayOperator):
         simulated_data = pd.DataFrame(data)
         return simulated_data
 
-    def _best_fit_parameters(self, operator_class, parameter_fit_bounds, data):
+    def _best_fit_parameters(self, operator_class, parameter_fit_bounds, data, random_number_generator=None):
         """Returns a list of the parameters with their best-fit values based on the supplied data.
 
         :param operator_class: The operator class to find best-fit parameters for
@@ -1152,6 +1180,8 @@ class _DevelopOperator(SinglePlayOperator):
         :type parameter_fit_bounds: dict
         :param data: The behavioral data to infer the best-fit parameters from
         :type data: pandas.DataFrame
+        :param random_number_generator: The random number generator which controls how the 'true' parameter values are generated, defaults to None
+        :type random_number_generator: numpy.random.Generator, optional
         :return: A list of the parameters with their best-fit values based on the supplied data
         :rtype: list
         """
@@ -1160,7 +1190,9 @@ class _DevelopOperator(SinglePlayOperator):
             # Calculate the negative log likelihood for the data without parameters...
             best_parameters = []
             ll = self._log_likelihood(
-                operator_class=operator_class, parameter_values=best_parameters, data=data)
+                operator_class=operator_class,
+                parameter_values=best_parameters,
+                data=data)
             best_objective_value = -ll
 
             # ...and return an empty list and the negative log-likelihood
@@ -1168,7 +1200,8 @@ class _DevelopOperator(SinglePlayOperator):
 
         # Define an initital guess
         random_initial_guess = _DevelopOperator._random_parameters(
-            parameter_fit_bounds=parameter_fit_bounds)
+            parameter_fit_bounds=parameter_fit_bounds,
+            random_number_generator=random_number_generator)
         initial_guess = [parameter_value for _,
                          parameter_value in random_initial_guess.items()]
 
@@ -1380,7 +1413,7 @@ class _DevelopOperator(SinglePlayOperator):
 
         return pearsons_r
 
-    def test_model_recovery(self, other_competing_models, this_parameter_fit_bounds, f1_threshold=0.7, n_simulations_per_model=20, plot=True, save_plot_to=None):
+    def test_model_recovery(self, other_competing_models, this_parameter_fit_bounds, f1_threshold=0.7, n_simulations_per_model=20, plot=True, save_plot_to=None, seed=None):
         """Returns whether the bundle's operator model can be recovered from simulated data using the specified competing models
         meeting the specified F1-score threshold (only available for operators with a policy that has a compute_likelihood method).
 
@@ -1403,6 +1436,8 @@ class _DevelopOperator(SinglePlayOperator):
         :type plot: bool, optional
         :param save_plot_to: String of path where to save the resulting confusion matrix plot (None if not saved), defaults to None
         :type save_plot_to: str, optional
+        :param seed: The seed for the random number generator which controls how the 'true' parameter values are generated, defaults to None
+        :type seed: int, optional
         :return: `True` if the F1-score for the model recovery meets the supplied threshold, `False` otherwise
         :rtype: bool
         """
@@ -1417,7 +1452,9 @@ class _DevelopOperator(SinglePlayOperator):
 
         # Calculate the confusion matrix between used and recovered models for and from simulation
         confusion_matrix = self._confusion_matrix(
-            all_operator_classes=all_operator_classes, n_simulations=n_simulations_per_model)
+            all_operator_classes=all_operator_classes,
+            n_simulations=n_simulations_per_model,
+            seed=seed)
 
         # If wanted, ...
         if plot:
@@ -1458,13 +1495,15 @@ class _DevelopOperator(SinglePlayOperator):
         """
         return -2 * log_likelihood + k * numpy.log(n)
 
-    def _confusion_matrix(self, all_operator_classes, n_simulations=20):
+    def _confusion_matrix(self, all_operator_classes, n_simulations=20, seed=None):
         """Returns a DataFrame with the model recovery data (used to simulate vs recovered model) based on the BIC-score.
 
         :param all_operator_classes: The user models that are competing and can be recovered (example: `[{"model": OperatorClass, "parameter_fit_bounds": {"alpha": (0., 1.), ...}}, ...]`)
         :type all_operator_classes: list(dict)
         :param n_simulations: The number of agents to simulate (i.e. the population size) for each model, defaults to 20
         :type n_simulations: int, optional
+        :param seed: The seed for the random number generator which controls how the 'true' parameter values are generated, defaults to None
+        :type seed: int, optional
         :return: A DataFrame with the model recovery data (used to simulate vs recovered model) based on the BIC-score
         :rtype: pandas.DataFrame
         """
@@ -1473,6 +1512,9 @@ class _DevelopOperator(SinglePlayOperator):
 
         # Data container
         confusion_matrix = numpy.zeros((n_models, n_models))
+
+        # Random number generator
+        random_number_generator = numpy.random.default_rng(seed)
 
         # Set up progress bar
         with tqdm(total=n_simulations*n_models**2, file=sys.stdout) as pbar:
@@ -1491,7 +1533,8 @@ class _DevelopOperator(SinglePlayOperator):
                         random_agent = m_to_sim()
                     else:
                         random_parameters = _DevelopOperator._random_parameters(
-                            parameter_fit_bounds=parameters_for_sim)
+                            parameter_fit_bounds=parameters_for_sim,
+                            random_number_generator=random_number_generator)
                         random_agent = m_to_sim(**random_parameters)
 
                     # Simulate the task
@@ -1509,7 +1552,10 @@ class _DevelopOperator(SinglePlayOperator):
 
                         # Determine best-fit parameter values
                         _, best_fit_objective_value = self._best_fit_parameters(
-                            operator_class=m_to_fit, parameter_fit_bounds=parameters_for_fit, data=simulated_data)
+                            operator_class=m_to_fit,
+                            parameter_fit_bounds=parameters_for_fit,
+                            data=simulated_data,
+                            random_number_generator=random_number_generator)
 
                         # Get log-likelihood for best param
                         ll = -best_fit_objective_value
