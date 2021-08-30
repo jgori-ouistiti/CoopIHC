@@ -109,7 +109,7 @@ wsls_can_recover_parameters = wsls_bundle.test_parameter_recovery(
     significance_level=0.1,
     n_simulations=N_SIMULATIONS,
     plot=True,
-    save_plot_to="wsls_parameter_recovery_2.png",
+    save_plot_to="wsls_parameter_recovery.png",
     seed=RANDOM_SEED)
 
 # Print result
@@ -137,7 +137,7 @@ rw_can_recover_parameters = rw_bundle.test_parameter_recovery(
     significance_level=0.1,
     n_simulations=N_SIMULATIONS,
     plot=True,
-    save_plot_to="rw_parameter_recovery_2.png",
+    save_plot_to="rw_parameter_recovery.png",
     seed=RANDOM_SEED)
 
 # Print result
@@ -175,7 +175,7 @@ rw_can_be_recovered = rw_bundle.test_model_recovery(
     f1_threshold=0.8,
     n_simulations_per_model=N_SIMULATIONS,
     plot=True,
-    save_plot_to="model_recovery_2.png",
+    save_plot_to="model_recovery.png",
     seed=RANDOM_SEED)
 
 # Print result
