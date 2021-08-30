@@ -1304,10 +1304,10 @@ class _DevelopOperator(SinglePlayOperator):
             ax.set_title(p_name)
 
             # Create scatter
-            sns.scatterplot(data=data[data["Parameter"] == p_name],
-                            x="Used to simulate", y="Recovered",
-                            alpha=0.5, color=colors[i],
-                            ax=ax)
+            scatterplot = sns.scatterplot(data=data[data["Parameter"] == p_name],
+                                          x="Used to simulate", y="Recovered",
+                                          alpha=0.5, color=colors[i],
+                                          ax=ax)
 
             # Plot identity function
             ax.plot(param_bounds[i], param_bounds[i],
@@ -1327,7 +1327,7 @@ class _DevelopOperator(SinglePlayOperator):
         if save_to:
             # Save plot in file
             path_for_file_output = save_to
-            plt.savefig(path_for_file_output)
+            scatterplot.figure.savefig(path_for_file_output)
 
         plt.show()
 
@@ -1553,7 +1553,7 @@ class _DevelopOperator(SinglePlayOperator):
         _, ax = plt.subplots(figsize=(12, 10))
 
         # Display the results using a heatmap
-        sns.heatmap(data=data, cmap='viridis', annot=True, ax=ax)
+        heatmap = sns.heatmap(data=data, cmap='viridis', annot=True, ax=ax)
 
         # Set x-axis and y-axis labels
         ax.set_xlabel("Predicted")
@@ -1565,7 +1565,7 @@ class _DevelopOperator(SinglePlayOperator):
         if save_to:
             # Save figure
             path_for_file_output = save_to
-            plt.savefig(path_for_file_output)
+            heatmap.figure.savefig(path_for_file_output)
 
     def _recall(model_name, data):
         """Returns the recall value and its confidence interval for the given model and confusion matrix.

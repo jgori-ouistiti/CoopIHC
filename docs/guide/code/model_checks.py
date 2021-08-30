@@ -28,7 +28,7 @@ print("Imports complete.")
 # Task parameters definition
 N = 2
 P = [0.5, 0.75]
-T = 100
+T = 10
 
 # Task definition
 multi_bandit_task = MultiBanditTask(N=N, P=P, T=T)
@@ -48,7 +48,7 @@ rw_parameter_fit_bounds = {"q_alpha": (0., 1.), "q_beta": (0., 20.)}
 wsls_parameter_fit_bounds = {"epsilon": (0., 1.)}
 
 # Population size
-N_SIMULATIONS = 20
+N_SIMULATIONS = 4
 
 print("Parameter recovery definitions complete.")
 
