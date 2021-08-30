@@ -1380,7 +1380,7 @@ class _DevelopOperator(SinglePlayOperator):
 
         return pearsons_r
 
-    def test_model_recovery(self, other_competing_models, this_parameter_fit_bounds, f1_threshold=0.7, n_simulations=20, plot=True, save_plot_to=None):
+    def test_model_recovery(self, other_competing_models, this_parameter_fit_bounds, f1_threshold=0.7, n_simulations_per_model=20, plot=True, save_plot_to=None):
         """Returns whether the bundle's operator model can be recovered from simulated data using the specified competing models
         meeting the specified F1-score threshold (only available for operators with a policy that has a compute_likelihood method).
 
@@ -1397,8 +1397,8 @@ class _DevelopOperator(SinglePlayOperator):
         :type this_parameter_fit_bounds: dict
         :param f1_threshold: The threshold for F1-score, defaults to 0.7
         :type f1_threshold: float, optional
-        :param n_simulations: The number of agents to simulate (i.e. the population size) for each model, defaults to 20
-        :type n_simulations: int, optional
+        :param n_simulations_per_model: The number of agents to simulate (i.e. the population size) for each model, defaults to 20
+        :type n_simulations_per_model: int, optional
         :param plot: Flag whether to plot the confusion matrix and robustness statistics, defaults to True
         :type plot: bool, optional
         :param save_plot_to: String of path where to save the resulting confusion matrix plot (None if not saved), defaults to None
@@ -1417,7 +1417,7 @@ class _DevelopOperator(SinglePlayOperator):
 
         # Calculate the confusion matrix between used and recovered models for and from simulation
         confusion_matrix = self._confusion_matrix(
-            all_operator_classes=all_operator_classes, n_simulations=n_simulations)
+            all_operator_classes=all_operator_classes, n_simulations=n_simulations_per_model)
 
         # If wanted, ...
         if plot:
