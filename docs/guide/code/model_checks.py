@@ -67,7 +67,7 @@ other_competing_models = [
 ]
 
 rw_can_be_recovered = rw_bundle.test_model_recovery(
-    other_competing_models=other_competing_models, this_parameter_fit_bounds=rw_parameter_fit_bounds, f1_threshold=0.8, n_simulations=N_SIMULATIONS, plot=True)
+    other_competing_models=other_competing_models, this_parameter_fit_bounds=rw_parameter_fit_bounds, f1_threshold=0.8, n_simulations=N_SIMULATIONS, plot=True, save_plot_to="model_recovery.png")
 
 print(
     f"RW: Model recovery was {'successful' if rw_can_be_recovered else 'unsuccessful'}.")
@@ -82,7 +82,7 @@ print("## Parameter Recovery: RW")
 rw_bundle = _DevelopOperator(task=multi_bandit_task, operator=rw)
 
 rw_can_recover_parameters = rw_bundle.test_parameter_recovery(
-    parameter_fit_bounds=rw_parameter_fit_bounds, correlation_threshold=0.6, significance_level=0.1, n_simulations=N_SIMULATIONS, plot=True)
+    parameter_fit_bounds=rw_parameter_fit_bounds, correlation_threshold=0.6, significance_level=0.1, n_simulations=N_SIMULATIONS, plot=True, save_plot_to="rw_parameter_recovery.png")
 
 print(
     f"RW: Parameter recovery was {'successful' if rw_can_recover_parameters else 'unsuccessful'}.")
@@ -97,7 +97,7 @@ print("## Parameter Recovery: WSLS")
 wsls_bundle = _DevelopOperator(task=multi_bandit_task, operator=wsls)
 
 wsls_can_recover_parameters = wsls_bundle.test_parameter_recovery(
-    parameter_fit_bounds=wsls_parameter_fit_bounds, correlation_threshold=0.6, significance_level=0.1, n_simulations=N_SIMULATIONS, plot=True)
+    parameter_fit_bounds=wsls_parameter_fit_bounds, correlation_threshold=0.6, significance_level=0.1, n_simulations=N_SIMULATIONS, plot=True, save_plot_to="wsls_parameter_recovery.png")
 
 print(
     f"WSLS: Parameter recovery was {'successful' if wsls_can_recover_parameters else 'unsuccessful'}.")

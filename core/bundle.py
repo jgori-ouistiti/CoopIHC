@@ -902,7 +902,7 @@ class _DevelopOperator(SinglePlayOperator):
         operator_can_compute_likelihood = policy_has_attribute_compute_likelihood and compute_likelihood_is_a_function
         return operator_can_compute_likelihood
 
-    def test_parameter_recovery(self, parameter_fit_bounds, correlation_threshold=0.7, significance_level=0.05, n_simulations=20, plot=True):
+    def test_parameter_recovery(self, parameter_fit_bounds, correlation_threshold=0.7, significance_level=0.05, n_simulations=20, plot=True, save_plot_to=None):
         """Returns whether the recovered operator parameters correlate to the used parameters for a simulation given the supplied thresholds
         (only available for operators with a policy that has a compute_likelihood method).
 
@@ -922,6 +922,8 @@ class _DevelopOperator(SinglePlayOperator):
         :type n_simulations: int, optional
         :param plot: Flag whether to plot the correlation between the used and recovered parameters and the correlation statistics, defaults to True
         :type plot: bool, optional
+        :param save_plot_to: String of path where to save the resulting correlation scatter plot (None if not saved), defaults to None
+        :type save_plot_to: str, optional
         :return: `True` if the correlation between used and recovered parameter values meets the supplied thresholds, `False` otherwise
         :rtype: bool
         """
@@ -937,7 +939,7 @@ class _DevelopOperator(SinglePlayOperator):
 
         # Calculate the correlations between used and recovered parameters for and from simulation
         correlations = self._correlations(
-            parameter_fit_bounds=parameter_fit_bounds, correlation_threshold=correlation_threshold, significance_level=significance_level, n_simulations=n_simulations, plot=plot)
+            parameter_fit_bounds=parameter_fit_bounds, correlation_threshold=correlation_threshold, significance_level=significance_level, n_simulations=n_simulations, plot=plot, save_plot_to=save_plot_to)
 
         # If wanted, ...
         if plot:
@@ -954,7 +956,7 @@ class _DevelopOperator(SinglePlayOperator):
 
         return all_correlations_meet_threshold and all_correlations_significant
 
-    def _correlations(self, parameter_fit_bounds, correlation_threshold=0.7, significance_level=0.05, n_simulations=20, plot=True):
+    def _correlations(self, parameter_fit_bounds, correlation_threshold=0.7, significance_level=0.05, n_simulations=20, plot=True, save_plot_to=None):
         """Returns a DataFrame containing the correlation information for the recovery of each specified parameter.
 
         :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
@@ -964,6 +966,8 @@ class _DevelopOperator(SinglePlayOperator):
         :type n_simulations: int, optional
         :param plot: Flag whether to plot the correlation between the used and recovered parameters, defaults to True
         :type plot: bool, optional
+        :param save_plot_to: String of path where to save the resulting correlation scatter plot (None if not saved), defaults to None
+        :type save_plot_to: str, optional
         :return: A DataFrame containing the correlation information for the recovery of each specified parameter.
         :rtype: pandas.DataFrame
         """
@@ -979,8 +983,9 @@ class _DevelopOperator(SinglePlayOperator):
         # If wanted, ...
         if plot:
             # Plot the correlations between the used and recovered parameters as a graph
+            path_for_file_output = save_plot_to
             self._plot_correlations(
-                parameter_fit_bounds=ordered_parameter_fit_bounds, data=likelihood)
+                parameter_fit_bounds=ordered_parameter_fit_bounds, data=likelihood, save_to=path_for_file_output)
 
         # Compute the correlation metric Pearson's r and its significance for each parameter pair and return it
         pearsons_r = self._pearsons_r(parameter_fit_bounds=ordered_parameter_fit_bounds, data=likelihood,
@@ -1254,12 +1259,14 @@ class _DevelopOperator(SinglePlayOperator):
         # let's return -LLS instead of LLS
         return - self._log_likelihood(operator_class=operator_class, parameter_values=parameter_values, data=data)
 
-    def _plot_correlations(self, parameter_fit_bounds, data):
+    def _plot_correlations(self, parameter_fit_bounds, data, save_to=None):
         """Plot the correlation between the true and recovered parameters.
 
         :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
             the random parameter values for simulation (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
         :type parameter_fit_bounds: dict
+        :param save_to: String of path where to save the resulting correlation scatter plot (None if not saved), defaults to None
+        :type save_to: str, optional
         :param data: The correlation data including each parameter value used and recovered
         :type data: pandas.DataFrame
         """
@@ -1315,6 +1322,13 @@ class _DevelopOperator(SinglePlayOperator):
 
         # Display plot
         plt.tight_layout()
+
+        # If wanted...
+        if save_to:
+            # Save plot in file
+            path_for_file_output = save_to
+            plt.savefig(path_for_file_output)
+
         plt.show()
 
     def _pearsons_r(self, parameter_fit_bounds, data, correlation_threshold=0.7, significance_level=0.05):
@@ -1366,7 +1380,7 @@ class _DevelopOperator(SinglePlayOperator):
 
         return pearsons_r
 
-    def test_model_recovery(self, other_competing_models, this_parameter_fit_bounds, f1_threshold=0.7, n_simulations=20, plot=True):
+    def test_model_recovery(self, other_competing_models, this_parameter_fit_bounds, f1_threshold=0.7, n_simulations=20, plot=True, save_plot_to=None):
         """Returns whether the bundle's operator model can be recovered from simulated data using the specified competing models
         meeting the specified F1-score threshold (only available for operators with a policy that has a compute_likelihood method).
 
@@ -1387,6 +1401,8 @@ class _DevelopOperator(SinglePlayOperator):
         :type n_simulations: int, optional
         :param plot: Flag whether to plot the confusion matrix and robustness statistics, defaults to True
         :type plot: bool, optional
+        :param save_plot_to: String of path where to save the resulting confusion matrix plot (None if not saved), defaults to None
+        :type save_plot_to: str, optional
         :return: `True` if the F1-score for the model recovery meets the supplied threshold, `False` otherwise
         :rtype: bool
         """
@@ -1406,7 +1422,9 @@ class _DevelopOperator(SinglePlayOperator):
         # If wanted, ...
         if plot:
             # Plot the confusion matrix
-            _DevelopOperator._plot_confusion_matrix(data=confusion_matrix)
+            path_for_output_file = save_plot_to
+            _DevelopOperator._plot_confusion_matrix(
+                data=confusion_matrix, save_to=path_for_output_file)
 
         # Get the model names
         model_names = [m["model"].__name__ for m in all_operator_classes]
@@ -1523,11 +1541,13 @@ class _DevelopOperator(SinglePlayOperator):
 
         return confusion
 
-    def _plot_confusion_matrix(data):
+    def _plot_confusion_matrix(data, save_to=None):
         """Plots the confusion matrix for the model recovery comparison.
 
         :param data: The confusion matrix (model used to simulate vs recovered model) as a DataFrame
         :type data: pandas.DataFrame
+        :param save_to: String of path where to save the resulting confusion matrix plot (None if not saved), defaults to None
+        :type save_to: str, optional
         """
         # Create figure and axes
         _, ax = plt.subplots(figsize=(12, 10))
@@ -1540,6 +1560,12 @@ class _DevelopOperator(SinglePlayOperator):
         ax.set_ylabel("Actual")
 
         plt.show()
+
+        # If wanted...
+        if save_to:
+            # Save figure
+            path_for_file_output = save_to
+            plt.savefig(path_for_file_output)
 
     def _recall(model_name, data):
         """Returns the recall value and its confidence interval for the given model and confusion matrix.
