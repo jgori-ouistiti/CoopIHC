@@ -343,6 +343,7 @@ class ELLDiscretePolicy(BasePolicy):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.explicit_likelihood = True
+        self.rng = numpy.random.default_rng(kwargs.get("seed"))
 
     @classmethod
     def attach_likelihood_function(cls, _function):
@@ -358,7 +359,7 @@ class ELLDiscretePolicy(BasePolicy):
 
         observation = self.host.inference_engine.buffer[-1]
         actions, llh = self.forward_summary(observation)
-        action = actions[numpy.random.choice(len(llh), p=llh)]
+        action = actions[self.rng.choice(len(llh), p=llh)]
         self.action_state['action'] = action
         return action, 0
 

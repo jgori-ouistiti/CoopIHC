@@ -9,8 +9,9 @@ from core.policy import ELLDiscretePolicy
 
 
 class GenericPlayer(BaseAgent):
-    def __init__(self, user_model):
+    def __init__(self, user_model, seed=None):
         self.user_model = user_model
+        self.seed = seed
 
         super().__init__('operator')
 
@@ -24,7 +25,7 @@ class GenericPlayer(BaseAgent):
         self.N = self.bundle.task.N
 
         agent_policy = ELLDiscretePolicy(action_values=[None], action_space=[
-                                         gym.spaces.Discrete(self.N)])
+                                         gym.spaces.Discrete(self.N)], seed=self.seed)
 
         agent_policy.attach_likelihood_function(self.user_model)
 
@@ -36,15 +37,15 @@ class GenericPlayer(BaseAgent):
 
 
 class RandomOperator(GenericPlayer):
-    def __init__(self):
+    def __init__(self, seed=None):
         def user_model(_self, _action, _observation):
             return 1/self.N
 
-        super().__init__(user_model=user_model)
+        super().__init__(user_model=user_model, seed=seed)
 
 
 class WSLS(GenericPlayer):
-    def __init__(self, epsilon):
+    def __init__(self, epsilon, seed=None):
         self.epsilon = epsilon
 
         def user_model(_self, action, observation):
@@ -67,11 +68,11 @@ class WSLS(GenericPlayer):
                 return p_apply_rule / (self.N - 1) + p_random
             return p_random
 
-        super().__init__(user_model=user_model)
+        super().__init__(user_model=user_model, seed=seed)
 
 
 class RW(GenericPlayer):
-    def __init__(self, q_alpha, q_beta, initial_value=0.5):
+    def __init__(self, q_alpha, q_beta, initial_value=0.5, seed=None):
         self.q_alpha = q_alpha
         self.q_beta = q_beta
         self.initial_value = initial_value
@@ -86,7 +87,7 @@ class RW(GenericPlayer):
 
             return num / denom
 
-        super().__init__(user_model=user_model)
+        super().__init__(user_model=user_model, seed=seed)
 
     def finit(self):
         super().finit()

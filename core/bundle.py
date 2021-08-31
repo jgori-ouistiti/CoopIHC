@@ -1072,7 +1072,8 @@ class _DevelopOperator(SinglePlayOperator):
                 random_agent = self.operator.__class__(**random_parameters)
 
             # Simulate the task
-            simulated_data = self._simulate(operator=random_agent)
+            simulated_data = self._simulate(
+                operator=random_agent, random_number_generator=random_number_generator)
 
             # Determine best-fit parameter values
             best_fit_parameters, _ = self._best_fit_parameters(
@@ -1095,13 +1096,13 @@ class _DevelopOperator(SinglePlayOperator):
 
         return likelihood
 
-    def _random_parameters(parameter_fit_bounds, random_number_generator=None):
+    def _random_parameters(parameter_fit_bounds, random_number_generator=numpy.random.default_rng()):
         """Returns a dictionary of parameter-value pairs where the value is random within the specified fit bounds.
 
         :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
             the random parameter values for simulation (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
         :type parameter_fit_bounds: dict
-        :param random_number_generator: The random number generator which controls how the 'true' parameter values are generated, defaults to None
+        :param random_number_generator: The random number generator which controls how the 'true' parameter values are generated, defaults to numpy.random.default_rng()
         :type random_number_generator: numpy.random.Generator, optional
         :return: A dictionary of parameter-value pairs where the value is random within the specified fit bounds
         :rtype: dict
@@ -1122,13 +1123,15 @@ class _DevelopOperator(SinglePlayOperator):
         # Return the parameter-value pairs
         return random_parameters
 
-    def _simulate(self, operator=None):
+    def _simulate(self, operator=None, random_number_generator=numpy.random.default_rng()):
         """Returns a DataFrame containing the behavioral data from simulating the given task with
         the specified operator.
 
         :param operator: The operator to use for the simulation (if None is specified, will use the operator
             of the bundle (i.e. self.operator)), defaults to None
         :type operator: core.agents.BaseAgent, optional
+        :param random_number_generator: The random number generator which controls how the 'true' parameter values are generated, defaults to numpy.random.default_rng()
+        :type random_number_generator: numpy.random.Generator, optional
         :return: A DataFrame containing the behavioral data from simulating the given task with
             the specified operator
         :rtype: pandas.DataFrame
@@ -1140,6 +1143,9 @@ class _DevelopOperator(SinglePlayOperator):
 
         # Reset the bundle to default values
         bundle.reset()
+
+        # Seed the policy of the agent
+        bundle.operator.policy.rng = random_number_generator
 
         # Data container
         data = []
@@ -1539,7 +1545,8 @@ class _DevelopOperator(SinglePlayOperator):
 
                     # Simulate the task
                     simulated_data = self._simulate(
-                        operator=random_agent)
+                        operator=random_agent,
+                        random_number_generator=random_number_generator)
 
                     # Container for BIC scores
                     bs_scores = numpy.zeros(n_models)
