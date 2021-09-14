@@ -29,6 +29,8 @@ import inspect
 import seaborn as sns
 from copy import copy
 import statsmodels.stats.proportion
+import itertools
+import ast
 
 
 # List of kwargs for bundles init()
@@ -902,9 +904,10 @@ class _DevelopOperator(SinglePlayOperator):
         operator_can_compute_likelihood = policy_has_attribute_compute_likelihood and compute_likelihood_is_a_function
         return operator_can_compute_likelihood
 
-    def test_parameter_recovery(self, parameter_fit_bounds, correlation_threshold=0.7, significance_level=0.05, n_simulations=20, plot=True, save_plot_to=None, seed=None):
+    def test_parameter_recovery(self, parameter_fit_bounds, correlation_threshold=0.7, significance_level=0.05,
+                                n_simulations=20, recovered_parameter_correlation_threshold=0.5, plot=True, save_plot_to=None, seed=None):
         """Returns whether the recovered operator parameters correlate to the used parameters for a simulation given the supplied thresholds
-        (only available for operators with a policy that has a compute_likelihood method).
+        and that the recovered parameters do not correlate (test only available for operators with a policy that has a compute_likelihood method).
 
         It simulates n_simulations agents of the operator's class using random parameters within the supplied parameter_fit_bounds,
         executes the provided task and tries to recover the operator's parameters from the simulated data. These recovered parameters are then
@@ -914,7 +917,88 @@ class _DevelopOperator(SinglePlayOperator):
         :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
             the random parameter values for simulation (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
         :type parameter_fit_bounds: dict
-        :param correlation_threshold: The threshold for Pearson's r value (i.e. the correlation coefficient between the used and recovered parameters), defaults to 0.7
+        :param correlation_threshold: The threshold for Pearson's r value (i.e. the correlation coefficient between the used and recovered
+            parameters), defaults to 0.7
+        :type correlation_threshold: float, optional
+        :param significance_level: The threshold for the p-value to consider the correlation significant, defaults to 0.05
+        :type significance_level: float, optional
+        :param n_simulations: The number of agents to simulate (i.e. the population size) for the parameter recovery, defaults to 20
+        :type n_simulations: int, optional
+        :param recovered_parameter_correlation_threshold: The threshold for Pearson's r value between the recovered parameters, defaults to 0.7
+        :type recovered_parameter_correlation_threshold: float, optional
+        :param plot: Flag whether to plot the correlation between the used and recovered parameters and the correlation statistics, defaults to True
+        :type plot: bool, optional
+        :param save_plot_to: String of path where to save the resulting correlation scatter plot (None if not saved), defaults to None
+        :type save_plot_to: str, optional
+        :param seed: The seed for the random number generator which controls how the 'true' parameter values are generated, defaults to None
+        :type seed: int, optional
+        :return: `True` if the correlation between used and recovered parameter values meets the supplied thresholds, `False` otherwise
+        :rtype: bool
+        """
+        # Test parameter recovery and ignore additional output of correlation statistics
+        parameters_can_be_recovered, correlation_data, _ = self._parameter_recovery(
+            parameter_fit_bounds=parameter_fit_bounds,
+            correlation_threshold=correlation_threshold,
+            significance_level=significance_level,
+            n_simulations=n_simulations,
+            plot=plot,
+            save_plot_to=save_plot_to,
+            seed=seed
+        )
+
+        # Test whether recovered parameters correlate
+        recovered_parameters_correlate = _DevelopOperator._test_recovered_parameter_correlation(
+            data=correlation_data, correlation_threshold=recovered_parameter_correlation_threshold)
+
+        # Return `True` if parameters can be recovered and the recovered parameter values are not correlated
+        return parameters_can_be_recovered and not recovered_parameters_correlate
+
+    def _test_recovered_parameter_correlation(data, correlation_threshold=0.7):
+        """Returns whether the provided recovered parameters correlate with the specified threshold.
+
+        :param data: A DataFrame containing the subject identifier, parameter name and recovered parameter value
+        :type data: pandas.DataFrame
+        :param correlation_threshold: The threshold for a parameter pair to be considered correlated, defaults to 0.7
+        :type correlation_threshold: float, optional
+        :return: `True` if any of the recovered parameters correlate meeting the specified threshold
+        :rtype: bool
+        """
+        # Test whether recovered parameters correlate
+        # Pivot data so that each parameter has its own column
+        pivoted_correlation_data = data.pivot(
+            index="Subject", columns="Parameter", values="Recovered")
+        # Calculate correlation matrix
+        correlation_matrix = pivoted_correlation_data.corr()
+        # Delete duplicate and diagonal values
+        correlation_matrix = correlation_matrix.mask(numpy.tril(
+            numpy.ones(correlation_matrix.shape)).astype(numpy.bool))
+        # Transform data so that each pair-wise correlation that meets threshold is one row
+        correlations = correlation_matrix.stack()
+        # Select only those correlations that pass specified threshold
+        strong_correlations = correlations.loc[abs(
+            correlations) > correlation_threshold]
+        # Determine whether 'strong' correlations exist between the recovered parameters
+        recovered_parameters_correlate = len(strong_correlations) > 0
+
+        # Return `True` if the recovered parameter values are correlated
+        return recovered_parameters_correlate
+
+    def _parameter_recovery(self, parameter_fit_bounds, correlation_threshold=0.7, significance_level=0.05,
+                            n_simulations=20, plot=True, save_plot_to=None, seed=None):
+        """Returns whether the recovered operator parameters correlate to the used parameters for a simulation given the supplied thresholds
+        as well as the correlation data and statistics to determine this result (test only available for operators with a policy that
+        has a compute_likelihood method).
+
+        It simulates n_simulations agents of the operator's class using random parameters within the supplied parameter_fit_bounds,
+        executes the provided task and tries to recover the operator's parameters from the simulated data. These recovered parameters are then
+        correlated to the originally used parameters for the simulation using Pearson's r and checks for the given correlation and significance
+        thresholds.
+
+        :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
+            the random parameter values for simulation (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
+        :type parameter_fit_bounds: dict
+        :param correlation_threshold: The threshold for Pearson's r value (i.e. the correlation coefficient between the used and recovered
+            parameters), defaults to 0.7
         :type correlation_threshold: float, optional
         :param significance_level: The threshold for the p-value to consider the correlation significant, defaults to 0.05
         :type significance_level: float, optional
@@ -926,8 +1010,10 @@ class _DevelopOperator(SinglePlayOperator):
         :type save_plot_to: str, optional
         :param seed: The seed for the random number generator which controls how the 'true' parameter values are generated, defaults to None
         :type seed: int, optional
-        :return: `True` if the correlation between used and recovered parameter values meets the supplied thresholds, `False` otherwise
-        :rtype: bool
+        :return: `True` if the correlation between used and recovered parameter values meets the supplied thresholds, `False` otherwise;
+            a DataFrame containing the 'true' and recovered parameter value pairs; a DataFrame containing the Pearson's r coefficient
+            for each of the parameters
+        :rtype: tuple[bool, pandas.DataFrame, pandas.DataFrame]
         """
         # Make sure operator has a policy that can compute likelihood of an action given an observation
         operator_can_compute_likelihood = _DevelopOperator._operator_can_compute_likelihood(
@@ -940,7 +1026,7 @@ class _DevelopOperator(SinglePlayOperator):
                 "Sorry, the given checks are only implemented for operator's with a policy that has a compute_likelihood method so far.")
 
         # Calculate the correlations between used and recovered parameters for and from simulation
-        correlations = self._correlations(
+        correlation_data, correlation_statistics = self._correlations(
             parameter_fit_bounds=parameter_fit_bounds,
             correlation_threshold=correlation_threshold,
             significance_level=significance_level,
@@ -953,19 +1039,21 @@ class _DevelopOperator(SinglePlayOperator):
         if plot:
             # Print the correlations between the used and recovered parameters as a table
             correlations_table = tabulate(
-                correlations, headers="keys", tablefmt="psql", showindex=False)
+                correlation_statistics, headers="keys", tablefmt="psql", showindex=False)
             print(correlations_table)
 
         # Check that all correlations meet the threshold and are significant and return the result
-        all_correlations_meet_threshold = correlations[f"r>{correlation_threshold}"].all(
+        all_correlations_meet_threshold = correlation_statistics[f"r>{correlation_threshold}"].all(
         )
-        all_correlations_significant = correlations[f"p<{significance_level}"].all(
+        all_correlations_significant = correlation_statistics[f"p<{significance_level}"].all(
         )
 
-        return all_correlations_meet_threshold and all_correlations_significant
+        return all_correlations_meet_threshold and all_correlations_significant, correlation_data, correlation_statistics
 
-    def _correlations(self, parameter_fit_bounds, correlation_threshold=0.7, significance_level=0.05, n_simulations=20, plot=True, save_plot_to=None, seed=None):
-        """Returns a DataFrame containing the correlation information for the recovery of each specified parameter.
+    def _correlations(self, parameter_fit_bounds, correlation_threshold=0.7, significance_level=0.05, n_simulations=20,
+                      plot=True, save_plot_to=None, seed=None):
+        """Returns a DataFrame containing the correlation data for the recovery of each specified parameter and a DataFrame containing the
+        correlation statistics.
 
         :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
             the random parameter values for simulation (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
@@ -978,8 +1066,9 @@ class _DevelopOperator(SinglePlayOperator):
         :type save_plot_to: str, optional
         :param seed: The seed for the random number generator which controls how the 'true' parameter values are generated, defaults to None
         :type seed: int, optional
-        :return: A DataFrame containing the correlation information for the recovery of each specified parameter.
-        :rtype: pandas.DataFrame
+        :return: A DataFrame containing the correlation data for the recovery of each specified parameter and a DataFrame containing the
+            correlation statistics
+        :rtype: tuple[pandas.DataFrame, pandas.DataFrame]
         """
         # Transform the specified dict of parameter fit bounds into an OrderedDict
         # based on the order of parameters in the operator class constructor
@@ -996,7 +1085,7 @@ class _DevelopOperator(SinglePlayOperator):
         if plot:
             # Plot the correlations between the used and recovered parameters as a graph
             path_for_file_output = save_plot_to
-            self._plot_correlations(
+            _DevelopOperator._plot_correlations(
                 parameter_fit_bounds=ordered_parameter_fit_bounds,
                 data=likelihood,
                 save_to=path_for_file_output)
@@ -1008,7 +1097,7 @@ class _DevelopOperator(SinglePlayOperator):
             correlation_threshold=correlation_threshold,
             significance_level=significance_level)
 
-        return pearsons_r
+        return likelihood, pearsons_r
 
     def _ordered_parameter_fit_bounds(self, unordered_parameter_fit_bounds):
         """Returns an OrderedDict representing the parameter fit bounds based on the order of the
@@ -1059,7 +1148,7 @@ class _DevelopOperator(SinglePlayOperator):
         random_number_generator = numpy.random.default_rng(seed)
 
         # For each agent...
-        for _ in tqdm(range(n_simulations), file=sys.stdout):
+        for i in tqdm(range(n_simulations), file=sys.stdout):
 
             # Generate a random agent
             random_agent = None
@@ -1086,6 +1175,7 @@ class _DevelopOperator(SinglePlayOperator):
             for parameter_index, (parameter_name, parameter_value) in enumerate(random_parameters.items()):
                 _, best_fit_parameter_value = best_fit_parameters[parameter_index]
                 likelihood_data.append({
+                    "Subject": i+1,
                     "Parameter": parameter_name,
                     "Used to simulate": parameter_value,
                     "Recovered": best_fit_parameter_value
@@ -1102,7 +1192,8 @@ class _DevelopOperator(SinglePlayOperator):
         :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
             the random parameter values for simulation (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
         :type parameter_fit_bounds: dict
-        :param random_number_generator: The random number generator which controls how the 'true' parameter values are generated, defaults to numpy.random.default_rng()
+        :param random_number_generator: The random number generator which controls how the 'true' parameter values are
+            generated, defaults to numpy.random.default_rng()
         :type random_number_generator: numpy.random.Generator, optional
         :return: A dictionary of parameter-value pairs where the value is random within the specified fit bounds
         :rtype: dict
@@ -1130,7 +1221,8 @@ class _DevelopOperator(SinglePlayOperator):
         :param operator: The operator to use for the simulation (if None is specified, will use the operator
             of the bundle (i.e. self.operator)), defaults to None
         :type operator: core.agents.BaseAgent, optional
-        :param random_number_generator: The random number generator which controls how the 'true' parameter values are generated, defaults to numpy.random.default_rng()
+        :param random_number_generator: The random number generator which controls how the 'true' parameter values are
+            generated, defaults to numpy.random.default_rng()
         :type random_number_generator: numpy.random.Generator, optional
         :return: A DataFrame containing the behavioral data from simulating the given task with
             the specified operator
@@ -1186,7 +1278,8 @@ class _DevelopOperator(SinglePlayOperator):
         :type parameter_fit_bounds: dict
         :param data: The behavioral data to infer the best-fit parameters from
         :type data: pandas.DataFrame
-        :param random_number_generator: The random number generator which controls how the 'true' parameter values are generated, defaults to None
+        :param random_number_generator: The random number generator which controls how the 'true' parameter values are
+            generated, defaults to None
         :type random_number_generator: numpy.random.Generator, optional
         :return: A list of the parameters with their best-fit values based on the supplied data
         :rtype: list
@@ -1298,16 +1391,18 @@ class _DevelopOperator(SinglePlayOperator):
         # let's return -LLS instead of LLS
         return - self._log_likelihood(operator_class=operator_class, parameter_values=parameter_values, data=data)
 
-    def _plot_correlations(self, parameter_fit_bounds, data, save_to=None):
+    def _plot_correlations(parameter_fit_bounds, data, statistics=None, save_to=None):
         """Plot the correlation between the true and recovered parameters.
 
-        :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
-            the random parameter values for simulation (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
+        :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be
+            used to generate the random parameter values for simulation (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
         :type parameter_fit_bounds: dict
         :param save_to: String of path where to save the resulting correlation scatter plot (None if not saved), defaults to None
         :type save_to: str, optional
         :param data: The correlation data including each parameter value used and recovered
         :type data: pandas.DataFrame
+        :param statistics: The correlation statistics including whether the parameters were recoverable for some specified fit bounds
+        :type statistics: pandas.DataFrame
         """
         # Containers
         param_names = []
@@ -1342,8 +1437,11 @@ class _DevelopOperator(SinglePlayOperator):
             # Set title
             ax.set_title(p_name)
 
+            # Select only data related to the current parameter
+            current_parameter_data = data[data["Parameter"] == p_name]
+
             # Create scatter
-            scatterplot = sns.scatterplot(data=data[data["Parameter"] == p_name],
+            scatterplot = sns.scatterplot(data=current_parameter_data,
                                           x="Used to simulate", y="Recovered",
                                           alpha=0.5, color=colors[i],
                                           ax=ax)
@@ -1351,6 +1449,44 @@ class _DevelopOperator(SinglePlayOperator):
             # Plot identity function
             ax.plot(param_bounds[i], param_bounds[i],
                     linestyle="--", alpha=0.5, color="black", zorder=-10)
+
+            # If correlation statistics were supplied...
+            if statistics is not None:
+
+                # Select only statistics related to the current parameter
+                current_parameter_statistics = statistics[statistics["parameter"] == p_name]
+
+                # Highlight recoverable areas (high, significant correlation)
+                # If fit bound combinations exist because of parameter interaction...
+                if "combination" in statistics.columns:
+
+                    # Identify the combinations where all parameters where recoverable
+                    # Count the number of recoverable parameters per combination
+                    combinations = statistics.loc[statistics["recoverable"]].groupby(
+                        "combination").count()
+                    number_of_parameters = len(parameter_fit_bounds)
+
+                    # Select those combinations where the number of recovered parameters was equal the total number of parameters
+                    recoverable_combinations = combinations.loc[combinations["recoverable"]
+                                                                == number_of_parameters].index
+
+                    # Identify recoverable areas
+                    recoverable_areas = statistics.loc[
+                        statistics["combination"] in recoverable_combinations & statistics["parameter"] == p_name]
+
+                # ...else (if the recovered parameters were independent):
+                else:
+
+                    # Identify recoverable areas
+                    recoverable_areas = current_parameter_statistics.loc[
+                        current_parameter_statistics["recoverable"]]
+
+                # For each recoverable area...
+                for _, row in recoverable_areas.iterrows():
+
+                    # Add a green semi-transparent rectangle to the background
+                    ax.axvspan(
+                        *ast.literal_eval(row["fit_bounds"]), facecolor="g", alpha=0.2, zorder=-11)
 
             # Set axes limits
             ax.set_xlim(*param_bounds[i])
@@ -1378,7 +1514,8 @@ class _DevelopOperator(SinglePlayOperator):
         :type parameter_fit_bounds: dict
         :param data: The correlation data including each parameter value used and recovered
         :type data: pandas.DataFrame
-        :param correlation_threshold: The threshold for Pearson's r value (i.e. the correlation coefficient between the used and recovered parameters), defaults to 0.7
+        :param correlation_threshold: The threshold for Pearson's r value (i.e. the correlation coefficient between the used
+            and recovered parameters), defaults to 0.7
         :type correlation_threshold: float, optional
         :param significance_level: The threshold for the p-value to consider the correlation significant, defaults to 0.05
         :type significance_level: float, optional
@@ -1488,7 +1625,8 @@ class _DevelopOperator(SinglePlayOperator):
         return all_f1_meet_threshold
 
     def _bic(log_likelihood, k, n):
-        """Returns the score for the Bayesian information criterion (BIC-score) for the given log-likelihood, number of parameters k and and number of observations n
+        """Returns the score for the Bayesian information criterion (BIC-score) for the given log-likelihood, number
+            of parameters k and and number of observations n
 
         :param log_likelihood: The maximized value of the likelihood function for the model
         :type log_likelihood: float
@@ -1496,7 +1634,8 @@ class _DevelopOperator(SinglePlayOperator):
         :type k: int
         :param n: The number of observations or rounds of the task that were played
         :type n: int
-        :return: The score for the Bayesian information criterion (BIC-score) for the given log-likelihood, number of parameters k and and number of observations n
+        :return: The score for the Bayesian information criterion (BIC-score) for the given log-likelihood, number of
+            parameters k and and number of observations n
         :rtype: float
         """
         return -2 * log_likelihood + k * numpy.log(n)
@@ -1609,8 +1748,8 @@ class _DevelopOperator(SinglePlayOperator):
         heatmap = sns.heatmap(data=data, cmap='viridis', annot=True, ax=ax)
 
         # Set x-axis and y-axis labels
-        ax.set_xlabel("Predicted")
-        ax.set_ylabel("Actual")
+        ax.set_xlabel("Recovered")
+        ax.set_ylabel("Used to simulate")
 
         plt.show()
 
@@ -1684,7 +1823,8 @@ class _DevelopOperator(SinglePlayOperator):
         return f_score
 
     def _robustness_statistics(self, model_names, f1_threshold, data):
-        """Returns a DataFrame with the robustness statistics (precision, recall, F1-score) based on the supplied confusion data and user models.
+        """Returns a DataFrame with the robustness statistics (precision, recall, F1-score) based on the
+        supplied confusion data and user models.
 
         :param model_names: The names of the user models that are competing and could be recovered
         :type all_operator_classes: list(str)
@@ -1692,7 +1832,8 @@ class _DevelopOperator(SinglePlayOperator):
         :type f1_threshold: float, optional
         :param data: The confusion matrix as a DataFrame
         :type data: pandas.DataFrame
-        :return: A DataFrame with the robustness statistics (precision, recall, F1-score) based on the supplied confusion data and user models
+        :return: A DataFrame with the robustness statistics (precision, recall, F1-score) based on the
+            supplied confusion data and user models
         :rtype: pandas.DataFrame
         """
         # Results container
@@ -1727,3 +1868,506 @@ class _DevelopOperator(SinglePlayOperator):
         stats = pd.DataFrame(row_list, index=model_names)
 
         return stats
+
+    def recoverable_parameter_fit_bounds(self, parameter_ranges, correlation_threshold=0.7, significance_level=0.05,
+                                         n_simulations_per_sub_range=100, recovered_parameter_correlation_threshold=0.7, plot=True, save_plot_to=None, seed=None):
+        """Returns the ranges for each specified parameter of the bundle's operator model where parameter recovery meets the required thresholds
+        for all parameters.
+
+        :param parameter_ranges: A dictionary of the parameter names and their respective ranges that will be used to generate
+            the random parameter values for simulation of the bundle operator class (example: `{"alpha": numpy.linspace(0., 1., num=10), "beta": range(0., 20., num=5)}`)
+        :type parameter_ranges: dict[str, ndarray]
+        :param correlation_threshold: The threshold for Pearson's r value (i.e. the correlation coefficient between the used and recovered
+            parameters) for each sub-range, defaults to 0.7
+        :type correlation_threshold: float, optional
+        :param significance_level: The threshold for the p-value to consider the correlation significant, defaults to 0.05
+        :type significance_level: float, optional
+        :param n_simulations_per_sub_range: The number of agents to simulate (i.e. the population size) for each sub-range, defaults to 100
+        :type n_simulations_per_sub_range: int, optional
+        :param recovered_parameter_correlation_threshold: The threshold for Pearson's r value between the recovered parameters to consider them correlated, defaults to 0.7
+        :type recovered_parameter_correlation_threshold: float, optional
+        :param plot: Flag whether to plot the correlation between the used and recovered parameters and the correlation statistics, defaults to True
+        :type plot: bool, optional
+        :param save_plot_to: String of path where to save the resulting correlation scatter plot (None if not saved), defaults to None
+        :type save_plot_to: str, optional
+        :param seed: The seed for the random number generator which controls how the 'true' parameter values are generated, defaults to None
+        :type seed: int, optional
+        :return: The ranges where parameter recovery meets the required thresholds for all parameters (example: [OrderedDict([('alpha', (0.0, 0.3)), ('beta', (0.0, 0.2))], …])
+        :rtype: collections.OrderedDict
+        """
+        # Print information
+        logger.info("Testing parameter recovery for entire parameter range.")
+
+        # Transform the specified dict of parameter fit bounds into an OrderedDict
+        # based on the order of parameters in the operator class constructor
+        ordered_parameter_ranges = self._ordered_parameter_fit_bounds(
+            unordered_parameter_fit_bounds=parameter_ranges)
+
+        # Check each fit bound combination and try to recover parameters
+        recoverable_parameter_fit_bounds, correlation_data, correlation_statistics = self._recoverable_fit_bounds_from_ordered_parameter_fit_bounds()
+
+        # If the user wants to plot the results...
+        if plot:
+
+            # ...plot results of the recoverable parameter fit bounds test
+            _DevelopOperator._plot_recoverable_fit_bounds_result(
+                ordered_parameter_ranges=ordered_parameter_ranges,
+                correlation_data=correlation_data,
+                correlation_statistics=correlation_statistics,
+                save_to=save_plot_to
+            )
+
+        # Return the parameter fit bounds where all parameters met the required recovery thresholds
+        return recoverable_parameter_fit_bounds
+
+    def _recoverable_fit_bounds_from_ordered_parameter_fit_bounds(self, ordered_parameter_ranges, parameters_can_be_recovered_and_do_not_correlate, correlation_threshold=0.7, significance_level=0.05, recovered_parameter_correlation_threshold=0.7, n_simulations_per_sub_range=100, plot=True, seed=None):
+        """Returns the sub-ranges for each parameter where parameter recovery was successful by first testing the entire parameter range to check whether
+        recovered parameter values correlate with each other. If the recovered parameters correlate, each fit bound combination is tested. If not, the 
+        parameter fit bounds are checked for parameter recovery in parallel.
+
+        :param ordered_parameter_ranges: An OrderedDict based on the order of parameters for the model to test for parameter recovery
+            that specifies the minimum and maximum value for each parameter
+        :type ordered_parameter_ranges: collections.OrderedDict
+        :param parameters_can_be_recovered_and_do_not_correlate: Flag whether the parameters could successfully be recovered
+            for the entire parameter range.
+        :type parameters_can_be_recovered_and_do_not_correlate: bool
+        :param correlation_threshold: The threshold for Pearson's r value (i.e. the correlation coefficient between the used and recovered
+            parameters) for each sub-range, defaults to 0.7
+        :type correlation_threshold: float, optional
+        :param significance_level: The threshold for the p-value to consider the correlation significant, defaults to 0.05
+        :type significance_level: float, optional
+        :param recovered_parameter_correlation_threshold: The threshold for Pearson's r value between the recovered parameters to consider them correlated, defaults to 0.7
+        :type recovered_parameter_correlation_threshold: float, optional
+        :param n_simulations_per_sub_range: The number of agents to simulate (i.e. the population size) for each sub-range, defaults to 100
+        :type n_simulations_per_sub_range: int, optional
+        :param plot: Flag whether to plot the correlation between the used and recovered parameters and the correlation statistics, defaults to True
+        :type plot: bool, optional
+        :param seed: The seed for the random number generator which controls how the 'true' parameter values are generated, defaults to None
+        :type seed: int, optional
+        :return: The sub-ranges or fit bound combinations where the parameters could be recovered and additionally the correlation data
+            (i.e. the 'true' and recovered parameter values) and correlation statistics
+        :rtype: tuple[list, pandas.DataFrame, pandas.DataFrame]
+        """
+        # Test that parameters can be recovered and that recovered parameters do not correlate
+        # by simulating a test population of agents with random parameters inside the specified parameter ranges
+        parameters_can_be_recovered_and_do_not_correlate = self._test_parameter_recovery_for_entire_range(
+            parameter_ranges=ordered_parameter_ranges,
+            n_simulations_per_sub_range=n_simulations_per_sub_range,
+            recovered_parameter_correlation_threshold=recovered_parameter_correlation_threshold,
+            plot=plot,
+            seed=seed)
+
+        # Determine fit bounds / fit bound combinations to iterate over
+        fit_bound_combinations = _DevelopOperator._fit_bound_combinations(
+            parameters_can_be_recovered_and_do_not_correlate, ordered_parameter_ranges)
+
+        # Determine for which fit bound combinations the parameters can be recovered
+        recoverable_parameter_fit_bounds, correlation_data, correlation_statistics = self._recoverable_fit_bounds_from_fit_bound_combinations(
+            fit_bound_combinations, correlation_threshold, significance_level, n_simulations_per_sub_range, parameters_can_be_recovered_and_do_not_correlate, ordered_parameter_ranges, seed)
+
+        return recoverable_parameter_fit_bounds, correlation_data, correlation_statistics
+
+    def _recoverable_fit_bounds_from_fit_bound_combinations(self, fit_bound_combinations, parameters_can_be_recovered_and_do_not_correlate, ordered_parameter_ranges, correlation_threshold=0.7, significance_level=0.05, n_simulations_per_sub_range=20, seed=None):
+        """Returns the sub-ranges for each parameter where parameter recovery was successful.
+
+        :param fit_bound_combinations: A list of tuples each representing a combination of parameter fit bounds that will be iterated over
+            to test each combination's parameter recovery
+        :type fit_bound_combinations: list(Tuple)
+        :param correlation_threshold: The threshold for Pearson's r value (i.e. the correlation coefficient between the used and recovered
+            parameters) for each sub-range, defaults to 0.7
+        :type correlation_threshold: float, optional
+        :param significance_level: The threshold for the p-value to consider the correlation significant, defaults to 0.05
+        :type significance_level: float, optional
+        :param n_simulations_per_sub_range: The number of agents to simulate (i.e. the population size) for each sub-range, defaults to 100
+        :type n_simulations_per_sub_range: int, optional
+        :param parameters_can_be_recovered_and_do_not_correlate: Flag whether the parameters could successfully be recovered
+            for the entire parameter range.
+        :type parameters_can_be_recovered_and_do_not_correlate: bool
+        :param ordered_parameter_ranges: An OrderedDict based on the order of parameters for the model to test for parameter recovery
+            that specifies the minimum and maximum value for each parameter
+        :type ordered_parameter_ranges: collections.OrderedDict
+        :param seed: The seed for the random number generator which controls how the 'true' parameter values are generated, defaults to None
+        :type seed: int, optional
+        :return: [description]
+        :rtype: [type]
+        :return: The sub-ranges or fit bound combinations where the parameters could be recovered and additionally the correlation data
+            (i.e. the 'true' and recovered parameter values) and correlation statistics
+        :rtype: tuple[list, pandas.DataFrame, pandas.DataFrame]
+        """
+        # Container for the fit bounds where parameters can successfully be recovered
+        recoverable_parameter_fit_bounds = []
+
+        # Container for the correlation data of each parameter fit bound combination
+        all_correlation_data_frames = []
+
+        # Container for the correlation statistics
+        all_correlation_statistics_frames = []
+
+        # Create a random number generator using the specified seed
+        rng = numpy.random.default_rng(seed)
+
+        # For each fit bound combination...
+        for combination_index, fit_bound_combination in enumerate(fit_bound_combinations):
+
+            # Determine whether the parameters can be recovered for this fit bound combination
+            # and store the correlation data (used to simulate vs recovered per parameter) and statistics
+            parameters_can_be_recovered, correlation_data, correlation_statistics = self._parameter_recovery_for_fit_bound_combination(
+                correlation_threshold, significance_level, n_simulations_per_sub_range, parameters_can_be_recovered_and_do_not_correlate, ordered_parameter_ranges, fit_bound_combination, combination_index, rng)
+
+            # Store the results in the respective containers
+            all_correlation_data_frames.append(correlation_data)
+            all_correlation_statistics_frames.append(
+                correlation_statistics)
+
+            # If the parameters could be recovered for this fit bound combination...
+            if parameters_can_be_recovered:
+
+                # Format fit bounds (incl. the parameter name)
+                fit_bound_combination_with_parameter_names = _DevelopOperator._fit_bound_combination_with_parameter_names(
+                    ordered_parameter_ranges, fit_bound_combination)
+
+                # Store the fit bound combination used
+                recoverable_parameter_fit_bounds.append(
+                    fit_bound_combination_with_parameter_names)
+
+        # Compute a joined DataFrame for both the correlation data and statistics each
+        all_correlation_data = pd.concat(all_correlation_data_frames)
+        all_correlation_statistics = pd.concat(
+            all_correlation_statistics_frames)
+
+        return recoverable_parameter_fit_bounds, all_correlation_data, all_correlation_statistics
+
+    def _fit_bound_combination_with_parameter_names(ordered_parameter_ranges, fit_bound_combination):
+        """Returns an OrderedDict with each parameter name and the associated fit bound combination (i.e. the minimum
+        and maximum value to test for parameter recovery).
+
+        :param ordered_parameter_ranges: An OrderedDict based on the order of parameters for the model to test for parameter recovery
+            that specifies the minimum and maximum value for each parameter
+        :type ordered_parameter_ranges: collections.OrderedDict
+        :param fit_bound_combination: The fit bound combination to map to the parameter names (i.e. the minimum and maximum
+            value for each parameter to test for parameter recovery)
+        :type fit_bound_combination: Tuple
+        :return: An OrderedDict with each parameter name and the associated fit bound combination (i.e. the minimum
+            and maximum value to test for parameter recovery)
+        :rtype: collections.OrderedDict
+        """
+        # Container for the formatted fit bounds (incl. the parameter name)
+        fit_bound_combination_with_parameter_names = OrderedDict()
+
+        # For each parameter...
+        for i, parameter_name in enumerate(ordered_parameter_ranges.keys()):
+
+            # Store the parameter fit bounds
+            fit_bound_combination_with_parameter_names[parameter_name] = fit_bound_combination[i]
+
+        return fit_bound_combination_with_parameter_names
+
+    def _parameter_recovery_for_fit_bound_combination(self, parameters_can_be_recovered_and_do_not_correlate, ordered_parameter_ranges, fit_bound_combination, combination_index, correlation_threshold=0.7, significance_level=0.05, n_simulations_per_sub_range=20, random_number_generator=numpy.random.default_rng()):
+        """Returns whether the parameters could be recovered for the specified fit bound combination and additionally the correlation data
+        (i.e. the 'true' and recovered parameter values) and correlation statistics.
+
+        :param correlation_threshold: The threshold for Pearson's r value (i.e. the correlation coefficient between the used and recovered
+            parameters) for each sub-range, defaults to 0.7
+        :type correlation_threshold: float, optional
+        :param significance_level: The threshold for the p-value to consider the correlation significant, defaults to 0.05
+        :type significance_level: float, optional
+        :param n_simulations_per_sub_range: The number of agents to simulate (i.e. the population size) for each sub-range, defaults to 20
+        :type n_simulations_per_sub_range: int, optional
+        :param parameters_can_be_recovered_and_do_not_correlate: Flag whether the parameters could successfully be recovered
+            for the entire parameter range.
+        :type parameters_can_be_recovered_and_do_not_correlate: bool
+        :param ordered_parameter_ranges: An OrderedDict of the parameter names and their respective ranges that will be used to generate
+            the random parameter values for simulation of the bundle operator class
+        :type ordered_parameter_ranges: collections.OrderedDict
+        :param fit_bound_combination: The current fit bound combination (i.e. the minimum and maximum value for each parameter to test for parameter recovery)
+        :type fit_bound_combination: Tuple
+        :param combination_index: The index of the current fit bound combination that will be added to the correlation statistics DataFrame,
+            if the parameters correlate
+        :type combination_index: int
+        :param random_number_generator: A pseudo-random number generator to enable reproducibility
+        :type random_number_generator: numpy.Generator
+        :return: Whether the parameters could be recovered for the specified fit bound combination and additionally the correlation data
+            (i.e. the 'true' and recovered parameter values) and correlation statistics
+        :rtype: tuple[bool, pandas.DataFrame, pandas.DataFrame]
+        """
+        # Format the fit bounds (incl. the parameter name)
+        fit_bound_combination_with_parameter_names = _DevelopOperator._fit_bound_combination_with_parameter_names(
+            ordered_parameter_ranges, fit_bound_combination)
+
+        # Print fit bound combination information
+        def fit_bound_combination_to_str(fit_bound_combination):
+            return "; ".join([f"{parameter}: ({fit_bounds[0]}, {fit_bounds[1]})" for parameter, fit_bounds in fit_bound_combination.items()])
+
+        print(
+            f"Testing parameter recovery for parameters {fit_bound_combination_to_str(fit_bound_combination_with_parameter_names)}.")
+
+        # Generate a pseudo-random seed for reproducible but different 'true' parameter values
+        pseudo_random_seed = random_number_generator.integers(
+            low=1, high=99999999, size=1)[0]
+
+        # Determine whether the parameters can be recovered for this fit bound combination
+        # and store the correlation data (used to simulate vs recovered per parameter) and statistics
+        parameters_can_be_recovered, correlation_data, correlation_statistics = self._parameter_recovery(
+            parameter_fit_bounds=fit_bound_combination_with_parameter_names,
+            correlation_threshold=correlation_threshold,
+            significance_level=significance_level,
+            n_simulations=n_simulations_per_sub_range,
+            plot=False,
+            seed=pseudo_random_seed
+        )
+
+        # If recovery and independence check was unsuccessful...
+        if not parameters_can_be_recovered_and_do_not_correlate:
+
+            # Store combination index in DataFrames
+            correlation_data["combination"] = combination_index
+            correlation_statistics["combination"] = combination_index
+
+        # Add fit bound and recoverable information to the correlation data and statistics DataFrames
+        correlation_data, correlation_statistics = _DevelopOperator.extended_correlation_dataframes(
+            correlation_data, correlation_statistics, correlation_threshold, significance_level, fit_bound_combination_with_parameter_names)
+
+        return parameters_can_be_recovered, correlation_data, correlation_statistics
+
+    def extended_correlation_dataframes(correlation_data, correlation_statistics, fit_bound_combination_with_parameter_names, correlation_threshold=0.7, significance_level=0.05):
+        """Returns a DataFrame each for the correlation data (i.e. the 'true' and recovered parameter values) and correlation statistics
+        including the fit bounds of each parameter that were used to generate the 'true' parameter values as well as whether the parameters
+        were successfully recovered.
+
+        :param correlation_data: The 'true' and recovered parameter value pairs
+        :type correlation_data: pandas.DataFrame
+        :param correlation_statistics: The correlation statistics for the parameter recovery
+        :type correlation_statistics: pandas.DataFrame
+        :param correlation_threshold: The threshold for Pearson's r value (i.e. the correlation coefficient between the used and recovered
+            parameters) for each sub-range, defaults to 0.7
+        :type correlation_threshold: float, optional
+        :param significance_level: The threshold for the p-value to consider the correlation significant, defaults to 0.05
+        :type significance_level: float, optional
+        :param fit_bound_combination_with_parameter_names: [description]
+        :type fit_bound_combination_with_parameter_names: [type]
+        :return: A DataFrame each for the correlation data (i.e. the 'true' and recovered parameter values) and correlation statistics
+            including the fit bounds of each parameter that were used to generate the 'true' parameter values as well as whether the parameters
+            were successfully recovered
+        :rtype: tuple[pandas.DataFrame, pandas.DataFrame]
+        """
+        # Create empty columns for lower and upper bound in both DataFrames
+        correlation_data["fit_bounds"] = None
+        correlation_statistics["fit_bounds"] = None
+
+        # For each parameter's fit bounds...
+        for parameter_name, (parameter_min, parameter_max) in fit_bound_combination_with_parameter_names.items():
+            # Store the fit bounds in the correlation data...
+            correlation_data.loc[correlation_data["Parameter"]
+                                 == parameter_name, "fit_bounds"] = str((parameter_min, parameter_max))
+            # ...and in the correlation statistics
+            correlation_statistics.loc[correlation_statistics["parameter"]
+                                       == parameter_name, "fit_bounds"] = str((parameter_min, parameter_max))
+
+        # Add recoverable flag to correlation statistics
+        correlation_statistics["recoverable"] = correlation_statistics[
+            f"r>{correlation_threshold}"] & correlation_statistics[f"p<{significance_level}"]
+
+        return correlation_data, correlation_statistics
+
+    def _fit_bound_combinations(parameters_can_be_recovered_and_do_not_correlate, ordered_parameter_ranges):
+        """Returns a list of tuples each representing a combination of parameter fit bounds that will be iterated over
+        to test each combination's parameter recovery.
+
+        :param parameters_can_be_recovered_and_do_not_correlate: Flag whether the parameters could successfully be recovered
+            for the entire parameter range.
+        :type parameters_can_be_recovered_and_do_not_correlate: bool
+        :param ordered_parameter_ranges: An OrderedDict of the parameter names and their respective ranges that will be used to generate
+            the random parameter values for simulation of the bundle operator class
+        :type ordered_parameter_ranges: collections.OrderedDict
+        :return: A list of tuples each representing a combination of parameter fit bounds that will be iterated over
+        to test each combination's parameter recovery
+        :rtype: list(Tuple)
+        """
+        # Format parameter ranges to work with itertools.product / zip
+        formatted_parameter_ranges = _DevelopOperator._formatted_parameter_ranges_for_zip(
+            ordered_parameter_ranges)
+
+        # If recovery and independence check was unsuccessful...
+        if not parameters_can_be_recovered_and_do_not_correlate:
+
+            # Print information about parameter recovery
+            print(
+                "Info: Parameters could not be recovered successfully for entire parameter range.")
+
+            # Calculate all parameter range combinations (in case the recovered parameters correlate)
+            return itertools.product(*formatted_parameter_ranges)
+
+        # If recovery and independence check was successful...
+        # Print information about parameter recovery
+        print(
+            "Info: Parameters were recovered successfully for entire parameter range.")
+
+        # Pad each parameter range to be of same length using the last parameter fit bounds
+        number_of_steps_per_parameter = numpy.array(
+            [len(formatted_parameter_range) for formatted_parameter_range in formatted_parameter_ranges])
+        maximum_number_of_steps = number_of_steps_per_parameter.max()
+        padded_parameter_ranges = [numpy.pad(formatted_parameter_range, ((0, maximum_number_of_steps - len(
+            formatted_parameter_range) - 1), (0, 0)), 'wrap') for formatted_parameter_range in formatted_parameter_ranges]
+
+        # Zip / calculate parameter fit bound combinations
+        return list(zip(*padded_parameter_ranges))
+
+    def _formatted_parameter_ranges_for_zip(ordered_parameter_ranges):
+        """Returns a list of lists containing only the lower-/upper-bound combinations from the specified
+        parameter ranges (e.g. [[(0.0, 0.2), (0.2, 0.4), ...], [(0.5, 1.0), (1.0, 1.5), ...], ...]).
+
+        :param parameter_ranges: A dictionary of the parameter names and their respective ranges that will be used to generate
+            the random parameter values for simulation of the bundle operator class (example: `{"alpha": numpy.linspace(0., 1., num=10), "beta": range(0., 20., num=5)}`)
+        :type parameter_ranges: dict[str, ndarray]
+        :param ordered_parameter_ranges: An OrderedDict of the parameter names and their respective ranges that will be used to generate
+            the random parameter values for simulation of the bundle operator class
+        :type ordered_parameter_ranges: collections.OrderedDict
+        :return: A list of lists containing only the lower-/upper-bound combinations from the specified
+            parameter ranges (e.g. [[(0.0, 0.2), (0.2, 0.4), ...], [(0.5, 1.0), (1.0, 1.5), ...], ...])
+        :rtype: list[list[tuple[float, float]]]
+        """
+        # Isolate the parameter ranges into a list
+        parameter_steps = [parameter_range for _,
+                           parameter_range in ordered_parameter_ranges.items()]
+
+        # Container for the formatted parameter ranges (i.e. name and fit bounds for each combination)
+        formatted_parameter_ranges = []
+
+        # For each parameter...
+        for single_parameter_steps in parameter_steps:
+            # Container for the fit bounds for this step
+            single_parameter_ranges = []
+            # For each step in the range...
+            for i in range(0, len(single_parameter_steps) - 1):
+
+                # Determine fit bounds
+                lower_bound = single_parameter_steps[i]
+                upper_bound = single_parameter_steps[i+1]
+                fit_bounds = (lower_bound, upper_bound)
+
+                # Store results for this step
+                single_parameter_ranges.append(fit_bounds)
+
+            # Store results for this parameter
+            formatted_parameter_ranges.append(single_parameter_ranges)
+
+        return formatted_parameter_ranges
+
+    def _parameter_fit_bounds_from_ranges(parameter_ranges):
+        """Returns a dictionary containing each parameter name and its total range (i.e. minimum and maximum value) from the specified ranges.
+
+        :param parameter_ranges: A dictionary of the parameter names and their respective ranges that will be used to generate
+            the random parameter values for simulation of the bundle operator class (example: `{"alpha": numpy.linspace(0., 1., num=10), "beta": range(0., 20., num=5)}`)
+        :type parameter_ranges: dict[str, ndarray]
+        :return: A dictionary containing each parameter name and its total range (i.e. minimum and maximum value) from the specified ranges
+        :rtype: dict[str, tuple[float, float]]
+        """
+        return {parameter_name: (parameter_range.min(), parameter_range.max()) for parameter_name, parameter_range in parameter_ranges.items()}
+
+    def _test_population_size(parameter_ranges, n_simulations_per_sub_range=20, percentage_of_population_to_test=0.25, minimum_test_population_size=20):
+        """Returns the number of agents that will be used to test parameter recovery for the entire parameter range.
+
+        :param parameter_ranges: A dictionary of the parameter names and their respective ranges that will be used to generate
+            the random parameter values for simulation of the bundle operator class (example: `{"alpha": numpy.linspace(0., 1., num=10), "beta": range(0., 20., num=5)}`)
+        :type parameter_ranges: dict[str, ndarray]
+        :param n_simulations_per_sub_range: The number of agents to simulate (i.e. the population size) for each sub-range, defaults to 20
+        :type n_simulations_per_sub_range: int, optional
+        :param percentage_of_population_to_test: Factor that is multiplied with the maximum number of sub-ranges to test and number of simulated agents per sub-range
+            to determine the number of agents that will be used to test the entire parameter range, defaults to 0.25
+        :type percentage_of_population_to_test: float, optional
+        :param minimum_test_population_size: The minimum number of agents that will be used to test the entire parameter range, defaults to 20
+        :type minimum_test_population_size: int, optional
+        :return: The number of agents that will be used to test parameter recovery for the entire parameter range
+        :rtype: int
+        """
+        # Determine test population size
+        number_of_steps_per_parameter = numpy.array(
+            [len(parameter_range) for _, parameter_range in parameter_ranges.items()])
+        percentage_of_population_to_test = 0.25
+        test_population_size = int(n_simulations_per_sub_range *
+                                   number_of_steps_per_parameter.max() * percentage_of_population_to_test)
+        minimum_test_population_size = 20
+        if test_population_size < minimum_test_population_size:
+            test_population_size = minimum_test_population_size
+        return test_population_size
+
+    def _test_parameter_recovery_for_entire_range(self, parameter_ranges, n_simulations_per_sub_range=20, recovered_parameter_correlation_threshold=0.7, plot=False, seed=None):
+        """Returns whether the parameters can be recovered for the entire parameter range.
+
+        :param parameter_ranges: A dictionary of the parameter names and their respective ranges that will be used to generate
+            the random parameter values for simulation of the bundle operator class (example: `{"alpha": numpy.linspace(0., 1., num=10), "beta": range(0., 20., num=5)}`)
+        :type parameter_ranges: dict[str, ndarray]
+        :param n_simulations_per_sub_range: The number of agents to simulate (i.e. the population size) for each sub-range, defaults to 20
+        :type n_simulations_per_sub_range: int, optional
+        :param recovered_parameter_correlation_threshold: The threshold for Pearson's r value between the recovered parameters to consider them correlated, defaults to 0.7
+        :type recovered_parameter_correlation_threshold: float, optional
+        :param plot: Flag whether to plot the correlation between the used and recovered parameters and the correlation statistics, defaults to True
+        :type plot: bool, optional
+        :param seed: The seed for the random number generator which controls how the 'true' parameter values are generated, defaults to None
+        :type seed: int, optional
+        :return: Whether the parameters can be recovered for the entire parameter range
+        :rtype: bool
+        """
+        # Format the parameter ranges to parameter fit bounds for the recovery and correlation check
+        parameter_fit_bounds = _DevelopOperator._parameter_fit_bounds_from_ranges(
+            parameter_ranges)
+
+        # Perform parameter recovery for n_simulations_per_sub_range * number_of_steps / 4 and the entire range
+        # and check whether the parameters can be recovered and that the recovered parameters do not correlate
+
+        # Determine test population size
+        test_population_size = _DevelopOperator._test_population_size(
+            parameter_ranges, n_simulations_per_sub_range)
+
+        # Perform parameter recovery test
+        parameters_can_be_recovered_and_do_not_correlate = self.test_parameter_recovery(parameter_fit_bounds=parameter_fit_bounds, n_simulations=test_population_size,
+                                                                                        recovered_parameter_correlation_threshold=recovered_parameter_correlation_threshold, plot=plot, seed=seed)
+        return parameters_can_be_recovered_and_do_not_correlate
+
+    def _plot_recoverable_fit_bounds_result(ordered_parameter_ranges, correlation_data, correlation_statistics, save_to):
+        """Plots the correlations of the 'true' and recovered parameter values and prints the correlation statistics.
+
+        :param ordered_parameter_ranges: The parameter ranges (incl. steps) to use as basis for the parameter fit bounds
+        :type ordered_parameter_ranges: collections.OrderedDict
+        :param correlation_data: The 'true' and recovered parameter value pairs
+        :type correlation_data: pandas.DataFrame
+        :param correlation_statistics: The correlation statistics for the parameter recovery
+        :type correlation_statistics: pandas.DataFrame
+        :param save_to: String of path where to save the resulting correlation scatter plot (None if not saved), defaults to None
+        :type save_to: str, optional
+        """
+        # Format the specified parameter ranges into parameter fit bounds (i.e. without step size)
+        parameter_fit_bounds = _DevelopOperator._formatted_parameter_fit_bounds(
+            ordered_parameter_ranges)
+
+        # Plot the correlations of the 'true' and recovered parameter values
+        _DevelopOperator._plot_correlations(
+            parameter_fit_bounds=parameter_fit_bounds, data=correlation_data, save_to=save_to, statistics=correlation_statistics)
+
+        # Print the correlation statistics for the 'true' and recovered parameter values per sub-range
+        _DevelopOperator._print_correlation_statistics(correlation_statistics)
+
+    def _formatted_parameter_fit_bounds(ordered_parameter_ranges):
+        """Returns an OrderedDict of each parameter and its associated fit bounds (i.e. minimum and maximum value) from
+        an OrderedDict specifying the parameter ranges.
+
+        :param ordered_parameter_ranges: The parameter ranges (incl. steps) to use as basis for the parameter fit bounds
+        :type ordered_parameter_ranges: collections.OrderedDict
+        :return: An OrderedDict of each parameter and its associated fit bounds (i.e. minimum and maximum value)
+        :rtype: collections.OrderedDict
+        """
+        parameter_fit_bounds = OrderedDict()
+        for parameter_name, parameter_range in ordered_parameter_ranges.items():
+            parameter_fit_bounds[parameter_name] = (
+                parameter_range.min(), parameter_range.max())
+        return parameter_fit_bounds
+
+    def _print_correlation_statistics(correlation_statistics):
+        """Prints a table with the correlation statistics to the standard output.
+
+        :param correlation_statistics: The correlation statistics to print
+        :type correlation_statistics: pandas.DataFrame
+        """
+        correlation_statistics_table = tabulate(
+            correlation_statistics, headers="keys", tablefmt="psql", showindex=False)
+        print(correlation_statistics_table)

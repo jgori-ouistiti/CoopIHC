@@ -24,6 +24,7 @@
 
 # %%
 # Import task and operators
+import numpy
 from bandit.envs import MultiBanditTask
 from bandit.operators import RW, WSLS, RandomOperator
 
@@ -51,7 +52,7 @@ RANDOM_SEED = 12345
 # Task parameters definition
 N = 2
 P = [0.5, 0.75]
-T = 100
+T = 200
 
 # Task definition
 multi_bandit_task = MultiBanditTask(N=N, P=P, T=T)
@@ -79,14 +80,53 @@ rw_parameter_fit_bounds = {"q_alpha": (0., 1.), "q_beta": (0., 20.)}
 wsls_parameter_fit_bounds = {"epsilon": (0., 1.)}
 
 # Population size
-N_SIMULATIONS = 20
+N_SIMULATIONS = 50
 
 print("Parameter recovery definitions complete.")
 
 # %% [markdown]
+# ## Parameter Fit Bounds
+#
+# So far, we have tested parameter recovery by uniformly sampling from within the specified fit bounds.
+# It might, however, be the case that the quality of the parameter recovery (i.e. the correlation between the known 'true'
+# and the recovered parameter values) varies within the fit bounds. In order to determine those parameter value ranges
+# where parameters can be recovered well within the larger theoretical or practical fit bounds. For this, the bundle
+# provides a function called `recoverable_parameter_fit_bounds` which takes these theoretical or practical fit bounds per parameter
+# as well as the desired resolution, correlation and significance threshold and returns those parameter value ranges for
+# each parameter that meet the desired thresholds.
+
+# %%
+# Parameter Fit Bounds: RW
+print("## Parameter Fit Bounds: RW")
+
+# Define bundle for model checks
+rw_bundle = _DevelopOperator(task=multi_bandit_task, operator=rw)
+
+# Define parameter ranges
+rw_parameter_ranges = {
+    "q_alpha": numpy.linspace(0.0, 1.0, num=6),
+    "q_beta": numpy.linspace(0.0, 5.0, num=6)
+}
+
+# Determine ranges within the parameter fit bounds where the parameters can be recovered
+recoverable_parameter_fit_bounds = rw_bundle.recoverable_parameter_fit_bounds(
+    parameter_ranges=rw_parameter_ranges,
+    correlation_threshold=0.6,
+    significance_level=0.1,
+    recovered_parameter_correlation_threshold=0.3,
+    n_simulations_per_sub_range=N_SIMULATIONS,
+    plot=True,
+    save_plot_to="rw_parameter_fit_bounds.png",
+    seed=RANDOM_SEED)
+
+# Print result
+print(
+    f"RW: Parameter recovery possible within these ranges: {recoverable_parameter_fit_bounds}")
+
+# %% [markdown]
 # ## Parameter Recovery: WSLS
 #
-# We will start the model checks with a test for parameter recovery for the Win-Stay-Lose-Swith `WSLS` model. This model
+# We will start the model checks with a test for parameter recovery for the Win-Stay-Lose-Switch `WSLS` model. This model
 # has just a single parameter `epsilon` which can range from 0.0 to 1.0. For the parameter recovery test, we need to use
 # the `_DevelopOperator` bundle as it gives us access to the `test_parameter_recovery` method which creates the specified
 # number of agents using random parameter values and tries to recover these known parameters from behavioral data created
@@ -109,7 +149,7 @@ wsls_can_recover_parameters = wsls_bundle.test_parameter_recovery(
     significance_level=0.1,
     n_simulations=N_SIMULATIONS,
     plot=True,
-    save_plot_to="wsls_parameter_recovery.png",
+    # save_plot_to="wsls_parameter_recovery.png",
     seed=RANDOM_SEED)
 
 # Print result
@@ -137,7 +177,7 @@ rw_can_recover_parameters = rw_bundle.test_parameter_recovery(
     significance_level=0.1,
     n_simulations=N_SIMULATIONS,
     plot=True,
-    save_plot_to="rw_parameter_recovery.png",
+    # save_plot_to="rw_parameter_recovery.png",
     seed=RANDOM_SEED)
 
 # Print result
@@ -175,7 +215,7 @@ rw_can_be_recovered = rw_bundle.test_model_recovery(
     f1_threshold=0.8,
     n_simulations_per_model=N_SIMULATIONS,
     plot=True,
-    save_plot_to="model_recovery.png",
+    # save_plot_to="model_recovery.png",
     seed=RANDOM_SEED)
 
 # Print result
