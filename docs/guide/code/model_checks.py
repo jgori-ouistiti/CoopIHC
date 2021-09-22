@@ -8,6 +8,8 @@
 # %% [markdown]
 # ## Setup
 #
+
+
 # For this example notebook, we consider a scenario where a researcher has developed a task--in this case a Bandit task--as well as several
 # user models that they want to test for their quality. In particular, they want to test them for their ability to recover 'true' (i.e. known)
 # parameters from data (i.e. parameter recovery) as well as for their ability to be recovered when competing with different alternative models
@@ -24,6 +26,7 @@
 
 # %%
 # Import task and operators
+from matplotlib import pyplot as plt
 import numpy
 from bandit.envs import MultiBanditTask
 from bandit.operators import RW, WSLS, RandomOperator
@@ -115,13 +118,15 @@ recoverable_parameter_fit_bounds = rw_bundle.recoverable_parameter_fit_bounds(
     significance_level=0.1,
     recovered_parameter_correlation_threshold=0.3,
     n_simulations_per_sub_range=N_SIMULATIONS,
-    plot=True,
-    save_plot_to="rw_parameter_fit_bounds.png",
     seed=RANDOM_SEED)
+
+# Display scatterplot
+recoverable_parameter_ranges_test_result.plot
+plt.show()
 
 # Print result
 print(
-    f"RW: Parameter recovery possible within these ranges: {recoverable_parameter_fit_bounds}")
+    f"RW: Parameter recovery possible within these ranges: {recoverable_parameter_ranges_test_result.recoverable_parameter_ranges}")
 
 # %% [markdown]
 # ## Parameter Recovery: WSLS
@@ -143,18 +148,20 @@ print("## Parameter Recovery: WSLS")
 wsls_bundle = _DevelopOperator(task=multi_bandit_task, operator=wsls)
 
 # Check if WSLS can recover parameters
-wsls_can_recover_parameters = wsls_bundle.test_parameter_recovery(
+wsls_parameter_recovery_test_result = wsls_bundle.test_parameter_recovery(
     parameter_fit_bounds=wsls_parameter_fit_bounds,
     correlation_threshold=0.6,
     significance_level=0.1,
     n_simulations=N_SIMULATIONS,
-    plot=True,
-    # save_plot_to="wsls_parameter_recovery.png",
     seed=RANDOM_SEED)
+
+# Display scatterplot
+wsls_parameter_recovery_test_result.plot
+plt.show()
 
 # Print result
 print(
-    f"WSLS: Parameter recovery was {'successful' if wsls_can_recover_parameters else 'unsuccessful'}.")
+    f"WSLS: Parameter recovery was {'successful' if wsls_parameter_recovery_test_result.success else 'unsuccessful'}.")
 
 # %% [markdown]
 # ## Parameter Recovery: RW
@@ -171,18 +178,20 @@ print("## Parameter Recovery: RW")
 rw_bundle = _DevelopOperator(task=multi_bandit_task, operator=rw)
 
 # Check if WSLS can recover parameters
-rw_can_recover_parameters = rw_bundle.test_parameter_recovery(
+rw_parameter_recovery_test_result = rw_bundle.test_parameter_recovery(
     parameter_fit_bounds=rw_parameter_fit_bounds,
     correlation_threshold=0.6,
     significance_level=0.1,
     n_simulations=N_SIMULATIONS,
-    plot=True,
-    # save_plot_to="rw_parameter_recovery.png",
     seed=RANDOM_SEED)
+
+# Display scatterplot
+rw_parameter_recovery_test_result.plot
+plt.show()
 
 # Print result
 print(
-    f"RW: Parameter recovery was {'successful' if rw_can_recover_parameters else 'unsuccessful'}.")
+    f"RW: Parameter recovery was {'successful' if rw_parameter_recovery_test_result.success else 'unsuccessful'}.")
 
 # %% [markdown]
 # ## Model Recovery
@@ -209,15 +218,17 @@ other_competing_models = [
 ]
 
 # Check if RW can be recovered when competing with other models
-rw_can_be_recovered = rw_bundle.test_model_recovery(
+rw_model_recovery_test_result = rw_bundle.test_model_recovery(
     other_competing_models=other_competing_models,
     this_parameter_fit_bounds=rw_parameter_fit_bounds,
     f1_threshold=0.8,
     n_simulations_per_model=N_SIMULATIONS,
-    plot=True,
-    # save_plot_to="model_recovery.png",
     seed=RANDOM_SEED)
+
+# Display confusion matrix
+rw_model_recovery_test_result.plot
+plt.show()
 
 # Print result
 print(
-    f"RW: Model recovery was {'successful' if rw_can_be_recovered else 'unsuccessful'}.")
+    f"RW: Model recovery was {'successful' if rw_model_recovery_test_result.success else 'unsuccessful'}.")

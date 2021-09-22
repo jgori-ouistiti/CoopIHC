@@ -32,6 +32,8 @@ statsmodels = "*"
 [dev-packages]
 autopep8 = "*"
 ipykernel = "*"
+pytest = "*"
+rope = "*"
 
 [requires]
 python_version = "3.8"

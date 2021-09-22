@@ -51,6 +51,8 @@ In the code below, we define a new kind of interaction task--in this case a risk
 .. code-block:: python
 
     # Imports
+    from matplotlib import pyplot as plt
+
     from envs import MultiBanditTask
     from operators import WSLS
 
@@ -75,7 +77,7 @@ The `test_parameter_recovery` expects an argument called `parameter_fit_bounds` 
 These fit bounds will be used to create `n_simulations` artificial agents with random parameters within them.
 Each of the artificial agents will execute the task to create simulated data which in turn can be used to infer the best-fit parameter values using an evaluation method, in this case maximum log-likelihood.
 
-The result of calling `test_parameter_recovery` is a boolean whether all parameter correlations (i.e. Pearson's r for the correlation between the used and recovered parameter values) meet the specified `correlation_threshold` at the specified `significance_level`.
+The result of calling `test_parameter_recovery` is an object giving access to, among other details, a boolean whether all parameter correlations (i.e. Pearson's r for the correlation between the used and recovered parameter values) meet the specified `correlation_threshold` at the specified `significance_level`.
 
 .. code-block:: python
 
@@ -89,10 +91,14 @@ The result of calling `test_parameter_recovery` is a boolean whether all paramet
     wsls_bundle = _DevelopOperator(task=multi_bandit_task, operator=wsls)
 
     # Parameter recovery check
-    wsls_can_recover_parameters = wsls_bundle.test_parameter_recovery(parameter_fit_bounds=wsls_parameter_fit_bounds, correlation_threshold=0.6, significance_level=0.1, n_simulations=N_SIMULATIONS, plot=True)
+    parameter_recovery_test_result = wsls_bundle.test_parameter_recovery(parameter_fit_bounds=wsls_parameter_fit_bounds, correlation_threshold=0.6, significance_level=0.1, n_simulations=N_SIMULATIONS)
+
+    # Display scatter plot
+    parameter_recovery_test_result.plot
+    plt.show()
 
     # Print result
-    print(f"WSLS: Parameter recovery was {'successful' if wsls_can_recover_parameters else 'unsuccessful'}.")
+    print(f"WSLS: Parameter recovery was {'successful' if parameter_recovery_test_result.success else 'unsuccessful'}.")
 
 
 Model Recovery
@@ -132,7 +138,7 @@ The `test_model_recovery` expects an argument called `other_competing_models` wh
 These fit bounds will be used to create `n_simulations` artificial agents for all specified models with random parameters within them.
 Each of the artificial agents will execute the task to create simulated data which in turn can be used to infer the best-fit model using an evaluation method, in this case BIC-score.
 
-The result of calling `test_model_recovery` is a boolean whether all robustness statistics (i.e. F1-score for the precision and recall between the used and recovered models) meet the specified `f1_threshold`.
+The result of calling `test_model_recovery` is an object giving access to, among other details, a boolean whether all robustness statistics (i.e. F1-score for the precision and recall between the used and recovered models) meet the specified `f1_threshold`.
 
 .. code-block:: python
 
@@ -153,8 +159,12 @@ The result of calling `test_model_recovery` is a boolean whether all robustness 
     ]
 
     # Model recovery check
-    wsls_can_be_recovered = wsls_bundle.test_model_recovery(
-        other_competing_models=other_competing_models, this_parameter_fit_bounds=wsls_parameter_fit_bounds, f1_threshold=0.8, n_simulations=N_SIMULATIONS, plot=True)
+    model_recovery_test_result = wsls_bundle.test_model_recovery(
+        other_competing_models=other_competing_models, this_parameter_fit_bounds=wsls_parameter_fit_bounds, f1_threshold=0.8, n_simulations=N_SIMULATIONS)
+
+    # Display confusion matrix
+    model_recovery_test_result.plot
+    plt.show()
 
     print(
-        f"WSLS: Model recovery was {'successful' if wsls_can_be_recovered else 'unsuccessful'}.")
+        f"WSLS: Model recovery was {'successful' if model_recovery_test_result.success else 'unsuccessful'}.")
