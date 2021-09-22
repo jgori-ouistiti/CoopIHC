@@ -113,6 +113,8 @@ In the code below, we use the same interaction task as above--again a risky choi
 .. code-block:: python
 
     # Imports
+    from matplotlib import pyplot as plt
+
     from envs import MultiBanditTask
     from operators import WSLS, RW, RandomOperator
 
@@ -166,5 +168,71 @@ The result of calling `test_model_recovery` is an object giving access to, among
     model_recovery_test_result.plot
     plt.show()
 
-    print(
-        f"WSLS: Model recovery was {'successful' if model_recovery_test_result.success else 'unsuccessful'}.")
+    print(f"WSLS: Model recovery was {'successful' if model_recovery_test_result.success else 'unsuccessful'}.")
+
+
+Recoverable Parameter Ranges
+----------------------------
+
+Testing parameter recovery for a parameter's entire theoretical or practical range, while generally useful and important, might mask some of the details that could become important when dealing with real user data.
+Parameters could, for example, be generally recoverable for the entire parameter value range, but might not be recoverable for the specific parameter range that the real user data demands.
+Or, in the opposite case, while the model's parameters might not be recoverable for the entire parameter range, they could be recoverable for the specific user data in question.
+To give just two reasons as to why this might be the case, the parameters might not be independent and therefore introduce unwanted interaction effects when testing the entire parameter range or one of the parameters might enact such a strong influence on the resulting behavior exhibited by a user given certain values that recovery for the other parameter values becomes nearly impossible (e.g. in the case of large inverse temperature parameter values).
+For this reason, testing recovery for different sub-ranges of the parameters' spectrum can give important insights towards the usefulness and limitations of a given user model or operator class.
+
+The code below gives an example on how the `_DevelopOperator` bundle provides support in identifying those parameter ranges that can be recovered.
+For this, we will again use the interaction task `MultiBanditTask` and the operator class Win-Stay-Lose-Switch (`WSLS`) with its parameter `epsilon`.
+This parameter has a theoretical range from `0.0` to `1.0`. We will try to identify the recoverable sub-ranges within those theoretical bounds using the `test_recoverable_parameter_ranges` helper method.
+
+.. code-block:: python
+
+    # Imports
+    from matplotlib import pyplot as plt
+
+    from envs import MultiBanditTask
+    from operators import WSLS, RW, RandomOperator
+
+    from core.bundle import _DevelopOperator
+
+    # Task parameters definition
+    N = 2
+    P = [0.5, 0.75]
+    T = 100
+
+    # Task definition
+    multi_bandit_task = MultiBanditTask(N=N, P=P, T=T)
+
+    # Operator definition
+    wsls = WSLS(epsilon=0.1)
+
+First, we specify those parameter ranges that we want to test using the `numpy.linspace` function.
+This function returns an `ndarray` with `num` (in this case 6) entries linearly spaced out over the specified range.
+In effect, this will split the theoretical range for the `epsilon` parameter into sub-ranges of width 0.2.
+
+This range is then passed, together with some additional arguments like the thresholds for the Pearson's r correlation coefficient and the significance level or the number of simulated agents per sub-range, to the `test_recoverable_parameter_ranges` method.
+It returns an object that--among other useful information--gives access to a plot (in this case a scatter plot displaying the 'known' and recovered parameter values and highlighting the recoverable sub-ranges with a green area) and a dictionary containing the ranges for each parameter where the recovery was successful.
+
+.. code-block:: python
+
+    # Define bundle for recoverable parameter ranges test
+    wsls_bundle = _DevelopOperator(task=multi_bandit_task, operator=wsls)
+
+    # Define parameter ranges
+    wsls_parameter_ranges = {
+        "epsilon": numpy.linspace(0.0, 1.0, num=6),
+    }
+
+    # Determine ranges within the parameter fit bounds where the parameters can be recovered
+    recoverable_parameter_ranges_test_result = wsls_bundle.test_recoverable_parameter_ranges(
+        parameter_ranges=wsls_parameter_ranges,
+        correlation_threshold=0.7,
+        significance_level=0.05,
+        n_simulations_per_sub_range=N_SIMULATIONS,
+        seed=RANDOM_SEED)
+
+    # Display scatter plot
+    recoverable_parameter_ranges_test_result.plot
+    plt.show()
+
+    # Print result
+    print(f"RW: Parameter recovery possible within these ranges: {recoverable_parameter_ranges_test_result.recoverable_parameter_ranges}")

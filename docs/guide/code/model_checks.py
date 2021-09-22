@@ -112,11 +112,11 @@ rw_parameter_ranges = {
 }
 
 # Determine ranges within the parameter fit bounds where the parameters can be recovered
-recoverable_parameter_fit_bounds = rw_bundle.recoverable_parameter_fit_bounds(
+recoverable_parameter_ranges_test_result = rw_bundle.test_recoverable_parameter_ranges(
     parameter_ranges=rw_parameter_ranges,
     correlation_threshold=0.6,
     significance_level=0.1,
-    recovered_parameter_correlation_threshold=0.3,
+    recovered_parameter_correlation_threshold=0.6,
     n_simulations_per_sub_range=N_SIMULATIONS,
     seed=RANDOM_SEED)
 
