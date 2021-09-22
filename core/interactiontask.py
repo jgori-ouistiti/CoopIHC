@@ -351,10 +351,11 @@ class ClassicControlTask(InteractionTask):
         if abs(x[0,0]) <= 0.01:
             is_done = True
 
-        return self.state, -1/2, is_done, {}
+        return self.state, 0, is_done, {}
 
     def assistant_step(self, assistant_action):
-        return super().assistant_step(assistant_action)
+        # return super().assistant_step(assistant_action)
+        return self.state, 0, False, {}
 
     def render(self, *args, **kwargs):
         mode = kwargs.get('mode')

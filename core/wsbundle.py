@@ -1,4 +1,4 @@
-# Code adapted from https://github.com/IRLL/HIPPO_Gym/
+# Some code adapted from https://github.com/IRLL/HIPPO_Gym/
 import asyncio, websockets, json, sys
 import time
 from multiprocessing import Process, Pipe

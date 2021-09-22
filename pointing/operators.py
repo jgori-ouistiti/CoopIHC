@@ -196,8 +196,17 @@ class CarefulPointer(BaseAgent):
         # --------- Defining the agent's policy ----------
         # Here we consider a simulated user, which will only indicate left or right (assumed to be in the right direction of the target 99% of the time)
 
+
+
         agent_policy = kwargs.get('agent_policy')
         if agent_policy is None:
+            policy_args = kwargs.get('policy_args')
+            if policy_args:
+                error_rate = policy_args.get("error_rate")
+                if error_rate is None:
+                    error_rate = 0.01
+            else:
+                error_rate = 0.01
             agent_policy = ELLDiscretePolicy(action_space = [core.space.Discrete(2)], action_set = [[-1, 1]])
 
             # Actions are in human values, i.e. they are not necessarily in range(0,N)
@@ -210,16 +219,16 @@ class CarefulPointer(BaseAgent):
                 # Write down all possible cases (5)
                 # (1) Goal to the right, positive action
                 if goal > position and action > 0 :
-                    return .99
+                    return 1-error_rate
                 # (2) Goal to the right, negative action
                 elif goal > position and action < 0 :
-                    return .01
+                    return error_rate
                 # (3) Goal to the left, positive action
                 if goal < position and action > 0 :
-                    return .01
+                    return error_rate
                 # (4) Goal to the left, negative action
                 elif goal < position and action < 0 :
-                    return .99
+                    return 1-error_rate
                 elif goal == position:
                     return 0
                 else:
@@ -311,7 +320,7 @@ class LQGPointer(BaseAgent):
                         [0, 0, 0, 0]
                         ]),
             Q = numpy.diag([1, 0.01, 0, 0]),
-            R = numpy.array([[1e-3]]),
+            R = numpy.array([[1e-4]]),
             U = numpy.diag([1, 0.1, 0.01, 0]),
             *args, **kwargs):
 
@@ -342,29 +351,28 @@ class LQGPointer(BaseAgent):
                 action_state = State()
                 action_state['action'] = StateElement(
                     values = [None],
-                    spaces = [core.space.Box(low = -numpy.inf, high = numpy.inf, shape = (1,1))])
+                    spaces = [gym.spaces.Box(low = -numpy.inf, high = numpy.inf, shape = (1,1))])
                 super().__init__(action_bundle, action_state, *args, **kwargs)
 
             def sample(self):
-                # logger.info('=============== Entering Sampler ================')
                 cursor = copy.copy(self.observation['task_state']['position'])
                 target = copy.copy(self.observation['operator_state']['goal'])
                 # allow temporarily
-                cursor.mode = 'warn'
-                target.mode = 'warn'
+                cursor.clipping_mode = 'warning'
+                target.clipping_mode = 'warning'
 
                 tmp_box = StateElement( values = [None],
-                    spaces = core.space.Box(-self.host.bundle.task.gridsize+1, self.host.bundle.task.gridsize-1 , shape = (1,)),
+                    spaces = gym.spaces.Box(-self.host.bundle.task.gridsize+1, self.host.bundle.task.gridsize-1 , shape = (1,)),
                     possible_values = [[None]],
                     clipping_mode = 'warning')
 
                 cursor_box = StateElement( values = [None],
-                    spaces = core.space.Box(-.5, .5, shape = (1,)),
+                    spaces = gym.spaces.Box(-.5, .5, shape = (1,)),
                     possible_values = [[None]],
                     clipping_mode = 'warning')
 
 
-                tmp_box['values'] = [float(v) for v in (target-cursor)['values']]
+                tmp_box['values'] = [numpy.array(v) for v in (target-cursor)['values']]
                 init_dist = tmp_box.cast(cursor_box)['values'][0]
 
                 _reset_x = self.xmemory
@@ -389,13 +397,12 @@ class LQGPointer(BaseAgent):
                 self.xmemory = observation['task_state']['x']['values'][0]
                 self.xhatmemory = observation['operator_state']['xhat']['values'][0]
 
-                # Cast as delta in right units
+                # Cast as delta in correct units
                 cursor_box['values'] = - self.xmemory[0] + init_dist
                 delta = cursor_box.cast(tmp_box)
                 possible_values = [-30 + i for i in range(61)]
                 value = possible_values.index(int(numpy.round(delta['values'][0])))
-                action = StateElement(values = value, spaces = core.space.Discrete(61), possible_values = possible_values)
-                # logger.info('{} Selected action {}'.format(self.__class__.__name__, str(action)))
+                action = StateElement(values = value, spaces = core.space.Discrete(61), possible_values = [possible_values])
 
                 return action, total_reward
 

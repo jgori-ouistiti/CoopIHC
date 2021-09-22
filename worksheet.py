@@ -87,10 +87,16 @@ if _str == 'biggain-PlayNone' or _str == 'all':
 
 if _str == 'basic-TrainOperator' or _str == 'all':
 
-    from stable_baselines3 import PPO
-    from stable_baselines3.common.vec_env import SubprocVecEnv
-    from stable_baselines3.common.env_util import make_vec_env
-    from stable_baselines3.common.utils import set_random_seed
+    # from stable_baselines3 import PPO
+    # from stable_baselines3.common.vec_env import SubprocVecEnv
+    # from stable_baselines3.common.env_util import make_vec_env
+    # from stable_baselines3.common.utils import set_random_seed
+
+    from stable_baselines import PPO2 as PPO
+    from stable_baselines.common.vec_env import SubprocVecEnv
+    from stable_baselines.common import make_vec_env
+    # from stable_baselines.common import set_random_seed
+
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
     unitcdgain = ConstantCDGain(1)
 
@@ -124,6 +130,8 @@ if _str == 'basic-TrainOperator' or _str == 'all':
 
 
 
+
+
     from stable_baselines3.common.env_checker import check_env
     check_env(md_env)
 
@@ -153,19 +161,17 @@ if _str == 'basic-TrainOperator' or _str == 'all':
 
             env.seed(seed + rank)
             return env
-        set_random_seed(seed)
+        # set_random_seed(seed)
         return _init
     # =============
 
     if __name__ == '__main__':
-        print('inside main')
-        num_cpu = 3
-        env = SubprocVecEnv([make_env(i) for i in range(num_cpu)])
+        env = SubprocVecEnv([make_env(i) for i in range(4)])
 
-        model = PPO('MlpPolicy', env, verbose=1)
+        model = PPO('MlpPolicy', env, verbose=1, tensorboard_log="./tb/")
         print('start training')
-        model.learn(total_timesteps=10000)
-
+        model.learn(total_timesteps=600000)
+        model.save('saved_model')
 
 
 if _str == 'loadNNpolicy' or _str == 'all':
@@ -267,9 +273,9 @@ if _str == 'chen-play-1D':
 if _str == 'chen-play':
     fitts_W = 4e-2
     fitts_D = 0.8
-    perceptualnoise = 0.15
-    oculomotornoise = 0.09
-    task = ChenEyePointingTask(fitts_W, fitts_D)
+    perceptualnoise = 0.05
+    oculomotornoise = 0.05
+    task = ChenEyePointingTask(fitts_W, fitts_D, threshold = 0.1)
     operator = ChenEye(perceptualnoise, oculomotornoise)
     bundle = SinglePlayOperator(task, operator)
     obs = bundle.reset()
@@ -427,11 +433,12 @@ if _str == 'LQR':
     operator = IHDT_LQRController("operator", Q, R, None)
     bundle = SinglePlayOperatorAuto(task, operator)
     bundle.reset()
+    print(task.state)
     bundle.playspeed = 0.01
     # bundle.render('plot')
     for i in range(1500):
         bundle.step()
-        print(i)
+        # print(i)
         if not i%20:
             bundle.render("plot")
 
@@ -520,19 +527,19 @@ if _str == 'LQG':
     bundle = SinglePlayOperatorAuto(task, operator, onreset_deterministic_first_half_step = True,
     start_at_action = True)
     obs = bundle.reset( dic = {
-            'task_state': {'x':  numpy.array([[-0.5],[0],[0],[0]]) },
-            'operator_state': {'xhat':  numpy.array([[-0.5],[0],[0],[0]]) }
+            'task_state': {'x':  numpy.array([[0.5],[0],[0],[0]]) },
+            'operator_state': {'xhat':  numpy.array([[0.5],[0],[0],[0]]) }
                     } )
     bundle.playspeed = 0.001
     bundle.render('plot')
     for i in range(250):
-        bundle.step()
+        obs, rewards, is_done, reward_list = bundle.step()
+        print(reward_list)
         print(i)
-        if not i%3:
+        if not i%5:
             bundle.render("plot")
 
 if _str == 'LQGpointer':
-    # Malfunctions (pointer can not go left)
     I = 0.25
     b = 0.2
     ta = 0.03
@@ -597,8 +604,8 @@ if _str == 'LQGpointer':
             cursor = copy.copy(self.observation['task_state']['position'])
             target = copy.copy(self.observation['operator_state']['goal'])
             # allow temporarily
-            cursor.mode = 'warn'
-            target.mode = 'warn'
+            cursor.clipping_mode = 'warning'
+            target.clipping_mode = 'warning'
 
             tmp_box = StateElement( values = [None],
                 spaces = gym.spaces.Box(-self.host.bundle.task.gridsize+1, self.host.bundle.task.gridsize-1 , shape = (1,)),
@@ -628,7 +635,7 @@ if _str == 'LQGpointer':
 
             for i in range(N):
                 observation, sum_rewards, is_done, rewards = self.step()
-                print(observation)
+                print(sum_rewards)
                 total_reward += sum_rewards
                 if is_done:
                     break
@@ -657,7 +664,12 @@ if _str == 'LQGpointer':
     binary_operator = CarefulPointer( agent_policy = policy )
     unitcdgain = ConstantCDGain(1)
     bundle = PlayNone(pointing_task, binary_operator, unitcdgain)
-    game_state = bundle.reset()
+    # game_state =bundle.reset( {
+    #         'task_state': {'position':  [15] },
+    #         'operator_state': {'goal': [1]}
+    #                 } )
+    game_state =bundle.reset()
+
     bundle.render('plotext')
 
     while True:
@@ -755,12 +767,34 @@ if _str == 'LQGpointer-chenobs':
     game_state = bundle.reset()
     bundle.render('plotext')
 
+    contain_rewards = []
+    contain_pos = []
+    contain_goal = []
     while True:
-        obs, rewards, is_done, _ = bundle.step()
-        print(rewards, _)
+        obs, rewards, is_done, list_rewards = bundle.step()
+        contain_pos.append(obs["task_state"]['position']['values'][0])
+        contain_goal.append(obs['operator_state']['goal']['values'][0])
+        contain_rewards.append(list_rewards)
         bundle.render('plotext')
         if is_done:
             break
+
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    rew = list(zip(*contain_rewards))
+    obs_rew = list(rew[0])
+    act_rew = list(rew[2])
+    ax.step(range(len(obs_rew)), [-v for v in obs_rew], 'b', label  = 'observation rewards')
+    ax.step(range(len(obs_rew)), [v[0][0] for v in act_rew], 'r', label  = 'action rewards')
+    axtwin = ax.twinx()
+    u = [0]
+    u.extend(numpy.diff(contain_pos).tolist())
+    axtwin.step(range(len(obs_rew)), u, 'g', label = 'cursor displacement')
+    axtwin.step(range(len(obs_rew)), [abs(v - contain_goal[0]) for v in contain_pos], 'k', label = 'cursor-target distance')
+    plt.legend()
+    plt.show()
+
 
 
 
@@ -825,6 +859,35 @@ if _str == 'js-ws':
 
 
 # WIP
+
+if _str == 'user-error':
+    task = SimplePointingTask(gridsize = 31, number_of_targets = 8, mode = 'gain')
+    binary_operator = CarefulPointer(policy_args = {'error_rate':0.5})
+    # BIGpointer = BIGGain()
+    BIGpointer = ConstantCDGain(1)
+
+
+    bundle = PlayNone(task, binary_operator, BIGpointer)
+    game_state = bundle.reset()
+    bundle.render('plotext')
+    plt.tight_layout()
+    # exit()
+
+    # k = 0
+    # plt.savefig('/home/jgori/Documents/img_tmp/biggain_{}.png'.format(k))
+    #
+    while True:
+        print(bundle.game_state)
+        game_state, sum_rewards, is_done, rewards = bundle.step()
+        bundle.render('plotext')
+        # k+=1
+
+        # plt.savefig('/home/jgori/Documents/img_tmp/biggain_{}.png'.format(k))
+
+        if is_done:
+            break
+
+
 if _str == 'js-2d':
     from pointing.envs import DiscretePointingTask, DiscretePointingTaskPipeWrapper
     from pointing.operators import TwoDCarefulPointer

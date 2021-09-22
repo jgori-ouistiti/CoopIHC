@@ -373,7 +373,8 @@ class BIGAssistant(BaseAgent):
         super().__init__(   "assistant",
                             state = agent_state,
                             policy = agent_policy,
-                            observation_engine = observation_engine, inference_engine = inference_engine)
+                            observation_engine = observation_engine,
+                            inference_engine = inference_engine)
 
 
 
@@ -691,9 +692,18 @@ class IHCT_LQGController(BaseAgent):
                 noise = gamma * numpy.random.normal(mu, sigma)
                 return noise
 
+            class LFwithreward(LinearFeedback):
+                def __init__(self, R, *args, **kwargs):
+                    super().__init__(*args, **kwargs)
+                    self.R = R
 
 
-            agent_policy = LinearFeedback(
+                def sample(self):
+                    action, _ = super().sample()
+                    return action, action['values'][0].T @action['values'][0] * 1e3
+
+
+            agent_policy = LFwithreward( self.R,
                 ('operator_state','xhat'),
                 0,
                 action_state,
@@ -701,9 +711,31 @@ class IHCT_LQGController(BaseAgent):
                 noise_function_args = (self.gamma, self.mu, self.sigma)
                         )
 
+            # agent_policy = LinearFeedback(
+            #     ('operator_state','xhat'),
+            #     0,
+            #     action_state,
+            #     noise_function = shaped_gaussian_noise,
+            #     noise_function_args = (self.gamma, self.mu, self.sigma)
+            #             )
+
         # =========== Observation Engine: Task state unobservable, internal estimates observable ============
 
         observation_engine = kwargs.get('observation_engine')
+
+        class RuleObswithLQreward(RuleObservationEngine):
+            def __init__(self, Q, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+                self.Q = Q
+
+            def observe(self, game_state):
+                observation, _ = super().observe(game_state)
+                x = observation['task_state']['x']['values'][0]
+                reward = x.T @ self.Q @ x
+                return observation, reward
+
+
+
         if observation_engine is None:
             operator_engine_specification  =    [
                                     ('turn_index', 'all'),
@@ -724,7 +756,8 @@ class IHCT_LQGController(BaseAgent):
             extraprobabilisticrules = {}
             extraprobabilisticrules.update(agn_rule)
 
-            observation_engine = RuleObservationEngine(deterministic_specification = operator_engine_specification, extradeterministicrules = extradeterministicrules, extraprobabilisticrules = extraprobabilisticrules)
+            observation_engine = RuleObswithLQreward(self.Q, deterministic_specification = operator_engine_specification, extradeterministicrules = extradeterministicrules, extraprobabilisticrules = extraprobabilisticrules)
+            # observation_engine = RuleObservationEngine(deterministic_specification = operator_engine_specification, extradeterministicrules = extradeterministicrules, extraprobabilisticrules = extraprobabilisticrules)
 
 
 

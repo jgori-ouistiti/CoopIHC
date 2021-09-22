@@ -387,17 +387,17 @@ class SimplePointingTask(InteractionTask):
         elif shortcut == 'target':
             draw = '#96006c'
             fill = "#913979"
-            symbol = "1"
+            symbol = "$T$"
             symbol_color = 'k'
         elif shortcut == 'goal':
             draw = '#009c08'
             fill = '#349439'
-            symbol = "X"
+            symbol = "$G$"
             symbol_color = 'k'
         elif shortcut == 'position':
             draw = '#00189c'
             fill = "#6573bf"
-            symbol = "X"
+            symbol = "$P$"
             symbol_color = 'k'
 
         BOX_SIZE = 1
@@ -411,9 +411,9 @@ class SimplePointingTask(InteractionTask):
             fill = ax.fill_between(_x[:2], _y[:2], _y[2:], color = fill)
 
         draw, = ax.plot(x_cycle,y_cycle, '-', color = draw, lw = 2)
-        symbol = None
+        # symbol = None
         if symbol is not None:
-            symbol = ax.plot(pos, 0, color = symbol_color, marker = symbol, markersize = 100)
+            symbol = ax.plot(pos, 0, color = symbol_color, marker = symbol, markersize = 10)
 
         return draw, fill, symbol
 
@@ -445,7 +445,7 @@ class SimplePointingTask(InteractionTask):
         self.fills[t].remove()
         self.draws[t].remove()
         if self.symbols[t]:
-            self.symbols[t].remove()
+            self.symbols[t][0].remove()
         draw, fill, symbol = self.set_box(self.ax, t, shortcut = 'goal')
         self.draws[t] = draw
         self.fills[t] = fill
@@ -471,8 +471,12 @@ class SimplePointingTask(InteractionTask):
         t = self.draw_pos
         self.fills[t].remove()
         self.draws[t].remove()
+
         if self.symbols[t]:
-            self.symbols[t].remove()
+            try:
+                self.symbols[t].remove()
+            except TypeError:
+                self.symbols[t][0].remove()
         if t == self.bundle.game_state['operator_state']['goal']['values'][0]:
             shortcut = 'goal'
         elif t in self.state['targets']['values']:
