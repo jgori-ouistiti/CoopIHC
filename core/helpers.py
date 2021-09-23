@@ -25,11 +25,14 @@ def hard_flatten(l):
 
 def flatten(l):
     out = []
-    for item in l:
-        if isinstance(item, (list, tuple)):
-            out.extend(flatten(item))
-        else:
-            out.append(item)
+    try:
+        for item in l:
+            if isinstance(item, (list, tuple)):
+                out.extend(flatten(item))
+            else:
+                out.append(item)
+    except TypeError:
+        return flatten([l])
     return out
 
 
@@ -41,3 +44,8 @@ def sort_two_lists(list1, list2, *args, **kwargs):
         sortedlist1, sortedlist2 = [list(u) for u in zip(*sorted(zip(list1, list2), **kwargs))]
 
     return sortedlist1, sortedlist2
+
+def isdefined(obj):
+    if None not in flatten(obj):
+        return True
+    return False

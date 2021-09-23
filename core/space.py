@@ -7,8 +7,6 @@ import json
 numpy.set_printoptions(precision = 3, suppress = True)
 
 
-### yeepepejfefe
-
 from core.helpers import flatten, hard_flatten
 import itertools
 from tabulate import tabulate
@@ -36,6 +34,103 @@ class Discrete(gym.spaces.Discrete):
         return self.n
 
 
+from core.helpers import isdefined
+
+class Space:
+    def __init__(self, array, *args, **kwargs):
+
+        self._cflag = None
+        self.rng = numpy.random.default_rng()
+
+        self._array = array
+        self._range = None
+        self._shape = None
+        self._dtype = None
+
+    def __repr__(self):
+        if self.continuous:
+            return 'Space[Continuous({}), {}]'.format(self.shape, self.dtype)
+        else:
+            return 'Space[Discrete({}), {}]'.format(max(self.range.shape), self.dtype)
+
+    def __contains__(self, item):
+        ## --- Maybe these checks are too strict---reshapes and recasts could be performed.
+        if item.shape != self.shape:
+            try:
+                item.reshape(self.shape)
+            except ValueError:
+                return False
+        if not numpy.can_cast(item.dtype, self.dtype, 'same_kind'):
+            return False
+        if self.continuous:
+            return (numpy.all(item >= self.low) and numpy.all(item <= self.high))
+        else:
+            return (item in self.range)
+
+
+    @property
+    def range(self):
+        if self._range is None:
+            if self.continuous:
+                if not self._array[0].shape == self._array[1].shape:
+                    return AttributeError("The low {} and high {} ranges don't have matching shapes".format(self._array[0], slef._array[1]))
+            self._range = self._array
+        return self._range
+
+    @property
+    def low(self):
+        if self.continuous:
+            low = self.range[0]
+        else:
+            low = min(self.range)
+        return low
+
+    @property
+    def high(self):
+        if self.continuous:
+            high = self.range[1]
+        else:
+            high = max(self.range)
+        return high
+
+
+    @property
+    def shape(self):
+        if self._shape is None:
+            if not self.continuous:
+                self._shape = (1,1)
+            else:
+                self._shape = numpy.atleast_2d(self.low).shape
+        return self._shape
+
+    @property
+    def dtype(self):
+        if self._dtype is None:
+            if isinstance(self._array, list):
+                self._dtype = numpy.find_common_type([self._array[0].dtype, self._array[1].dtype], [])
+            else:
+                self._dtype = self._array.dtype
+        return self._dtype
+
+    @property
+    def continuous(self):
+        if self._cflag is None:
+            self._cflag = numpy.issubdtype(self.dtype, numpy.inexact)
+        return self._cflag
+
+
+
+    def sample(self):
+        _l = []
+        if self.continuous:
+            return (self.high - self.low) * self.rng.random(self.shape, dtype = self.dtype) + self.low
+        else:
+            return self.rng.choice(self.range, size = self.shape, replace = True).astype(self.dtype)
+
+
+
+
+
 
 class SpaceNotDefinedError(Exception):
     pass
@@ -54,11 +149,11 @@ class StateElement:
     __array_priority__ = 1 # to make __rmatmul__ possible with numpy arrays
     __precedence__ = ['error', 'warning', 'clip']
 
-    def __init__(self, values = None, spaces = None, possible_values = None, clipping_mode = 'warning'):
+    def __init__(self, values = None, spaces = None, clipping_mode = 'warning'):
         self.clipping_mode = clipping_mode
-        self.__values, self.__spaces, self.__possible_values = None, None, None
+        self.__values, self.__spaces = None, None
+
         self.spaces = spaces
-        self.possible_values = possible_values
         self.values = values
 
 
@@ -68,7 +163,7 @@ class StateElement:
 
     @values.setter
     def values(self, values):
-        self.__values = self.check_values(values)
+        self.__values = self.preprocess_values(values)
 
     @property
     def spaces(self):
@@ -76,15 +171,11 @@ class StateElement:
 
     @spaces.setter
     def spaces(self, values):
-        self.__spaces = self.check_spaces(values)
+        self.__spaces = self.preprocess_spaces(values)
 
     @property
     def possible_values(self):
         return self.__possible_values
-
-    @possible_values.setter
-    def possible_values(self, values):
-        self.__possible_values = self.check_possible_values(values)
 
 
     def __iter__(self):
@@ -94,7 +185,10 @@ class StateElement:
 
     def __next__(self):
         if self.n < self.max:
-            result = StateElement(values = self.values[self.n], spaces = self.spaces[self.n], possible_values = [self.possible_values[self.n]], clipping_mode = self.clipping_mode)
+            result = StateElement(
+                values = self.values[self.n],
+                spaces = self.spaces[self.n],
+                clipping_mode = self.clipping_mode  )
             self.n += 1
             return result
         else:
@@ -105,40 +199,39 @@ class StateElement:
 
     def __setitem__(self, key, item):
         if key == 'values':
-            setattr(self, key, self.check_values(item))
+            setattr(self, key, self.preprocess_values(item))
         elif key == 'spaces':
-            setattr(self, key, self.check_spaces(item))
-        elif key == 'possible_values':
-            setattr(self, key, self.check_possible_values(item))
+            setattr(self, key, self.preprocess_spaces(item))
         elif key == 'clipping_mode':
             setattr(self, key, item)
         else:
-            raise ValueError('Key should belong to ["values", "spaces", "possible_values", "clipping_mode"]')
+            raise ValueError('Key should belong to ["values", "spaces", "clipping_mode"]')
 
     def __getitem__(self, key):
-        if key in ["values", "spaces", "possible_values", "clipping_mode"]:
+        if key in ["values", "spaces", "clipping_mode"]:
             return getattr(self, key)
-        elif key == 'human_values':
-            return self.get_human_values()
         elif isinstance(key, (int, numpy.int)):
             return StateElement(values = self.values[key],
                                 spaces = self.spaces[key],
-                                possible_values = self.possible_values[key], clipping_mode = self.clipping_mode)
+                                clipping_mode = self.clipping_mode )
+        else:
+            raise NotImplementedError('Indexing only works with keys ("values", "spaces", "clipping_mode") or integers')
 
     def __neg__(self):
-        return StateElement(values = [-u for u in self['values']], spaces = self.spaces, possible_values = self.possible_values, clipping_mode = self.clipping_mode)
+        return StateElement(
+            values = [-u for u in self['values']],
+            spaces = self.spaces,
+            clipping_mode = self.clipping_mode )
 
-    def mix_modes(self, other):
-        if hasattr(other, 'clipping_mode'):
-            return self.__precedence__[min(self.__precedence__.index(self.clipping_mode), self.__precedence__.index(other.clipping_mode))]
-        else:
-            return self.clipping_mode
 
     def __add__(self, other):
         if isinstance(other, StateElement):
             other = other['values']
 
-        _elem = StateElement(values = self.values, spaces = self.spaces, possible_values = self.possible_values, clipping_mode = self.mix_modes(other))
+        _elem = StateElement(
+            values = self.values,
+            spaces = self.spaces,
+            clipping_mode = self.mix_modes(other) )
 
         if not hasattr(other, '__len__'):
             other = [other]
@@ -184,7 +277,7 @@ class StateElement:
         return self.__mul__(other)
 
     def __str__(self):
-        return "[StateElement - {}] - Value {} in {}, with possible_values {}".format(self.clipping_mode, self.values, self.spaces, self.possible_values)
+        return "[StateElement - {}] - Value {} in {}".format(self.clipping_mode, self.values, self.spaces)
 
     def __repr__(self):
         return 'StateElement([{}] - {},...)'.format(self.clipping_mode, self.values.__repr__())
@@ -224,7 +317,12 @@ class StateElement:
         low = se.spaces[0].low[:values.shape[0], :values.shape[1]]
         high = se.spaces[0].high[:values.shape[0], :values.shape[1]]
 
-        se.spaces = [gym.spaces.Box(low, high, shape = values.shape)]
+        se.spaces = [gym.spaces.Space(
+                        range = [low, high],
+                        shape = values.shape,
+                        dtype = values.dtype
+                        )]
+        # se.spaces = [gym.spaces.Box(low, high, shape = values.shape)]
         se['values'] = [values]
 
         return se
@@ -248,15 +346,18 @@ class StateElement:
             low = -numpy.inf * numpy.ones(values.shape)
             high = numpy.inf * numpy.ones(values.shape)
 
-            se.spaces = [gym.spaces.Box(low, high, shape = values.shape)]
+            se.spaces = [gym.spaces.Space(
+                            range = [low, high],
+                            shape = values.shape,
+                            dtype = values.dtype
+                            )]
             se['values'] = [values]
             return se
 
 
     def serialize(self):
         v_list = []
-        pv_list = []
-        for v,pv in zip(self['values'], self['possible_values']):
+        for v in self['values']:
             try:
                 json.dumps(v)
                 v_list.append(v)
@@ -267,47 +368,29 @@ class StateElement:
                     v_list.append(v.item())
                 else:
                     raise TypeError("".format(msg))
-            try:
-                json.dumps(pv)
-                pv_list.append(pv)
-            except TypeError:
-                _pv_list = []
-                for _pv in pv:
-                    if isinstance(_pv, numpy.ndarray):
-                        _pv_list.extend(_pv.tolist())
-                    elif isinstance(_pv, numpy.generic):
-                        _pv_list.append(_pv.item())
-                    else:
-                        raise TypeError("".format(msg))
-                pv_list.append(_pv_list)
-        return {"values": v_list, "spaces" : str(self['spaces']), 'possible_values' : pv_list}
+        return {"values": v_list, "spaces" : str(self['spaces'])}
 
 
 
+    def mix_modes(self, other):
+        if hasattr(other, 'clipping_mode'):
+            return self.__precedence__[min(self.__precedence__.index(self.clipping_mode), self.__precedence__.index(other.clipping_mode))]
+        else:
+            return self.clipping_mode
 
-            #
-            #
-            # try:
-            #     json.dumps({"values": v, "spaces" = str(s), 'possible_values' = pv})
-            #     ret_list.append(v)
-            # except TypeError as msg:
-            #     if isinstance(v, numpy.ndarray):
-            #         ret_list.extend(v.tolist())
-            #     elif isinstance(v, numpy.generic):
-            #         ret_list.append(v.item())
-            #     else:
-            #         raise TypeError("".format(msg))
-        # return ret_list
 
 
     def cartesian_product(self):
         lists = []
-        for value, space, possible_value in zip(self.values, self.spaces, self.possible_values):
-            if isinstance(space, gym.spaces.Discrete):
-                lists.append(list(range(space.n)))
-            elif isinstance(space, gym.spaces.Box):
+        for value, space in zip(self.values, self.spaces):
+            if not space.continuous:
+                lists.append(space.range)
+            else:
                 lists.append([value])
-        return [StateElement(values = list(element), spaces = self.spaces, possible_values = self.possible_values, clipping_mode = self.clipping_mode) for element in itertools.product(*lists)]
+        return [StateElement(
+            values = list(element),
+            spaces = self.spaces,
+            clipping_mode = self.clipping_mode ) for element in itertools.product(*lists) ]
 
 
     def reset(self, dic = None):
@@ -316,36 +399,19 @@ class StateElement:
         else:
             self['values'] = dic.get('values')
             self['spaces'] = dic.get('spaces')
-            self['possible_values'] = dic.get('possible_values')
 
-
-    def get_human_values(self):
-        values = []
-        for n, (v, hv) in enumerate(zip(self.values, self.possible_values)):
-            if v is None:
-                values.append(v)
-            elif hv == [None]:
-                values.append(v)
-            else:
-                if hv[v] is not None:
-                    values.append(hv[v])
-                else:
-                    values.append(v)
-        return values
-
-
-    def check_spaces(self, spaces):
-        if spaces is None:
-            if self.spaces is not None:
-                return self.spaces
+    def preprocess_spaces(self, spaces):
+        # if spaces is None:
+        #     if self.spaces is not None:
+        #         return self.spaces
         spaces = flatten([spaces])
         return spaces
 
-    def check_values(self, values):
+    def preprocess_values(self, values):
         # make sure spaces are defined
-        if flatten([self.spaces]) == None:
-            raise SpaceNotDefinedError('Values of a state can not be instantiated before having defined the corresponding space')
-        # Deal with non rigorous inputs
+        # if flatten([self.spaces]) == None:
+        #     raise SpaceNotDefinedError('Values of a state can not be instantiated before having defined the corresponding space')
+
         values = flatten([values])
         # Allow a single None syntax
         try:
@@ -360,12 +426,10 @@ class StateElement:
         for ni, (v,s) in enumerate(zip(values, self.spaces)):
             if v is None:
                 continue
-            if isinstance(s, Box):
-                v = numpy.array(v).reshape(s.shape)
-            elif isinstance(s, Discrete):
-                v = int(v)
+            v = numpy.array(v).reshape(s.shape).astype(s.dtype)
             if v not in s:
-                if self.clipping_mode == 'error':
+
+                if (not s.continuous) or self.clipping_mode == 'error':
                     raise StateNotContainedError('Instantiated Value {}({}) is not contained in corresponding space {} (low = {}, high = {})'.format(str(v), type(v), str(s), str(s.low), str(s.high)))
                 elif self.clipping_mode == 'warn':
                     print('Warning: Instantiated Value {}({}) is not contained in corresponding space {} (low = {}, high = {})'.format(str(v), type(v), str(s), str(s.low), str(s.high)))
@@ -377,50 +441,8 @@ class StateElement:
         return values
 
 
-
-
-    def check_possible_values(self, possible_values):
-
-        def checker(self, possible_values):
-            for pv,s in zip(possible_values, self.spaces):
-                if not isinstance(s, Discrete) and pv != [None]:
-                    raise BadSpaceError('Setting possible value {} for spaces {}({}): Possible values can only be specified for core.space.Discrete Spaces'.format(pv, s, s.__module__))
-                if pv != [None]:
-                    if len(pv) != s.n:
-                        raise StateLengthError('The size of the possible values ({}) provided does not match the size of the space ({})'.format(len(pv), s.n))
-            return possible_values
-
-        # -----------     Start checking
-        # make sure spaces are defined
-        if flatten([self.spaces]) == [None]:
-            if possible_values is None:
-                return [[None]]
-            else:
-                raise SpaceNotDefinedError('Possible values of a state can not be instantiated before having defined the corresponding space')
-
-        try:
-            return checker(self, possible_values)
-        except:
-            # Deal with non rigorous inputs
-            # - single unlisted None
-            if possible_values is None:
-                possible_values = [[None]]
-            # - mix of listed and unlisted values
-            possible_values = [flatten([v]) for v in possible_values]
-            # - unlisted single sequence:
-            try:
-                possible_values[0][0]
-            except IndexError:
-                possible_values = [possible_values]
-            # - single None syntax
-            if possible_values  == [[None]]:
-                possible_values = [[None] for s in self.spaces]
-
-            return checker(self, possible_values)
-
-
     def flat(self):
-        return self['values'], self['spaces'], self['possible_values'], [str(i) for i,v in enumerate(self['values'])]
+        return self['values'], self['spaces'], [str(i) for i,v in enumerate(self['values'])]
 
 
     def clip(self, values):
@@ -431,12 +453,10 @@ class StateElement:
 
     def _clip(self, value, space):
         if value not in space:
-            if isinstance(space, gym.spaces.Box):
+            if space.continuous:
                 return numpy.clip( value, space.low, space.high)
-            elif isinstance(space, gym.spaces.Discrete):
-                return max(0,min(space.n -1, value))
             else:
-                raise NotImplementedError
+                raise AttributeError('Clip can only work with continuous spaces')
 
 
 
@@ -514,14 +534,12 @@ class State(OrderedDict):
         labels = []
         l,k = list(self.values()), list(self.keys())
         for n,item in enumerate(l):
-            _values, _spaces, _possible_values, _labels = item.flat()
+            _values, _spaces, _labels = item.flat()
             values.extend(_values)
             spaces.extend(_spaces)
-            possible_values.extend(_possible_values)
             labels.extend([k[n] + '|' + label for label in _labels])
 
-        return values, spaces, possible_values, labels
-        # return hard_flatten(values), spaces, possible_values, labels
+        return values, spaces, labels
 
     def filter(self, mode, filterdict = None):
         new_state = OrderedDict()
