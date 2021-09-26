@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib.axes
 
 from core.space import State, StateElement
-from core.helpers import bic, f1, flatten, hard_flatten, order_class_parameters_by_signature
+from core.helpers import aic, bic, f1, flatten, hard_flatten, order_class_parameters_by_signature
 from core.agents import DummyAssistant, DummyOperator
 from core.observation import BaseObservationEngine
 from core.core import Handbook
@@ -1508,7 +1508,10 @@ class _DevelopOperator(SinglePlayOperator):
         n_simulations_per_model: int
         """The number of agents that were simulated (i.e. the population size) for each model"""
 
-    def test_model_recovery(self, other_competing_models, this_parameter_fit_bounds, f1_threshold=0.7, n_simulations_per_model=20, seed=None):
+        method: str
+        """The metric by which the recovered model was chosen"""
+
+    def test_model_recovery(self, other_competing_models, this_parameter_fit_bounds, f1_threshold=0.7, n_simulations_per_model=20, method="BIC", seed=None):
         """Returns whether the bundle's operator model can be recovered from simulated data using the specified competing models
         meeting the specified F1-score threshold (only available for operators with a policy that has a compute_likelihood method).
 
@@ -1527,6 +1530,9 @@ class _DevelopOperator(SinglePlayOperator):
         :type f1_threshold: float, optional
         :param n_simulations_per_model: The number of agents to simulate (i.e. the population size) for each model, defaults to 20
         :type n_simulations_per_model: int, optional
+        :param method: The metric by which to choose the recovered model, should be one of "BIC" (Bayesian Information Criterion)
+            or "AIC" (Akaike Information Criterion), defaults to "BIC"
+        :type method: str, optional
         :param seed: The seed for the random number generator which controls how the 'true' parameter values are generated, defaults to None
         :type seed: int, optional
         :return: `True` if the F1-score for the model recovery meets the supplied threshold, `False` otherwise
@@ -1545,6 +1551,7 @@ class _DevelopOperator(SinglePlayOperator):
         confusion_matrix = self._confusion_matrix(
             all_operator_classes=all_operator_classes,
             n_simulations=n_simulations_per_model,
+            method=method,
             seed=seed)
 
         # Create the confusion matrix
@@ -1568,17 +1575,21 @@ class _DevelopOperator(SinglePlayOperator):
             success=all_f1_meet_threshold,
             plot=confusion_matrix_plot,
             f1_threshold=f1_threshold,
-            n_simulations_per_model=n_simulations_per_model
+            n_simulations_per_model=n_simulations_per_model,
+            method=method
         )
         return result
 
-    def _confusion_matrix(self, all_operator_classes, n_simulations=20, seed=None):
+    def _confusion_matrix(self, all_operator_classes, n_simulations=20, method="BIC", seed=None):
         """Returns a DataFrame with the model recovery data (used to simulate vs recovered model) based on the BIC-score.
 
         :param all_operator_classes: The user models that are competing and can be recovered (example: `[{"model": OperatorClass, "parameter_fit_bounds": {"alpha": (0., 1.), ...}}, ...]`)
         :type all_operator_classes: list(dict)
         :param n_simulations: The number of agents to simulate (i.e. the population size) for each model, defaults to 20
         :type n_simulations: int, optional
+        :param method: The metric by which to choose the recovered model, should be one of "BIC" (Bayesian Information Criterion)
+            or "AIC" (Akaike Information Criterion), defaults to "BIC"
+        :type method: str, optional
         :param seed: The seed for the random number generator which controls how the 'true' parameter values are generated, defaults to None
         :type seed: int, optional
         :return: A DataFrame with the model recovery data (used to simulate vs recovered model) based on the BIC-score
@@ -1628,9 +1639,9 @@ class _DevelopOperator(SinglePlayOperator):
 
                     # Determine best-fit models
                     best_fit_models, _ = self.best_fit_models(
-                        all_operator_classes=all_operator_classes, data=simulated_data, random_number_generator=random_number_generator)
+                        all_operator_classes=all_operator_classes, data=simulated_data, method=method, random_number_generator=random_number_generator)
 
-                    # Get index(es) of models that get best bic
+                    # Get index(es) of models that get best score (e.g. BIC)
                     idx_min = [operator_class_index for operator_class_index, operator_class in enumerate(
                         all_operator_classes) if operator_class in best_fit_models]
 
@@ -1650,7 +1661,7 @@ class _DevelopOperator(SinglePlayOperator):
 
         return confusion
 
-    def best_fit_models(self, all_operator_classes, data, random_number_generator=None):
+    def best_fit_models(self, all_operator_classes, data, method="BIC", random_number_generator=None):
         """Returns a list of the recovered best-fit model(s) based on the BIC-score and
         a list of dictionaries containing the BIC-score for all competing models.
 
@@ -1659,6 +1670,9 @@ class _DevelopOperator(SinglePlayOperator):
         :type all_operator_classes: list(dict)
         :param data: The behavioral data as a DataFrame with the columns "time", "action" and "reward"
         :type data: pandas.DataFrame
+        :param method: The metric by which to choose the recovered model, should be one of "BIC" (Bayesian Information Criterion)
+            or "AIC" (Akaike Information Criterion), defaults to "BIC"
+        :type method: str, optional
         :param random_number_generator: The random number generator which controls how the initial guess for the parameter values are generated, defaults to None
         :type random_number_generator: numpy.Generator, optional
         :return: A list of the recovered best-fit model(s) based on the BIC-score and
@@ -1693,25 +1707,33 @@ class _DevelopOperator(SinglePlayOperator):
             # Get log-likelihood for best param
             ll = -best_fit_objective_value
 
-            # Compute the BIC score
+            # Compute the comparison metric score (e.g. BIC)
             n_param_m_to_fit = len(parameters_for_fit)
-            bs_scores[k] = bic(
-                log_likelihood=ll, k=n_param_m_to_fit, n=len(data))
 
-        # Get minimum value for bic (min => best)
+            if method == "BIC":
+                bs_scores[k] = bic(
+                    log_likelihood=ll, k=n_param_m_to_fit, n=len(data))
+            elif method == "AIC":
+                bs_scores[k] = aic(
+                    log_likelihood=ll, k=n_param_m_to_fit)
+            else:
+                raise NotImplementedError(
+                    "method has to be one of 'BIC' or 'AIC'")
+
+        # Get minimum value for BIC/AIC (min => best)
         min_score = numpy.min(bs_scores)
 
-        # Get index(es) of models that get best bic
+        # Get index(es) of models that get best BIC/AIC
         idx_min = numpy.flatnonzero(bs_scores == min_score)
 
         # Identify best-fit models
         best_fit_models = [all_operator_classes[i] for i in idx_min]
 
-        # Create list for all models and their BIC scores
+        # Create list for all models and their BIC/AIC scores
         all_bic_scores = [{operator_class["model"].__name__: bs_scores[i]}
                           for i, operator_class in enumerate(all_operator_classes)]
 
-        # Return best-fit models and all BIC scores
+        # Return best-fit models and all BIC/AIC scores
         return best_fit_models, all_bic_scores
 
     def _confusion_matrix_plot(data):

@@ -64,6 +64,21 @@ def bic(log_likelihood, k, n):
     return -2 * log_likelihood + k * numpy.log(n)
 
 
+def aic(log_likelihood, k):
+    """Returns the score for the Akaike information criterion (AIC-score) for the given log-likelihood and number
+        of parameters k.
+
+    :param log_likelihood: The maximized value of the likelihood function for the model
+    :type log_likelihood: float
+    :param k: The number of parameters
+    :type k: int
+    :return: The score for the Akaike information criterion (AIC-score) for the given log-likelihood and number of
+        parameters k
+    :rtype: float
+    """
+    return 2 * k - 2 * log_likelihood
+
+
 def order_class_parameters_by_signature(cls, unordered_parameters):
     """Returns an OrderedDict representing the supplied parameters ordered by the class signature.
 
