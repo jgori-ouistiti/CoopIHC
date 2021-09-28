@@ -15,13 +15,22 @@ if _str == 'contains' or _str == 'all':
     y = numpy.array([2], dtype = numpy.float32)
     yy = numpy.array([2])
     z = numpy.array([5])
+    assert(x in space)
+    assert(y not in space)
+    assert(yy in space)
+    assert(z not in space)
 
-    d = Space(  [-numpy.ones((2,2), dtype = numpy.float32), numpy.ones((2,2), numpy.float32)]  )
+    space = Space(  [-numpy.ones((2,2), dtype = numpy.float32), numpy.ones((2,2), numpy.float32)]  )
     x = numpy.array([[1,1],[1,1]], dtype = numpy.int16)
     y = numpy.array([[1,1],[1,1]], dtype = numpy.float32)
     yy = numpy.array([[1,1],[1,1]])
     yyy = numpy.array([[1.0,1.0],[1.0,1.0]])
     z = numpy.array([[5,1],[1,1]], dtype = numpy.float32)
+    assert(x in space)
+    assert(y in space)
+    assert(yy in space)
+    assert(yyy in space)
+    assert(z not in space)
 
 if _str == 'sample' or _str == 'all':
     f = Space(  [numpy.array([[-2,-2],[-1,-1]], dtype = numpy.float32), numpy.ones((2,2), numpy.float32)]  )

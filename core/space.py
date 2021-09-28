@@ -3,6 +3,7 @@ import copy
 import gym
 import numpy
 import json
+import sys
 
 numpy.set_printoptions(precision = 3, suppress = True)
 
@@ -42,7 +43,15 @@ class Space:
         self._cflag = None
         self.rng = numpy.random.default_rng()
 
+        # Deal with variable format input
+        if isinstance(array, numpy.ndarray):
+            pass
+        else:
+            for _array in array:
+                if not isinstance(_array, numpy.ndarray):
+                    raise AttributeError('Input argument array must be or must inherit from numpy.ndarray instance.')
         self._array = array
+
         self._range = None
         self._shape = None
         self._dtype = None
@@ -54,7 +63,6 @@ class Space:
             return 'Space[Discrete({}), {}]'.format(max(self.range.shape), self.dtype)
 
     def __contains__(self, item):
-        ## --- Maybe these checks are too strict---reshapes and recasts could be performed.
         if item.shape != self.shape:
             try:
                 item.reshape(self.shape)
@@ -65,7 +73,7 @@ class Space:
         if self.continuous:
             return (numpy.all(item >= self.low) and numpy.all(item <= self.high))
         else:
-            return (item in self.range)
+            return item in self.range
 
 
     @property
@@ -73,7 +81,7 @@ class Space:
         if self._range is None:
             if self.continuous:
                 if not self._array[0].shape == self._array[1].shape:
-                    return AttributeError("The low {} and high {} ranges don't have matching shapes".format(self._array[0], slef._array[1]))
+                    return AttributeError("The low {} and high {} ranges don't have matching shapes".format(self._array[0], self._array[1]))
             self._range = self._array
         return self._range
 
@@ -93,6 +101,13 @@ class Space:
             high = max(self.range)
         return high
 
+    @property
+    def N(self):
+        if self.continuous:
+            return None
+        else:
+            return len(self.range)
+
 
     @property
     def shape(self):
@@ -106,10 +121,11 @@ class Space:
     @property
     def dtype(self):
         if self._dtype is None:
-            if isinstance(self._array, list):
-                self._dtype = numpy.find_common_type([self._array[0].dtype, self._array[1].dtype], [])
+            if len(self._array) ==1:
+                self._dtype = self._array[0].dtype
             else:
-                self._dtype = self._array.dtype
+                self._dtype = numpy.find_common_type([ v.dtype for v in self._array], [])
+
         return self._dtype
 
     @property
@@ -144,13 +160,16 @@ class BadSpaceError(Exception):
 class StateNotContainedError(Exception):
     pass
 
+
+
 class StateElement:
 
     __array_priority__ = 1 # to make __rmatmul__ possible with numpy arrays
     __precedence__ = ['error', 'warning', 'clip']
 
-    def __init__(self, values = None, spaces = None, clipping_mode = 'warning'):
+    def __init__(self, values = None, spaces = None, clipping_mode = 'warning', typing_priority = 'space'):
         self.clipping_mode = clipping_mode
+        self.typing_priority = typing_priority
         self.__values, self.__spaces = None, None
 
         self.spaces = spaces
@@ -176,6 +195,18 @@ class StateElement:
     @property
     def possible_values(self):
         return self.__possible_values
+
+    def __preface(self, other):
+        if not isinstance(other, (StateElement, numpy.ndarray)):
+            other = numpy.array(other)
+        if hasattr(other, 'values'):
+            other = other['values']
+
+        _elem = StateElement(
+            values = self.values,
+            spaces = self.spaces,
+            clipping_mode = self.mix_modes(other) )
+        return _elem, other
 
 
     def __iter__(self):
@@ -225,27 +256,9 @@ class StateElement:
 
 
     def __add__(self, other):
-        if isinstance(other, StateElement):
-            other = other['values']
-
-        _elem = StateElement(
-            values = self.values,
-            spaces = self.spaces,
-            clipping_mode = self.mix_modes(other) )
-
-        if not hasattr(other, '__len__'):
-            other = [other]
-        if len(_elem['values']) == len(other):
-            out = [_elem['values'][k] + v for k,v in enumerate(other)]
-        elif len(_elem['values']) == 1:
-            out = _elem.values[0] + other
-        elif len(_elem['values']) != 1 and len(other) == 1:
-            out = [v + other[0] for k,v in enumerate(_elem['values'])]
-        else:
-            out = _elem['values'] + other
-        _elem['values'] = out
+        _elem, other = self.__preface(other)
+        _elem['values'] = numpy.add(self['values'], other, casting = 'same_kind')
         return _elem
-
 
     def __radd__(self, other):
         return self.__add__(other)
@@ -254,24 +267,14 @@ class StateElement:
         return self.__add__(-other)
 
     def __rsub__(self, other):
-        return self.__radd__(-other)
+        return (-self).__add__(other)
+
 
     def __mul__(self, other):
-        _copy = copy.deepcopy(self)
-        if not hasattr(other, '__len__'):
-            other = [other]
+        _elem, other = self.__preface(other)
+        _elem['values'] = numpy.multiply(self['values'], other, casting = 'same_kind')
 
-        if len(_copy['values']) == 1:
-            out = _copy.values[0] * other
-        elif len(_copy['values']) == len(other):
-            out = [_copy['values'][k] * v for k,v in enumerate(other)]
-        elif len(_copy['values']) != 1 and len(other) == 1:
-            out = [v * other[0] for k,v in enumerate(_copy['values'])]
-        else:
-            out = _copy['values'] * other
-        # _copy['values'] = self.clip(out)
-        _copy['values'] = out
-        return _copy
+        return _elem
 
     def __rmul__(self, other):
         return self.__mul__(other)
@@ -397,8 +400,12 @@ class StateElement:
         if not dic:
             self['values'] = [space.sample() for space in self.spaces]
         else:
-            self['values'] = dic.get('values')
-            self['spaces'] = dic.get('spaces')
+            values = dic.get('values')
+            if values is not None:
+                self['values'] = values
+            spaces = dic.get('spaces')
+            if spaces is not None:
+                self['spaces'] = spaces
 
     def preprocess_spaces(self, spaces):
         # if spaces is None:
@@ -411,7 +418,6 @@ class StateElement:
         # make sure spaces are defined
         # if flatten([self.spaces]) == None:
         #     raise SpaceNotDefinedError('Values of a state can not be instantiated before having defined the corresponding space')
-
         values = flatten([values])
         # Allow a single None syntax
         try:
@@ -426,12 +432,19 @@ class StateElement:
         for ni, (v,s) in enumerate(zip(values, self.spaces)):
             if v is None:
                 continue
-            v = numpy.array(v).reshape(s.shape).astype(s.dtype)
-            if v not in s:
 
-                if (not s.continuous) or self.clipping_mode == 'error':
+            if self.typing_priority == 'space':
+                v = numpy.array(v).reshape(s.shape).astype(s.dtype)
+            elif self.typing_priority == 'value':
+                v = numpy.array(v).reshape(s.shape)
+                s._dtype = v.dtype
+            else:
+                raise NotImplementedError
+
+            if v not in s:
+                if self.clipping_mode == 'error':
                     raise StateNotContainedError('Instantiated Value {}({}) is not contained in corresponding space {} (low = {}, high = {})'.format(str(v), type(v), str(s), str(s.low), str(s.high)))
-                elif self.clipping_mode == 'warn':
+                elif self.clipping_mode == 'warning':
                     print('Warning: Instantiated Value {}({}) is not contained in corresponding space {} (low = {}, high = {})'.format(str(v), type(v), str(s), str(s.low), str(s.high)))
                 elif self.clipping_mode == 'clip':
                     v = self._clip(v, s)
@@ -460,13 +473,96 @@ class StateElement:
 
 
 
-    # works only for 1D
-    def _n_to_box(self, other):
-        _value = self['values'][0]
-        ls = numpy.linspace(other['spaces'][0].low, other["spaces"][0].high, self["spaces"][0].n+1)
-        _diff = ls[1]-ls[0]
-        value = ls[_value] + _diff/2
-        return value
+    def _discrete2continuous(self, other, mode = 'center'):
+        values = []
+        for sv, ss, os in zip(self['values'], self['spaces'], other['spaces']):
+            if not (not ss.continuous and os.continuous):
+                raise AttributeError('Use this only to go from a discrete to a continuous space')
+
+            if mode == 'edges':
+                N = len(ss.range)
+                ls = numpy.linspace(os.low, os.high, N)
+                shift = 0
+            elif mode == 'center':
+                N = len(ss.range) +1
+                ls = numpy.linspace(os.low, os.high, N)
+                shift = (ls[1]-ls[0])/2
+
+            values.append(ls[list(ss.range).index(sv)] + shift)
+        return values
+
+    def _continuous2discrete(self, other, mode = 'center'):
+        values = []
+        for sv, ss, os in zip(self['values'], self['spaces'], other['spaces']):
+            if not (ss.continuous and not os.continuous):
+                raise AttributeError('Use this only to go from a continuous to a discrete space')
+            _range = ss.high - ss.low
+
+            if mode == 'edges':
+
+                _remainder = (sv-ss.low)%(_range/os.N)
+                index = int((sv-ss.low-_remainder)/_range*os.N)
+            elif mode == 'center':
+                N = os.N -1
+                _remainder = (sv-ss.low + (_range/2/N))%(_range/(N))
+
+                index = int((sv-ss.low-_remainder + _range/2/N)/_range*N + 1e-5) # 1e-5 --> Hack to get around floating point arithmetic
+            values.append(os.range[index])
+
+        return values
+
+    def _continuous2continuous(self, other):
+        values = []
+        for sv, ss, os in zip(self['values'], self['spaces'], other['spaces']):
+            if not (ss.continuous and os.continuous):
+                raise AttributeError('Use this only to go from a continuous to a continuous space')
+            s_range = ss.high - ss.low
+            o_range = os.high - os.low
+            s_mid = (ss.high + ss.low)/2
+            o_mid = (os.high + os.low)/2
+
+            values.append((sv - s_mid)/s_range*o_range + o_mid)
+            return values
+
+    def _discrete2discrete(self, other):
+        values = []
+        for sv, ss, os in zip(self['values'], self['spaces'], other['spaces']):
+            if ss.continuous or os.continuous:
+                raise AttributeError('Use this only to go from a discrete to a discrete space')
+            values.append(os.range[ss.range.squeeze().tolist().index(sv)])
+            return values
+
+
+    def cast(self, other, mode = 'center'):
+        if not isinstance(other, StateElement):
+            raise TypeError("input arg {} must be of type StateElement".format(str(other)))
+
+        values = []
+        for s, o in zip(self, other):
+            for sv,ss,ov,os in zip(s['values'], s['spaces'], o['values'], o['spaces']):
+                if (not ss.continuous and os.continuous):
+                    value = s._discrete2continuous(o, mode = mode)
+                elif (ss.continuous and os.continuous):
+                    value = s._continuous2continuous(o)
+                elif (ss.continuous and not os.continuous):
+                    value = s._continuous2discrete(o, mode = mode)
+                elif (not ss.continuous and not os.continuous):
+                    if ss.N == os.N:
+                        value = s._discrete2discrete(o)
+                    else:
+                        raise ValueError('You are trying to match a discrete space to another discrete space of different size.')
+                else:
+                    raise NotImplementedError
+                values.append(value)
+
+        _copy = copy.deepcopy(other)
+        _copy['values'] = values
+        _copy.clipping_mode = self.mix_modes(other)
+        return _copy
+
+
+
+
         # works only for 1D
     def _box_to_box(self, other):
         _value = self['values'][0]
@@ -482,31 +578,31 @@ class StateElement:
         return value
 
     # works only for 1D
-    def cast(self, other):
-        if not isinstance(other, StateElement):
-            raise TypeError("other {} must be of type StateElement".format(str(other)))
-
-        values = []
-        for s,o in zip(self, other):
-            if isinstance(s['spaces'][0], gym.spaces.Discrete) and isinstance(o['spaces'][0], gym.spaces.Box):
-                value = s._n_to_box(o)
-            elif isinstance(s['spaces'][0], gym.spaces.Box) and isinstance(o['spaces'][0], gym.spaces.Box):
-                value = s._box_to_box(o)
-            elif isinstance(s['spaces'][0], gym.spaces.Box) and isinstance(o['spaces'][0], gym.spaces.Discrete):
-                value = s._box_to_n(o)
-            elif isinstance(s['spaces'][0], gym.spaces.Discrete) and isinstance(o['spaces'][0], gym.spaces.Discrete):
-                if s['spaces'][0].n == o['spaces'][0].n:
-                    value = s['values']
-                else:
-                    raise ValueError('You are trying to match a discrete space to another discrete space of different size.')
-            else:
-                raise NotImplementedError
-            values.append(value)
-
-        _copy = copy.deepcopy(other)
-        _copy['values'] = values
-        _copy.clipping_mode = self.mix_modes(other)
-        return _copy
+    # def cast(self, other):
+    #     if not isinstance(other, StateElement):
+    #         raise TypeError("other {} must be of type StateElement".format(str(other)))
+    #
+    #     values = []
+    #     for s,o in zip(self, other):
+    #         if isinstance(s['spaces'][0], gym.spaces.Discrete) and isinstance(o['spaces'][0], gym.spaces.Box):
+    #             value = s._n_to_box(o)
+    #         elif isinstance(s['spaces'][0], gym.spaces.Box) and isinstance(o['spaces'][0], gym.spaces.Box):
+    #             value = s._box_to_box(o)
+    #         elif isinstance(s['spaces'][0], gym.spaces.Box) and isinstance(o['spaces'][0], gym.spaces.Discrete):
+    #             value = s._box_to_n(o)
+    #         elif isinstance(s['spaces'][0], gym.spaces.Discrete) and isinstance(o['spaces'][0], gym.spaces.Discrete):
+    #             if s['spaces'][0].n == o['spaces'][0].n:
+    #                 value = s['values']
+    #             else:
+    #                 raise ValueError('You are trying to match a discrete space to another discrete space of different size.')
+    #         else:
+    #             raise NotImplementedError
+    #         values.append(value)
+    #
+    #     _copy = copy.deepcopy(other)
+    #     _copy['values'] = values
+    #     _copy.clipping_mode = self.mix_modes(other)
+    #     return _copy
 
 
 

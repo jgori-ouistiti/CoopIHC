@@ -229,11 +229,6 @@ class SimplePointingTask(InteractionTask):
         self.mode = mode
         self.dim = 1
 
-        self.handbook['render_mode'].extend(['plot', 'text'])
-        _gridsize = {"name": 'gridsize', "value": gridsize, "meaning": 'Size of the gridworld'}
-        _number_of_targets = { "name": 'number_of_targets', "value": number_of_targets, 'meaning': 'number of potential targets from which to choose a goal'}
-        _mode = { "name": 'mode','value': mode, 'meaning': "whether the assistant is expected to work as gain or as positioner. In the first case (gain), the operator's action is multiplied by the assistant's action to determine by how much to shift the old position of the cursor. In the second case (position) the assistant's action is directly the new position of the cursor."}
-        self.handbook['parameters'].extend([_gridsize, _number_of_targets, _mode])
 
 
         self.state['position'] = StateElement(
@@ -245,14 +240,6 @@ class SimplePointingTask(InteractionTask):
         self.state['targets'] = StateElement(
                     values = None,
                     spaces = [core.space.Discrete(gridsize) for i in range(self.number_of_targets)], possible_values = None  )
-
-
-    def operator_step(self, *args, **kwargs):
-        """ Do nothing, increment turns, return half a timestep
-
-        :meta public:
-        """
-        return super().operator_step()
 
 
     def reset(self, dic = None):
