@@ -16,21 +16,53 @@ Copy the files somewhere and run (-e for editable, optional)
 Interaction Model
 -------------------
 
-It is recommended to take a look at the interaction model used in *interaction-agents*. :ref:`interaction_model_fig_label` should be enough for now.
+*CoopIHC* builds on a sequential two agent decision-making model that is described :doc:`here<./interaction_model>`. If you want to skip this part, just look at :ref:`interaction_model_fig_label`, which should provide enough information.
 
 
 States
 ------------
-Most of the components we will use will have to store some parameters whose value vary over time in so-called states. *interaction-agents* introduces a basic object ``StateElement``, to be contained by another object ``State``.
+The interaction model presented above heavily builds on the notion of states.
+*CoopIHC* introduces ``Spaces`` ``StateElement`` and ``State`` objects to represent those. In the example below, a super-state is defined by a state, which itself is defined by two substates.
+
+.. code-block:: python
+
+    # Continuous substate. Provide Space([low, high]). Value is optional
+    x = StateElement(
+        values = None,
+        spaces = Space([  numpy.array([-1.0]).reshape(1,1),
+                    numpy.array([1.0]).reshape(1,1)  ])  )
+
+    # Discrete substate. Provide Space([range]). Value is optional
+    y = StateElement(
+        values = 2,
+        spaces = Space( numpy.array([1,2,3], dtype = numpy.int) )
+            )
+
+    # Define a State, composed of two substates previously defined
+    s1 = State(
+        substate_x = x,
+        substate_y = y
+    )
+
+    # Define a super-State that is composed of the State previously defined
+    S = State()
+    S['substate1'] = s1
+
+To find out more about these, you can take a look at :doc:`spaces` and :doc:`states_stateelements`.
 
 
-The purpose of ``StateElement`` is to store information about the value, as well as about the possible values of a state's component.
-The purpose of ``State`` is to package these components into a single object which can be manipulated by the various classes of *interaction-agents*.
+Tasks
+--------
+Tasks represent the interface the user is interacting with. They are essentially characterized by:
+
+* An internal state, the **task state** which holds all the task's information.
+* A **user step (transition) function**, which describes how the task state changes based on the user action.
+* An **assistant step (transition) function**, which describes how the task state changes based on the assistant action.
 
 
-To find out more about ``State`` and ``StateElement``, you can go through :doc:`states`.
-
-
+Agents
+------------------
+Besides states,
 
 Basic Example
 -----------------

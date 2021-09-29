@@ -62,7 +62,7 @@ if _str == 'basic-PlayNone' or _str == 'all':
             break
 
 if _str == 'biggain-PlayNone' or _str == 'all':
-    task = SimplePointingTask(gridsize = 15, number_of_targets = 8, mode = 'position')
+    task = SimplePointingTask(gridsize = 31, number_of_targets = 8, mode = 'position')
     binary_operator = CarefulPointer()
     BIGpointer = BIGGain()
 

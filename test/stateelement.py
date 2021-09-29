@@ -119,12 +119,102 @@ if _str == 'len' or _str == 'all':
 
     len(x)
 
+if _str == 'cast' or _str == 'all':
+
+    b = StateElement(
+        values = 5,
+        spaces = core.space.Space(
+            numpy.array([-5,-4,-3,-2,-1,0,1,2,3,4,5], dtype = numpy.int16)
+        )
+    )
+
+    a = StateElement(
+        values = 0,
+        spaces =
+            core.space.Space([
+            numpy.array([-1], dtype = numpy.float32), numpy.array([1], dtype = numpy.float32)
+            ]),
+    )
+    exit()
+
+    # C2D
+    continuous = []
+    discrete = []
+    for elem in numpy.linspace(-1,1,200):
+        a['values'] = elem
+        continuous.append(a['values'][0].squeeze().tolist())
+        discrete.append(a.cast(b, mode = 'center')['values'][0].squeeze().tolist())
+    import matplotlib.pyplot as plt
+    plt.plot(continuous, discrete, 'b*')
+    plt.show()
+
+    # D2C
+
+    continuous = []
+    discrete = []
+    for elem in [-5,-4,-3,-2,-1,0,1,2,3,4,5]:
+        b['values'] = elem
+        discrete.append(elem)
+        continuous.append(b.cast(a, mode = 'edges')['values'][0].squeeze().tolist())
+    import matplotlib.pyplot as plt
+    plt.plot(discrete, continuous, 'b*')
+    plt.show()
+
+    # C2C
+
+    a = StateElement(
+        values = 0,
+        spaces =
+            core.space.Space([
+            numpy.array([-2], dtype = numpy.float32), numpy.array([1], dtype = numpy.float32)
+            ]),
+    )
+    b = StateElement(
+        values = 3.5,
+        spaces =
+            core.space.Space([
+            numpy.array([3], dtype = numpy.float32), numpy.array([4], dtype = numpy.float32)
+            ]),
+    )
+    c1 = []
+    c2 = []
+    for elem in numpy.linspace(-2,1, 100):
+        a['values'] = elem
+        c1.append(a['values'][0].squeeze().tolist())
+        c2.append(a.cast(b)['values'][0].squeeze().tolist())
+    import matplotlib.pyplot as plt
+    plt.plot(c1, c2, 'b*')
+    plt.show()
+
+    # D2D
+    a = StateElement(
+        values = 5,
+        spaces = core.space.Space(
+            numpy.array([i for i in range(11)], dtype = numpy.int16)
+        )
+    )
+    b = StateElement(
+        values = 5,
+        spaces = core.space.Space(
+            numpy.array([-5,-4,-3,-2,-1,0,1,2,3,4,5], dtype = numpy.int16)
+        )
+    )
+
+    d1 = []
+    d2 = []
+    for i in range(11):
+        a['values'] = i
+        d1.append(i)
+        d2.append(a.cast(b)['values'][0].squeeze().tolist())
+    import matplotlib.pyplot as plt
+    plt.plot(d1, d2, 'b*')
+    plt.show()
 
 if _str == 'neg' or _str == 'all':
     x = StateElement(
         values = numpy.array([[-0.237]], dtype=numpy.float32),
         spaces =
-            core.space.Space([
+            core.space.core.space.Space([
             numpy.array([-1], dtype = numpy.float32), numpy.array([1], dtype = numpy.float32)
             ]),
     )
@@ -226,38 +316,54 @@ if _str == 'matmul' or _str == 'all':
         values = numpy.array([[-0.237, 0], [1, 1]], dtype=numpy.float32),
         spaces =
             core.space.Space([
-            numpy.array([-1, -1], dtype = numpy.float32), numpy.array([1, 1], dtype = numpy.float32)
+            numpy.array([[-1, -1], [-1, -1]], dtype = numpy.float32), numpy.array([[1, 1], [1, 1]], dtype = numpy.float32)
             ]),
     )
     b = StateElement(
         values = numpy.array([[0.5, .5]], dtype=numpy.float32),
         spaces =
             core.space.Space([
-            numpy.array([-1, -1], dtype = numpy.float32), numpy.array([1, 1], dtype = numpy.float32)
+            numpy.array([-1, -1], dtype = numpy.float32).reshape(-1,1), numpy.array([1, 1], dtype = numpy.float32).reshape(-1,1)
             ]),
     )
 
     z = numpy.ones((2,2))
-    w = StateElement(   values = [numpy.ones((2,1))],
-            spaces = [core.space.Box(low = -numpy.inf*numpy.ones((2,1)), high = numpy.inf*numpy.ones((2,1)), shape = (2,1) )],
-            possible_values = [[None]])
 
-    print(x @ y)
-    print(x @ z)
-    print(z @ x)
+
+    print(a @ b)
+    print(z @ a)
+    print(a @ z)
 
 if _str == 'mode' or _str == 'all':
-    x = StateElement(   values = [3*numpy.ones((2,2))],
-            spaces = [core.space.Box(low = -1, high = 1, shape = (2,2) )],
-            possible_values = [[None]], clipping_mode = 'clip')
-    print(x)
-    x = StateElement(   values = [3*numpy.ones((2,2))],
-            spaces = [core.space.Box(low = -1, high = 1, shape = (2,2) )],
-            possible_values = [[None]], clipping_mode = 'warning')
-    print(x)
+    b = StateElement(
+        values = numpy.array([[3, -5]], dtype=numpy.float32),
+        spaces =
+            core.space.Space([
+            numpy.array([-1, -1], dtype = numpy.float32).reshape(-1,1), numpy.array([1, 1], dtype = numpy.float32).reshape(-1,1)
+            ]),
+        clipping_mode = 'clip'
+    )
+
+    print(b)
+
+    b = StateElement(
+        values = numpy.array([[3, -5]], dtype=numpy.float32),
+        spaces =
+            core.space.Space([
+            numpy.array([-1, -1], dtype = numpy.float32).reshape(-1,1), numpy.array([1, 1], dtype = numpy.float32).reshape(-1,1)
+            ]),
+        clipping_mode = 'warning'
+    )
+
+    print(b)
     try:
-        x = StateElement(   values = [3*numpy.ones((2,2))],
-                spaces = [core.space.Box(low = -1, high = 1, shape = (2,2) )],
-                possible_values = [[None]], clipping_mode = 'error')
+        b = StateElement(
+            values = numpy.array([[3, -5]], dtype=numpy.float32),
+            spaces =
+                core.space.Space([
+                numpy.array([-1, -1], dtype = numpy.float32).reshape(-1,1), numpy.array([1, 1], dtype = numpy.float32).reshape(-1,1)
+                ]),
+            clipping_mode = 'error'
+        )
     except StateNotContainedError:
         print('returned error as expected')

@@ -18,22 +18,6 @@ def remove_prefix(text, prefix):
     # copied from https://stackoverflow.com/questions/16891340/remove-a-prefix-from-a-string
     return text[text.startswith(prefix) and len(prefix):]
 
-class Box(gym.spaces.Box):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-class Discrete(gym.spaces.Discrete):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    @property
-    def low(self):
-        return 0
-
-    @property
-    def high(self):
-        return self.n
-
 
 from core.helpers import isdefined
 
@@ -125,7 +109,6 @@ class Space:
                 self._dtype = self._array[0].dtype
             else:
                 self._dtype = numpy.find_common_type([ v.dtype for v in self._array], [])
-
         return self._dtype
 
     @property
@@ -192,9 +175,6 @@ class StateElement:
     def spaces(self, values):
         self.__spaces = self.preprocess_spaces(values)
 
-    @property
-    def possible_values(self):
-        return self.__possible_values
 
     def __preface(self, other):
         if not isinstance(other, (StateElement, numpy.ndarray)):
@@ -306,10 +286,9 @@ class StateElement:
         """
         Coarse implementation. Does not deal with all cases
         """
-        se = copy.copy(self)
         if isinstance(other, StateElement):
-            matA = self.values[0]
-            matB = other.values[0]
+            matA = self['values'][0]
+            matB = other['values'][0]
         elif isinstance(other, numpy.ndarray):
             matA = self.values[0]
             matB = other
@@ -317,18 +296,13 @@ class StateElement:
             raise TypeError('rhs of {}@{} should be either a StateElement containing a numpy.ndarray or a numpy.ndarray')
 
         values = matA @ matB
-        low = se.spaces[0].low[:values.shape[0], :values.shape[1]]
-        high = se.spaces[0].high[:values.shape[0], :values.shape[1]]
+        low = self.spaces[0].low[:values.shape[0], :values.shape[1]]
+        high = self.spaces[0].high[:values.shape[0], :values.shape[1]]
 
-        se.spaces = [gym.spaces.Space(
-                        range = [low, high],
-                        shape = values.shape,
-                        dtype = values.dtype
-                        )]
-        # se.spaces = [gym.spaces.Box(low, high, shape = values.shape)]
-        se['values'] = [values]
+        return StateElement(    values = values,
+                                spaces = Space([low, high]),
+                                )
 
-        return se
 
     def __rmatmul__(self, other):
         se = copy.copy(self)
@@ -408,16 +382,12 @@ class StateElement:
                 self['spaces'] = spaces
 
     def preprocess_spaces(self, spaces):
-        # if spaces is None:
-        #     if self.spaces is not None:
-        #         return self.spaces
+
         spaces = flatten([spaces])
         return spaces
 
     def preprocess_values(self, values):
-        # make sure spaces are defined
-        # if flatten([self.spaces]) == None:
-        #     raise SpaceNotDefinedError('Values of a state can not be instantiated before having defined the corresponding space')
+
         values = flatten([values])
         # Allow a single None syntax
         try:
@@ -555,66 +525,19 @@ class StateElement:
                     raise NotImplementedError
                 values.append(value)
 
-        _copy = copy.deepcopy(other)
-        _copy['values'] = values
-        _copy.clipping_mode = self.mix_modes(other)
-        return _copy
-
-
-
-
-        # works only for 1D
-    def _box_to_box(self, other):
-        _value = self['values'][0]
-        _range_self = self['spaces'][0].high - self['spaces'][0].low
-        _range_other = other['spaces'][0].high - other['spaces'][0].low
-        value = (_value - _range_self/2)/_range_self*_range_other + _range_other/2
-        return value
-
-    def _box_to_n(self, other):
-        _value = self['values'][0]
-        _range = self['spaces'][0].high - self['spaces'][0].low
-        value = int(numpy.floor(  (_value - self['spaces'][0].low)/_range*(other['spaces'][0].n)  ))
-        return value
-
-    # works only for 1D
-    # def cast(self, other):
-    #     if not isinstance(other, StateElement):
-    #         raise TypeError("other {} must be of type StateElement".format(str(other)))
-    #
-    #     values = []
-    #     for s,o in zip(self, other):
-    #         if isinstance(s['spaces'][0], gym.spaces.Discrete) and isinstance(o['spaces'][0], gym.spaces.Box):
-    #             value = s._n_to_box(o)
-    #         elif isinstance(s['spaces'][0], gym.spaces.Box) and isinstance(o['spaces'][0], gym.spaces.Box):
-    #             value = s._box_to_box(o)
-    #         elif isinstance(s['spaces'][0], gym.spaces.Box) and isinstance(o['spaces'][0], gym.spaces.Discrete):
-    #             value = s._box_to_n(o)
-    #         elif isinstance(s['spaces'][0], gym.spaces.Discrete) and isinstance(o['spaces'][0], gym.spaces.Discrete):
-    #             if s['spaces'][0].n == o['spaces'][0].n:
-    #                 value = s['values']
-    #             else:
-    #                 raise ValueError('You are trying to match a discrete space to another discrete space of different size.')
-    #         else:
-    #             raise NotImplementedError
-    #         values.append(value)
-    #
-    #     _copy = copy.deepcopy(other)
-    #     _copy['values'] = values
-    #     _copy.clipping_mode = self.mix_modes(other)
-    #     return _copy
-
-
-
-
-
-
+        return StateElement(
+            values = values,
+            spaces = other['spaces'],
+            clipping_mode = self.mix_modes(other),
+            typing_priority = self.typing_priority
+        )
 
 
 
 class State(OrderedDict):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
 
     def reset(self, dic = {}):
         for key, value in self.items():
@@ -626,7 +549,6 @@ class State(OrderedDict):
     def flat(self):
         values = []
         spaces = []
-        possible_values = []
         labels = []
         l,k = list(self.values()), list(self.keys())
         for n,item in enumerate(l):
@@ -649,20 +571,19 @@ class State(OrderedDict):
                 if isinstance(values, StateElement):
                     values = slice(0,len(values), 1)
                 if mode == 'spaces':
-                    new_state[key] = gym.spaces.Tuple(flatten([self[key][mode][values]]))
+                    new_state[key] = flatten([self[key][mode][values]])
                 else:
                     new_state[key] = self[key][mode][values]
             else:
                 new_state[key] = self[key]
-        if mode == 'spaces':
-            return gym.spaces.Dict(new_state)
+
         return new_state
 
 
     def __content__(self):
         return list(self.keys())
 
-    # Here we override copy and deepcopy simply because there seems to be some overhead in the default deepcopy implementation. Adapted from StateElement code
+    # Here we override copy and deepcopy simply because there seems to be some overhead in the default deepcopy implementation. It turns out the gain is almost None, but keep it here as a reminder that deepcopy needs speeding up.  Adapted from StateElement code
     def __copy__(self):
         cls = self.__class__
         copy_object = cls.__new__(cls)
@@ -701,8 +622,8 @@ class State(OrderedDict):
 
         table_header = ['Index', 'Label', 'Value','Space','Possible Value']
         table_rows = []
-        for i, (v, s, p, l) in enumerate(zip(*self.flat())):
-                table_rows.append([str(i), l, str(v), str(s), str(p)])
+        for i, (v, s,  l) in enumerate(zip(*self.flat())):
+                table_rows.append([str(i), l, str(v), str(s)])
 
         _str = tabulate(table_rows, table_header)
 
