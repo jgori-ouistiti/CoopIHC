@@ -940,7 +940,8 @@ class _DevelopOperator(SinglePlayOperator):
             return self.parameters_can_be_recovered and self.recovered_parameters_correlate
 
     def test_parameter_recovery(self, parameter_fit_bounds, correlation_threshold=0.7, significance_level=0.05,
-                                n_simulations=20, recovered_parameter_correlation_threshold=0.5, seed=None, **kwargs):
+                                n_simulations=20,  n_recovery_trials_per_simulation=1, recovered_parameter_correlation_threshold=0.5,
+                                seed=None, **kwargs):
         """Returns whether the recovered operator parameters correlate to the used parameters for a simulation given the supplied thresholds
         and that the recovered parameters do not correlate (test only available for operators with a policy that has a compute_likelihood method).
 
@@ -959,6 +960,9 @@ class _DevelopOperator(SinglePlayOperator):
         :type significance_level: float, optional
         :param n_simulations: The number of agents to simulate (i.e. the population size) for the parameter recovery, defaults to 20
         :type n_simulations: int, optional
+        :param n_recovery_trials_per_simulation: The number of trials to recover the true parameter value (i.e. to determine the
+            best-fit parameter values) for one set of simulated data, defaults to 1
+        :type n_recovery_trials_per_simulation: int, optional
         :param recovered_parameter_correlation_threshold: The threshold for Pearson's r value between the recovered parameters, defaults to 0.7
         :type recovered_parameter_correlation_threshold: float, optional
         :param seed: The seed for the random number generator which controls how the 'true' parameter values are generated, defaults to None
@@ -975,13 +979,15 @@ class _DevelopOperator(SinglePlayOperator):
         correlation_data = self._likelihood(
             parameter_fit_bounds=ordered_parameter_fit_bounds,
             n_simulations=n_simulations,
+            n_recovery_trials_per_simulation=n_recovery_trials_per_simulation,
             seed=seed,
             **kwargs)
 
         # Plot the correlations between the used and recovered parameters as a graph
-        scatterplot = _DevelopOperator._correlations_plot(
+        regplot = _DevelopOperator._correlations_plot(
             parameter_fit_bounds=ordered_parameter_fit_bounds,
-            data=correlation_data)
+            data=correlation_data,
+            kind="reg")
 
         # Compute the correlation metric Pearson's r and its significance for each parameter pair and return it
         correlation_statistics = self._pearsons_r(
@@ -1008,7 +1014,7 @@ class _DevelopOperator(SinglePlayOperator):
             correlation_statistics=correlation_statistics,
             parameters_can_be_recovered=parameters_can_be_recovered,
             recovered_parameters_correlate=recovered_parameters_correlate,
-            plot=scatterplot,
+            plot=regplot,
             correlation_threshold=correlation_threshold,
             significance_level=significance_level,
             n_simulations=n_simulations
@@ -1071,7 +1077,7 @@ class _DevelopOperator(SinglePlayOperator):
 
         return all_correlations_meet_threshold and all_correlations_significant
 
-    def _likelihood(self, parameter_fit_bounds, n_simulations=20, seed=None, **kwargs):
+    def _likelihood(self, parameter_fit_bounds, n_simulations=20, n_recovery_trials_per_simulation=1, seed=None, **kwargs):
         """Returns a DataFrame containing the likelihood of each recovered parameter.
 
         :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
@@ -1079,6 +1085,9 @@ class _DevelopOperator(SinglePlayOperator):
         :type parameter_fit_bounds: dict
         :param n_simulations: The number of agents to simulate (i.e. the population size) for the parameter recovery, defaults to 20
         :type n_simulations: int, optional
+        :param n_recovery_trials_per_simulation: The number of trials to recover the true parameter value (i.e. to determine the
+            best-fit parameter values) for one set of simulated data, defaults to 1
+        :type n_recovery_trials_per_simulation: int, optional
         :param seed: The seed for the random number generator which controls how the 'true' parameter values are generated, defaults to None
         :type seed: int, optional
         :return: A DataFrame containing the likelihood of each recovered parameter.
@@ -1124,23 +1133,26 @@ class _DevelopOperator(SinglePlayOperator):
             simulated_data = self._simulate(
                 operator=random_agent, random_number_generator=random_number_generator)
 
-            # Determine best-fit parameter values
-            best_fit_parameters, _ = self.best_fit_parameters(
-                operator_class=self.operator.__class__,
-                parameter_fit_bounds=parameter_fit_bounds,
-                data=simulated_data,
-                random_number_generator=random_number_generator,
-                **kwargs)
+            # For n_recovery_trials_per_simulation...
+            for _ in range(n_recovery_trials_per_simulation):
 
-            # Backup parameter values
-            for parameter_index, (parameter_name, parameter_value) in enumerate(random_parameters.items()):
-                _, best_fit_parameter_value = best_fit_parameters[parameter_index]
-                likelihood_data.append({
-                    "Subject": i+1,
-                    "Parameter": parameter_name,
-                    "Used to simulate": parameter_value,
-                    "Recovered": best_fit_parameter_value
-                })
+                # Determine best-fit parameter values
+                best_fit_parameters, _ = self.best_fit_parameters(
+                    operator_class=self.operator.__class__,
+                    parameter_fit_bounds=parameter_fit_bounds,
+                    data=simulated_data,
+                    random_number_generator=random_number_generator,
+                    **kwargs)
+
+                # Backup parameter values
+                for parameter_index, (parameter_name, parameter_value) in enumerate(random_parameters.items()):
+                    _, best_fit_parameter_value = best_fit_parameters[parameter_index]
+                    likelihood_data.append({
+                        "Subject": i+1,
+                        "Parameter": parameter_name,
+                        "Used to simulate": parameter_value,
+                        "Recovered": best_fit_parameter_value
+                    })
 
         # Create dataframe and return it
         likelihood = pd.DataFrame(likelihood_data)
@@ -1353,7 +1365,7 @@ class _DevelopOperator(SinglePlayOperator):
         # let's return -LLS instead of LLS
         return - self._log_likelihood(operator_class=operator_class, parameter_values=parameter_values, data=data)
 
-    def _correlations_plot(parameter_fit_bounds, data, statistics=None):
+    def _correlations_plot(parameter_fit_bounds, data, statistics=None, kind="reg"):
         """Plot the correlation between the true and recovered parameters.
 
         :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be
@@ -1361,7 +1373,10 @@ class _DevelopOperator(SinglePlayOperator):
         :type parameter_fit_bounds: dict
         :param data: The correlation data including each parameter value used and recovered
         :type data: pandas.DataFrame
-        :param statistics: The correlation statistics including whether the parameters were recoverable for some specified fit bounds
+        :param kind: The kind of plot to generate (one of "reg" or "scatter"), defaults to "reg"
+        :type kind: str
+        :param statistics: The correlation statistics including whether the parameters were recoverable for some
+            specified fit bounds, defaults to None
         :type statistics: pandas.DataFrame
         """
         # Containers
@@ -1400,11 +1415,24 @@ class _DevelopOperator(SinglePlayOperator):
             # Select only data related to the current parameter
             current_parameter_data = data[data["Parameter"] == p_name]
 
-            # Create scatter
-            scatterplot = sns.scatterplot(data=current_parameter_data,
+            # Depending on specified kind...
+            if kind == "reg":
+                # Create regression plot
+                scatterplot = sns.regplot(data=current_parameter_data,
                                           x="Used to simulate", y="Recovered",
-                                          alpha=0.5, color=colors[i],
-                                          ax=ax)
+                                          scatter_kws=dict(alpha=0.5), line_kws=dict(alpha=0.5),
+                                          color=colors[i], ax=ax)
+
+            elif kind == "scatter":
+                # Create scatter plot
+                scatterplot = sns.scatterplot(data=data[data["Parameter"] == p_name],
+                                              x="Used to simulate", y="Recovered",
+                                              alpha=0.5, color=colors[i],
+                                              ax=ax)
+
+            else:
+                raise NotImplementedError(
+                    "kind has to be one of 'reg' or 'scatter'")
 
             # Plot identity function
             ax.plot(param_bounds[i], param_bounds[i],
@@ -2139,7 +2167,10 @@ class _DevelopOperator(SinglePlayOperator):
 
         # Plot the correlations of the 'true' and recovered parameter values
         scatterplot = _DevelopOperator._correlations_plot(
-            parameter_fit_bounds=parameter_fit_bounds, data=correlation_data, statistics=correlation_statistics)
+            parameter_fit_bounds=parameter_fit_bounds,
+            data=correlation_data,
+            statistics=correlation_statistics,
+            kind="scatter")
 
         # Print the correlation statistics for the 'true' and recovered parameter values per sub-range
         _DevelopOperator._print_correlation_statistics(correlation_statistics)

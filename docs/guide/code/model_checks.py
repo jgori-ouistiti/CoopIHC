@@ -88,47 +88,6 @@ N_SIMULATIONS = 50
 print("Parameter recovery definitions complete.")
 
 # %% [markdown]
-# ## Parameter Fit Bounds
-#
-# So far, we have tested parameter recovery by uniformly sampling from within the specified fit bounds.
-# It might, however, be the case that the quality of the parameter recovery (i.e. the correlation between the known 'true'
-# and the recovered parameter values) varies within the fit bounds. In order to determine those parameter value ranges
-# where parameters can be recovered well within the larger theoretical or practical fit bounds. For this, the bundle
-# provides a function called `recoverable_parameter_fit_bounds` which takes these theoretical or practical fit bounds per parameter
-# as well as the desired resolution, correlation and significance threshold and returns those parameter value ranges for
-# each parameter that meet the desired thresholds.
-
-# %%
-# Parameter Fit Bounds: RW
-print("## Parameter Fit Bounds: RW")
-
-# Define bundle for model checks
-rw_bundle = _DevelopOperator(task=multi_bandit_task, operator=rw)
-
-# Define parameter ranges
-rw_parameter_ranges = {
-    "q_alpha": numpy.linspace(0.0, 1.0, num=6),
-    "q_beta": numpy.linspace(0.0, 5.0, num=6)
-}
-
-# Determine ranges within the parameter fit bounds where the parameters can be recovered
-recoverable_parameter_ranges_test_result = rw_bundle.test_recoverable_parameter_ranges(
-    parameter_ranges=rw_parameter_ranges,
-    correlation_threshold=0.6,
-    significance_level=0.1,
-    recovered_parameter_correlation_threshold=0.6,
-    n_simulations_per_sub_range=N_SIMULATIONS,
-    seed=RANDOM_SEED)
-
-# Display scatterplot
-recoverable_parameter_ranges_test_result.plot
-plt.show()
-
-# Print result
-print(
-    f"RW: Parameter recovery possible within these ranges: {recoverable_parameter_ranges_test_result.recoverable_parameter_ranges}")
-
-# %% [markdown]
 # ## Parameter Recovery: WSLS
 #
 # We will start the model checks with a test for parameter recovery for the Win-Stay-Lose-Switch `WSLS` model. This model
@@ -232,3 +191,44 @@ plt.show()
 # Print result
 print(
     f"RW: Model recovery was {'successful' if rw_model_recovery_test_result.success else 'unsuccessful'}.")
+
+# %% [markdown]
+# ## Parameter Fit Bounds
+#
+# So far, we have tested parameter recovery by uniformly sampling from within the specified fit bounds.
+# It might, however, be the case that the quality of the parameter recovery (i.e. the correlation between the known 'true'
+# and the recovered parameter values) varies within the fit bounds. In order to determine those parameter value ranges
+# where parameters can be recovered well within the larger theoretical or practical fit bounds. For this, the bundle
+# provides a function called `recoverable_parameter_fit_bounds` which takes these theoretical or practical fit bounds per parameter
+# as well as the desired resolution, correlation and significance threshold and returns those parameter value ranges for
+# each parameter that meet the desired thresholds.
+
+# %%
+# Parameter Fit Bounds: RW
+print("## Parameter Fit Bounds: RW")
+
+# Define bundle for model checks
+rw_bundle = _DevelopOperator(task=multi_bandit_task, operator=rw)
+
+# Define parameter ranges
+rw_parameter_ranges = {
+    "q_alpha": numpy.linspace(0.0, 1.0, num=6),
+    "q_beta": numpy.linspace(0.0, 5.0, num=6)
+}
+
+# Determine ranges within the parameter fit bounds where the parameters can be recovered
+recoverable_parameter_ranges_test_result = rw_bundle.test_recoverable_parameter_ranges(
+    parameter_ranges=rw_parameter_ranges,
+    correlation_threshold=0.6,
+    significance_level=0.1,
+    recovered_parameter_correlation_threshold=0.6,
+    n_simulations_per_sub_range=N_SIMULATIONS,
+    seed=RANDOM_SEED)
+
+# Display scatterplot
+recoverable_parameter_ranges_test_result.plot
+plt.show()
+
+# Print result
+print(
+    f"RW: Parameter recovery possible within these ranges: {recoverable_parameter_ranges_test_result.recoverable_parameter_ranges}")
