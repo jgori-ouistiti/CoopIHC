@@ -940,7 +940,7 @@ class _DevelopOperator(SinglePlayOperator):
             return self.parameters_can_be_recovered and self.recovered_parameters_correlate
 
     def test_parameter_recovery(self, parameter_fit_bounds, correlation_threshold=0.7, significance_level=0.05,
-                                n_simulations=20, recovered_parameter_correlation_threshold=0.5, seed=None):
+                                n_simulations=20, recovered_parameter_correlation_threshold=0.5, seed=None, **kwargs):
         """Returns whether the recovered operator parameters correlate to the used parameters for a simulation given the supplied thresholds
         and that the recovered parameters do not correlate (test only available for operators with a policy that has a compute_likelihood method).
 
@@ -975,7 +975,8 @@ class _DevelopOperator(SinglePlayOperator):
         correlation_data = self._likelihood(
             parameter_fit_bounds=ordered_parameter_fit_bounds,
             n_simulations=n_simulations,
-            seed=seed)
+            seed=seed,
+            **kwargs)
 
         # Plot the correlations between the used and recovered parameters as a graph
         scatterplot = _DevelopOperator._correlations_plot(
@@ -1070,7 +1071,7 @@ class _DevelopOperator(SinglePlayOperator):
 
         return all_correlations_meet_threshold and all_correlations_significant
 
-    def _likelihood(self, parameter_fit_bounds, n_simulations=20, seed=None):
+    def _likelihood(self, parameter_fit_bounds, n_simulations=20, seed=None, **kwargs):
         """Returns a DataFrame containing the likelihood of each recovered parameter.
 
         :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
@@ -1128,7 +1129,8 @@ class _DevelopOperator(SinglePlayOperator):
                 operator_class=self.operator.__class__,
                 parameter_fit_bounds=parameter_fit_bounds,
                 data=simulated_data,
-                random_number_generator=random_number_generator)
+                random_number_generator=random_number_generator,
+                **kwargs)
 
             # Backup parameter values
             for parameter_index, (parameter_name, parameter_value) in enumerate(random_parameters.items()):
@@ -1227,7 +1229,7 @@ class _DevelopOperator(SinglePlayOperator):
         simulated_data = pd.DataFrame(data)
         return simulated_data
 
-    def best_fit_parameters(self, operator_class, parameter_fit_bounds, data, random_number_generator=None):
+    def best_fit_parameters(self, operator_class, parameter_fit_bounds, data, random_number_generator=None, **kwargs):
         """Returns a list of the parameters with their best-fit values based on the supplied data.
 
         :param operator_class: The operator class to find best-fit parameters for
@@ -1269,7 +1271,8 @@ class _DevelopOperator(SinglePlayOperator):
             x0=initial_guess,
             bounds=[fit_bounds for _,
                     fit_bounds in parameter_fit_bounds.items()],
-            args=(operator_class, data))
+            args=(operator_class, data),
+            **kwargs)
 
         # Make sure that the optimizer ended up with success
         assert res.success
@@ -1511,7 +1514,7 @@ class _DevelopOperator(SinglePlayOperator):
         method: str
         """The metric by which the recovered model was chosen"""
 
-    def test_model_recovery(self, other_competing_models, this_parameter_fit_bounds, f1_threshold=0.7, n_simulations_per_model=20, method="BIC", seed=None):
+    def test_model_recovery(self, other_competing_models, this_parameter_fit_bounds, f1_threshold=0.7, n_simulations_per_model=20, method="BIC", seed=None, **kwargs):
         """Returns whether the bundle's operator model can be recovered from simulated data using the specified competing models
         meeting the specified F1-score threshold (only available for operators with a policy that has a compute_likelihood method).
 
@@ -1552,7 +1555,8 @@ class _DevelopOperator(SinglePlayOperator):
             all_operator_classes=all_operator_classes,
             n_simulations=n_simulations_per_model,
             method=method,
-            seed=seed)
+            seed=seed,
+            **kwargs)
 
         # Create the confusion matrix
         confusion_matrix_plot = _DevelopOperator._confusion_matrix_plot(
@@ -1580,7 +1584,7 @@ class _DevelopOperator(SinglePlayOperator):
         )
         return result
 
-    def _confusion_matrix(self, all_operator_classes, n_simulations=20, method="BIC", seed=None):
+    def _confusion_matrix(self, all_operator_classes, n_simulations=20, method="BIC", seed=None, **kwargs):
         """Returns a DataFrame with the model recovery data (used to simulate vs recovered model) based on the BIC-score.
 
         :param all_operator_classes: The user models that are competing and can be recovered (example: `[{"model": OperatorClass, "parameter_fit_bounds": {"alpha": (0., 1.), ...}}, ...]`)
@@ -1639,7 +1643,12 @@ class _DevelopOperator(SinglePlayOperator):
 
                     # Determine best-fit models
                     best_fit_models, _ = self.best_fit_models(
-                        all_operator_classes=all_operator_classes, data=simulated_data, method=method, random_number_generator=random_number_generator)
+                        all_operator_classes=all_operator_classes,
+                        data=simulated_data,
+                        method=method,
+                        random_number_generator=random_number_generator,
+                        **kwargs
+                    )
 
                     # Get index(es) of models that get best score (e.g. BIC)
                     idx_min = [operator_class_index for operator_class_index, operator_class in enumerate(
@@ -1661,7 +1670,7 @@ class _DevelopOperator(SinglePlayOperator):
 
         return confusion
 
-    def best_fit_models(self, all_operator_classes, data, method="BIC", random_number_generator=None):
+    def best_fit_models(self, all_operator_classes, data, method="BIC", random_number_generator=None, **kwargs):
         """Returns a list of the recovered best-fit model(s) based on the BIC-score and
         a list of dictionaries containing the BIC-score for all competing models.
 
@@ -1702,7 +1711,9 @@ class _DevelopOperator(SinglePlayOperator):
                 operator_class=m_to_fit,
                 parameter_fit_bounds=parameters_for_fit,
                 data=data,
-                random_number_generator=random_number_generator)
+                random_number_generator=random_number_generator,
+                **kwargs
+            )
 
             # Get log-likelihood for best param
             ll = -best_fit_objective_value
