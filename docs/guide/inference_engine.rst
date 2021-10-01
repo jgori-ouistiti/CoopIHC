@@ -3,7 +3,7 @@
 The Inference Engines
 ========================
 
-The internal states of operators and assistants are expected to evolve over time, namely because both of them are learning from their observations during a run or several runs.
+The internal states of users and assistants are expected to evolve over time, namely because both of them are learning from their observations during a run or several runs.
 
 To account for this, *interaction-agents* provides an inference engine, which updates agent's internal states from their observations.
 
@@ -42,7 +42,7 @@ Observations are added to the inference engine's buffer by the bundle, who calls
 List of inference engines (ongoing)
 ------------------------------------
 
-* ``GoalInferenceWithOperatorModelGiven`` (GIWOMG) [link]:  An Inference Engine used by an assistant to infer the goal of an assistant. It assumes that the operator chooses as goal one of the targets of the task, stored in the 'Targets' substate of the task. It is also assumed that the assistant has an internal state 'Beliefs'. The inference is based on a discrete Bayes update, where the likelihood comes from an operator_model which has to be provided to this engine.
+* ``GoalInferenceWithUserModelGiven`` (GIWOMG) [link]:  An Inference Engine used by an assistant to infer the goal of an assistant. It assumes that the user chooses as goal one of the targets of the task, stored in the 'Targets' substate of the task. It is also assumed that the assistant has an internal state 'Beliefs'. The inference is based on a discrete Bayes update, where the likelihood comes from an user_model which has to be provided to this engine.
 
 
 
@@ -56,13 +56,13 @@ The following table summarizes the inference engines implemented.
 
 
 ======= ==============  ==========  ======  ===================================
-Engine      Discrete    Continuous  Method   operator model has to be provided?
+Engine      Discrete    Continuous  Method   user model has to be provided?
 ======= ==============  ==========  ======  ===================================
 GIWOMG          ✔️                   Bayes                  ✔️
 CG                          ✔️       Bayes                 (✔️)
 ======= ==============  ==========  ======  ===================================
 
-``GoalInferenceWithOperatorModelGiven`` (GIWOMG)
+``GoalInferenceWithUserModelGiven`` (GIWOMG)
 """"""""""""""""""""""""""""""""""""""""""""""""""""
 Bayesian updating in the discrete case.
 Computes for each target :math:`\theta` the associated posterior probability, given an observation :math:`x` and the last user action :math:`y`:

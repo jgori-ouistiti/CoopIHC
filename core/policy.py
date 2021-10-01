@@ -6,7 +6,6 @@ import numpy
 import copy
 import math
 
-from loguru import logger
 from tabulate import tabulate
 from core.core import Handbook
 import time
@@ -20,30 +19,28 @@ class BasePolicy:
     """
     def __init__(self, *args, **kwargs):
         # If a state is provided, use it; else create one (important not to lose the reference w/r the game_state)
-        print(args, kwargs)
         if args:
             self.action_state = args[0]
         else:
             action_state = State()
             action_state['action'] = StateElement()
             self.action_state = action_state
-        if kwargs:
-            spaces = kwargs.get('action_space')
-            if spaces is not None:
-                self.action_state['action']['spaces'] = spaces
-            set = kwargs.get('action_set')
-            if set is not None:
-                self.action_state['action']['possible_values'] = set
-            values = kwargs.get('action_values')
-            if values is not None:
-                self.action_state['action']['values'] = values
-            clipping_mode = kwargs.get('clipping_mode')
-            if clipping_mode is not None:
-                self.action_state['action']['clipping_mode'] = clipping_mode
+        # if kwargs:
+        #     spaces = kwargs.get('action_space')
+        #     if spaces is not None:
+        #         self.action_state['action']['spaces'] = spaces
+        #     set = kwargs.get('action_set')
+        #     if set is not None:
+        #         self.action_state['action']['possible_values'] = set
+        #     values = kwargs.get('action_values')
+        #     if values is not None:
+        #         self.action_state['action']['values'] = values
+        #     clipping_mode = kwargs.get('clipping_mode')
+        #     if clipping_mode is not None:
+        #         self.action_state['action']['clipping_mode'] = clipping_mode
 
 
         self.host = None
-        self.handbook = Handbook({'name': self.__class__.__name__, 'render_mode': [], 'parameters': []})
 
     # https://stackoverflow.com/questions/1015307/python-bind-an-unbound-method
     def _bind(self, func, as_name=None):
@@ -72,11 +69,13 @@ class BasePolicy:
         pass
 
     def sample(self):
-        return  StateElement(
-            values = [u.sample() for u in self.action_state['action'].spaces],
-            spaces = self.action_state['action'].spaces,
-            possible_values = self.action_state['action'].possible_values,
-            clipping_mode = self.action_state['action'].clipping_mode), 0
+        self.action_state['action'].reset()
+        return self.action_state['action'], 0
+
+        # action = StateElement(
+        #     values = [u.sample() for u in self.action_state['action'].spaces],
+        #     spaces = self.action_state['action'].spaces,
+        #     clipping_mode = self.action_state['action'].clipping_mode), 0
 
 
 class LinearFeedback(BasePolicy):
@@ -95,13 +94,6 @@ class LinearFeedback(BasePolicy):
 
 
 
-        _state_indicator = {"name": 'state_indicator', "value": state_indicator, "meaning": 'Indicates which substate of the internal state will be used as action'}
-        _index =  {"name": 'index', "value": index, "meaning": 'Index that is applied to the state_indicator'}
-        _feedback_gain =  {"name": 'feedback_gain', "value": feedback_gain, "meaning": 'Gain (K) applied to the selected substate: output of sample = -K @ state[state_indicator][index].'}
-        _noise_function = {"name": 'noise_function', "value": self.noise_function.__name__, "meaning": 'A function that is applied to the action to produce noisy actions. The signature of the function is "def noise_function(self, action, observation, *args):" and it should return a noise vector'}
-        _noise_args = {"name": 'noise_args', "value": self.noise_args, "meaning": 'args that need to be supplied to the noise function'}
-
-        self.handbook['parameters'].extend([_state_indicator, _index, _feedback_gain, _noise_function, _noise_args])
 
     def set_feedback_gain(self, gain):
         self.feedback_gain = gain
@@ -165,27 +157,14 @@ class WrapAsPolicy(BasePolicy):
 
 # ----------- Bayesian Information Gain Policy ---------
 class BIGDiscretePolicy(BasePolicy):
-    def __init__(self, action_state, operator_policy_model, assistant_action_space = [None]):
-        try:
-            assistant_action_possible_values = [list(range(assistant_action_space[0].n))]
-        except AttributeError:
-            assistant_action_possible_values = None
+    def __init__(self, assistant_action_state, user_policy_model):
 
-        super().__init__(action_state, action_space = assistant_action_space, action_set = assistant_action_possible_values)
-
+        super().__init__(assistant_action_state)
 
         self.assistant_action_set = self.action_state['action'].cartesian_product()
-        self.operator_policy_model = operator_policy_model
-        self.operator_action_set = operator_policy_model.action_state['action'].cartesian_product()
-        self.operator_policy_likelihood_function = operator_policy_model.compute_likelihood
-
-
-        _action_state = {"name": 'action_state', "value": action_state, "meaning": 'Reference to the action_state, usually from the game_state'}
-        _assistant_action_space =  {"name": 'assistant_action_space', "value": assistant_action_space, "meaning": 'The space in which the assistant can take actions'}
-        _operator_policy_model = {"name": 'operator_policy_model', "value": operator_policy_model, "meaning": 'An instance of a Policy class (or Subclass)'}
-
-        self.handbook['render_mode'].extend(['plot', 'text'])
-        self.handbook['parameters'].extend([_action_state, _assistant_action_space, _operator_policy_model])
+        self.user_policy_model = user_policy_model
+        self.user_action_set = user_policy_model.action_state['action'].cartesian_product()
+        self.user_policy_likelihood_function = user_policy_model.compute_likelihood
 
 
     def attach_set_theta(self, set_theta):
@@ -203,10 +182,10 @@ class BIGDiscretePolicy(BasePolicy):
     #     return observation
 
 
-    def PYy_Xx(self, operator_action, assistant_action, potential_states, beliefs):
+    def PYy_Xx(self, user_action, assistant_action, potential_states, beliefs):
         r""" Compute the conditional probability :math:`P(Y=y|X=x)`
 
-        :param operator_action: given operator action y for which the condition is computed
+        :param user_action: given user action y for which the condition is computed
         :param position: the future position
         :param targets: (list) possible targets
         :param beliefs: (list) priors for each target
@@ -217,7 +196,7 @@ class BIGDiscretePolicy(BasePolicy):
         """
         pYy__Xx = 0
         for potential_state, belief in zip(potential_states, beliefs):
-            pYy__Xx += self.operator_policy_likelihood_function(operator_action, potential_state)*belief
+            pYy__Xx += self.user_policy_likelihood_function(user_action, potential_state)*belief
         return pYy__Xx
 
 
@@ -233,8 +212,8 @@ class BIGDiscretePolicy(BasePolicy):
         :meta public:
         """
         H = 0
-        for operator_action in self.operator_action_set:
-            pYy_Xx = self.PYy_Xx(operator_action, assistant_action, potential_states, beliefs)
+        for user_action in self.user_action_set:
+            pYy_Xx = self.PYy_Xx(user_action, assistant_action, potential_states, beliefs)
             if pYy_Xx != 0:
                 H += -pYy_Xx * math.log(pYy_Xx,2)
         return H
@@ -251,10 +230,10 @@ class BIGDiscretePolicy(BasePolicy):
         :meta public:
         """
         H = 0
-        for operator_action in self.operator_action_set:
+        for user_action in self.user_action_set:
             for potential_state, belief in zip(potential_states, beliefs):
 
-                pYy__OoXx = self.operator_policy_likelihood_function(operator_action, potential_state)
+                pYy__OoXx = self.user_policy_likelihood_function(user_action, potential_state)
 
                 if pYy__OoXx != 0: # convention: 0 log 0 = 0
                     H += -belief*pYy__OoXx*math.log(pYy__OoXx,2)
@@ -301,7 +280,7 @@ class BIGDiscretePolicy(BasePolicy):
 
         :meta public:
         """
-        beliefs = self.host.state['Beliefs']['values']
+        beliefs = self.host.state['beliefs']['values'][0].squeeze().tolist()
         # hp, hp_target = max(beliefs), targets[beliefs.index(max(beliefs))]
         # if hp > self.threshold:
         #     return [hp_target], [None]
@@ -328,13 +307,14 @@ class BadlyDefinedLikelihoodError(Exception):
 
 class ELLDiscretePolicy(BasePolicy):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        action_state = kwargs.pop('action_state')
+        super().__init__(action_state, *args, **kwargs)
         self.explicit_likelihood = True
 
     @classmethod
     def attach_likelihood_function(cls, _function):
         cls.compute_likelihood = _function
-        logger.info('Attached {} to {}'.format(_function, cls.__name__))
+
 
     def sample(self):
         """ Select the most likely action.
@@ -352,20 +332,19 @@ class ELLDiscretePolicy(BasePolicy):
     def forward_summary(self, observation):
         """ Compute the likelihood of each action, given the current observation
 
-        :param observation: (OrderedDict) operator observation
+        :param observation: (OrderedDict) user observation
 
         :return: actions, likelihood. list of actions and associated likelihoods
 
         :meta public:
         """
         llh, actions = [], []
-        for action in self.action_state["action"].cartesian_product():
+        action_stateelement = self.action_state["action"]
+        for action in action_stateelement.cartesian_product():
             llh.append(self.compute_likelihood(action, observation))
             actions.append(action)
         if sum(llh) != 1:
-            print('Warning, llh does not sum to 1')
-            print(llh)
-            print(observation)
+            raise BadlyDefinedLikelihoodError('Likelihood does not sum to 1: {}'.format(llh))
         return actions, llh
 
 
@@ -375,7 +354,7 @@ class ELLDiscretePolicy(BasePolicy):
 
 
 
-# ======================= Continuous Policies
+# ======================= RL Policy
 
 class RLPolicy(BasePolicy):
     """ Code works as proof of concept, but should be tested and augmented to deal with arbitrary wrappers. Possibly the wrapper class should be augmented with a reverse method, or something like that.
@@ -400,7 +379,7 @@ class RLPolicy(BasePolicy):
 
         # Recovering action space
         action_state = State()
-        action_state['action'] = copy.deepcopy(getattr(getattr(getattr(self.training_env.unwrapped.bundle, 'operator'), 'policy'), 'action_state')['action'])
+        action_state['action'] = copy.deepcopy(getattr(getattr(getattr(self.training_env.unwrapped.bundle, 'user'), 'policy'), 'action_state')['action'])
 
         super().__init__(action_state, *args, **kwargs)
 

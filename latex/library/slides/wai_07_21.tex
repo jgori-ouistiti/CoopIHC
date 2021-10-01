@@ -114,14 +114,14 @@ Main idea of the library:
 \section{Interaction Model}
 
 
-\begin{frame}{\textbf{Operator-Assistant Model}}
+\begin{frame}{\textbf{User-Assistant Model}}
 \begin{minipage}{.6\textwidth}
 \includegraphics[height = .8\textheight]{fig/two_agents_generic.pdf} 
 \end{minipage}
 \begin{minipage}{.38\textwidth}
 \begin{itemize}
-\item Operators and assistants are decision making systems
-\item States: task ($s_T$), operator ($s_O$), assistant ($s_A$).
+\item Users and assistants are decision making systems
+\item States: task ($s_T$), user ($s_O$), assistant ($s_A$).
 \end{itemize}
 \end{minipage}
 \end{frame}
@@ -132,10 +132,10 @@ Main idea of the library:
 \begin{tikzpicture}
 \draw (0,0) node[rectangle, draw = black, name = s0, text width = 3cm, text centered]{$0,s_T, s_O, s_A$};
 \draw (s0) + (0,-2) node[rectangle, draw = black, name = s1, text width = 3cm, text centered]{$1,s_T, s'_O, s_A$};
-\draw[->] (s0) -- node[midway, right, text width = 3cm, text centered]{\small operator observes and infers} (s1);
-\draw[->] (s1.0) -- + (1.5,0) node[right]{operator rewards};
+\draw[->] (s0) -- node[midway, right, text width = 3cm, text centered]{\small user observes and infers} (s1);
+\draw[->] (s1.0) -- + (1.5,0) node[right]{user rewards};
 \draw (s1) + (0,-2) node[rectangle, draw = black, name = s2, text width = 3cm, text centered]{$2,s'_T, s'_O, s_A$};
-\draw[->] (s1) -- node[midway, right, text width = 3cm, text centered]{\small operator acts} (s2);
+\draw[->] (s1) -- node[midway, right, text width = 3cm, text centered]{\small user acts} (s2);
 \draw[->] (s2.0) -- + (1.5,0) node[right]{task rewards};
 \draw (s2) + (0,-2) node[rectangle, draw = black, name = s3, text width = 3cm, text centered]{$3,s'_T, s'_O, s'_A$};
 \draw[->] (s2) -- node[midway, right, text width = 3cm, text centered]{\small assistant observes and infers} (s3);
@@ -153,9 +153,9 @@ Partially Observable Stochastic Game (POSG), with transition and observation pro
 {\small
 \begin{align*}
  p(s^{(1)}, o^{(1)} | s^{(0)}, a^{(0)}) & = p(o^{(1)} | s^{(0)}, a^{(0)}) \cdot{} p(s^{(1)}| o^{(1)}, s^{(0)}, a^{(0)}) \\
-    &= \underbrace{p(o'_O | s^{(0)})}_\text{operator observation function      }  \underbrace{p(s^{(1)}| o'_O, s^{(0)})}_\text{        operator inference function} \\
+    &= \underbrace{p(o'_O | s^{(0)})}_\text{user observation function      }  \underbrace{p(s^{(1)}| o'_O, s^{(0)})}_\text{        user inference function} \\
     p(s^{(2)}, o^{(2)} | s^{(1)}, a^{(1)}) & = p(s^{(2)}| s^{(1)}, a^{(1)}) \\
-    &= \underbrace{p(s^{(2)}| s^{(1)}, a'_O)}_\text{        operator step function} \\
+    &= \underbrace{p(s^{(2)}| s^{(1)}, a'_O)}_\text{        user step function} \\
     p(s^{(3)}, o^{(3)} | s^{(2)}, a^{(2)}) & = p(o^{(3)} | s^{(2)}, a^{(2)}) \cdot{} p(s^{(3)}| o^{(3)}, s^{(2)}, a^{(2)}) \\
     &= \underbrace{p(o'_A | s^{(2)})}_\text{assistant observation function      }  \underbrace{p(s^{(3)}| o'_A, s^{(2)})}_\text{        assistant inference function} \\
     p(s^{'(0)}, o^{'(0)} | s^{(3)}, a^{(3)}) & = p(s^{'(0)}| s^{(3)}, a^{(3)}) \\
@@ -211,7 +211,7 @@ class MyNewAgent(BaseAgent):
         if state is None:
             # state =
 
-        super().__init__('operator',
+        super().__init__('user',
                             state = state,
                             policy = agent_policy,
                             observation_engine = observation_engine,
@@ -227,7 +227,7 @@ class MyNewAgent(BaseAgent):
 States are first class objects:
 \begin{itemize}
 \item Filtering, flattening, clipping, casting, value checking and correcting properties
-\item State Arithmetics possible (most Python operators will work)
+\item State Arithmetics possible (most Python users will work)
 \item Iteration, Indexing possible
 \end{itemize}
 
@@ -308,8 +308,8 @@ class MyInferenceEngine(BaseInferenceEngine):
         observation = self.observation
         # alternatively:
         # observations = self.buffer
-        if self.host.role == "operator":
-            state = observation['operator_state']
+        if self.host.role == "user":
+            state = observation['user_state']
         else:
             state = observation["assistant_state"]
 
@@ -393,9 +393,9 @@ class SimplePointingTask(InteractionTask):
             super().reset(dic = dic)
 
 
-    def operator_step(self, *args, **kwargs):
+    def user_step(self, *args, **kwargs):
    
-        super().operator_step()
+        super().user_step()
         # do something
 
         return self.state, reward, is_done, {}
@@ -434,9 +434,9 @@ class SimplePointingTask(InteractionTask):
 \end{frame}
 
 
-\begin{frame}{\textbf{Bundles: A PlayOperator Bundle}}
+\begin{frame}{\textbf{Bundles: A PlayUser Bundle}}
 \centering
-\includegraphics[height=.9\textheight]{fig/PlayOperator.png} 
+\includegraphics[height=.9\textheight]{fig/PlayUser.png} 
 \end{frame}
 
 \begin{frame}[fragile]{\textbf{Defining a Bundle}}
@@ -446,8 +446,8 @@ class SimplePointingTask(InteractionTask):
 \lstset{basicstyle=\footnotesize}
 \begin{lstlisting}
 class MyBundle(Bundle):
-    def __init__(self, task, operator, assistant, **kwargs):
-        super().__init__(task, operator, assistant, **kwargs)
+    def __init__(self, task, user, assistant, **kwargs):
+        super().__init__(task, user, assistant, **kwargs)
 
     def reset(self, dic = {}):
         return super().reset(dic = dic)
@@ -457,7 +457,7 @@ class MyBundle(Bundle):
         super().step(action)
 		
         # Broadcast action if needed
-		# have the operators and assistant step
+		# have the users and assistant step
         # collect all rewards, check if task is done        
         return observation, rewards, is_done, sumrewards
         
@@ -473,13 +473,13 @@ class MyBundle(Bundle):
 \resizebox{\textwidth}{!}{
 \begin{tabulary}{.8\textwidth}{c c c c c c c }
 \toprule 
-  & Task & Operator & Assistant & Operator Action & Assistant Action & Comments \\ 
-PlayOperator & $\checkmark$ & $\checkmark$ & $\checkmark$ & Modeler & Policy & Evaluate operator on-line \\ 
+  & Task & User & Assistant & User Action & Assistant Action & Comments \\ 
+PlayUser & $\checkmark$ & $\checkmark$ & $\checkmark$ & Modeler & Policy & Evaluate user on-line \\ 
 PlayAssistant & $\checkmark$ & $\checkmark$ & $\checkmark$ & Policy & Modeler & Evaluate assistant on-line \\ 
 PlayNone & $\checkmark$ & $\checkmark$ & $\checkmark$ & Policy & Policy & Evaluate both off-line \\ 
 PlayBoth & $\checkmark$ & $\checkmark$ & $\checkmark$ & Modeler & Modeler & Evaluate both on-line \\  
-SinglePlayOperator & $\checkmark$ &  & $\checkmark$ & Modeler & & Develop user models \\
-SinglePlayOperatorAuto & $\checkmark$ &  & $\checkmark$ & Policy &  & Run user models \\
+SinglePlayUser & $\checkmark$ &  & $\checkmark$ & Modeler & & Develop user models \\
+SinglePlayUserAuto & $\checkmark$ &  & $\checkmark$ & Policy &  & Run user models \\
 DevelopTask & $\checkmark$ &  &  & Modeler & Modeler & Helper to implement tasks \\
 Train & --- & --- & --- & RL algorithm & RL algorithm & compatible with gym.Env\\
 \bottomrule 
@@ -508,9 +508,9 @@ Train & --- & --- & --- & RL algorithm & RL algorithm & compatible with gym.Env\
 \lstset{basicstyle=\footnotesize}
 \begin{lstlisting}
 task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-binary_operator = CarefulPointer()
+binary_user = CarefulPointer()
 unitcdgain = ConstantCDGain(1)
-bundle = PlayNone(task, binary_operator, unitcdgain)
+bundle = PlayNone(task, binary_user, unitcdgain)
 game_state = bundle.reset()
 bundle.render('plotext')
 while True:
@@ -540,11 +540,11 @@ def make_env(rank, seed = 0):
                                 action_values = None
             )
 
-            operator = CarefulPointer(agent_policy = policy)
-            bundle = PlayOperator(task, operator, unitcdgain)
+            user = CarefulPointer(agent_policy = policy)
+            bundle = PlayUser(task, user, unitcdgain)
 
             observation_dict = OrderedDict({'task_state': OrderedDict({'Position': 0}),
-             'operator_state': OrderedDict({'Goal': 0})})
+             'user_state': OrderedDict({'Goal': 0})})
             
             env = Train(
                     bundle,
@@ -634,12 +634,12 @@ That policy can be plugged back in the agent
 task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
 unitcdgain = ConstantCDGain(1)
 
-# specifying operator policy
+# specifying user policy
 action_wrappers = OrderedDict()
 action_wrappers['ActionWrapper'] = (ActionWrapper, ())
 
 policy = RLPolicy(
-        'operator',
+        'user',
         model_path =  'guide/models/basic_pointer_ppo',
         learning_algorithm = 'PPO',
         library = 'stable_baselines3',
@@ -647,9 +647,9 @@ policy = RLPolicy(
         wrappers = {'actionwrappers': action_wrappers, 'observation_wrappers': {}}
           )
 # Redefining the agent's policy 
-operator = CarefulPointer(agent_policy = policy)
+user = CarefulPointer(agent_policy = policy)
 
-bundle = PlayNone(task, operator, unitcdgain)
+bundle = PlayNone(task, user, unitcdgain)
 game_state = bundle.reset()
 bundle.render('plotext')
 
@@ -741,14 +741,14 @@ task = ChenEyePointingTask(
 	fitts_W, 
 	fitts_D, 
 	dimension = 1)
-operator = ChenEye( 
+user = ChenEye( 
 	perceptualnoise, 
 	oculomotornoise, 
 	dimension = 1)
 	
-obs_bundle = SinglePlayOperatorAuto(
+obs_bundle = SinglePlayUserAuto(
 	task, 
-	operator, 
+	user, 
 	start_at_action = True)
 \end{lstlisting}
 \end{adjustbox}
@@ -811,24 +811,24 @@ Combine it with old observation engine
 # Define cascaded observation engine
 cursor_tracker = ChenEyeObservationEngineWrapper(obs_bundle)
 default_observation_engine = RuleObservationEngine(
-       base_operator_engine_specification,
+       base_user_engine_specification,
             )
 cascaded_observation_engine = CascadedObservationEngine(
 [cursor_tracker, default_observation_engine])
 
 \end{lstlisting}
 \end{adjustbox}
-and plug it in the old operator, to have  new observation engine
+and plug it in the old user, to have  new observation engine
 \begin{adjustbox}{width=\textwidth}
 \lstset{language=Python}
 \lstset{frame=lines}
 \lstset{label={lst:code_direct}}
 \lstset{basicstyle=\footnotesize}
 \begin{lstlisting}
-binary_operator = CarefulPointer(
+binary_user = CarefulPointer(
 	observation_engine = cascaded_observation_engine)
     BIGpointer = BIGGain()
-    bundle = PlayAssistant(pointing_task, binary_operator, BIGpointer)
+    bundle = PlayAssistant(pointing_task, binary_user, BIGpointer)
 
 
 \end{lstlisting}

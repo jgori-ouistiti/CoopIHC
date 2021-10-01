@@ -5,13 +5,12 @@ import gym
 
 
 from core.interactiontask import InteractionTask
-from core.space import State, StateElement
+from core.space import State, StateElement, Space
 import eye.noise
 
-from loguru import logger
 
 class ChenEyePointingTask(InteractionTask):
-    """ A pointing task performed by the Eye, adapted from Chen, Xiuli, et al. "An Adaptive Model of Gaze-based Selection" Proceedings of the 2021 CHI Conference on Human Factors in Computing Systems. 2021. This tasks only requires an operator (human perception task).
+    """ A pointing task performed by the Eye, adapted from Chen, Xiuli, et al. "An Adaptive Model of Gaze-based Selection" Proceedings of the 2021 CHI Conference on Human Factors in Computing Systems. 2021. This tasks only requires an user (human perception task).
 
 
 
@@ -33,26 +32,22 @@ class ChenEyePointingTask(InteractionTask):
         self.parity = 1
 
 
-        self.handbook['render_mode'].extend(['plot', 'text'])
-        _threshold = {"name": 'threshold', "value": threshold, "meaning": 'If the distance between the fixation and the target is less or equal than threshold, the environment will return True'}
-        _fitts_W = { "name": 'W', "value": fitts_W, 'meaning': 'radius of the circular target used'}
-        _fitts_D = { "name": 'D','value': fitts_D, 'meaning': 'distance between targets'}
-        _dimension = {'name': 'dimension', 'value': dimension, 'meaning': 'Dimension of the task used. In 1D the targets appear alternatively left or right, while in 2D the targets appear at a random angle and fixed radius.'}
-        self.params = [_threshold, _fitts_W, _dimension]
-        self.handbook['parameters'].extend(self.params)
-
-
         self.state['targets'] = StateElement(
             values = [numpy.array([0 for i in range(dimension)])],
-            spaces = [gym.spaces.Box(-1,1, shape = (dimension,))],
-            possible_values = [None],
-            clipping_mode = 'warning'
+            spaces = Space([
+                -numpy.ones((dimension,), dtype =numpy.float32),
+                numpy.ones((dimension,), dtype =numpy.float32)
+            ]),
+            clipping_mode = 'error'
         )
+
         self.state["fixation"] = StateElement(
             values = [numpy.array([0 for i in range(dimension)])],
-            spaces = [gym.spaces.Box(-1,1, shape = (dimension,))],
-            possible_values = [None],
-            clipping_mode = 'warning')
+            spaces = Space([
+                -numpy.ones((dimension,), dtype =numpy.float32),
+                numpy.ones((dimension,), dtype =numpy.float32)
+            ]),
+            clipping_mode = 'clip')
 
 
 
@@ -94,39 +89,37 @@ class ChenEyePointingTask(InteractionTask):
         :meta public:
         """
 
-        self.state['targets']['values'] = [self.get_new_target(self.fitts_D)]
-        self.state['fixation']['values'] = [numpy.array([0 for i in range(self.dimension)])]
+        self.state['targets']['values'] = numpy.array([self.get_new_target(self.fitts_D)])
+        self.state['fixation']['values'] = numpy.array([0 for i in range(self.dimension)])
         super().reset(dic)
 
 
 
-    def _is_done_operator(self):
+    def _is_done_user(self):
         if numpy.sqrt(numpy.sum((self.state['fixation']['values'] - self.state['targets']['values'][0])**2)) - self.fitts_W/2 < self.threshold:
             is_done = True
         else:
             is_done = False
-        logger.info("Task {} done: {}".format(self.__class__.__name__, is_done))
-        logger.info('Condition: distance(fixation,targets) < threshold + half target width ---- {} < {} + {}'.format(str(numpy.sqrt(numpy.sum((self.state['fixation']['values'] - self.state['targets']['values'][0])**2))), str(self.threshold), str(self.fitts_W/2)  ))
         return is_done
 
-    def operator_step(self, operator_action):
+    def user_step(self, user_action):
         """ Use the difference between the old and new fixation to generate a covariance matrix for noise. Then, sample a 2D Gaussian with the corresponding covariance matrix.
 
         If the new fixation is inside the target, then stop.
 
-        :param operator_action: the new fixation
+        :param user_action: the new fixation
 
         :return: new task state, reward, is_done, {}
 
         :meta public:
         """
         self.turn += 1/2
-        action = operator_action['values'][0]
+        action = user_action['values'][0]
         self.state['fixation']['values'] = action
 
         reward = -1
 
-        return self.state, reward, self._is_done_operator(), {}
+        return self.state, reward, self._is_done_user(), {}
 
 
 
@@ -149,8 +142,8 @@ class ChenEyePointingTask(InteractionTask):
 
         :meta public:
         """
-        goal = self.state['targets']['values'][0].tolist()
-        fx = self.state['fixation']['values'][0].tolist()
+        goal = self.state['targets']['values'][0].squeeze().tolist()
+        fx = self.state['fixation']['values'][0].squeeze().tolist()
 
         if 'text' in mode:
             print('\n')
@@ -162,9 +155,9 @@ class ChenEyePointingTask(InteractionTask):
 
         if 'plot' in mode:
             try:
-                axtask, axoperator, axassistant = args[:3]
+                axtask, axuser, axassistant = args[:3]
             except ValueError:
-                raise ValueError('You have to provide the three axes (task, operator, assistant) to render in plot mode.')
+                raise ValueError('You have to provide the three axes (task, user, assistant) to render in plot mode.')
             if self.ax is not None:
                 pass
             else:
@@ -173,9 +166,9 @@ class ChenEyePointingTask(InteractionTask):
                 self.ax.set_ylim([-1.3,1.3])
                 self.ax.set_aspect('equal')
 
-                axoperator.set_xlim([-1.3,1.3])
-                axoperator.set_ylim([-1.3,1.3])
-                axoperator.set_aspect('equal')
+                axuser.set_xlim([-1.3,1.3])
+                axuser.set_ylim([-1.3,1.3])
+                axuser.set_aspect('equal')
 
 
             if self.dimension == 1:

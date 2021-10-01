@@ -50,49 +50,49 @@ class BaseObservationEngine:
 
 oracle_engine_specification =       [('turn_index', 'all'),
                                     ('task_state', 'all'),
-                                    ('operator_state', 'all'),
+                                    ('user_state', 'all'),
                                     ('assistant_state', 'all'),
-                                    ('operator_action', 'all'),
+                                    ('user_action', 'all'),
                                     ('assistant_action', 'all')
                                     ]
 
 blind_engine_specification =        [('turn_index', 'all'),
                                     ('task_state', None),
-                                    ('operator_state', None),
+                                    ('user_state', None),
                                     ('assistant_state', None),
-                                    ('operator_action', 'all'),
+                                    ('user_action', 'all'),
                                     ('assistant_action', 'all')
                                     ]
 
 base_task_engine_specification =         [('turn_index', 'all'),
                                     ('task_state', 'all'),
-                                    ('operator_state', None),
+                                    ('user_state', None),
                                     ('assistant_state', None),
-                                    ('operator_action', 'all'),
+                                    ('user_action', 'all'),
                                     ('assistant_action', 'all')
                                     ]
 
-base_operator_engine_specification  =    [ ('turn_index', 'all'),
+base_user_engine_specification  =    [ ('turn_index', 'all'),
                                     ('task_state', 'all'),
-                                    ('operator_state', 'all'),
+                                    ('user_state', 'all'),
                                     ('assistant_state', None),
-                                    ('operator_action', 'all'),
+                                    ('user_action', 'all'),
                                     ('assistant_action', 'all')
                                     ]
 
 base_assistant_engine_specification  =   [ ('turn_index', 'all'),
                                     ('task_state', 'all'),
-                                    ('operator_state', None),
+                                    ('user_state', None),
                                     ('assistant_state', 'all'),
-                                    ('operator_action', 'all'),
+                                    ('user_action', 'all'),
                                     ('assistant_action', 'all')
                                     ]
 
 custom_example_specification =      [('turn_index', 'all'),
                                     ('task_state', 'substate1', 'all'),
-                                    ('operator_state', 'substate1', slice(0,2,1)),
+                                    ('user_state', 'substate1', slice(0,2,1)),
                                     ('assistant_state', 'None'),
-                                    ('operator_action', 'all'),
+                                    ('user_action', 'all'),
                                     ('assistant_action', 'all')
                                     ]
 

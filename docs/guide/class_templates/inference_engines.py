@@ -20,8 +20,8 @@ class MyInferenceEngine(BaseInferenceEngine):
         observation = self.observation
         # alternatively:
         # observations = self.buffer
-        if self.host.role == "operator":
-            state = observation['operator_state']
+        if self.host.role == "user":
+            state = observation['user_state']
         else:
             state = observation["assistant_state"]
 
@@ -38,9 +38,9 @@ class MyInferenceEngine(BaseInferenceEngine):
                 render_flag = True
 
         if 'plot' in mode:
-            axtask, axoperator, axassistant = args[:3]
-            if self.host.role == 'operator':
-                ax = axoperator
+            axtask, axuser, axassistant = args[:3]
+            if self.host.role == 'user':
+                ax = axuser
             else:
                 ax = axassistant
 

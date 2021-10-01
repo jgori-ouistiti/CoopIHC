@@ -33,8 +33,8 @@ class ExampleTask(InteractionTask):
         super().reset(dic)
 
 
-    def operator_step(self, *args, **kwargs):
-        return super().operator_step()
+    def user_step(self, *args, **kwargs):
+        return super().user_step()
 
     def assistant_step(self, *args, **kwargs):
         # Call super method before anything else
@@ -45,11 +45,11 @@ class ExampleTask(InteractionTask):
 
         # Look up needed inputs in the game state, and use the special 'human_values' key to convert to human readable values
         assistant_action = self.bundle.game_state['assistant_action']['action']['human_values'][0]
-        operator_action = self.bundle.game_state['operator_action']['action']['human_values'][0]
+        user_action = self.bundle.game_state['user_action']['action']['human_values'][0]
         position = self.state['Position']['human_values'][0]
 
         # Apply modulation, with rounding and clipping.
-        self.state['Position']['values'] = [int(numpy.clip(numpy.round(position + operator_action*assistant_action, decimals = 0), 0, self.gridsize-1))]
+        self.state['Position']['values'] = [int(numpy.clip(numpy.round(position + user_action*assistant_action, decimals = 0), 0, self.gridsize-1))]
 
         # Check if the Goal is attained
         if self.state['Position']['human_values'][0] == self.goal:
@@ -106,16 +106,16 @@ bundle.render("text")
 #
 # if _str == 'basic-plot':
 #     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-#     operator = CarefulPointer()
+#     user = CarefulPointer()
 #     assistant = ConstantCDGain(1)
 #
-#     bundle = PlayNone(task, operator, assistant)
+#     bundle = PlayNone(task, user, assistant)
 #     game_state = bundle.reset()
 #     bundle.render('plotext')
 #
 # if _str == 'basic-PlayNone' or _str == 'all':
 #     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-#     binary_operator = CarefulPointer()
+#     binary_user = CarefulPointer()
 #     action_space = [gym.spaces.Discrete(1)]
 #     action_set = [[1]]
 #     agent_policy = Policy(action_space, action_set = action_set)
@@ -127,7 +127,7 @@ bundle.render("text")
 #                             inference_engine = None
 #                             )
 #
-#     bundle = PlayNone(task, binary_operator, unitcdgain)
+#     bundle = PlayNone(task, binary_user, unitcdgain)
 #     game_state = bundle.reset()
 #     bundle.render('plotext')
 #     while True:

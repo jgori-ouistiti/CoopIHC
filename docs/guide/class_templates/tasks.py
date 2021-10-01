@@ -1,7 +1,7 @@
 class SimplePointingTask(InteractionTask):
     """ A 1D pointing task.
 
-    A 1D grid of size 'Gridsize'. The cursor is at a certain 'Position' and there are several potential 'Targets' on the grid. The operator action is modulated by the assistant.
+    A 1D grid of size 'Gridsize'. The cursor is at a certain 'Position' and there are several potential 'Targets' on the grid. The user action is modulated by the assistant.
 
     :param gridsize: (int) Size of the grid
     :param number_of_targets: (int) Number of targets on the grid
@@ -43,21 +43,21 @@ class SimplePointingTask(InteractionTask):
             super().reset(dic = dic)
 
 
-    def operator_step(self, *args, **kwargs):
+    def user_step(self, *args, **kwargs):
         """ Do nothing, increment turns, return half a timestep
 
         :meta public:
         """
-        super().operator_step()
+        super().user_step()
         # do something
 
         return self.state, reward, is_done, {}
 
 
     def assistant_step(self, *args, **kwargs):
-        """ Modulate the operator's action.
+        """ Modulate the user's action.
 
-        Multiply the operator action with the assistant action.
+        Multiply the user action with the assistant action.
         Update the position and grids.
 
         :param assistant_action: (list)
@@ -90,7 +90,7 @@ class SimplePointingTask(InteractionTask):
         if 'text' in mode:
             # print something
         if 'plot' in mode:
-            axtask, axoperator, axassistant = args[:3]
+            axtask, axuser, axassistant = args[:3]
             if self.ax is not None:
                 # plot something
             else:

@@ -1,10 +1,10 @@
 # imports from Coopihc
 from pointing.envs import SimplePointingTask
-from pointing.operators import CarefulPointer
+from pointing.users import CarefulPointer
 from pointing.assistants import ConstantCDGain
 from core.policy import BasePolicy, RLPolicy
 import core
-from core.bundle import PlayOperator, PlayNone, Train
+from core.bundle import PlayUser, PlayNone, Train
 
 # other imports
 from collections import OrderedDict
@@ -36,14 +36,14 @@ policy = BasePolicy(    action_space = [core.space.Discrete(10)],
 )
 # Re-use the previously defined user model called CarefulPointer, but
 # override its policy
-operator = CarefulPointer(agent_policy = policy)
+user = CarefulPointer(agent_policy = policy)
 # Bundle the pointing task, the user model and the assistant in a POMDP, where assistant actions are queried from its policy. The bundle expects to be fed user actions
-bundle = PlayOperator(task, operator, unitcdgain)
+bundle = PlayUser(task, user, unitcdgain)
 # Initialize the bundle to some random state
 observation = bundle.reset()
 # Only observe the position (task state) and goal (user state) states.
 # The rest is uninformative and will slow down training.
-observation_dict = OrderedDict({'task_state': OrderedDict({'position': 0}), 'operator_state': OrderedDict({'goal': 0})})
+observation_dict = OrderedDict({'task_state': OrderedDict({'position': 0}), 'user_state': OrderedDict({'goal': 0})})
 
 # We are going to use PPO to solve the POMDP, which works with
 # continuous action spaces, but our policy has discrete actions. So we introduce a wrapper to pass between continuous and discrete spaces. This is classical in RL, and does not depend on Coopihc
@@ -87,10 +87,10 @@ def make_env(rank, seed = 0):
                             action_values = None
         )
 
-        operator = CarefulPointer(agent_policy = policy)
-        bundle = PlayOperator(task, operator, unitcdgain)
+        user = CarefulPointer(agent_policy = policy)
+        bundle = PlayUser(task, user, unitcdgain)
 
-        observation_dict = OrderedDict({'task_state': OrderedDict({'position': 0}), 'operator_state': OrderedDict({'goal': 0})})
+        observation_dict = OrderedDict({'task_state': OrderedDict({'position': 0}), 'user_state': OrderedDict({'goal': 0})})
         env = ThisActionWrapper( Train(
                 bundle,
                 observation_mode = 'multidiscrete',
@@ -136,10 +136,10 @@ if __name__ == '__main__':
                         action_values = None
     )
 
-    operator = CarefulPointer(agent_policy = policy)
-    bundle = PlayOperator(task, operator, unitcdgain)
+    user = CarefulPointer(agent_policy = policy)
+    bundle = PlayUser(task, user, unitcdgain)
 
-    observation_dict = OrderedDict({'task_state': OrderedDict({'position': 0}), 'operator_state': OrderedDict({'goal': 0})})
+    observation_dict = OrderedDict({'task_state': OrderedDict({'position': 0}), 'user_state': OrderedDict({'goal': 0})})
     training_env = ThisActionWrapper( Train(
             bundle,
             observation_mode = 'multidiscrete',
@@ -151,14 +151,14 @@ if __name__ == '__main__':
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
     unitcdgain = ConstantCDGain(1)
 
-    # # specifying operator policy
-    # observation_dict = OrderedDict({'task_state': OrderedDict({'position': 0}), 'operator_state': OrderedDict({'goal': 0})})
+    # # specifying user policy
+    # observation_dict = OrderedDict({'task_state': OrderedDict({'position': 0}), 'user_state': OrderedDict({'goal': 0})})
 
     action_wrappers = OrderedDict()
     action_wrappers['ThisActionWrapper'] = (ThisActionWrapper, ())
     # Define an RL policy, by giving the model path, the library and algorithm used to train it, as well as potential wrappers used during training.
     trained_policy = RLPolicy(
-            'operator',
+            'user',
             model_path =  'saved_model',
             learning_algorithm = 'PPO',
             library = 'stable_baselines3',
@@ -166,9 +166,9 @@ if __name__ == '__main__':
             wrappers = {'actionwrappers': action_wrappers, 'observation_wrappers': {}}
               )
     # Override the old policy with the new policy
-    operator = CarefulPointer(agent_policy = trained_policy)
+    user = CarefulPointer(agent_policy = trained_policy)
     # Evaluate the trained policy
-    bundle = PlayNone(task, operator, unitcdgain)
+    bundle = PlayNone(task, user, unitcdgain)
     game_state = bundle.reset()
     bundle.render('plotext')
     plt.tight_layout()

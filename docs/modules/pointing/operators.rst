@@ -1,7 +1,7 @@
-.. operators:
+.. users:
 
-Operators
+Users
 *****************
 
-.. automodule:: pointing.operators
+.. automodule:: pointing.users
     :members:

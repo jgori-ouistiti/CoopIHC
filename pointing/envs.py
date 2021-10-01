@@ -4,9 +4,8 @@ from collections import OrderedDict
 import gym
 import core
 from core.interactiontask import InteractionTask, PipeTaskWrapper
-from core.space import StateElement
+from core.space import StateElement, Space
 from core.helpers import sort_two_lists
-from loguru import logger
 import functools
 
 
@@ -26,48 +25,39 @@ class DiscretePointingTaskPipeWrapper(PipeTaskWrapper):
             print("warning: the received data has not been consumed. {} does not match any current task state".format(str(state)))
 
 
-    def update_operator_state(self, state):
+    def update_user_state(self, state):
         for key in state:
             try:
-                self.bundle.operator.state[key]
+                self.bundle.user.state[key]
             except KeyError:
-                raise KeyError('Key "{}" sent in received data was not found in operator state'.format(key))
-            self.bundle.operator.state[key]['values'] = state[key]
+                raise KeyError('Key "{}" sent in received data was not found in user state'.format(key))
+            self.bundle.user.state[key]['values'] = state[key]
 
 
 class DiscretePointingTask(InteractionTask):
-    def __init__(self, dim = 2, gridsize = (31,31), number_of_targets = 10, mode = 'gain', layout = 'uniform'):
+    def __init__(self, gridsize = (31,31), number_of_targets = 10, mode = 'gain', layout = 'uniform'):
         super().__init__()
-        self.dim = dim
+        self.dim = len(gridsize)
         self.gridsize = gridsize
         self.number_of_targets = number_of_targets
         self.mode = mode
         self.layout = 'uniform'
 
-        self.handbook['render_mode'].extend(['plot', 'text'])
-        _dim = {"name": 'dim', 'value': dim, "meaning": 'dimension of the gridworld. Only 1 and 2 supported for now'}
-        _gridsize = {"name": 'gridsize', "value": gridsize, "meaning": 'Size of the gridworld'}
-        _number_of_targets = { "name": 'number_of_targets', "value": number_of_targets, 'meaning': 'number of potential targets from which to choose a goal'}
-        _mode = { "name": 'mode','value': mode, 'meaning': "whether the assistant is expected to work as gain or as positioner. In the first case (gain), the operator's action is multiplied by the assistant's action to determine by how much to shift the old position of the cursor. In the second case (position) the assistant's action is directly the new position of the cursor."}
-        self.handbook['parameters'].extend([_dim, _gridsize, _number_of_targets, _mode])
-
 
         self.state['position'] = StateElement(
                     values = None,
-                    spaces = [core.space.Box(
-                            low = numpy.array([0 for i in range(dim)]),
-                            high = numpy.array([gridsize[i] for i in range(dim)]),
-                            dtype = numpy.int8 )],
-                    possible_values = None,
+                    spaces = Space( [
+                        numpy.array([i for i in range(gridsize[0])], dtype = numpy.int16),
+                        numpy.array([i for i in range(gridsize[1])], dtype = numpy.int16)
+                                ]),
                     clipping_mode = 'clip'  )
 
         self.state['targets'] = StateElement(
                     values = None,
-                    spaces = [[core.space.Box(
-                            low = numpy.array([0 for i in range(dim)]),
-                            high = numpy.array([gridsize[i] for i in range(dim)]),
-                            dtype = numpy.int8 )] for j in range(self.number_of_targets)],
-                    possible_values = None,
+                    spaces = [Space(
+                    [numpy.array([i for i in range(gridsize[0])], dtype = numpy.int16),
+                    numpy.array([i for i in range(gridsize[1])], dtype = numpy.int16)]
+                                    ) for j in range(number_of_targets)],
                     clipping_mode = 'error')
 
 
@@ -145,23 +135,24 @@ class DiscretePointingTask(InteractionTask):
             self.grid[i.coords] = 'T'
 
         self.state['position']['values'] = numpy.array(position.coords)
+        self.grid[position.coords] = 'P'
         self.state['targets']['values'] = [numpy.array(t.coords) for t in targets]
 
         if dic is not None:
             super().reset(dic = dic)
 
 
-    def is_done_operator(self):
-        # env ends when operator inputs action 0 or when too many turns have been played
+    def is_done_user(self):
+        # env ends when user inputs action 0 or when too many turns have been played
         if self.turn > 50:
             return True
-        if self.operator_action['values'][0] == 0:
+        if self.user_action['values'][0] == 0:
             return True
         return False
 
-    def operator_step(self, *args, **kwargs):
-        state, sumrewards, is_done, reward_list = super().operator_step()
-        return state, sumrewards, self.is_done_operator(), reward_list
+    def user_step(self, *args, **kwargs):
+        state, sumrewards, is_done, reward_list = super().user_step()
+        return state, sumrewards, self.is_done_user(), reward_list
 
     def is_done_assistant(self):
         return False
@@ -173,11 +164,11 @@ class DiscretePointingTask(InteractionTask):
             self.state['position']['values'] = self.bundle.game_state['assistant_action']['action']['values']
         elif self.mode == 'gain':
             assistant_action = self.bundle.game_state['assistant_action']['action']['values'][0]
-            operator_action = self.bundle.game_state['operator_action']['action']['human_values'][0]
+            user_action = self.bundle.game_state['user_action']['action']['values'][0]
             position = self.state['position']['values'][0]
 
             # Clipping and numpy dtype means we don't have to deal with edge cases, rounding etc.
-            self.state['position']['values'] = position + operator_action*assistant_action
+            self.state['position']['values'] = position + user_action*assistant_action
 
         return self.state, -1/2, self.is_done_assistant(), {}
 
@@ -215,7 +206,7 @@ class DiscretePointingTask(InteractionTask):
 class SimplePointingTask(InteractionTask):
     """ A 1D pointing task.
 
-    A 1D grid of size 'Gridsize'. The cursor is at a certain 'position' and there are several potential 'targets' on the grid. The operator action is modulated by the assistant.
+    A 1D grid of size 'Gridsize'. The cursor is at a certain 'position' and there are several potential 'targets' on the grid. The user action is modulated by the assistant.
 
     :param gridsize: (int) Size of the grid
     :param number_of_targets: (int) Number of targets on the grid
@@ -233,13 +224,19 @@ class SimplePointingTask(InteractionTask):
 
         self.state['position'] = StateElement(
                     values = None,
-                    spaces = [core.space.Discrete(gridsize)],
-                    possible_values = None,
+                    spaces = Space([
+                    numpy.array([i for i in range(gridsize)], dtype = numpy.int16)
+                    ]),
                     clipping_mode = 'clip'  )
 
         self.state['targets'] = StateElement(
                     values = None,
-                    spaces = [core.space.Discrete(gridsize) for i in range(self.number_of_targets)], possible_values = None  )
+                    spaces = [
+                        Space([
+                        numpy.array([i for i in range(gridsize)], dtype = numpy.int16)
+                        ]) for j in range(number_of_targets)
+                    ]
+                    )
 
 
     def reset(self, dic = None):
@@ -268,25 +265,25 @@ class SimplePointingTask(InteractionTask):
             super().reset(dic = dic)
 
 
-    def operator_step(self, *args, **kwargs):
+    def user_step(self, *args, **kwargs):
         """ Do nothing, increment turns, return half a timestep
 
         :meta public:
         """
-        return super().operator_step()
+        super().user_step()
+        is_done = False
+        if int(self.bundle.game_state['user_action']['action']['values'][0].squeeze()) == 0:
+            is_done = True
+        return self.state, -1/2, is_done, {}
 
     def is_done_assistant(self):
         is_done = False
-        if self.state['position']['values'][0] == self.bundle.game_state['operator_state']['goal']['values'][0]:
-            is_done = True
-        logger.info("Task {} done: {}".format(self.__class__.__name__, is_done))
-        logger.info("Condition: Cursor position ({}) = Operator Goal ({})".format(str(self.state['position']['values'][0]), self.bundle.game_state['operator_state']['goal']['values'][0] ))
         return is_done
 
     def assistant_step(self, *args, **kwargs):
-        """ Modulate the operator's action.
+        """ Modulate the user's action.
 
-        Multiply the operator action with the assistant action.
+        Multiply the user action with the assistant action.
         Update the position and grids.
 
         :param assistant_action: (list)
@@ -305,12 +302,12 @@ class SimplePointingTask(InteractionTask):
         if self.mode == 'position':
             self.state['position']['values'] = self.bundle.game_state['assistant_action']['action']['values']
         elif self.mode == 'gain':
-            assistant_action = self.bundle.game_state['assistant_action']['action']['human_values'][0]
-            operator_action = self.bundle.game_state['operator_action']['action']['human_values'][0]
-            position = self.state['position']['human_values'][0]
+            assistant_action = self.bundle.game_state['assistant_action']['action']['values'][0]
+            user_action = self.bundle.game_state['user_action']['action']['values'][0]
+            position = self.state['position']['values'][0]
 
-            # self.state['position']['values'] = [int(numpy.clip(numpy.round(position + operator_action*assistant_action, decimals = 0), 0, self.gridsize-1))]
-            self.state['position']['values'] = int(numpy.round(position + operator_action*assistant_action))
+
+            self.state['position']['values'] = int(numpy.round(position + user_action*assistant_action))
 
 
         return self.state, -1/2, self.is_done_assistant(), {}
@@ -330,8 +327,7 @@ class SimplePointingTask(InteractionTask):
 
         :meta public:
         """
-        goal = self.bundle.game_state['operator_state']['goal']['values'][0]
-
+        goal = int( self.bundle.game_state['user_state']['goal']['values'][0])
         self.grid[goal] = 'G'
         if 'text' in mode:
             tmp = self.grid.copy()
@@ -349,7 +345,7 @@ class SimplePointingTask(InteractionTask):
             print(targets)
             print("\n")
         if 'plot' in mode:
-            axtask, axoperator, axassistant = args[:3]
+            axtask, axuser, axassistant = args[:3]
             if self.ax is not None:
                 self.update_position()
             else:
@@ -419,7 +415,8 @@ class SimplePointingTask(InteractionTask):
             self.draws.append(draw)
             self.fills.append(fill)
             self.symbols.append(symbol)
-        for t in self.state['targets']['values']:
+        for t_array in self.state['targets']['values']:
+            t = int(t_array)
             self.fills[t].remove()
             self.draws[t].remove()
             if self.symbols[t]:
@@ -428,7 +425,7 @@ class SimplePointingTask(InteractionTask):
             self.draws[t] = draw
             self.fills[t] = fill
             self.symbols[t] = symbol
-        t = self.bundle.game_state['operator_state']['goal']['values'][0]
+        t = int(self.bundle.game_state['user_state']['goal']['values'][0])
         self.fills[t].remove()
         self.draws[t].remove()
         if self.symbols[t]:
@@ -455,7 +452,7 @@ class SimplePointingTask(InteractionTask):
 
         :meta public:
         """
-        t = self.draw_pos
+        t = int(self.draw_pos)
         self.fills[t].remove()
         self.draws[t].remove()
 
@@ -464,7 +461,7 @@ class SimplePointingTask(InteractionTask):
                 self.symbols[t].remove()
             except TypeError:
                 self.symbols[t][0].remove()
-        if t == self.bundle.game_state['operator_state']['goal']['values'][0]:
+        if t == self.bundle.game_state['user_state']['goal']['values'][0]:
             shortcut = 'goal'
         elif t in self.state['targets']['values']:
             shortcut = 'target'
@@ -476,7 +473,7 @@ class SimplePointingTask(InteractionTask):
         self.symbols[t] = symbol
 
 
-        t = self.state['position']['values'][0]
+        t = int(self.state['position']['values'][0])
         draw, fill, symbol = self.set_box(self.ax, t, shortcut = 'position')
         self.draws[t] = draw
         self.fills[t] = fill
@@ -549,7 +546,7 @@ class Screen_v0(InteractionTask):
         _target_radius = { "name": 'target_radius', "value": target_radius, 'meaning': 'radius of the circular targets displayed on screen'}
         _max_cycle = { "name": 'max_cycle', "value": max_cycle, 'meaning': 'Maximum number of steps possible in this environment before it finished'}
         _timestep = { "name": 'timestep', "value": timestep, 'meaning': 'Duration of one step in this environment'}
-        _mode = { "name": 'mode','value': mode, 'meaning': "whether the assistant is expected to work as gain or as positioner. In the first case (gain), the operator's action is multiplied by the assistant's action to determine by how much to shift the old position of the cursor. In the second case (position) the assistant's action is directly the new position of the cursor."}
+        _mode = { "name": 'mode','value': mode, 'meaning': "whether the assistant is expected to work as gain or as positioner. In the first case (gain), the user's action is multiplied by the assistant's action to determine by how much to shift the old position of the cursor. In the second case (position) the assistant's action is directly the new position of the cursor."}
         self.handbook['parameters'].extend([_screen_size, _number_of_targets, _target_radius, _max_cycle, _timestep, _mode])
 
         # Define state
@@ -606,8 +603,8 @@ class Screen_v0(InteractionTask):
 
 
 
-    def operator_step(self, *args, **kwargs):
-        return super().operator_step()
+    def user_step(self, *args, **kwargs):
+        return super().user_step()
 
     def assistant_step(self, assistant_action):
         super().assistant_step()
@@ -621,14 +618,14 @@ class Screen_v0(InteractionTask):
             self.state['position']['values'] =  self.bundle.game_state['assistant_action']['action']['values']
         elif self.mode == 'gain':
             assistant_action = self.bundle.game_state['assistant_action']['action']['values'][0]
-            operator_action = self.bundle.game_state['operator_action']['action']['values'][0]
+            user_action = self.bundle.game_state['user_action']['action']['values'][0]
             position = self.state['position']['values'][0]
-            newpos = position + operator_action*assistant_action
+            newpos = position + user_action*assistant_action
 
             self.state['position']['values'] = numpy.clip(newpos, self.screen_low, self.screen_high)
 
 
-        # if dist(self.bundle.operator.state['goal']['values'][0]) < self.target_radius:
+        # if dist(self.bundle.user.state['goal']['values'][0]) < self.target_radius:
         #     is_done = True
 
         return self.state, -1/2, self.is_done_assistant(), {}
@@ -637,29 +634,27 @@ class Screen_v0(InteractionTask):
         is_done = False
         speed = 0
         threshold = 1
-        goal = self.bundle.operator.state['goal']['values'][0]
+        goal = self.bundle.user.state['goal']['values'][0]
         position = self.state['position']['values'][0]
         dist = numpy.sqrt(numpy.sum((position-goal)**2))
         if dist <= self.target_radius and speed < threshold:
             is_done = True
 
-        logger.info("Task {} done: {}".format(self.__class__.__name__, is_done))
-        logger.info("Condition: dist(Cursor position ({}) - Operator Goal ({}) ) = {} < target radius {}".format(str(self.state['position']['values'][0]), self.bundle.game_state['operator_state']['goal']['values'][0] ,str(dist), str(self.target_radius)))
         return is_done
 
 
     def render(self, *args, mode = 'plot'):
-        axgame, axoperator, axassistant = args
+        axgame, axuser, axassistant = args
         if self.ax is not None:
             self.update_position()
         else:
             self.ax = axgame
-            self.init_grid(axoperator)
+            self.init_grid(axuser)
             self.ax.set_aspect('equal')
             plt.show(block = False)
 
 
-    def init_grid(self, axoperator):
+    def init_grid(self, axuser):
         targets = self.state['targets']['values']
         self.ax.set_xlim([-1.1 , 1.1])
         self.ax.set_ylim([-1.1/self.aspect_ratio , 1.1/self.aspect_ratio])
@@ -675,7 +670,7 @@ class Screen_v0(InteractionTask):
         self.cursor =  plt.Circle((x,y), self.target_radius/5, color = 'r')
         self.ax.add_patch(self.cursor)
         cursor2 = plt.Circle((x,y), self.target_radius/5, color = 'r')
-        axoperator.add_patch(cursor2)
+        axuser.add_patch(cursor2)
 
     def update_position(self):
         self.cursor.remove()
@@ -692,12 +687,12 @@ class Screen_v0(InteractionTask):
     #     if 'text' in mode:
     #         pass
     #     if 'plot' in mode:
-    #         axtask, axoperator, axassistant = args[:3]
+    #         axtask, axuser, axassistant = args[:3]
     #         if self.ax is not None:
     #             self.update_position()
     #         else:
     #             self.ax = axtask
-    #             self.init_grid(axoperator)
+    #             self.init_grid(axuser)
     #             self.ax.set_aspect('equal')
     #     if not ('plot' in mode or 'text' in mode):
     #         raise NotImplementedError

@@ -1,7 +1,7 @@
 from core.agents import BaseAgent
-from core.observation import RuleObservationEngine, base_operator_engine_specification
+from core.observation import RuleObservationEngine, base_user_engine_specification
 from core.policy import LinearFeedback
-from core.space import State, StateElement
+from core.space import State, StateElement, Space
 from core.inference import LinearGaussianContinuous
 import eye.noise
 from scipy.linalg import toeplitz
@@ -28,9 +28,11 @@ class ChenEye(BaseAgent):
         if agent_policy is None:
             action_state = State()
             action_state['action'] = StateElement(
-                        values = [None],
-                        spaces = [gym.spaces.Box(low=-1, high=1, shape=(self.dimension, ))],
-                        possible_values = [None],
+                        values = None,
+                        spaces = Space([
+                            -numpy.ones((dimension,), dtype =numpy.float32),
+                            numpy.ones((dimension,), dtype =numpy.float32)
+                        ]),
                         clipping_mode = 'warning'
                                         )
 
@@ -44,7 +46,7 @@ class ChenEye(BaseAgent):
                 return noise
 
             agent_policy = LinearFeedback(
-                ('operator_state','belief'),
+                ('user_state','belief'),
                 0,
                 action_state,
                 noise_function = noise_function,
@@ -58,7 +60,7 @@ class ChenEye(BaseAgent):
         if observation_engine is None:
             extraprobabilisticrules = {('task_state', 'targets'): (self._eccentric_noise_gen, ())}
 
-            observation_engine = RuleObservationEngine(base_operator_engine_specification,                                  extraprobabilisticrules = extraprobabilisticrules)
+            observation_engine = RuleObservationEngine(base_user_engine_specification,                                  extraprobabilisticrules = extraprobabilisticrules)
 
 
         inference_engine = kwargs.get('inference_engine')
@@ -78,27 +80,29 @@ class ChenEye(BaseAgent):
         state = kwargs.get('state')
         if state is None:
             belief = StateElement(
-                values = [None, None],
-                spaces = [gym.spaces.Box(low=-1, high=1, shape=(self.dimension, )), gym.spaces.Box(low = -numpy.inf, high = numpy.inf, shape = (self.dimension,self.dimension))],
-                possible_values = [[None], [None]],
+                values = None,
+                spaces = [  Space([
+                    -numpy.ones((self.dimension,), dtype = numpy.float32),
+                    numpy.ones((self.dimension,), dtype = numpy.float32),
+                                    ]),
+                            Space([
+                    -numpy.inf* numpy.ones((self.dimension,self.dimension), dtype = numpy.float32),
+                    numpy.inf*numpy.ones((self.dimension,self.dimension), dtype = numpy.float32)
+
+                            ])
+                        ],
                 clipping_mode = 'warning'
-            )
+                                )
             state = State()
             state['belief'] = belief
 
-        super().__init__('operator',
+        super().__init__('user',
                             state = state,
                             policy = agent_policy,
                             observation_engine = observation_engine,
                             inference_engine = inference_engine
                             )
 
-
-        self.handbook['render_mode'] = ['plot', 'text', 'log']
-        _oculomotornoise = {'value': oculomotornoise, 'meaning': 'perceptual noise related to the eccentricity of the target w/r current fixation'}
-        _perceptualnoise = {'value': perceptualnoise, 'meaning': 'motor noise related to the distance convered by the fixation'}
-        _dimension = {'value': dimension, 'meaning': 'Dimension of the fixation used.'}
-        self.handbook['parameters'] = [_oculomotornoise, _perceptualnoise, _dimension]
 
 
     def finit(self):
@@ -156,7 +160,7 @@ class ChenEye(BaseAgent):
         if mode is None:
             mode = 'text'
         try:
-            axtask, axoperator, axassistant = args
-            self.inference_engine.render(axtask, axoperator, axassistant, mode = mode)
+            axtask, axuser, axassistant = args
+            self.inference_engine.render(axtask, axuser, axassistant, mode = mode)
         except ValueError:
             self.inference_engine.render(mode = mode)

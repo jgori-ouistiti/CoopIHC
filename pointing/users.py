@@ -1,8 +1,8 @@
 import core
 from core.agents import BaseAgent, IHCT_LQGController
-from core.observation import RuleObservationEngine, base_operator_engine_specification
-from core.bundle import SinglePlayOperatorAuto
-from core.space import State, StateElement
+from core.observation import RuleObservationEngine, base_user_engine_specification
+from core.bundle import SinglePlayUserAuto
+from core.space import State, StateElement, Space
 from core.policy import ELLDiscretePolicy, WrapAsPolicy, BadlyDefinedLikelihoodError
 from core.interactiontask import ClassicControlTask
 import gym
@@ -11,10 +11,10 @@ import copy
 
 
 class TwoDCarefulPointer(BaseAgent):
-    """ An operator that only indicates the right direction, with a fixed amplitude.
+    """ An user that only indicates the right direction, with a fixed amplitude.
 
-    Works with a task that has a 'targets' substate. At each reset, it selects a new goal from the possible 'targets'. When sampled, the operator will issue an action that is either +1 or -1 in the direction of the target.
-    The operator observes everything perfectly except for the assistant state.
+    Works with a task that has a 'targets' substate. At each reset, it selects a new goal from the possible 'targets'. When sampled, the user will issue an action that is either +1 or -1 in the direction of the target.
+    The user observes everything perfectly except for the assistant state.
 
 
     :meta public:
@@ -46,7 +46,7 @@ class TwoDCarefulPointer(BaseAgent):
                 # convert actions and observations
                 action = action['values'][0]
                 # first component selected
-                goal = observation['operator_state']['goal']['values'][0]
+                goal = observation['user_state']['goal']['values'][0]
                 position = observation['task_state']['position']['values'][0]
 
                 if action == 0:
@@ -121,26 +121,26 @@ class TwoDCarefulPointer(BaseAgent):
         observation_engine = kwargs.get('observation_engine')
 
         if observation_engine is None:
-            base_operator_engine_specification  =    [ ('turn_index', 'all'),
+            base_user_engine_specification  =    [ ('turn_index', 'all'),
                                                 ('task_state', 'all'),
-                                                ('operator_state', 'all'),
+                                                ('user_state', 'all'),
                                                 ('assistant_state', None),
-                                                ('operator_action', 'all'),
+                                                ('user_action', 'all'),
                                                 ('assistant_action', 'all')
                                                 ]
             # Additional deterministic and probabilistic 'rules' that can be added to the engine: for example, to add noise to a component, or to target one component in particular
             extradeterministicrules = {}
             extraprobabilisticrules = {}
             observation_engine = RuleObservationEngine(
-                    deterministic_specification = base_operator_engine_specification,
+                    deterministic_specification = base_user_engine_specification,
                     extradeterministicrules = extradeterministicrules,
                     extraprobabilisticrules = extraprobabilisticrules   )
 
         # ---------- Calling BaseAgent class -----------
-        # Calling an agent, set as an operator, which uses our previously defined observation engine and without an inference engine.
+        # Calling an agent, set as an user, which uses our previously defined observation engine and without an inference engine.
 
         super().__init__(
-                            'operator',
+                            'user',
                             policy = agent_policy,
                             observation_engine = observation_engine,
                             inference_engine = None)
@@ -183,10 +183,10 @@ class TwoDCarefulPointer(BaseAgent):
 
 
 class CarefulPointer(BaseAgent):
-    """ An operator that only indicates the right direction, with a fixed amplitude.
+    """ An user that only indicates the right direction, with a fixed amplitude.
 
-    Works with a task that has a 'targets' substate. At each reset, it selects a new goal from the possible 'targets'. When sampled, the operator will issue an action that is either +1 or -1 in the direction of the target.
-    The operator observes everything perfectly except for the assistant state.
+    Works with a task that has a 'targets' substate. At each reset, it selects a new goal from the possible 'targets'. When sampled, the user will issue an action that is either +1 or -1 in the direction of the target.
+    The user observes everything perfectly except for the assistant state.
 
 
     :meta public:
@@ -196,7 +196,7 @@ class CarefulPointer(BaseAgent):
         # --------- Defining the agent's policy ----------
         # Here we consider a simulated user, which will only indicate left or right (assumed to be in the right direction of the target 99% of the time)
 
-
+        self._target_values = None
 
         agent_policy = kwargs.get('agent_policy')
         if agent_policy is None:
@@ -207,13 +207,21 @@ class CarefulPointer(BaseAgent):
                     error_rate = 0.01
             else:
                 error_rate = 0.01
-            agent_policy = ELLDiscretePolicy(action_space = [core.space.Discrete(2)], action_set = [[-1, 1]])
+
+            action_state = State()
+            action_state['action'] = StateElement(
+                values = None,
+                spaces = Space([numpy.array([-1,0,1], dtype = numpy.int16)])
+            )
+            agent_policy = ELLDiscretePolicy(
+                    action_state = action_state
+                )
 
             # Actions are in human values, i.e. they are not necessarily in range(0,N)
             def compute_likelihood(self, action, observation):
                 # convert actions and observations
-                action = action['human_values'][0]
-                goal = observation['operator_state']['goal']['values'][0]
+                action = action['values'][0]
+                goal = observation['user_state']['goal']['values'][0]
                 position = observation['task_state']['position']['values'][0]
 
                 # Write down all possible cases (5)
@@ -229,7 +237,11 @@ class CarefulPointer(BaseAgent):
                 # (4) Goal to the left, negative action
                 elif goal < position and action < 0 :
                     return 1-error_rate
-                elif goal == position:
+                elif goal == position and action == 0:
+                    return 1
+                elif goal == position and action != 0:
+                    return 0
+                elif goal != position and action == 0:
                     return 0
                 else:
                     raise RunTimeError("warning, unable to compute likelihood. You may have not covered all cases in the likelihood definition")
@@ -244,47 +256,48 @@ class CarefulPointer(BaseAgent):
         observation_engine = kwargs.get('observation_engine')
 
         if observation_engine is None:
-            base_operator_engine_specification  =    [ ('turn_index', 'all'),
+            base_user_engine_specification  =    [ ('turn_index', 'all'),
                                                 ('task_state', 'all'),
-                                                ('operator_state', 'all'),
+                                                ('user_state', 'all'),
                                                 ('assistant_state', None),
-                                                ('operator_action', 'all'),
+                                                ('user_action', 'all'),
                                                 ('assistant_action', 'all')
                                                 ]
             # Additional deterministic and probabilistic 'rules' that can be added to the engine: for example, to add noise to a component, or to target one component in particular
             extradeterministicrules = {}
             extraprobabilisticrules = {}
             observation_engine = RuleObservationEngine(
-                    deterministic_specification = base_operator_engine_specification,
+                    deterministic_specification = base_user_engine_specification,
                     extradeterministicrules = extradeterministicrules,
                     extraprobabilisticrules = extraprobabilisticrules   )
 
         # ---------- Calling BaseAgent class -----------
-        # Calling an agent, set as an operator, which uses our previously defined observation engine and without an inference engine.
+        # Calling an agent, set as an user, which uses our previously defined observation engine and without an inference engine.
 
         super().__init__(
-                            'operator',
+                            'user',
                             policy = agent_policy,
                             observation_engine = observation_engine,
                             inference_engine = None)
 
 
+    @property
+    def target_values(self):
+        return self.bundle.task.state['targets']['values']
 
     def finit(self):
-        self.target_values = self.bundle.task.state['targets']['values']
-        target_spaces = self.bundle.task.state['targets']['spaces']
+        target_space = self.bundle.task.state['targets']['spaces'][0]
 
-        self.state['goal'] =  StateElement( values = [None],
-                                            spaces = [core.space.Discrete(self.bundle.task.gridsize)],
-                                            possible_values = [[None]])
+        self.state['goal'] =  StateElement( values = None,
+                                            spaces = copy.copy(target_space)
+                                            )
 
 
     def reset(self, dic = None):
         if dic is None:
             super().reset()
 
-        self.target_values = self.bundle.task.state['targets']['values']
-        self.state['goal']["values"] = numpy.random.choice(self.target_values)
+        self.state['goal']["values"] = numpy.random.choice([tv.squeeze() for tv in self.target_values])
 
         if dic is not None:
             super().reset(dic = dic)
@@ -341,8 +354,8 @@ class LQGPointer(BaseAgent):
 
         # Define the bundle with LQG control
         action_task = ClassicControlTask(timestep, Ac, Bc, F = F, G = G, discrete_dynamics = False, noise = 'off')
-        action_operator = IHCT_LQGController('operator', timestep, Q, R, U, C, Gamma, D, noise = 'on')
-        action_bundle = SinglePlayOperatorAuto(action_task, action_operator, onreset_deterministic_first_half_step = True,
+        action_user = IHCT_LQGController('user', timestep, Q, R, U, C, Gamma, D, noise = 'on')
+        action_bundle = SinglePlayUserAuto(action_task, action_user, onreset_deterministic_first_half_step = True,
         start_at_action = True)
 
         # Wrap it up in the LQGPointerPolicy
@@ -356,7 +369,7 @@ class LQGPointer(BaseAgent):
 
             def sample(self):
                 cursor = copy.copy(self.observation['task_state']['position'])
-                target = copy.copy(self.observation['operator_state']['goal'])
+                target = copy.copy(self.observation['user_state']['goal'])
                 # allow temporarily
                 cursor.clipping_mode = 'warning'
                 target.clipping_mode = 'warning'
@@ -381,7 +394,7 @@ class LQGPointer(BaseAgent):
                 _reset_x_hat[0] = init_dist
                 action_bundle.reset( dic = {
                 'task_state': {'x':  _reset_x },
-                'operator_state': {'xhat': _reset_x_hat}
+                'user_state': {'xhat': _reset_x_hat}
                         } )
 
                 total_reward = 0
@@ -395,7 +408,7 @@ class LQGPointer(BaseAgent):
 
                 # Store state for next usage
                 self.xmemory = observation['task_state']['x']['values'][0]
-                self.xhatmemory = observation['operator_state']['xhat']['values'][0]
+                self.xhatmemory = observation['user_state']['xhat']['values'][0]
 
                 # Cast as delta in correct units
                 cursor_box['values'] = - self.xmemory[0] + init_dist
@@ -416,12 +429,12 @@ class LQGPointer(BaseAgent):
 
         observation_engine = kwargs.get('observation_engine')
         if observation_engine is None:
-            observation_engine = RuleObservationEngine(base_operator_engine_specification)
+            observation_engine = RuleObservationEngine(base_user_engine_specification)
             # give observation engine
 
 
 
-        super().__init__('operator',
+        super().__init__('user',
                             policy = agent_policy,
                             observation_engine = observation_engine,
                             )

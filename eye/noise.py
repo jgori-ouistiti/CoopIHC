@@ -16,6 +16,7 @@ def eccentric_noise(target, position, sdn_level):
 
     :meta public:
     """
+    target, position = target.reshape(1,-1).squeeze(axis=0), position.reshape(1,-1).squeeze(axis=0)
     if target.shape == (2,) or target.shape == (1,2) or target.shape == (2,1):
         eccentricity = numpy.sqrt(numpy.sum((target-position)**2))
         cosalpha = (target - position)[0] / eccentricity

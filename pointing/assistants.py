@@ -1,11 +1,11 @@
 import core
 from core.agents import BaseAgent
 from core.policy import BasePolicy,  BIGDiscretePolicy
-from core.inference import GoalInferenceWithOperatorPolicyGiven
-from core.space import State, StateElement
+from core.inference import GoalInferenceWithUserPolicyGiven
+from core.space import State, StateElement, Space
 
-import gym
-
+import numpy
+import copy
 
 class ConstantCDGain(BaseAgent):
     """ A Constant CD Gain transfer function.
@@ -27,33 +27,43 @@ class ConstantCDGain(BaseAgent):
                                 )
 
     def finit(self):
-        action_space = [core.space.Box(low = self.gain, high = self.gain, shape = (self.bundle.task.dim,))]
-        self.policy.action_state['action']['spaces'] = action_space
-        self.policy.action_state['action']['clipping_mode'] = 'clip'
+        action_space = Space([
+                numpy.array([self.gain for i in range(self.bundle.task.dim)], dtype = numpy.float32),
+                numpy.array([self.gain for i in range(self.bundle.task.dim)], dtype = numpy.float32)
+                ])
+        self.policy.action_state['action'] = StateElement(
+            values = None,
+            spaces = action_space,
+            clipping_mode = 'clip')
 
 class BIGGain(BaseAgent):
     def __init__(self):
 
         super().__init__(       'assistant',
-                                inference_engine = GoalInferenceWithOperatorPolicyGiven() #
+                                inference_engine = GoalInferenceWithUserPolicyGiven() #
                                 )
 
 
     def finit(self):
-
-        assistant_action_space = [core.space.Discrete(self.bundle.task.gridsize)]
-        operator_policy_model = self.bundle.operator.policy
-
         action_state = self.bundle.game_state['assistant_action']
+        action_state['action'] = StateElement(
+            values = None,
+            spaces = Space([
+            numpy.array([i for i in range(self.bundle.task.gridsize)], dtype = numpy.int16)
+                ]),
+            clipping_mode = 'error'
+        )
+        user_policy_model = copy.deepcopy(self.bundle.user.policy)
+
+
 
         agent_policy = BIGDiscretePolicy(       action_state,
-                                                operator_policy_model,
-                                                assistant_action_space,
+                                                user_policy_model
                                                 )
 
         self.attach_policy(agent_policy)
-        self.inference_engine.attach_policy(agent_policy.operator_policy_model)
-
+        # self.inference_engine.attach_policy(agent_policy.user_policy_model)
+        self.inference_engine.attach_policy(user_policy_model)
 
 
 
@@ -61,13 +71,26 @@ class BIGGain(BaseAgent):
         if dic is None:
             super().reset()
 
-        self.state['Beliefs'] = StateElement(values = [1/self.bundle.task.number_of_targets for i in range(self.bundle.task.number_of_targets)], spaces = [core.space.Box(0, 1, shape = (1,)) for i in range(self.bundle.task.number_of_targets)], possible_values = None)
+        self.state['beliefs'] = StateElement(
+            values = numpy.array([1/self.bundle.task.number_of_targets for i in range(self.bundle.task.number_of_targets)]),
+            spaces = Space([
+                    numpy.zeros((1,self.bundle.task.number_of_targets)),
+                    numpy.ones((1,self.bundle.task.number_of_targets))
+                ]),
+            clipping_mode = 'error'
+            )
 
         # change theta for inference engine
 
-        set_theta = [{('operator_state', 'goal'): StateElement(values = [t],
-                spaces = [core.space.Discrete(self.bundle.task.gridsize)],
-                possible_values =  [list(range(self.bundle.task.gridsize))] )  } for t in self.bundle.task.state['targets']['values'] ]
+        set_theta = [{     ('user_state', 'goal'):
+            StateElement(
+                values = [t],
+                spaces = Space([
+                    numpy.array([list(range(self.bundle.task.gridsize))], dtype = numpy.int16)
+                            ])
+                        )
+                    } for t in self.bundle.task.state['targets']['values']
+                    ]
 
         self.inference_engine.attach_set_theta(set_theta)
         self.policy.attach_set_theta(set_theta)
@@ -93,7 +116,7 @@ class BIGGain(BaseAgent):
         if mode is None:
             mode = 'text'
         try:
-            axtask, axoperator, axassistant = args
+            axtask, axuser, axassistant = args
             self.inference_engine.render(axassistant, mode = mode)
         except ValueError:
             self.inference_engine.render(mode = mode)

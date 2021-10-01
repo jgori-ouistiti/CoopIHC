@@ -32,7 +32,7 @@ class InteractionTask(Core):
 
         reset
 
-        operator_step
+        user_step
 
         assistant_step
 
@@ -67,9 +67,9 @@ class InteractionTask(Core):
         self._state = value
 
     @property
-    def operator_action(self):
+    def user_action(self):
         if self.bundle:
-            return self.bundle.game_state['operator_action']['action']
+            return self.bundle.game_state['user_action']['action']
 
     @property
     def assistant_action(self):
@@ -84,30 +84,30 @@ class InteractionTask(Core):
         logger.info(str(self.handbook))
 
 
-    def _is_done_operator(self, *args, **kwargs):
-        logger.info('{} is done on operator step: False (Inherited from InteractionTask)'.format(self.__class__.__name__))
+    def _is_done_user(self, *args, **kwargs):
+        logger.info('{} is done on user step: False (Inherited from InteractionTask)'.format(self.__class__.__name__))
         return False
 
     def _is_done_assistant(self, *args, **kwargs):
         logger.info('{} is done on assistant step: False (Inherited from InteractionTask)'.format(self.__class__.__name__))
         return False
 
-    def operator_step(self,  *args, **kwargs):
-        """ Describe how the task state evolves after an operator action. This method has to be redefined when subclassing this class.
+    def user_step(self,  *args, **kwargs):
+        """ Describe how the task state evolves after an user action. This method has to be redefined when subclassing this class.
 
-        :param operator_action: (list) operator action
+        :param user_action: (list) user action
 
         :return: state, reward, is_done, metadata: state (OrderedDict) of the task, reward (float) associated with the step, is_done (bool) flags whether the task is finished, metadata (dictionnary) for compatibility with gym environments.
 
         :meta public:
         """
         self.turn += 1/2
-        return self.state, -1/2, self._is_done_operator(), {}
+        return self.state, -1/2, self._is_done_user(), {}
 
     def assistant_step(self,  *args, **kwargs):
         """ Describe how the task state evolves after an assistant action. This method has to be redefined when subclassing this class.
 
-        :param operator_action: (list) assistant action
+        :param user_action: (list) assistant action
 
         :return: state, reward, is_done, metadata: state (OrderedDict) of the task, reward (float) associated with the step, is_done (bool) flags whether the task is finished, metadata (dictionnary) for compatibility with gym environments.
 
@@ -121,7 +121,7 @@ class InteractionTask(Core):
         """ Render the task on the main plot.
 
         :param mode: (str) text or plot
-        :param args: (list) list of axis in order axtask, axoperator, axassistant
+        :param args: (list) list of axis in order axtask, axuser, axassistant
 
         """
         mode = kwargs.get('mode')
@@ -194,9 +194,9 @@ class PipeTaskWrapper(InteractionTask, ABC):
         if state['type'] == 'task_state':
             del state['type']
             self.update_task_state(state)
-        elif state['type'] == 'operator_state':
+        elif state['type'] == 'user_state':
             del state['type']
-            self.update_operator_state(state)
+            self.update_user_state(state)
 
 
     @abstractmethod
@@ -204,14 +204,14 @@ class PipeTaskWrapper(InteractionTask, ABC):
         pass
 
     @abstractmethod
-    def update_operator_state(self, state):
+    def update_user_state(self, state):
         pass
 
 
-    def operator_step(self,  *args, **kwargs):
-        super().operator_step(*args, **kwargs)
-        operator_action_msg = { 'type': "operator_action", 'value': self.bundle.game_state["operator_action"]['action'].serialize()}
-        self.pipe.send(operator_action_msg)
+    def user_step(self,  *args, **kwargs):
+        super().user_step(*args, **kwargs)
+        user_action_msg = { 'type': "user_action", 'value': self.bundle.game_state["user_action"]['action'].serialize()}
+        self.pipe.send(user_action_msg)
         self.pipe.poll(None)
         received_dic = self.pipe.recv()
         received_state = received_dic['state']
@@ -247,30 +247,14 @@ class ClassicControlTask(InteractionTask):
         super().__init__()
 
 
-        self.handbook['render_mode'].extend(['plot', 'text'])
-        _timestep = { "name": 'timestep', "value": timestep, 'meaning': 'Duration of one step in this environment'}
-
-        _A = {"name": 'A', "value": A, "meaning": 'Uncontrolled dynamics (x(t+1) += A x(t))'}
-        _B = {"name": 'B', "value": B, "meaning": 'Controlled dynamics (x(t+1) += B u(t))'}
-        _F = { "name": 'F', "value": F, 'meaning': 'signal dependent noise matrix (x(t+1) += F x(t) * N(.,.) )'}
-        _G = { "name": 'G', "value": G, 'meaning': 'independent noise matrix (x(t+1) += G * N(.,.))'}
-        _discrete_dynamics = { "name": 'discrete_dynamics', "value": discrete_dynamics, 'meaning': 'Whether or not the values in A, B, F, G are for continuous or discrete systems. Continuous matrices are cast to discrete matrices.'}
-        _noise = { "name": 'noise','value': noise, 'meaning': "whether or not noise is present in the system"}
-        self.params = [_timestep, _A, _B, _F, _G, _discrete_dynamics,_noise]
-        self.handbook['parameters'].extend(self.params)
-
-        self.handbook['operator_constraints'] = []
-        _op = {'attr': 'timespace', 'values': ['discrete', 'continuous'], 'meaning': 'The operator should have a timespace attribute which is either discrete or continuous'}
-
-
-
-
-
         self.dim = max(A.shape)
         self.state = State()
-        self.state['x'] = StateElement(   values = numpy.zeros((self.dim, 1)),
-                            spaces = gym.spaces.Box(low = -numpy.ones((self.dim, 1))*numpy.inf, high = numpy.ones((self.dim,1))*numpy.inf, shape = (self.dim,1 )),
-                            possible_values = [[None]]
+        self.state['x'] = StateElement(
+            values = numpy.zeros((self.dim, 1)),
+            spaces = Space([
+                -numpy.ones((self.dim, 1))*numpy.inf,
+                numpy.ones((self.dim,1))*numpy.inf,
+                            ])
                             )
         self.state_last_x = copy.copy(self.state['x']['values'])
         self.timestep = timestep
@@ -300,7 +284,7 @@ class ClassicControlTask(InteractionTask):
         self.noise = noise
 
     def finit(self):
-        if self.bundle.operator.timespace == 'continuous':
+        if self.bundle.user.timespace == 'continuous':
             self.A = self.A_c
             self.B = self.B_c
         else:
@@ -318,15 +302,15 @@ class ClassicControlTask(InteractionTask):
         self.state_last_x = copy.copy(self.state['x']['values'])
 
 
-    def operator_step(self, operator_action):
-        # print(operator_action, type(operator_action))
+    def user_step(self, user_action):
+        # print(user_action, type(user_action))
         is_done = False
         # Call super for counters
-        super().operator_step(operator_action)
+        super().user_step(user_action)
 
         # For readability
         A, B, F, G = self.A, self.B, self.F, self.G
-        u = operator_action['values'][0]
+        u = user_action['values'][0]
         x = self.state['x']['values'][0].reshape(-1,1)
 
         # Generate noise samples
@@ -341,7 +325,7 @@ class ClassicControlTask(InteractionTask):
         # Store last_x for render
         self.state_last_x = copy.deepcopy(self.state['x']['values'])
         # Deterministic update + State dependent noise + independent noise
-        if self.bundle.operator.timespace == 'discrete':
+        if self.bundle.user.timespace == 'discrete':
             x = (A@x + B*u) + F@x*beta + G@omega
         else:
             x += (A@x + B*u)*self.timestep + F@x*beta + G@omega
@@ -367,7 +351,7 @@ class ClassicControlTask(InteractionTask):
             print('state')
             print(self.state['x'])
         if 'plot' in mode:
-            axtask, axoperator, axassistant = args[:3]
+            axtask, axuser, axassistant = args[:3]
             if self.ax is not None:
                 self.draw()
                 if self.turn == 1:
@@ -403,8 +387,8 @@ class TaskWrapper(InteractionTask):
         self.task = task
         self.__dict__.update(task.__dict__)
 
-    def operator_step(self, *args, **kwargs):
-        return self.task.operator_step(*args, **kwargs)
+    def user_step(self, *args, **kwargs):
+        return self.task.user_step(*args, **kwargs)
 
     def assistant_step(self, *args, **kwargs):
         return self.task.assistant_step(*args, **kwargs)

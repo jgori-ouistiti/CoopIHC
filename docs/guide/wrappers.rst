@@ -12,7 +12,7 @@ List of Wrappers (ongoing):
 
     .. code-block:: python
 
-        bundle = SinglePlayOperator(task, operator)
+        bundle = SinglePlayUser(task, user)
         env = Train(bundle)
 
 * to be completed
@@ -38,22 +38,22 @@ For the second goal, Train provides:
 
     .. code-block:: python
 
-        bundle = SinglePlayOperator(task, operator)
+        bundle = SinglePlayUser(task, user)
         >>> print(bundle)
         b_state/next_agent/0  0
         task_state/Targets/0  -0.443
         task_state/Targets/1  0.232
-        operator_state/MuBelief/0  -0.230
-        operator_state/MuBelief/1  0.240
-        operator_state/SigmaBelief/0  0.016
-        operator_state/SigmaBelief/1  -0.000
-        operator_state/SigmaBelief/2  -0.000
-        operator_state/SigmaBelief/3  0.018
-        operator_state/Fixation/0  -0.045
-        operator_state/Fixation/1  0.505
-        operator_state/AssistantAction/0  -0.932
-        assistant_state/OperatorAction/0  0.866
-        assistant_state/OperatorAction/1  0.460
+        user_state/MuBelief/0  -0.230
+        user_state/MuBelief/1  0.240
+        user_state/SigmaBelief/0  0.016
+        user_state/SigmaBelief/1  -0.000
+        user_state/SigmaBelief/2  -0.000
+        user_state/SigmaBelief/3  0.018
+        user_state/Fixation/0  -0.045
+        user_state/Fixation/1  0.505
+        user_state/AssistantAction/0  -0.932
+        assistant_state/UserAction/0  0.866
+        assistant_state/UserAction/1  0.460
 
     Let us say we want to train using only the information from the two MuBelief components, then we would do for example:
 

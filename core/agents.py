@@ -5,10 +5,10 @@ from collections import OrderedDict
 
 from core.core import Core, Handbook
 import core.observation
-from core.space import State, StateElement
+from core.space import State, StateElement, Space
 from core.policy import BasePolicy, LinearFeedback
-from core.observation import RuleObservationEngine, base_operator_engine_specification, base_assistant_engine_specification, base_task_engine_specification
-from core.inference import BaseInferenceEngine, GoalInferenceWithOperatorPolicyGiven, ContinuousKalmanUpdate
+from core.observation import RuleObservationEngine, base_user_engine_specification, base_assistant_engine_specification, base_task_engine_specification
+from core.inference import BaseInferenceEngine, GoalInferenceWithUserPolicyGiven, ContinuousKalmanUpdate
 from core.helpers import flatten, sort_two_lists
 
 import matplotlib.pyplot as plt
@@ -18,7 +18,6 @@ import scipy.linalg
 
 
 import sys
-from loguru import logger
 import copy
 
 
@@ -28,7 +27,7 @@ class BaseAgent(Core):
     """Subclass this to define an agent that can be used in a Bundle.
     A Baseagent class, with an internal state, methods to access this state, a policy (random sampling by default), and observation and inference engine.
 
-    By default, a BaseAgent's internal state contains the other agent's last action (either 'AssistantAction' or 'OperatorAction'), but nothing else.
+    By default, a BaseAgent's internal state contains the other agent's last action (either 'AssistantAction' or 'UserAction'), but nothing else.
 
     The main API methods that users of this class need to know are:
 
@@ -40,10 +39,10 @@ class BaseAgent(Core):
 
         render
 
-    :param role: (int or string) role of the agent. 0 or 'operator' for Operator, 1 or 'assistant' for Assistant
+    :param role: (int or string) role of the agent. 0 or 'user' for User, 1 or 'assistant' for Assistant
     :param action_space: (list(gym.spaces)) a list of gym.spaces that specifies in which space actions take place e.g. ``[gym.spaces.Discrete(2), gym.spaces.Box(low = -1, high = 1, shape = (1,))]``
     :param action_set: (list(list)) corresponding list of values for actions, encapsulated in a list. If the action subspace is a Box, then pass None. If the action subspace is Discrete, pass the action list. e.g. ``[[-1,1], None]``
-    :param observation_engine: (object) an observation_engine, see core.observation_engine. If None, a RuleObservationEngine using BaseOperatorObservationRule/BaseAssistantObservationRule will be used. e.g. ``observation_engine = RuleObservationEngine(BaseOperatorObservationRule)``
+    :param observation_engine: (object) an observation_engine, see core.observation_engine. If None, a RuleObservationEngine using BaseUserObservationRule/BaseAssistantObservationRule will be used. e.g. ``observation_engine = RuleObservationEngine(BaseUserObservationRule)``
     :param inference_engine: (object) an inference_engine, see core.inference_engine. If None, the basic InferenceEngine is used, which does nothing with the agent's internal state e.g. ``inference_engine = InferenceEngine()``
     """
 
@@ -52,15 +51,13 @@ class BaseAgent(Core):
     def __init__(self, role, policy = None, state = None, observation_engine = None, inference_engine = None, state_kwargs = {}, policy_kwargs = {}, observation_engine_kwargs = {}, inference_engine_kwargs = {}):
 
         # Bundles stuff
-        self.encapsulation = False #Deprecated ?
         self.bundle = None
         self.ax = None
 
-        self.handbook = Handbook({'name': self.__class__.__name__, 'render_mode': [], 'parameters': [], 'kwargs': []})
 
         # Set role of agent
-        if role not in ["operator", "assistant"]:
-            raise ValueError("First argument role should be either 'operator' or 'assistant'")
+        if role not in ["user", "assistant"]:
+            raise ValueError("First argument role should be either 'user' or 'assistant'")
         else:
             self.role = role
 
@@ -82,10 +79,6 @@ class BaseAgent(Core):
         # Define inference engine
         self.attach_inference_engine(inference_engine, **inference_engine_kwargs)
 
-        logger.info('Initializing {}: {}'.format(self.role, self.__class__.__name__))
-        logger.info('Using this Policy:\n{}'.format(str(self.policy.handbook)))
-        logger.info('Using this Observation Engine:\n{}'.format(str(self.observation_engine.handbook)))
-        logger.info('Using this Inference Engine:\n{}'.format(str(self.inference_engine.handbook)))
 
 
     def __content__(self):
@@ -114,8 +107,8 @@ class BaseAgent(Core):
 
     def attach_observation_engine(self, observation_engine, **kwargs):
         if observation_engine is None:
-            if self.role == "operator":
-                self.observation_engine = RuleObservationEngine(base_operator_engine_specification)
+            if self.role == "user":
+                self.observation_engine = RuleObservationEngine(base_user_engine_specification)
             elif self.role == "assistant":
                 self.observation_engine = RuleObservationEngine(base_assistant_engine_specification)
             else:
@@ -181,26 +174,23 @@ class BaseAgent(Core):
         :meta private:
         """
         # agent observes the state
-        logger.info('---- >>>> agent step')
         agent_observation, agent_obs_reward = self.observe(self.bundle.game_state)
 
-        logger.info('{} observing ---result:\n{}'.format(self.__class__.__name__, str(agent_observation)))
 
         # Pass observation to InferenceEngine Buffer
         self.inference_engine.add_observation(agent_observation)
-        # Infer the new operator state
+        # Infer the new user state
         if infer:
 
             agent_state, agent_infer_reward = self.inference_engine.infer()
             # Broadcast new agent_state
             self.state.update(agent_state)
 
-            logger.info('{} changing its internal state to\n{}'.format(self.__class__.__name__, str(self.state)))
 
             # Update agent observation
-            if self.role == "operator":
-                if self.inference_engine.buffer[-1].get('operator_state') is not None:
-                    self.inference_engine.buffer[-1]['operator_state'].update(agent_state)
+            if self.role == "user":
+                if self.inference_engine.buffer[-1].get('user_state') is not None:
+                    self.inference_engine.buffer[-1]['user_state'].update(agent_state)
             elif self.role == "assistant":
                 if self.inference_engine.buffer[-1].get('assistant_state') is not None:
                     self.inference_engine.buffer[-1]['assistant_state'].update(agent_state)
@@ -226,7 +216,7 @@ class BaseAgent(Core):
     def render(self, *args, **kwargs):
         """ Renders the agent part of the bundle. Render can be redefined but should keep the same signature. Currently supports text and plot modes.
 
-        :param args: (list) list of axes used in the bundle render, in order: axtask, axoperator, axassistant
+        :param args: (list) list of axes used in the bundle render, in order: axtask, axuser, axassistant
         :param mode: (str) currently supports either 'plot' or 'text'. Both modes can be combined by having both modes in the same string e.g. 'plottext' or 'plotext'.
 
         :meta public:
@@ -237,12 +227,12 @@ class BaseAgent(Core):
 
 
         if 'plot' in mode:
-            axtask, axoperator, axassistant = args[:3]
+            axtask, axuser, axassistant = args[:3]
             if self.ax is not None:
                 pass
             else:
-                if self.role == "operator":
-                    self.ax = axoperator
+                if self.role == "user":
+                    self.ax = axuser
                 else:
                     self.ax = axassistant
                 self.ax.axis('off')
@@ -278,8 +268,8 @@ class DummyAssistant(BaseAgent):
         pass
 
 
-class DummyOperator(BaseAgent):
-    """ An Operator that does nothing, used by Bundles that don't use an operator.
+class DummyUser(BaseAgent):
+    """ An User that does nothing, used by Bundles that don't use an user.
 
     :meta private:
     """
@@ -287,7 +277,7 @@ class DummyOperator(BaseAgent):
         """
         :meta private:
         """
-        super().__init__("operator", **kwargs)
+        super().__init__("user", **kwargs)
 
     def finit(self):
         """
@@ -303,11 +293,11 @@ class DummyOperator(BaseAgent):
 
 
 ### Goal could be defined as a target state of the task, in a more general description.
-class GoalDrivenDiscreteOperator(BaseAgent):
-    """ An Operator that is driven by a Goal and uses Discrete actions. It has to be used with a task that has a substate named Targets. Its internal state includes a goal substate, whose value is either one of the task's Targets.
+class GoalDrivenDiscreteUser(BaseAgent):
+    """ An User that is driven by a Goal and uses Discrete actions. It has to be used with a task that has a substate named Targets. Its internal state includes a goal substate, whose value is either one of the task's Targets.
 
 
-    :param operator_model: (core.models), an operator model contained in core.models or that subclasses a class in core.models
+    :param user_model: (core.models), an user model contained in core.models or that subclasses a class in core.models
     :param observation_engine: (core.ObservationEngine), see BaseAgent for definition
 
     :meta public:
@@ -318,15 +308,18 @@ class GoalDrivenDiscreteOperator(BaseAgent):
 
         :meta public:
         """
-        target_space = self.bundle.task.state['Targets'][1]
-        self.state["Goal"] = [None, [gym.spaces.Discrete(len(target_space))], None]
+        target_space = self.bundle.task.state['targets']['spaces'][0]
+        self.state["goal"] = StateElement(
+            values = None,
+            spaces = copy.copy(target_space)
+        )
 
         return
 
     def render(self, *args, **kwargs):
         """ Similar to BaseAgent's render, but prints the "Goal" state in addition.
 
-        :param args: (list) list of axes used in the bundle render, in order: axtask, axoperator, axassistant
+        :param args: (list) list of axes used in the bundle render, in order: axtask, axuser, axassistant
         :param mode: (str) currently supports either 'plot' or 'text'. Both modes can be combined by having both modes in the same string e.g. 'plottext' or 'plotext'.
 
         :meta public:
@@ -337,12 +330,12 @@ class GoalDrivenDiscreteOperator(BaseAgent):
             mode = 'text'
 
         if 'plot' in mode:
-            axtask, axoperator, axassistant = args[:3]
+            axtask, axuser, axassistant = args[:3]
             if self.ax is not None:
                 pass
             else:
-                self.ax = axoperator
-                self.ax.text(0,0, "Goal: {}".format(self.state['Goal'][0][0]))
+                self.ax = axuser
+                self.ax.text(0,0, "Goal: {}".format(self.state['goal'][0][0]))
                 self.ax.set_xlim([-0.5,0.5])
                 self.ax.set_ylim([-0.5,0.5])
                 self.ax.axis('off')
@@ -354,21 +347,21 @@ class GoalDrivenDiscreteOperator(BaseAgent):
 
 
 class BIGAssistant(BaseAgent):
-    """ An Assistant that maintains a discrete belief, updated with Bayes' rule. It supposes that the task has targets, and that the operator selects one of these as a goal.
+    """ An Assistant that maintains a discrete belief, updated with Bayes' rule. It supposes that the task has targets, and that the user selects one of these as a goal.
 
-    :param action_space: (list(gym.spaces)) space in which the actions of the operator take place, e.g.``[gym.spaces.Box(low=-1, high=1, shape=(2, ), dtype=numpy.float64)]``
+    :param action_space: (list(gym.spaces)) space in which the actions of the user take place, e.g.``[gym.spaces.Box(low=-1, high=1, shape=(2, ), dtype=numpy.float64)]``
     :param action_set: (list) possible action set for each subspace (None for Box) e.g. ``[None, None]``
-    :param operator_model: (core.operator_model) operator_model used by the assistant to form the likelihood in Bayes rule. It can be the exact same model that is used by the operator, or a different one (e.g. if the assistant has to learn the model)
+    :param user_model: (core.user_model) user_model used by the assistant to form the likelihood in Bayes rule. It can be the exact same model that is used by the user, or a different one (e.g. if the assistant has to learn the model)
     :param observation_engine: (core.observation_engine).
 
     :meta public:
     """
-    def __init__(self, action_space, action_set, operator_model, observation_engine = None):
+    def __init__(self, action_space, action_set, user_model, observation_engine = None):
 
         agent_state = State()
         agent_policy = BIGDiscretePolicy()
         observation_engine = None
-        inference_engine = GoalInferenceWithOperatorPolicyGiven(operator_model)
+        inference_engine = GoalInferenceWithUserPolicyGiven(user_model)
 
         super().__init__(   "assistant",
                             state = agent_state,
@@ -464,7 +457,7 @@ class BIGAssistant(BaseAgent):
 
 
         if 'plot' in mode:
-            axtask, axoperator, axassistant = args[:3]
+            axtask, axuser, axassistant = args[:3]
             ax = axassistant
             if self.ax is not None:
                 title = self.ax.get_title()
@@ -549,7 +542,7 @@ class LQRController(BaseAgent):
         if state is None:
             pass
 
-        super().__init__('operator',
+        super().__init__('user',
                             state = state,
                             policy = agent_policy,
                             observation_engine = observation_engine,
@@ -558,7 +551,7 @@ class LQRController(BaseAgent):
 
 
         self.handbook['render_mode'].extend(['plot', 'text'])
-        _role = {'value': role, 'meaning': 'Whether the agent is an operator or an assistant'}
+        _role = {'value': role, 'meaning': 'Whether the agent is an user or an assistant'}
         _Q = {'value': Q, 'meaning': 'State cost matrix (X.T Q X)'}
         _R = {'value': R, 'meaning': 'Control cost matrix (U.T R U)'}
         self.handbook['parameters'].extend([_role, _Q, _R])
@@ -580,9 +573,9 @@ class LQRController(BaseAgent):
             mode = 'text'
 
         if 'plot' in mode:
-            axtask, axoperator, axassistant = args[:3]
+            axtask, axuser, axassistant = args[:3]
             if self.ax is None:
-                self.ax = axoperator
+                self.ax = axuser
                 self.ax.set_xlabel("Time (s)")
                 self.ax.set_ylabel("Action")
             if self.action['values'][0]:
@@ -704,7 +697,7 @@ class IHCT_LQGController(BaseAgent):
 
 
             agent_policy = LFwithreward( self.R,
-                ('operator_state','xhat'),
+                ('user_state','xhat'),
                 0,
                 action_state,
                 noise_function = shaped_gaussian_noise,
@@ -712,7 +705,7 @@ class IHCT_LQGController(BaseAgent):
                         )
 
             # agent_policy = LinearFeedback(
-            #     ('operator_state','xhat'),
+            #     ('user_state','xhat'),
             #     0,
             #     action_state,
             #     noise_function = shaped_gaussian_noise,
@@ -737,12 +730,12 @@ class IHCT_LQGController(BaseAgent):
 
 
         if observation_engine is None:
-            operator_engine_specification  =    [
+            user_engine_specification  =    [
                                     ('turn_index', 'all'),
                                     ('task_state', 'all'),
-                                    ('operator_state', 'all'),
+                                    ('user_state', 'all'),
                                     ('assistant_state', None),
-                                    ('operator_action', 'all'),
+                                    ('user_action', 'all'),
                                     ('assistant_action', 'all')
                                     ]
 
@@ -756,8 +749,8 @@ class IHCT_LQGController(BaseAgent):
             extraprobabilisticrules = {}
             extraprobabilisticrules.update(agn_rule)
 
-            observation_engine = RuleObswithLQreward(self.Q, deterministic_specification = operator_engine_specification, extradeterministicrules = extradeterministicrules, extraprobabilisticrules = extraprobabilisticrules)
-            # observation_engine = RuleObservationEngine(deterministic_specification = operator_engine_specification, extradeterministicrules = extradeterministicrules, extraprobabilisticrules = extraprobabilisticrules)
+            observation_engine = RuleObswithLQreward(self.Q, deterministic_specification = user_engine_specification, extradeterministicrules = extradeterministicrules, extraprobabilisticrules = extraprobabilisticrules)
+            # observation_engine = RuleObservationEngine(deterministic_specification = user_engine_specification, extradeterministicrules = extradeterministicrules, extraprobabilisticrules = extraprobabilisticrules)
 
 
 
@@ -769,7 +762,7 @@ class IHCT_LQGController(BaseAgent):
         if state is None:
             pass
 
-        super().__init__('operator',
+        super().__init__('user',
                             state = state,
                             policy = agent_policy,
                             observation_engine = observation_engine,
@@ -778,7 +771,7 @@ class IHCT_LQGController(BaseAgent):
 
 
         self.handbook['render_mode'].extend(['plot', 'text'])
-        _role = {'value': role, 'meaning': 'Whether the agent is an operator or an assistant'}
+        _role = {'value': role, 'meaning': 'Whether the agent is an user or an assistant'}
         _Q = {'value': Q, 'meaning': 'State cost matrix (X.T Q X)'}
         _R = {'value': R, 'meaning': 'Control cost matrix (U.T R U)'}
         self.handbook['parameters'].extend([_role, _Q, _R])

@@ -57,7 +57,7 @@ Learn how to use *interaction-agents*:
     :maxdepth: 2
     :caption: Examples
 
-    guide/operators
+    guide/users
 
 
 .. toctree::
@@ -73,7 +73,7 @@ Learn how to use *interaction-agents*:
     guide/wrappers
     guide/observation_engine
     guide/inference_engine
-    guide/operator_model
+    guide/user_model
 
 
 ..toctree:
@@ -109,7 +109,7 @@ List of Modules in *interaction-agents*
     :maxdepth: 2
     :caption: Pointing Module. This module is used to model pointing tasks.
 
-    modules/pointing/operators
+    modules/pointing/users
     modules/pointing/envs
     modules/pointing/assistants
 
@@ -117,7 +117,7 @@ List of Modules in *interaction-agents*
     :maxdepth: 2
     :caption: Eye Module. This module is used to model eye movements of human observers.
 
-    modules/eye/operators
+    modules/eye/users
     modules/eye/envs
     modules/eye/noise
 

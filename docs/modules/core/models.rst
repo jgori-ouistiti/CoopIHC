@@ -1,6 +1,6 @@
 .. models:
 
-Operator Models
+User Models
 *****************
 
 .. automodule:: core.models

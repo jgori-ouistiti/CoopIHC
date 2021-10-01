@@ -86,9 +86,9 @@ class BaseInferenceEngine:
         """
         # do something with information inside buffer
 
-        if self.host.role == "operator":
+        if self.host.role == "user":
             try:
-                return self.buffer[-1]['operator_state'], 0
+                return self.buffer[-1]['user_state'], 0
             except KeyError:
                 return OrderedDict({}), 0
         elif self.host.role == "assistant":
@@ -123,11 +123,11 @@ class BaseInferenceEngine:
 
 
 
-# The operatormodel is not updated with this assistant
-class GoalInferenceWithOperatorPolicyGiven(BaseInferenceEngine):
-    """ An Inference Engine used by an assistant to infer the goal of an operator.
+# The usermodel is not updated with this assistant
+class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
+    """ An Inference Engine used by an assistant to infer the goal of an user.
 
-    The inference is based on an operator_model which has to be provided to this engine.
+    The inference is based on an user_model which has to be provided to this engine.
 
     :meta public:
     """
@@ -136,7 +136,7 @@ class GoalInferenceWithOperatorPolicyGiven(BaseInferenceEngine):
         try:
             self.attach_policy(args[0])
         except IndexError:
-            self.operator_policy_model = None
+            self.user_policy_model = None
 
         self.render_tag = ['plot', 'text']
 
@@ -145,7 +145,7 @@ class GoalInferenceWithOperatorPolicyGiven(BaseInferenceEngine):
         if not policy.explicit_likelihood:
             print('Warning: This inference engine requires a policy defined by an explicit likelihood')
         print('Attached policy {} to {}'.format(policy, self.__class__.__name__))
-        self.operator_policy_model = policy
+        self.user_policy_model = policy
 
     def attach_set_theta(self, set_theta):
         self.set_theta = set_theta
@@ -197,7 +197,7 @@ class GoalInferenceWithOperatorPolicyGiven(BaseInferenceEngine):
             return draw, fill, symbol
 
         def draw_beliefs(ax):
-            beliefs = hard_flatten(self.host.state['Beliefs']['values'])
+            beliefs = hard_flatten(self.host.state['beliefs']['values'])
             ticks = []
             ticklabels = []
             for i, b in enumerate(beliefs):
@@ -220,29 +220,31 @@ class GoalInferenceWithOperatorPolicyGiven(BaseInferenceEngine):
             else:
                 self.ax = ax
                 draw_beliefs(ax)
-                self.ax.set_title(type(self).__name__ + " Beliefs")
+                self.ax.set_title(type(self).__name__ + " beliefs")
 
         if 'text' in mode:
-            beliefs = hard_flatten(self.host.state['Beliefs']['values'])
-            print("Beliefs", beliefs)
+            beliefs = hard_flatten(self.host.state['beliefs']['values'])
+            print("beliefs", beliefs)
 
     def infer(self):
-        """ Update the substate 'Beliefs' from the internal state. Generate candidate observations for each potential target, evaluate its likelihood and update the prior to form the posterior. Normalize the posterior and return the new state.
+        """ Update the substate 'beliefs' from the internal state. Generate candidate observations for each potential target, evaluate its likelihood and update the prior to form the posterior. Normalize the posterior and return the new state.
 
         :return: new internal state (OrderedDict), reward associated with inferring (float)
 
         """
 
-        if self.operator_policy_model is None:
-            raise RuntimeError('This inference engine requires a likelihood-based model of an operator policy to function.')
+        if self.user_policy_model is None:
+            raise RuntimeError('This inference engine requires a likelihood-based model of an user policy to function.')
 
 
         observation = self.buffer[-1]
         state = observation['assistant_state']
-        old_beliefs = state['Beliefs']['values']
-        operator_action = observation['operator_action']['action']
+        old_beliefs = state['beliefs']['values'][0].squeeze().tolist()
+        user_action = observation['user_action']['action']
 
+        print(old_beliefs)
         for nt,t in enumerate(self.set_theta):
+            print(nt, t)
             # candidate_observation = copy.copy(observation)
             candidate_observation = copy.deepcopy(observation)
             for key, value in t.items():
@@ -253,14 +255,14 @@ class GoalInferenceWithOperatorPolicyGiven(BaseInferenceEngine):
                     _state[key[1]] = value
                     candidate_observation[key[0]] = _state
 
-            old_beliefs[nt] *= self.operator_policy_model.compute_likelihood(operator_action, candidate_observation)
+            old_beliefs[nt] *= self.user_policy_model.compute_likelihood(user_action, candidate_observation)
 
 
         if sum(old_beliefs) == 0:
             print("warning: beliefs sum up to 0 after updating. I'm resetting to uniform to continue behavior. You should check if the behavior model makes sense. Here are the latest results from the model")
             old_beliefs = [1 for i in old_beliefs]
         new_beliefs = [i/sum(old_beliefs) for i in old_beliefs]
-        state['Beliefs']['values'] = new_beliefs
+        state['beliefs']['values'] = numpy.array(new_beliefs)
         return state, 0
 
 
@@ -291,15 +293,15 @@ class LinearGaussianContinuous(BaseInferenceEngine):
 
 
     def infer(self):
-        """ Update the Gaussian Beliefs, see XX for more information.
+        """ Update the Gaussian beliefs, see XX for more information.
 
         :return: (OrderedDict) state, (float) 0
 
         :meta public:
         """
         observation = self.buffer[-1]
-        if self.host.role == "operator":
-            state = observation['operator_state']
+        if self.host.role == "user":
+            state = observation['user_state']
         else:
             state = observation["assistant_state"]
 
@@ -310,7 +312,7 @@ class LinearGaussianContinuous(BaseInferenceEngine):
 
         oldmu, oldsigma = state["belief"]['values']
         new_sigma = numpy.linalg.inv((numpy.linalg.inv(oldsigma) + numpy.linalg.inv(v)))
-        newmu = new_sigma @ (numpy.linalg.inv(v)@y + numpy.linalg.inv(oldsigma)@oldmu)
+        newmu = new_sigma @ (numpy.linalg.inv(v)@y.T + numpy.linalg.inv(oldsigma)@oldmu.T)
         state['belief']["values"] = [newmu, new_sigma]
         return state, 0
 
@@ -323,9 +325,9 @@ class LinearGaussianContinuous(BaseInferenceEngine):
                 render_flag = True
 
         if 'plot' in mode:
-            axtask, axoperator, axassistant = args[:3]
-            if self.host.role == 'operator':
-                ax = axoperator
+            axtask, axuser, axassistant = args[:3]
+            if self.host.role == 'user':
+                ax = axuser
             else:
                 ax = axassistant
 
@@ -337,11 +339,11 @@ class LinearGaussianContinuous(BaseInferenceEngine):
                 self.ax = ax
 
             self.draw_beliefs(ax, dim)
-            belief = self.host.state['belief']['values'][0]
+            belief = self.host.state['belief']['values'][0].squeeze()
             if dim == 1:
                 belief = [belief[0], 0]
             axtask.plot(*belief, 'r*')
-            self.ax.set_title(type(self).__name__ + " Beliefs")
+            self.ax.set_title(type(self).__name__ + " beliefs")
 
         if 'text' in mode:
             print(self.host.state['belief']['values'])
@@ -349,7 +351,7 @@ class LinearGaussianContinuous(BaseInferenceEngine):
     def draw_beliefs(self, ax, dim):
         mu, cov = self.host.state['belief']['values']
         if dim == 2:
-            self.patch = self.confidence_ellipse(mu, cov, ax)
+            self.patch = self.confidence_ellipse(mu.squeeze(), cov, ax)
         else:
             self.patch = self.confidence_interval(mu, cov, ax)
 

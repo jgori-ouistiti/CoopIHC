@@ -1,18 +1,18 @@
 import gym
 import numpy
 
-from core.bundle import PlayNone, PlayOperator, PlayAssistant, PlayBoth, Train, SinglePlayOperator, SinglePlayOperatorAuto, _DevelopTask
+from core.bundle import PlayNone, PlayUser, PlayAssistant, PlayBoth, Train, SinglePlayUser, SinglePlayUserAuto, _DevelopTask
 from pointing.envs import SimplePointingTask, Screen_v0
-from pointing.operators import CarefulPointer, LQGPointer
+from pointing.users import CarefulPointer, LQGPointer
 from pointing.assistants import ConstantCDGain, BIGGain
 from eye.envs import ChenEyePointingTask
-from eye.operators import ChenEye
+from eye.users import ChenEye
 import core
 from collections import OrderedDict
 from core.models import LinearEstimatedFeedback
 from core.helpers import flatten
-from core.agents import BaseAgent, FHDT_LQRController, IHDT_LQRController, IHCT_LQGController, DummyAssistant, DummyOperator
-from core.observation import base_task_engine_specification, base_operator_engine_specification, RuleObservationEngine, BaseObservationEngine, CascadedObservationEngine, WrapAsObservationEngine
+from core.agents import BaseAgent, FHDT_LQRController, IHDT_LQRController, IHCT_LQGController, DummyAssistant, DummyUser
+from core.observation import base_task_engine_specification, base_user_engine_specification, RuleObservationEngine, BaseObservationEngine, CascadedObservationEngine, WrapAsObservationEngine
 from core.interactiontask import ClassicControlTask,  InteractionTask, TaskWrapper
 from core.policy import ELLDiscretePolicy, BasePolicy, BIGDiscretePolicy, RLPolicy, WrapAsPolicy
 from core.space import State, StateElement
@@ -36,19 +36,19 @@ logger.add('logs/{}.log'.format(_str), format = "{time} {level} {message}")
 
 if _str == 'basic-plot':
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-    operator = CarefulPointer()
+    user = CarefulPointer()
     assistant = ConstantCDGain(1)
 
-    bundle = PlayNone(task, operator, assistant)
+    bundle = PlayNone(task, user, assistant)
     game_state = bundle.reset()
     bundle.render('plotext')
 
 if _str == 'basic-PlayNone' or _str == 'all':
 
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-    binary_operator = CarefulPointer()
+    binary_user = CarefulPointer()
     unitcdgain = ConstantCDGain(1)
-    bundle = PlayNone(task, binary_operator, unitcdgain)
+    bundle = PlayNone(task, binary_user, unitcdgain)
     game_state = bundle.reset()
     bundle.render('plotext')
     k = 0
@@ -63,10 +63,10 @@ if _str == 'basic-PlayNone' or _str == 'all':
 
 if _str == 'biggain-PlayNone' or _str == 'all':
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8, mode = 'position')
-    binary_operator = CarefulPointer()
+    binary_user = CarefulPointer()
     BIGpointer = BIGGain()
 
-    bundle = PlayNone(task, binary_operator, BIGpointer)
+    bundle = PlayNone(task, binary_user, BIGpointer)
     game_state = bundle.reset()
     bundle.render('plotext')
     plt.tight_layout()
@@ -85,7 +85,7 @@ if _str == 'biggain-PlayNone' or _str == 'all':
             break
 
 
-if _str == 'basic-TrainOperator' or _str == 'all':
+if _str == 'basic-TrainUser' or _str == 'all':
 
     # from stable_baselines3 import PPO
     # from stable_baselines3.common.vec_env import SubprocVecEnv
@@ -105,11 +105,11 @@ if _str == 'basic-TrainOperator' or _str == 'all':
                         action_values = None
     )
 
-    operator = CarefulPointer(agent_policy = policy)
-    bundle = PlayOperator(task, operator, unitcdgain)
+    user = CarefulPointer(agent_policy = policy)
+    bundle = PlayUser(task, user, unitcdgain)
     observation = bundle.reset()
 
-    observation_dict = OrderedDict({'task_state': OrderedDict({'position': 0}), 'operator_state': OrderedDict({'goal': 0})})
+    observation_dict = OrderedDict({'task_state': OrderedDict({'position': 0}), 'user_state': OrderedDict({'goal': 0})})
 
 
     class ThisActionWrapper(gym.ActionWrapper):
@@ -149,10 +149,10 @@ if _str == 'basic-TrainOperator' or _str == 'all':
                                 action_values = None
             )
 
-            operator = CarefulPointer(agent_policy = policy)
-            bundle = PlayOperator(task, operator, unitcdgain)
+            user = CarefulPointer(agent_policy = policy)
+            bundle = PlayUser(task, user, unitcdgain)
 
-            observation_dict = OrderedDict({'task_state': OrderedDict({'position': 0}), 'operator_state': OrderedDict({'goal': 0})})
+            observation_dict = OrderedDict({'task_state': OrderedDict({'position': 0}), 'user_state': OrderedDict({'goal': 0})})
             env = ThisActionWrapper( Train(
                     bundle,
                     observation_mode = 'multidiscrete',
@@ -204,10 +204,10 @@ if _str == 'loadNNpolicy' or _str == 'all':
                         action_values = None
     )
 
-    operator = CarefulPointer(agent_policy = policy)
-    bundle = PlayOperator(task, operator, unitcdgain)
+    user = CarefulPointer(agent_policy = policy)
+    bundle = PlayUser(task, user, unitcdgain)
 
-    observation_dict = OrderedDict({'task_state': OrderedDict({'position': 0}), 'operator_state': OrderedDict({'goal': 0})})
+    observation_dict = OrderedDict({'task_state': OrderedDict({'position': 0}), 'user_state': OrderedDict({'goal': 0})})
     training_env = ThisActionWrapper( Train(
             bundle,
             observation_mode = 'multidiscrete',
@@ -220,21 +220,21 @@ if _str == 'loadNNpolicy' or _str == 'all':
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
     unitcdgain = ConstantCDGain(1)
 
-    # specifying operator policy
-    observation_dict = OrderedDict({'task_state': OrderedDict({'position': 0}), 'operator_state': OrderedDict({'goal': 0})})
+    # specifying user policy
+    observation_dict = OrderedDict({'task_state': OrderedDict({'position': 0}), 'user_state': OrderedDict({'goal': 0})})
     action_wrappers = OrderedDict()
     action_wrappers['ThisActionWrapper'] = (ThisActionWrapper, ())
     policy = RLPolicy(
-            'operator',
+            'user',
             model_path =  'guide/models/basic_pointer_ppo',
             learning_algorithm = 'PPO',
             library = 'stable_baselines3',
             training_env = training_env,
             wrappers = {'actionwrappers': action_wrappers, 'observation_wrappers': {}}
               )
-    operator = CarefulPointer(agent_policy = policy)
+    user = CarefulPointer(agent_policy = policy)
 
-    bundle = PlayAssistant(task, operator, unitcdgain)
+    bundle = PlayAssistant(task, user, unitcdgain)
     game_state = bundle.reset()
     bundle.render('plotext')
     plt.tight_layout()
@@ -250,18 +250,18 @@ if _str == 'chen-play-1D':
     perceptualnoise = 0.15
     oculomotornoise = 0.09
     task = ChenEyePointingTask(fitts_W, fitts_D, dimension = 1)
-    operator = ChenEye(perceptualnoise, oculomotornoise, dimension = 1)
-    bundle = SinglePlayOperator(task, operator)
+    user = ChenEye(perceptualnoise, oculomotornoise, dimension = 1)
+    bundle = SinglePlayUser(task, user)
     obs = bundle.reset()
     bundle.render('plotext')
     while True:
-        _action = copy.deepcopy(obs['operator_state']['belief'])
+        _action = copy.deepcopy(obs['user_state']['belief'])
         action = _action[0]
         noise_obs = State()
         noise_obs['task_state'] = State()
         noise_obs['task_state']['targets'] = action
         noise_obs['task_state']['fixation'] = obs['task_state']['fixation']
-        noise = operator.eccentric_noise_gen(noise_obs, oculomotornoise)[0]
+        noise = user.eccentric_noise_gen(noise_obs, oculomotornoise)[0]
 
         noisy_action = action + noise
         obs, reward, is_done, _ = bundle.step(noisy_action)
@@ -276,18 +276,18 @@ if _str == 'chen-play':
     perceptualnoise = 0.05
     oculomotornoise = 0.05
     task = ChenEyePointingTask(fitts_W, fitts_D, threshold = 0.1)
-    operator = ChenEye(perceptualnoise, oculomotornoise)
-    bundle = SinglePlayOperator(task, operator)
+    user = ChenEye(perceptualnoise, oculomotornoise)
+    bundle = SinglePlayUser(task, user)
     obs = bundle.reset()
     bundle.render('plotext')
     while True:
-        _action = copy.deepcopy(obs['operator_state']['belief'])
+        _action = copy.deepcopy(obs['user_state']['belief'])
         action = _action[0]
         noise_obs = State()
         noise_obs['task_state'] = State()
         noise_obs['task_state']['targets'] = action
         noise_obs['task_state']['fixation'] = obs['task_state']['fixation']
-        noise = operator.eccentric_noise_gen(noise_obs, oculomotornoise)[0]
+        noise = user.eccentric_noise_gen(noise_obs, oculomotornoise)[0]
         noisy_action = action + noise
         obs, reward, is_done, _ = bundle.step(noisy_action)
         bundle.render('plotext')
@@ -303,8 +303,8 @@ if _str == 'chen-play-auto':
     ocular_std = 0.09
     swapping_std = 0.09
     task = ChenEyePointingTask(fitts_W, fitts_D)
-    operator = ChenEye(swapping_std, ocular_std)
-    bundle = SinglePlayOperatorAuto(task, operator)
+    user = ChenEye(swapping_std, ocular_std)
+    bundle = SinglePlayUserAuto(task, user)
     bundle.reset()
     bundle.render('plotext')
     # bundle.fig.savefig('/home/jgori/Documents/img_tmp/{}.jpg'.format(str(bundle.task.round)))
@@ -329,9 +329,9 @@ if _str == 'careful-with-obs':
             super().reset(dic = dic)
             self.state['oldposition'] = copy.deepcopy(self.state['position'])
 
-        def operator_step(self, *args, **kwargs):
+        def user_step(self, *args, **kwargs):
             self.memorized = copy.deepcopy(self.state['position'])
-            obs, rewards, is_done, _doc = super().operator_step(*args, **kwargs)
+            obs, rewards, is_done, _doc = super().user_step(*args, **kwargs)
             obs['oldposition'] = self.memorized
             return obs, rewards, is_done, _doc
 
@@ -351,8 +351,8 @@ if _str == 'careful-with-obs':
     perceptualnoise = 0.2
     oculomotornoise = 0.2
     task = ChenEyePointingTask(fitts_W, fitts_D, dimension = 1)
-    operator = ChenEye( perceptualnoise, oculomotornoise, dimension = 1)
-    obs_bundle = SinglePlayOperatorAuto(task, operator, start_at_action = True)
+    user = ChenEye( perceptualnoise, oculomotornoise, dimension = 1)
+    obs_bundle = SinglePlayUserAuto(task, user, start_at_action = True)
 
 
 
@@ -388,26 +388,26 @@ if _str == 'careful-with-obs':
 
     # Define cascaded observation engine
     cursor_tracker = ChenEyeObservationEngineWrapper(obs_bundle)
-    base_operator_engine_specification  =    [ ('turn_index', 'all'),
+    base_user_engine_specification  =    [ ('turn_index', 'all'),
                                         ('task_state', 'all'),
-                                        ('operator_state', 'all'),
+                                        ('user_state', 'all'),
                                         ('assistant_state', None),
-                                        ('operator_action', 'all'),
+                                        ('user_action', 'all'),
                                         ('assistant_action', 'all')
                                         ]
     default_observation_engine = RuleObservationEngine(
-            deterministic_specification = base_operator_engine_specification,
+            deterministic_specification = base_user_engine_specification,
             )
     observation_engine = CascadedObservationEngine([cursor_tracker, default_observation_engine])
 
 
 
-    binary_operator = CarefulPointer(observation_engine = observation_engine)
+    binary_user = CarefulPointer(observation_engine = observation_engine)
     BIGpointer = BIGGain()
-    bundle = PlayAssistant(pointing_task, binary_operator, BIGpointer)
+    bundle = PlayAssistant(pointing_task, binary_user, BIGpointer)
 
 
-    bundle = PlayNone(pointing_task, binary_operator, BIGpointer)
+    bundle = PlayNone(pointing_task, binary_user, BIGpointer)
     game_state = bundle.reset()
     bundle.render('plotext')
     rewards = []
@@ -430,10 +430,9 @@ if _str == 'LQR':
 
     Bc = numpy.array([[ 0, 1]]).reshape((-1,1))
     task = ClassicControlTask(0.002, Ac, Bc, discrete_dynamics = False)
-    operator = IHDT_LQRController("operator", Q, R, None)
-    bundle = SinglePlayOperatorAuto(task, operator)
+    user = IHDT_LQRController("user", Q, R, None)
+    bundle = SinglePlayUserAuto(task, user)
     bundle.reset()
-    print(task.state)
     bundle.playspeed = 0.01
     # bundle.render('plot')
     for i in range(1500):
@@ -466,8 +465,8 @@ if _str == 'LQRbis':
     Bc = numpy.array([[ 0, 0, 0, bu]]).reshape((-1,1))
 
     task = ClassicControlTask(0.002, Ac, Bc, discrete_dynamics = False)
-    operator = IHDT_LQRController("operator", Q, R, None)
-    bundle = SinglePlayOperatorAuto(task, operator)
+    user = IHDT_LQRController("user", Q, R, None)
+    bundle = SinglePlayUserAuto(task, user)
     bundle.reset()
     bundle.playspeed = 0.01
     bundle.render('plot')
@@ -523,12 +522,12 @@ if _str == 'LQG':
     U = numpy.diag([1, 0.1, 0.01, 0])
 
     task = ClassicControlTask(timestep, Ac, Bc, F = F, G = G, discrete_dynamics = False, noise = 'on')
-    operator = IHCT_LQGController('operator', timestep, Q, R, U, C, Gamma, D, noise = 'on')
-    bundle = SinglePlayOperatorAuto(task, operator, onreset_deterministic_first_half_step = True,
+    user = IHCT_LQGController('user', timestep, Q, R, U, C, Gamma, D, noise = 'on')
+    bundle = SinglePlayUserAuto(task, user, onreset_deterministic_first_half_step = True,
     start_at_action = True)
     obs = bundle.reset( dic = {
             'task_state': {'x':  numpy.array([[0.5],[0],[0],[0]]) },
-            'operator_state': {'xhat':  numpy.array([[0.5],[0],[0],[0]]) }
+            'user_state': {'xhat':  numpy.array([[0.5],[0],[0],[0]]) }
                     } )
     bundle.playspeed = 0.001
     bundle.render('plot')
@@ -585,8 +584,8 @@ if _str == 'LQGpointer':
     U = numpy.diag([1, 0.1, 0.01, 0])
 
     task = ClassicControlTask(timestep, Ac, Bc, F = F, G = G, discrete_dynamics = False, noise = 'off')
-    operator = IHCT_LQGController('operator', timestep, Q, R, U, C, Gamma, D, noise = 'on')
-    action_bundle = SinglePlayOperatorAuto(task, operator, onreset_deterministic_first_half_step = True,
+    user = IHCT_LQGController('user', timestep, Q, R, U, C, Gamma, D, noise = 'on')
+    action_bundle = SinglePlayUserAuto(task, user, onreset_deterministic_first_half_step = True,
     start_at_action = True)
 
 
@@ -602,7 +601,7 @@ if _str == 'LQGpointer':
         def sample(self):
             logger.info('=============== Entering Sampler ================')
             cursor = copy.copy(self.observation['task_state']['position'])
-            target = copy.copy(self.observation['operator_state']['goal'])
+            target = copy.copy(self.observation['user_state']['goal'])
             # allow temporarily
             cursor.clipping_mode = 'warning'
             target.clipping_mode = 'warning'
@@ -627,7 +626,7 @@ if _str == 'LQGpointer':
             _reset_x_hat[0] = init_dist
             action_bundle.reset( dic = {
             'task_state': {'x':  _reset_x },
-            'operator_state': {'xhat': _reset_x_hat}
+            'user_state': {'xhat': _reset_x_hat}
                     } )
 
             total_reward = 0
@@ -642,7 +641,7 @@ if _str == 'LQGpointer':
 
             # Store state for next usage
             self.xmemory = observation['task_state']['x']['values'][0]
-            self.xhatmemory = observation['operator_state']['xhat']['values'][0]
+            self.xhatmemory = observation['user_state']['xhat']['values'][0]
 
             # Cast as delta in correct units
             cursor_box['values'] = - self.xmemory[0] + init_dist
@@ -661,12 +660,12 @@ if _str == 'LQGpointer':
 
     pointing_task = SimplePointingTask(gridsize = 31, number_of_targets = 8, mode = 'gain')
     policy = LQGPointerPolicy(action_bundle)
-    binary_operator = CarefulPointer( agent_policy = policy )
+    binary_user = CarefulPointer( agent_policy = policy )
     unitcdgain = ConstantCDGain(1)
-    bundle = PlayNone(pointing_task, binary_operator, unitcdgain)
+    bundle = PlayNone(pointing_task, binary_user, unitcdgain)
     # game_state =bundle.reset( {
     #         'task_state': {'position':  [15] },
-    #         'operator_state': {'goal': [1]}
+    #         'user_state': {'goal': [1]}
     #                 } )
     game_state =bundle.reset()
 
@@ -692,9 +691,9 @@ if _str == 'LQGpointer-chenobs':
             super().reset(dic = dic)
             self.state['oldposition'] = copy.deepcopy(self.state['position'])
 
-        def operator_step(self, *args, **kwargs):
+        def user_step(self, *args, **kwargs):
             self.memorized = copy.deepcopy(self.state['position'])
-            obs, rewards, is_done, _doc = super().operator_step(*args, **kwargs)
+            obs, rewards, is_done, _doc = super().user_step(*args, **kwargs)
             obs['oldposition'] = self.memorized
             return obs, rewards, is_done, _doc
 
@@ -712,8 +711,8 @@ if _str == 'LQGpointer-chenobs':
     perceptualnoise = 0.2
     oculomotornoise = 0.2
     task = ChenEyePointingTask(fitts_W, fitts_D, dimension = 1)
-    operator = ChenEye( perceptualnoise, oculomotornoise, dimension = 1)
-    obs_bundle = SinglePlayOperatorAuto(task, operator, start_at_action = True)
+    user = ChenEye( perceptualnoise, oculomotornoise, dimension = 1)
+    obs_bundle = SinglePlayUserAuto(task, user, start_at_action = True)
 
 
 
@@ -749,21 +748,21 @@ if _str == 'LQGpointer-chenobs':
 
     # Define cascaded observation engine
     cursor_tracker = ChenEyeObservationEngineWrapper(obs_bundle)
-    base_operator_engine_specification  =    [ ('turn_index', 'all'),
+    base_user_engine_specification  =    [ ('turn_index', 'all'),
                                         ('task_state', 'all'),
-                                        ('operator_state', 'all'),
+                                        ('user_state', 'all'),
                                         ('assistant_state', None),
-                                        ('operator_action', 'all'),
+                                        ('user_action', 'all'),
                                         ('assistant_action', 'all')
                                         ]
     default_observation_engine = RuleObservationEngine(
-            deterministic_specification = base_operator_engine_specification,
+            deterministic_specification = base_user_engine_specification,
             )
     observation_engine = CascadedObservationEngine([cursor_tracker, default_observation_engine])
 
-    lqg_operator = LQGPointer(observation_engine = observation_engine)
+    lqg_user = LQGPointer(observation_engine = observation_engine)
     unitcdgain = ConstantCDGain(1)
-    bundle = PlayNone(pointing_task, lqg_operator, unitcdgain)
+    bundle = PlayNone(pointing_task, lqg_user, unitcdgain)
     game_state = bundle.reset()
     bundle.render('plotext')
 
@@ -773,7 +772,7 @@ if _str == 'LQGpointer-chenobs':
     while True:
         obs, rewards, is_done, list_rewards = bundle.step()
         contain_pos.append(obs["task_state"]['position']['values'][0])
-        contain_goal.append(obs['operator_state']['goal']['values'][0])
+        contain_goal.append(obs['user_state']['goal']['values'][0])
         contain_rewards.append(list_rewards)
         bundle.render('plotext')
         if is_done:
@@ -808,8 +807,8 @@ if _str == 'screen':
 
     _state = State()
     _state['goal'] = goal
-    operator = DummyOperator(state = _state)
-    bundle = _DevelopTask(task, operator = operator)
+    user = DummyUser(state = _state)
+    bundle = _DevelopTask(task, user = user)
     bundle.reset()
     bundle.render('plot')
     bundle.step([ numpy.array([-0.2,-0.2]), numpy.array([1,1]) ])
@@ -824,7 +823,7 @@ if _str == 'js-ws':
     def compute_likelihood(self, action, observation):
         # convert actions and observations
         action = action['human_values'][0]
-        goal = observation['operator_state']['goal']['values'][0]
+        goal = observation['user_state']['goal']['values'][0]
         position = observation['task_state']['position']['values'][0]
 
         # Write down all possible cases (5)
@@ -851,9 +850,9 @@ if _str == 'js-ws':
     # Attach likelihood function to the policy
     policy.attach_likelihood_function(compute_likelihood)
 
-    operator = CarefulPointer(agent_policy = policy)
+    user = CarefulPointer(agent_policy = policy)
     assistant = ConstantCDGain(1)
-    bundle = PlayNone(task, operator, assistant)
+    bundle = PlayNone(task, user, assistant)
     server = Server(bundle, DiscretePointingTaskPipeWrapper, address='localhost', port = 4000)
     server.start()
 
@@ -862,12 +861,12 @@ if _str == 'js-ws':
 
 if _str == 'user-error':
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8, mode = 'gain')
-    binary_operator = CarefulPointer(policy_args = {'error_rate':0.5})
+    binary_user = CarefulPointer(policy_args = {'error_rate':0.5})
     # BIGpointer = BIGGain()
     BIGpointer = ConstantCDGain(1)
 
 
-    bundle = PlayNone(task, binary_operator, BIGpointer)
+    bundle = PlayNone(task, binary_user, BIGpointer)
     game_state = bundle.reset()
     bundle.render('plotext')
     plt.tight_layout()
@@ -890,11 +889,11 @@ if _str == 'user-error':
 
 if _str == 'js-2d':
     from pointing.envs import DiscretePointingTask, DiscretePointingTaskPipeWrapper
-    from pointing.operators import TwoDCarefulPointer
+    from pointing.users import TwoDCarefulPointer
     task = DiscretePointingTask(dim = 2, gridsize = (31,31), number_of_targets = 5)
-    operator = TwoDCarefulPointer()
+    user = TwoDCarefulPointer()
     assistant = ConstantCDGain(1)
-    bundle = PlayNone(task, operator, assistant)
+    bundle = PlayNone(task, user, assistant)
     bundle.reset()
     server = Server(bundle, DiscretePointingTaskPipeWrapper, address='localhost', port = 4000)
     server.start()
@@ -902,11 +901,11 @@ if _str == 'js-2d':
 
 if _str == 'ndtask':
     from pointing.envs import DiscretePointingTask
-    from pointing.operators import TwoDCarefulPointer
+    from pointing.users import TwoDCarefulPointer
     task = DiscretePointingTask(dim = 2, gridsize = (31,31), number_of_targets = 5)
-    operator = TwoDCarefulPointer()
+    user = TwoDCarefulPointer()
     assistant = ConstantCDGain(1)
-    bundle = PlayNone(task, operator, assistant)
+    bundle = PlayNone(task, user, assistant)
     bundle.reset()
     bundle.render('text')
     while True:
@@ -929,13 +928,13 @@ if _str == 'ndtask':
 
 
 
-if _str == 'basic-PlayOperator' or _str == 'all':
+if _str == 'basic-PlayUser' or _str == 'all':
     # Checking Evaluate with CarefulPointer, ConstantCDGain and SimplePointingTask
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-    operator = CarefulPointer()
+    user = CarefulPointer()
     assistant = ConstantCDGain(1)
 
-    bundle = PlayOperator(task, operator, assistant)
+    bundle = PlayUser(task, user, assistant)
     game_state = bundle.reset()
     bundle.render('plotext')
     # observation, sum_rewards, is_done, rewards = bundle.step([-1])
@@ -950,11 +949,11 @@ if _str == 'basic-PlayOperator' or _str == 'all':
 if _str == 'basic-PlayAssistant-0' or _str == 'all':
     # Checking Evaluate with CarefulPointer, ConstantCDGain and SimplePointingTask
     task = SimplePointingTask(gridsize = 31, number_of_targets = 10)
-    binary_operator = CarefulPointer()
+    binary_user = CarefulPointer()
 
     BIGpointer = BIGGain()
 
-    bundle = PlayAssistant(task, binary_operator, BIGpointer)
+    bundle = PlayAssistant(task, binary_user, BIGpointer)
 
     game_state = bundle.reset()
     bundle.render('plotext')
@@ -971,22 +970,22 @@ if _str == 'basic-PlayAssistant-0' or _str == 'all':
 
 if _str == 'basic-PlayAssistant-1' or _str == 'all':
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-    operator = CarefulPointer()
+    user = CarefulPointer()
     assistant = ConstantCDGain(1)
 
-    bundle = PlayAssistant(task, operator, assistant)
+    bundle = PlayAssistant(task, user, assistant)
     game_state = bundle.reset()
     bundle.render('plotext')
 
 
     gain = 4
 
-    sign_flag = game_state["assistant_state"]['OperatorAction'][0]
+    sign_flag = game_state["assistant_state"]['UserAction'][0]
     observation = game_state
     k = 0
     while True:
         k+=1
-        sign_flag = sign_flag * observation["assistant_state"]['OperatorAction'][0]
+        sign_flag = sign_flag * observation["assistant_state"]['UserAction'][0]
         if sign_flag == -1:
             gain = max(1,gain/2)
         observation, sum_rewards, is_done, rewards = bundle.step([gain])
@@ -1000,10 +999,10 @@ if _str == 'basic-PlayAssistant-1' or _str == 'all':
 if _str == 'basic-PlayBoth' or _str == 'all':
     # Checking Evaluate with CarefulPointer, ConstantCDGain and SimplePointingTask
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-    operator = CarefulPointer()
+    user = CarefulPointer()
     assistant = ConstantCDGain(1)
 
-    bundle = PlayBoth(task, operator, assistant)
+    bundle = PlayBoth(task, user, assistant)
     game_state = bundle.reset()
     bundle.render('plotext')
     observation, sum_rewards, is_done, rewards = bundle.step([[-1], [2]])
@@ -1018,19 +1017,19 @@ if _str == 'basic-PlayBoth' or _str == 'all':
 
 if _str == 'basic-TrainAssistant' or _str == 'all':
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-    operator = CarefulPointer()
+    user = CarefulPointer()
     assistant = ConstantCDGain(1)
 
-    bundle = PlayAssistant(task, operator, assistant)
+    bundle = PlayAssistant(task, user, assistant)
     env = Train(bundle)
     check_env(env)
 
 if _str == 'basic-TrainBoth' or _str == 'all':
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-    operator = CarefulPointer()
+    user = CarefulPointer()
     assistant = ConstantCDGain(1)
 
-    bundle = PlayBoth(task, operator, assistant)
+    bundle = PlayBoth(task, user, assistant)
     env = Train(bundle)
     check_env(env)
 
@@ -1042,8 +1041,8 @@ if _str == 'chen-train':
     ocular_std = 0.09
     swapping_std = 0.09
     task = ChenEyePointingTask(fitts_W, fitts_D, ocular_std)
-    operator = ChenEye(swapping_std)
-    bundle = SinglePlayOperator(task, operator)
+    user = ChenEye(swapping_std)
+    bundle = SinglePlayUser(task, user)
     bundle
     env = Train(bundle)
     env.squeeze_output(slice(3,5,1))
@@ -1101,8 +1100,8 @@ if _str == 'LQG':
     U = numpy.diag([1, 0.1, 0.01, 0])
 
     task = ClassicControlTask(timestep, Ac, Bc, F = F, G = G, discrete_dynamics = False, noise = 'off')
-    operator = IHCT_LQGController('operator', timestep, Q, R, U, C, Gamma, D, noise = 'on')
-    bundle = SinglePlayOperatorAuto(task, operator, onreset_deterministic_first_half_step = True)
+    user = IHCT_LQGController('user', timestep, Q, R, U, C, Gamma, D, noise = 'on')
+    bundle = SinglePlayUserAuto(task, user, onreset_deterministic_first_half_step = True)
     bundle.reset( {
             'task_state': {'x':  numpy.array([[-0.5],[0],[0],[0]]) }
                     } )
@@ -1161,8 +1160,8 @@ if _str == 'test':
     U = numpy.diag([1, 0.1, 0.01, 0])
 
     classic_cc_task = ClassicControlTask(timestep, Ac, Bc, F = F, G = G, discrete_dynamics = False, noise = 'off')
-    LQG_operator = IHCT_LQGController('operator', timestep, Q, R, U, C, Gamma, D, noise = 'on')
-    op_bundle = SinglePlayOperatorAuto(classic_cc_task, LQG_operator, onreset_deterministic_first_half_step = True)
+    LQG_user = IHCT_LQGController('user', timestep, Q, R, U, C, Gamma, D, noise = 'on')
+    op_bundle = SinglePlayUserAuto(classic_cc_task, LQG_user, onreset_deterministic_first_half_step = True)
 
 
 
@@ -1172,7 +1171,7 @@ if _str == 'test':
     #
     #
     #
-    # packaged_operator = PackageToOperator(op_bundle)
+    # packaged_user = PackageToUser(op_bundle)
     # assistant = ConstantCDGain(1)
     #
     # bundle = PLayNone(task, )
