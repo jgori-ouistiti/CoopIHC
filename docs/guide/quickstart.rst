@@ -133,7 +133,7 @@ You can verify that the task works as intended by bundling it with two ``BaseAge
 
 .. code-block:: python
 
-    from core.bundle import PlayBoth
+    from core.bundle import Bundle
     from core.policy import BasePolicy
     from core.agents import BaseAgent
 
@@ -151,30 +151,31 @@ You can verify that the task works as intended by bundling it with two ``BaseAge
         )
 
     # Run a task together with two BaseAgents
-    bundle = PlayBoth(
-        ExampleTask(),
-        BaseAgent( 'user',
+    bundle = Bundle(
+        task = ExampleTask(),
+        user = BaseAgent( 'user',
             override_agent_policy = BasePolicy(user_action_state)),
-        BaseAgent( 'assistant',
-        override_agent_policy = BasePolicy(assistant_action_state))
+        assistant = BaseAgent( 'assistant',
+            override_agent_policy = BasePolicy(assistant_action_state))
         )
 
     # Reset the task, plot the state.
-    bundle.reset()
-    bundle.render("text")
+    bundle.reset(turn = 1)
+    print(bundle.game_state)
+    bundle.step(numpy.array([1]),numpy.array([1]))
+    print(bundle.game_state)
+
 
     # Test simple input
-    bundle.step([numpy.array([1]),numpy.array([1])])
-    bundle.render("text")
+    bundle.step(numpy.array([1]),numpy.array([1]))
 
     # Test with input sampled from the agent policies
     bundle.reset()
     while True:
-        task_state, sumrewards, is_done, listrewards = bundle.step([bundle.user.policy.sample()[0], bundle.assistant.policy.sample()[0]])
+        task_state, rewards, is_done = bundle.step(bundle.user.policy.sample()[0], bundle.assistant.policy.sample()[0])
         print(task_state)
         if is_done:
             break
-
 
 Agents
 ------------------

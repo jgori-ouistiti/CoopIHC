@@ -143,7 +143,7 @@ class _Bundle:
         if turn >= 1:
             self._user_first_half_step()
         if turn >= 2:
-            self.user.take_action()
+            user_action, _ = self.user.take_action()
             self.broadcast_action('user', user_action)
             self._user_second_half_step(user_action)
         if turn >= 3:
@@ -179,6 +179,7 @@ class _Bundle:
 
         while self.turn_number != go_to_turn or (not _started):
             _started = True
+            print(self.turn_number)
 
             if self.turn_number == 0:
                 user_obs_reward, user_infer_reward = self._user_first_half_step()
@@ -210,7 +211,7 @@ class _Bundle:
 
             self.turn_number = (self.turn_number + 1)%4
 
-        return self.game_state, rewards, is_done
+        return self.game_state, rewards, False
 
 
 

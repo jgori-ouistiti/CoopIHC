@@ -3,7 +3,9 @@ from core.space import StateElement, Space, State
 
 import numpy
 
+import sys
 
+_str = sys.argv[1]
 
 
 
@@ -36,20 +38,37 @@ bundle = Bundle(
         override_agent_policy = BasePolicy(assistant_action_state))
     )
 
-# Reset the task, plot the state.
-bundle.reset(turn = 1)
-print(bundle.game_state)
-bundle.step(numpy.array([1]),numpy.array([1]))
-print(bundle.game_state)
+
+if _str == 'reset':
+    bundle.reset(turn = 1)
+    print(bundle.game_state)
+    bundle.reset(turn = 2)
+    print(bundle.game_state)
+    bundle.reset(turn = 3)
+    print(bundle.game_state)
+    bundle.reset(turn = 0)
+    print(bundle.game_state)
 
 
-# Test simple input
-bundle.step(numpy.array([1]),numpy.array([1]))
+if _str == 'bundletype':
+    bundle.reset(turn = 0)
+    bundle.step(numpy.array([1]),numpy.array([1]))
+    print(bundle.game_state)
+    bundle.reset(turn = 0)
+    bundle.step(None, numpy.array([1]))
+    print(bundle.game_state)
+    bundle.reset(turn = 0)
+    bundle.step(numpy.array([1]),None)
+    print(bundle.game_state)
+    bundle.reset(turn = 0)
+    bundle.step(None, None)
+    print(bundle.game_state)
 
-# Test with input sampled from the agent policies
-bundle.reset()
-while True:
-    task_state, rewards, is_done = bundle.step(bundle.user.policy.sample()[0], bundle.assistant.policy.sample()[0])
-    print(task_state)
-    if is_done:
-        break
+
+if _str == 'reset-step':
+    for j in range(4):
+        for i in range(4):
+            bundle.reset(turn = j)
+            bundle.step(numpy.array([1]),numpy.array([1]), go_to_turn = i)
+            print(j,i)
+            print(bundle.game_state)
