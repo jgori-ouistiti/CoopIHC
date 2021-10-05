@@ -33,7 +33,7 @@ if _str == 'correct' or _str == 'all':
                                     ) for j in range(number_of_targets)],
                     clipping_mode = 'error')
 
-                    
+
 
 
 x = StateElement(
@@ -111,6 +111,10 @@ if _str == 'cartesianproduct' or _str == 'all':
         print(n, _y.values)
 
 
+if _str == 'comp' or _str == 'all':
+    x.reset()
+    a = x[0]
+    print(x < numpy.array([2,-2,4]))
 
 if _str == 'len' or _str == 'all':
     len(x)

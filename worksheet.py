@@ -15,7 +15,7 @@ from core.agents import BaseAgent, FHDT_LQRController, IHDT_LQRController, IHCT_
 from core.observation import base_task_engine_specification, base_user_engine_specification, RuleObservationEngine, BaseObservationEngine, CascadedObservationEngine, WrapAsObservationEngine
 from core.interactiontask import ClassicControlTask,  InteractionTask, TaskWrapper
 from core.policy import ELLDiscretePolicy, BasePolicy, BIGDiscretePolicy, RLPolicy, WrapAsPolicy
-from core.space import State, StateElement
+from core.space import State, StateElement, Space, Action
 from core.wsbundle import Server
 import matplotlib.pyplot as plt
 import copy
@@ -55,6 +55,26 @@ if _str == 'basic-PlayNone' or _str == 'all':
     while True:
         k += 1
         game_state, sum_rewards, is_done, rewards = bundle.step()
+        bundle.render('plotext')
+        # bundle.fig.savefig("/home/jgori/Documents/img_tmp/{}.pdf".format(k))
+        if is_done:
+            bundle.close()
+            break
+
+if _str == 'basic-PlayUser' or _str == 'all':
+
+    task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
+    binary_user = CarefulPointer()
+    unitcdgain = ConstantCDGain(1)
+    bundle = PlayUser(task, binary_user, unitcdgain)
+    game_state = bundle.reset()
+    bundle.render('plotext')
+    k = 0
+    exit()
+    while True:
+        k += 1
+        game_state, sum_rewards, is_done, rewards = bundle.step(numpy.array([1]))
+        # game_state, sum_rewards, is_done, rewards = bundle.step(user_action.feed(numpy.array([1])))
         bundle.render('plotext')
         # bundle.fig.savefig("/home/jgori/Documents/img_tmp/{}.pdf".format(k))
         if is_done:

@@ -20,7 +20,7 @@ Spaces can also be discrete; in that case you have to specify the range of possi
 .. code-block:: python
 
     discrete_space = Space(
-        numpy.array([1,2,3], dtype = numpy.int16)
+        [numpy.array([1,2,3], dtype = numpy.int16)]
             )
 .. note::
 
@@ -31,7 +31,7 @@ You can check if a value is inside a space (once again, notice how the dtype is 
 
 .. code-block:: python
 
-    space = Space(  numpy.array([1,2,3], dtype = numpy.int16) )
+    space = Space(  [numpy.array([1,2,3], dtype = numpy.int16)] )
     x = numpy.array([2], dtype = numpy.int16)
     y = numpy.array([2], dtype = numpy.float32)
     yy = numpy.array([2])

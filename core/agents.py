@@ -48,7 +48,11 @@ class BaseAgent(Core):
 
     # def __init__(self, role, action_space, action_set = None, observation_engine = None, inference_engine = None):
 
-    def __init__(self, role, policy = None, state = None, observation_engine = None, inference_engine = None, state_kwargs = {}, policy_kwargs = {}, observation_engine_kwargs = {}, inference_engine_kwargs = {}):
+    def __init__(self, role, **kwargs):
+        # state_kwargs = {}, policy_kwargs = {}, observation_engine_kwargs = {}, inference_engine_kwargs = {},
+
+        component_dic, kwargs = self.__allow_override(**kwargs)
+
 
         # Bundles stuff
         self.bundle = None
@@ -57,28 +61,56 @@ class BaseAgent(Core):
 
         # Set role of agent
         if role not in ["user", "assistant"]:
-            raise ValueError("First argument role should be either 'user' or 'assistant'")
+            raise ValueError("First argument 'role' should be either 'user' or 'assistant'")
         else:
             self.role = role
 
-        # Define policy
-        self.attach_policy(policy, **policy_kwargs)
 
+
+
+        # Define policy
+        self.attach_policy(component_dic['policy'], **kwargs.pop('policy_kwargs', {}))
+        # self.attach_policy(policy, **policy_kwargs)
 
         # Init state
-        if state is None:
-            self.state = State(**state_kwargs)
+        if component_dic['state'] is None:
+            self.state = State(**kwargs.pop('state_kwargs', {}))
         else:
             self.state = state
 
-
         # Define observation engine
-        self.attach_observation_engine(observation_engine, **observation_engine_kwargs)
-
+        self.attach_observation_engine(component_dic['observation_engine'], **kwargs.pop('observation_engine_kwargs', {}))
 
         # Define inference engine
-        self.attach_inference_engine(inference_engine, **inference_engine_kwargs)
+        self.attach_inference_engine(component_dic['inference_engine'], **kwargs.pop('inference_engine_kwargs', {}))
 
+
+    def __allow_override(self, **kwargs):
+        oap = kwargs.pop('override_agent_policy', None)
+        if oap is not None:
+            agent_policy = oap
+        else:
+            agent_policy = kwargs.pop('agent_policy', None)
+
+        oaoe = kwargs.pop('override_agent_observation_engine', None)
+        if oaoe is not None:
+            agent_observation_engine = oaoe
+        else:
+            agent_observation_engine = kwargs.pop('agent_observation_engine', None)
+
+        oaie = kwargs.pop('override_agent_inference_engine', None)
+        if oaie is not None:
+            agent_inference_engine = oaie
+        else:
+            agent_inference_engine = kwargs.pop('agent_inference_engine', None)
+
+        oas = kwargs.pop('override_agent_state', None)
+        if oas is not None:
+            agent_state = oas
+        else:
+            agent_state = kwargs.pop('agent_state', None)
+
+        return {'state': agent_state, 'policy': agent_policy, 'observation_engine': agent_observation_engine, 'inference_engine': agent_inference_engine}, kwargs
 
 
     def __content__(self):

@@ -8,13 +8,9 @@ class SimplePointingTask(InteractionTask):
 
     :meta public:
     """
-    def __init__(self, arg1):
-        super().__init__()
-        self.arg1 = arg1
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-        self.handbook['render_mode'].extend(['plot', 'text', 'log'])
-        _arg1 = {'value': arg1, 'meaning': 'meaning of arg1'}
-        self.handbook['parameters'].extend([_arg1])
 
         self.state['mystate'] = StateElement(
                     values = None,
@@ -42,14 +38,18 @@ class SimplePointingTask(InteractionTask):
         if dic is not None:
             super().reset(dic = dic)
 
+        return self.state
 
     def user_step(self, *args, **kwargs):
-        """ Do nothing, increment turns, return half a timestep
 
-        :meta public:
-        """
         super().user_step()
-        # do something
+
+        is_done = False
+        user_action = self.bundle.game_state['user_action']['action']
+        assistant_action = self.bundle.game_state['assistant_action']['action']
+
+        # set state to some value
+        self.state['mystate'] =
 
         return self.state, reward, is_done, {}
 

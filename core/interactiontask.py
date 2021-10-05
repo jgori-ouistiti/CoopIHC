@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from collections import OrderedDict
-import gym
 import numpy
+
 from core.helpers import flatten
 import scipy.linalg
 from core.space import State, StateElement
@@ -10,18 +10,16 @@ from core.core import Core, Handbook
 
 import copy
 import sys
-from loguru import logger
 
 import asyncio
 import json
 import websockets
 
-# logger.add('interaction_agent.log', format = "{time} {level} {message}")
-# logger.add(sys.stderr, colorize = True, format="<green>{time}</green> <level>{message}</level>")
 
 
+# updated 04-10-21
 
-class InteractionTask(Core):
+class InteractionTask(Core, ABC):
     """ The class that defines an Interaction Task. Subclass this to define any new task. When doing so, make sure to call ``super()`` in ``__init__()``.
 
     The main API methods for this class are:
@@ -44,19 +42,17 @@ class InteractionTask(Core):
 
     def __init__(self):
         self._state = State()
-        # self._state._on_state_update = self._on_state_update
         self.bundle = None
         self.round = 0
         self.turn = 0
         self.timestep = 0.1
 
-        # Render stuff
+        # Render
         self.ax = None
-        self.handbook = Handbook({'name': self.__class__.__name__, 'render_mode': [], 'parameters': []})
-        logger.info('Initializing task {}'.format(self.__class__.__name__))
 
 
-
+    def finit(self):
+        return
 
     @property
     def state(self):
@@ -80,19 +76,21 @@ class InteractionTask(Core):
     def __content__(self):
         return {'Name': self.__class__.__name__, "State": self.state.__content__()}
 
-    def finit(self):
-        logger.info(str(self.handbook))
+
+    @abstractmethod
+    def user_step(self, *args, **kwargs):
+        return None
+
+    @abstractmethod
+    def assistant_step(self, *args, **kwargs):
+        return None
+
+    @abstractmethod
+    def reset(self, dic = None):
+        return None
 
 
-    def _is_done_user(self, *args, **kwargs):
-        logger.info('{} is done on user step: False (Inherited from InteractionTask)'.format(self.__class__.__name__))
-        return False
-
-    def _is_done_assistant(self, *args, **kwargs):
-        logger.info('{} is done on assistant step: False (Inherited from InteractionTask)'.format(self.__class__.__name__))
-        return False
-
-    def user_step(self,  *args, **kwargs):
+    def base_user_step(self,  *args, **kwargs):
         """ Describe how the task state evolves after an user action. This method has to be redefined when subclassing this class.
 
         :param user_action: (list) user action
@@ -102,9 +100,16 @@ class InteractionTask(Core):
         :meta public:
         """
         self.turn += 1/2
-        return self.state, -1/2, self._is_done_user(), {}
+        ret = self.user_step(*args, **kwargs)
+        if ret is None:
+            return self.state, -1/2, False, {}
+        else:
+            return ret
 
-    def assistant_step(self,  *args, **kwargs):
+
+
+
+    def base_assistant_step(self,  *args, **kwargs):
         """ Describe how the task state evolves after an assistant action. This method has to be redefined when subclassing this class.
 
         :param user_action: (list) assistant action
@@ -115,7 +120,12 @@ class InteractionTask(Core):
         """
         self.turn += 1/2
         self.round += 1
-        return self.state, -1/2, self._is_done_assistant(), {}
+
+        ret = self.assistant_step(*args, **kwargs)
+        if ret is None:
+            return self.state, -1/2, False, {}
+        else:
+            return ret
 
     def render(self, *args, **kwargs):
         """ Render the task on the main plot.
@@ -133,7 +143,7 @@ class InteractionTask(Core):
         else:
             pass
 
-    def reset(self, dic = None):
+    def base_reset(self, dic = None):
         """ Describe how the task state should be reset. This method has to be redefined when subclassing this class.
 
         :param args: (OrderedDict) state to which the task should be reset, if provided.
@@ -144,16 +154,26 @@ class InteractionTask(Core):
         """
         self.turn = 0
         self.round = 0
+
+
         if not dic:
             self.state.reset(dic = {})
+            self.reset(dic = dic)
             return
 
+        self.reset(dic = dic)
         for key in list(self.state.keys()):
             value = dic.get(key)
             if isinstance(value, StateElement):
                 value = value['values']
             if value is not None:
                 self.state[key]['values'] = value
+
+
+
+# Outdated
+
+
 
 
 

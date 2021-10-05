@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 import matplotlib.pyplot as plt
 
+import core
 from core.space import State, StateElement, Space
 from core.helpers import flatten, hard_flatten
 from core.agents import DummyAssistant, DummyUser
@@ -115,7 +116,7 @@ class Bundle:
         """
         if task:
             task_dic = dic.get('task_state')
-            task_state = self.task.reset(dic = task_dic)
+            task_state = self.task.base_reset(dic = task_dic)
 
         if user:
             user_dic = dic.get('user_state')
@@ -236,7 +237,7 @@ class Bundle:
         """
 
         # Play user's turn in the task
-        task_state, task_reward, is_done, _ = self.task.user_step(user_action)
+        task_state, task_reward, is_done, _ = self.task.base_user_step(user_action)
 
         # update task state (likely not needed, remove ?)
         self.broadcast_state('user', 'task_state', task_state)
@@ -270,7 +271,7 @@ class Bundle:
 
         # Play assistant's turn in the task
 
-        task_state, task_reward, is_done, _ = self.task.assistant_step(assistant_action)
+        task_state, task_reward, is_done, _ = self.task.base_assistant_step(assistant_action)
         # update task state
         self.broadcast_state('assistant', 'task_state', task_state)
 
@@ -315,11 +316,9 @@ class Bundle:
         try:
             # If human input is provided
             assistant_action = args[0]
-            manual = True
         except IndexError:
             # else sample from policy
             assistant_action, assistant_policy_reward = self.assistant.take_action()
-            manual = False
 
         self.broadcast_action('assistant', assistant_action)
 
@@ -422,6 +421,7 @@ class PlayUser(Bundle):
         super().step(user_action)
 
         self.broadcast_action('user', user_action, key = 'values')
+
         first_task_reward, is_done = self._user_second_half_step(user_action)
         if is_done:
             return self.user.inference_engine.buffer[-1], first_task_reward, is_done, [first_task_reward]
@@ -571,7 +571,7 @@ class SinglePlayUser(Bundle):
         first_task_reward, is_done = self._user_second_half_step(user_action)
         if is_done:
             return self.user.inference_engine.buffer[-1], first_task_reward, is_done, [first_task_reward]
-        self.task.assistant_step([None])
+        self.task.base_assistant_step([None])
         user_obs_reward, user_infer_reward = self._user_first_half_step()
         return self.user.inference_engine.buffer[-1], sum([user_obs_reward, user_infer_reward, first_task_reward]), is_done, [user_obs_reward, user_infer_reward, first_task_reward]
 
@@ -627,7 +627,7 @@ class SinglePlayUserAuto(Bundle):
         first_task_reward, is_done = self._user_second_half_step(user_action)
         if is_done:
             return self.observation, first_task_reward, is_done, [first_task_reward]
-        _,_,_,_ = self.task.assistant_step([0])
+        _,_,_,_ = self.task.base_assistant_step([0])
         if self.kwargs.get('start_at_action'):
             user_obs_reward, user_infer_reward = self._user_first_half_step()
         return self.observation, sum([user_obs_reward, user_infer_reward, first_task_reward]), is_done, [user_obs_reward, user_infer_reward, first_task_reward]
@@ -799,26 +799,35 @@ class _DevelopTask(Bundle):
     """ A bundle without user or assistant. It can be used when developping tasks to facilitate some things like rendering
     """
     def __init__(self, task, **kwargs):
-        user = kwargs.get("user")
-        if user is None:
-            user = DummyUser()
-        else:
-            kwargs.pop('user')
 
-        assistant = kwargs.get('assistant')
-        if assistant is None:
-            assistant = DummyAssistant()
-        else:
-            kwargs.pop("assistant")
+        agents = []
+        for role in ['user', 'assistant']:
+            agent = kwargs.get(role)
+            if agent is None:
+                agent_kwargs = {}
+                agent_policy = kwargs.get("{}_policy".format(role))
+                if agent_policy is not None:
+                    agent_kwargs['policy'] = agent_policy
+                agent = getattr(core.agents, "Dummy"+role.capitalize())(**agent_kwargs)
+            else:
+                kwargs.pop(agent)
 
-        super().__init__(task, user, assistant, **kwargs)
+            agents.append(agent)
+
+
+        super().__init__(task, *agents, **kwargs)
 
     def reset(self, dic = {}, **kwargs):
         super().reset(dic = dic, **kwargs)
 
     def step(self, joint_action):
         user_action, assistant_action = joint_action
+        if isinstance(user_action, StateElement):
+            user_action = user_action['values']
+        if isinstance(assistant_action, StateElement):
+            assistant_action = assistant_action['values']
         self.game_state["assistant_action"]['action']['values'] = assistant_action
         self.game_state['user_action']['action']['values'] = user_action
-        self.task.user_step(user_action)
-        self.task.assistant_step(assistant_action)
+        ret_user = self.task.base_user_step(user_action)
+        ret_assistant = self.task.base_assistant_step(assistant_action)
+        return ret_user, ret_assistant

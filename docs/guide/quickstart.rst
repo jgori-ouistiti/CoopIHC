@@ -16,13 +16,18 @@ Copy the files somewhere and run (-e for editable, optional)
 Interaction Model
 -------------------
 
-*CoopIHC* builds on a sequential two agent decision-making model that is described :doc:`here<./interaction_model>`. If you want to skip this part, just look at :ref:`interaction_model_fig_label`, which should provide enough information.
+*CoopIHC* builds on a sequential two agent decision-making model that is described :doc:`here<./interaction_model>`.
+
+
+High-level view of CoopIHC code
+--------------------------------
+
+
 
 
 States
 ------------
-The interaction model presented above heavily builds on the notion of states.
-*CoopIHC* introduces ``Spaces`` ``StateElement`` and ``State`` objects to represent those. In the example below, a super-state is defined by a state, which itself is defined by two substates.
+The interaction model uses a lot of states, for which *CoopIHC* introduces ``Spaces`` ``StateElement`` and ``State`` objects. In the example below, a super-state is defined by a state, which itself is defined by two substates.
 
 .. code-block:: python
 
@@ -35,7 +40,7 @@ The interaction model presented above heavily builds on the notion of states.
     # Discrete substate. Provide Space([range]). Value is optional
     y = StateElement(
         values = 2,
-        spaces = Space( numpy.array([1,2,3], dtype = numpy.int) )
+        spaces = Space( [numpy.array([1,2,3], dtype = numpy.int)] )
             )
 
     # Define a State, composed of two substates previously defined
@@ -48,23 +53,111 @@ The interaction model presented above heavily builds on the notion of states.
     S = State()
     S['substate1'] = s1
 
-To find out more about these, you can take a look at :doc:`spaces` and :doc:`states_stateelements`.
+To find out more about these, go to :doc:`spaces` and :doc:`states_stateelements`.
 
 
 Tasks
 --------
-Tasks represent the interface the user is interacting with. They are essentially characterized by:
+Tasks represent whatever the user is interacting with. They are essentially characterized by:
 
 * An internal state, the **task state** which holds all the task's information.
 * A **user step (transition) function**, which describes how the task state changes based on the user action.
 * An **assistant step (transition) function**, which describes how the task state changes based on the assistant action.
 
+As an example, let's define a simple task where the goal of the user is to drive the substate 'x' to a value of 4. Both the user and the assistant can provide three actions: -1, +0 and +1. As in most cases you will find, we define a task by inheriting from ``InteractionTask`` and redefining a few methods.
+
+.. code-block:: python
+
+    class ExampleTask(InteractionTask):
+        """ExampleTask with two agents. The task is finished when 'x' reaches 4. The user and assistants can both do -1, +0, +1 to 'x'.
+        """
+        def __init__(self, *args, **kwargs):
+            # Call super().__init__() beofre anything else, which initializes some useful attributes, including a State (self.state) for the task
+            super().__init__(*args, **kwargs)
+
+            self.state['x'] = StateElement(
+                values = 0,
+                spaces = Space([
+                    numpy.array([-4,-3,-2,-1,0,1,2,3,4], dtype = numpy.int16)
+                ]),
+                clipping_mode = 'clip'
+            )
+
+
+        def reset(self, dic = None):
+            self.state['x']['values'] = numpy.array([0])
+            return
+
+
+        def user_step(self, *args, **kwargs):
+            is_done = False
+            self.state['x'] += self.user_action
+            if int(self.state['x']['values'][0]) == 4:
+                is_done = True
+            return self.state, -1, is_done, {}
+
+        def assistant_step(self, *args, **kwargs):
+            is_done = False
+            self.state['x'] += self.assistant_action
+            if int(self.state['x']['values'][0]) == 4:
+                is_done = True
+            return self.state, -1, is_done, {}
+
+        def render(self,*args, mode="text"):
+            if 'text' in mode:
+                print('\n')
+                print("Turn number {:f}".format(self.turn))
+                print(self.state)
+                print("\n")
+            else:
+                raise NotImplementedError
+
+
+
+In ``__init__``, the task states are defined ('x' in this example); the ``reset`` method fixes the initial condition ('x'=0). The user and assistant step functions define how the task state evolves with respect to incoming user or assistant actions.
+Finally, the render method is a way to display information to the screen. Here we considered a very simplistic output which prints the minimum information, but you could handles plots, animations etc.
+
+.. note::
+
+    The ``__init__`` method of a task should always be started with a call to ``super()'''s ``__init__``. This will be true for the other objects as well
+
+.. note::
+
+    Notice how ``StateElement`` arithmetic simplifies the coding, making ``self.state['x'] += self.user_action`` possible.
 
 
 
 Agents
 ------------------
-Besides states,
+Agents are defined by four components:
+
+* Their internal state
+* Their observation engine
+* Their inference engine
+* Their policy
+
+Defining a new agent is done by subclassing the ``BaseAgent`` class.
+
+Bundles
+---------------------
+Bundles are the objects that join the states of the three components (task, user and assistant) to form the joint state of the game, collect the rewards and ensure a synchronous sequential sequences of observations, inferences and actions.
+
+
+.. note::
+
+    Bundles also handle joint rendering as well as other practical things.
+
+
+Several bundles exist, that exist Current implemented bundles are:
+
+1. ``PlayNone`` , which does not take any action as input. It puts together two agents together at play to perform the task. This allows one to evaluate agents where policies are provided (e.g. a trained agent, a rule-based agent).
+2. ``PlayUser`` , which takes an user action as input at each step. It puts together an assistant with a defined policy, and an user without policy. This allows one to evaluate a policy on line (e.g. as part of a training procedure).
+3. ``PlayAssistant``, which is the counterpart to the previous bundle with users and assistants switched.
+4. ``PlayBoth``, which takes the joint (user, assistant) action as input at each step. This allows evaluating policies for both agents on-line (e.g. as part of a joint training procedure).
+5. ``SinglePlayUser``, which does not uses an assistant. It it useful when one wants to develop a "pure" user model using *interaction-agents*. Here the policy is evaluated on-line.
+6. ``SinglePlayUserAuto`` is the same as the previous bundle but the policy is assumed to be provided to the agent.
+7. ``_DevelopTask`` is a bundle with only the task as input, used to develop tasks when no compatible agents exist yet.
+
 
 Basic Example
 -----------------

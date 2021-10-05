@@ -31,7 +31,7 @@ Defining a StateElement is straightforward, and is achieved by specifying the va
     discrete_state_element = StateElement(
         values = 5,
         spaces = core.space.Space(
-            numpy.array([-5,-4,-3,-2,-1,0,1,2,3,4,5], dtype = numpy.int16)
+            [numpy.array([-5,-4,-3,-2,-1,0,1,2,3,4,5], dtype = numpy.int16)]
         )
     )
 
@@ -82,9 +82,9 @@ States derive from dictionaries and their syntax are very much alike. Below, we 
 
     x = StateElement(values = 1,spaces = Space([  numpy.array([-1.0]).reshape(1,1),numpy.array([1.0]).reshape(1,1)  ]))
 
-    y = StateElement(values = 2,spaces = Space( numpy.array([1,2,3], dtype = numpy.int)))
+    y = StateElement(values = 2,spaces = Space( [numpy.array([1,2,3], dtype = numpy.int)]))
 
-    z = StateElement(values = 5,spaces = Space( numpy.array([i for i in range(10)], dtype = numpy.int)))
+    z = StateElement(values = 5,spaces = Space( [numpy.array([i for i in range(10)], dtype = numpy.int)]))
 
 
     s1 = State(
@@ -101,7 +101,7 @@ States derive from dictionaries and their syntax are very much alike. Below, we 
     xx = StateElement(values = numpy.ones((2,2)),spaces = Space([-0.5*numpy.ones((2,2)),0.5*numpy.ones((2,2))]),clipping_mode = 'clip'
     )
 
-    yy = StateElement(values = None,spaces = Space( numpy.array([-3,-2,-1,0,1,2,3,4,5,6])))
+    yy = StateElement(values = None,spaces = Space( [numpy.array([-3,-2,-1,0,1,2,3,4,5,6])]))
 
 
     s2 = State(

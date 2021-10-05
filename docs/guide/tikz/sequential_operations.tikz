@@ -1,15 +1,15 @@
 \begin{tikzpicture}
-\draw (0,0) node[rectangle, draw = black, name = s0, text width = 3cm, text centered]{$0,s_T, s_O, s_A$};
-\draw (s0) + (0,-2) node[rectangle, draw = black, name = s1, text width = 3cm, text centered]{$1,s_T, s'_O, s_A$};
+\draw (0,0) node[rectangle, draw = black, name = s0, text width = 3cm, text centered]{$0,s_T, s_U, s_A$};
+\draw (s0) + (0,-2) node[rectangle, draw = black, name = s1, text width = 3cm, text centered]{$1,s_T, s'_U, s_A$};
 \draw[->] (s0) -- node[midway, right, text width = 3cm, text centered]{\small user observes and infers} (s1);
 \draw[->] (s1.0) -- + (1.5,0) node[right]{user rewards};
-\draw (s1) + (0,-2) node[rectangle, draw = black, name = s2, text width = 3cm, text centered]{$2,s'_T, s'_O, s_A$};
+\draw (s1) + (0,-2) node[rectangle, draw = black, name = s2, text width = 3cm, text centered]{$2,s'_T, s'_U, s_A$};
 \draw[->] (s1) -- node[midway, right, text width = 3cm, text centered]{\small user acts} (s2);
 \draw[->] (s2.0) -- + (1.5,0) node[right]{task rewards};
-\draw (s2) + (0,-2) node[rectangle, draw = black, name = s3, text width = 3cm, text centered]{$3,s'_T, s'_O, s'_A$};
+\draw (s2) + (0,-2) node[rectangle, draw = black, name = s3, text width = 3cm, text centered]{$3,s'_T, s'_U, s'_A$};
 \draw[->] (s2) -- node[midway, right, text width = 3cm, text centered]{\small assistant observes and infers} (s3);
 \draw[->] (s3.0) -- + (1.5,0) node[right]{assistant rewards};
-\draw (s3) + (0,-2) node[rectangle, draw = black, name = s4, text width = 3cm, text centered]{$0,s''_T, s'_O, s'_A$};
+\draw (s3) + (0,-2) node[rectangle, draw = black, name = s4, text width = 3cm, text centered]{$0,s''_T, s'_U, s'_A$};
 \draw[->] (s3) -- node[midway, right, text width = 3cm, text centered]{\small assistant acts} (s4);
 \draw[->] (s4.0) -- + (1.5,0) node[right]{task rewards};
 \draw[->] (s4.180) to[out=180, in=180] (s0.180);

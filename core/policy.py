@@ -72,10 +72,6 @@ class BasePolicy:
         self.action_state['action'].reset()
         return self.action_state['action'], 0
 
-        # action = StateElement(
-        #     values = [u.sample() for u in self.action_state['action'].spaces],
-        #     spaces = self.action_state['action'].spaces,
-        #     clipping_mode = self.action_state['action'].clipping_mode), 0
 
 
 class LinearFeedback(BasePolicy):

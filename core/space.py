@@ -113,7 +113,7 @@ class Space:
         if self.continuous:
             low = self.range[0]
         else:
-            low = [min(r) for r in self.range]
+            low = [min(r.squeeze()) for r in self.range]
         return low
 
     @property
@@ -121,7 +121,7 @@ class Space:
         if self.continuous:
             high = self.range[1]
         else:
-            high = [max(r) for r in self.range]
+            high = [max(r.squeeze()) for r in self.range]
         return high
 
     @property
@@ -205,6 +205,8 @@ class StateElement:
         self.values = values
 
 
+    # ============ Properties
+
     @property
     def values(self):
         return self.__values
@@ -222,19 +224,10 @@ class StateElement:
         self.__spaces = self.preprocess_spaces(values)
 
 
-    def __preface(self, other):
-        if not isinstance(other, (StateElement, numpy.ndarray)):
-            other = numpy.array(other)
-        if hasattr(other, 'values'):
-            other = other['values']
 
-        _elem = StateElement(
-            values = self.values,
-            spaces = self.spaces,
-            clipping_mode = self.mix_modes(other) )
-        return _elem, other
+    # ============ dunder/magic methods
 
-
+    # Iteration
     def __iter__(self):
         self.n = 0
         self.max = len(self.spaces)
@@ -251,9 +244,11 @@ class StateElement:
         else:
             raise StopIteration
 
+    # Length
     def __len__(self):
         return len(self.spaces)
 
+    # Itemization
     def __setitem__(self, key, item):
         if key == 'values':
             setattr(self, key, self.preprocess_values(item))
@@ -274,6 +269,41 @@ class StateElement:
         else:
             raise NotImplementedError('Indexing only works with keys ("values", "spaces", "clipping_mode") or integers')
 
+
+    # Comparison
+    def __comp_preface(self, other):
+        if isinstance(other, StateElement):
+            other = other["values"]
+        if not isinstance(other, list):
+            other = flatten(other)
+        return self, other
+
+
+    def __eq__(self, other):
+        self, other = self.__comp_preface(other)
+        return numpy.array([numpy.equal(s, o) for s, o in zip(self['values'], other)]).all()
+
+    def __lt__(self, other):
+        self, other = self.__comp_preface(other)
+        return numpy.array([numpy.less(s, o) for s, o in zip(self['values'], other)]).all()
+
+    def __gt__(self, other):
+        self, other = self.__comp_preface(other)
+        return numpy.array([numpy.greater(s, o) for s, o in zip(self['values'], other)]).all()
+
+    def __le__(self, other):
+        self, other = self.__comp_preface(other)
+        return numpy.array([numpy.less_equal(s, o) for s, o in zip(self['values'], other)]).all()
+
+    def __ge__(self, other):
+        self, other = self.__comp_preface(other)
+        return numpy.array([numpy.greater_equal(s, o) for s, o in zip(self['values'], other)]).all()
+
+
+
+
+
+    # Arithmetic
     def __neg__(self):
         return StateElement(
             values = [-u for u in self['values']],
@@ -304,29 +334,6 @@ class StateElement:
 
     def __rmul__(self, other):
         return self.__mul__(other)
-
-    def __str__(self):
-        return "[StateElement - {}] - Value {} in {}".format(self.clipping_mode, self.values, self.spaces)
-
-    def __repr__(self):
-        return 'StateElement([{}] - {},...)'.format(self.clipping_mode, self.values.__repr__())
-
-    # https://stackoverflow.com/questions/1500718/how-to-override-the-copy-deepcopy-operations-for-a-python-object
-    # Here we override copy and deepcopy simply because there seems to be a huge overhead in the default deepcopy implementation.
-    def __copy__(self):
-        cls = self.__class__
-        result = cls.__new__(cls)
-        result.__dict__.update(self.__dict__)
-        return result
-
-    def __deepcopy__(self, memo):
-        cls = self.__class__
-        result = cls.__new__(cls)
-        memo[id(self)] = result
-        for k, v in self.__dict__.items():
-            setattr(result, k, copy.deepcopy(v, memo))
-        return result
-
 
     def __matmul__(self, other):
         """
@@ -376,6 +383,52 @@ class StateElement:
                             )]
             se['values'] = [values]
             return se
+
+
+
+
+    # Representation
+    def __str__(self):
+        return "[StateElement - {}] - Value {} in {}".format(self.clipping_mode, self.values, self.spaces)
+
+    def __repr__(self):
+        return 'StateElement([{}] - {},...)'.format(self.clipping_mode, self.values.__repr__())
+
+
+
+    # Copy
+    # https://stackoverflow.com/questions/1500718/how-to-override-the-copy-deepcopy-operations-for-a-python-object
+    # Here we override copy and deepcopy simply because there seems to be a huge overhead in the default deepcopy implementation.
+    def __copy__(self):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        return result
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            setattr(result, k, copy.deepcopy(v, memo))
+        return result
+
+
+
+    # ========== Helpers
+
+    def __preface(self, other):
+        if not isinstance(other, (StateElement, numpy.ndarray)):
+            other = numpy.array(other)
+        if hasattr(other, 'values'):
+            other = other['values']
+
+        _elem = StateElement(
+            values = self.values,
+            spaces = self.spaces,
+            clipping_mode = self.mix_modes(other) )
+        return _elem, other
+
 
 
     def serialize(self):
@@ -499,8 +552,11 @@ class StateElement:
             if space.continuous:
                 return numpy.clip( value, space.low, space.high)
             else:
-                raise AttributeError('Clip can only work with continuous spaces')
-
+                if value > space.high:
+                    value = numpy.atleast_2d(space.high)
+                else:
+                    value = numpy.atleast_2d(space.low)
+                return value
 
 
     def _discrete2continuous(self, other, mode = 'center'):
@@ -595,7 +651,16 @@ class StateElement:
             typing_priority = self.typing_priority
         )
 
-
+# class Action(StateElement):
+#     def __init__(self, bundle, role):
+#         self.role = role
+#         agent = getattr(bundle, role)
+#         self.spaces = agent.policy.action_state['action']['spaces']
+#
+#     def feed(self, value, **kwargs):
+#         return StateElement( values = value,
+#                             spaces = self.spaces,
+#                             **kwargs)
 
 class State(OrderedDict):
     def __init__(self, *args, **kwargs):
