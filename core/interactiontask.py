@@ -44,7 +44,6 @@ class InteractionTask(Core, ABC):
         self._state = State()
         self.bundle = None
         self.round = 0
-        self.turn = 0
         self.timestep = 0.1
 
         # Render
@@ -53,6 +52,10 @@ class InteractionTask(Core, ABC):
 
     def finit(self):
         return
+
+    @property
+    def turn_number(self):
+        return self.bundle.turn_number
 
     @property
     def state(self):
@@ -99,7 +102,6 @@ class InteractionTask(Core, ABC):
 
         :meta public:
         """
-        self.turn += 1/2
         ret = self.user_step(*args, **kwargs)
         if ret is None:
             return self.state, -1/2, False, {}
@@ -118,7 +120,6 @@ class InteractionTask(Core, ABC):
 
         :meta public:
         """
-        self.turn += 1/2
         self.round += 1
 
         ret = self.assistant_step(*args, **kwargs)
@@ -152,7 +153,6 @@ class InteractionTask(Core, ABC):
 
         :meta public:
         """
-        self.turn = 0
         self.round = 0
 
 
@@ -374,7 +374,7 @@ class ClassicControlTask(InteractionTask):
             axtask, axuser, axassistant = args[:3]
             if self.ax is not None:
                 self.draw()
-                if self.turn == 1:
+                if self.turn_number == 3:
                     self.ax.legend(handles = [self.axes[i].lines[0] for i in range(self.dim)])
             else:
                 self.color = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
@@ -396,7 +396,7 @@ class ClassicControlTask(InteractionTask):
             pass
         else:
             for i in range(self.dim):
-                self.axes[i].plot([(self.turn-1)*self.timestep, self.turn*self.timestep], flatten([self.state_last_x[0][i,0].tolist(), self.state['x']['values'][0][i,0].tolist()]), '-', color = self.color[i], label = self.labels[i])
+                self.axes[i].plot([((self.turn_number-1)/2-1)*self.timestep, (self.turn_number-1)/2*self.timestep], flatten([self.state_last_x[0][i,0].tolist(), self.state['x']['values'][0][i,0].tolist()]), '-', color = self.color[i], label = self.labels[i])
 
         return
 

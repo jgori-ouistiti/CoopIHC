@@ -55,7 +55,7 @@ class BaseInferenceEngine:
         return self
 
     def add_observation(self, observation):
-        """ add an observation  to the buffer. Currently poorly performing implementation
+        """ add an observation  to a naive buffer.
 
         :param observation: verify type.
         """

@@ -11,6 +11,7 @@ from core.core import Handbook
 import time
 import importlib
 from collections import OrderedDict
+import copy
 
 # ============== General Policies ===============
 
@@ -60,6 +61,10 @@ class BasePolicy:
     @property
     def action(self):
         return self.action_state['action']
+
+    @property
+    def new_action(self):
+        return copy.copy(self.action_state['action'])
 
     @property
     def unwrapped(self):

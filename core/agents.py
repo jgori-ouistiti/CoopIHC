@@ -49,10 +49,8 @@ class BaseAgent(Core):
     # def __init__(self, role, action_space, action_set = None, observation_engine = None, inference_engine = None):
 
     def __init__(self, role, **kwargs):
-        # state_kwargs = {}, policy_kwargs = {}, observation_engine_kwargs = {}, inference_engine_kwargs = {},
 
-        component_dic, kwargs = self.__allow_override(**kwargs)
-
+        component_dic, remaining_kwargs = self.__allow_override(**kwargs)
 
         # Bundles stuff
         self.bundle = None
@@ -76,7 +74,7 @@ class BaseAgent(Core):
         if component_dic['state'] is None:
             self.state = State(**kwargs.pop('state_kwargs', {}))
         else:
-            self.state = state
+            self.state = component_dic['state']
 
         # Define observation engine
         self.attach_observation_engine(component_dic['observation_engine'], **kwargs.pop('observation_engine_kwargs', {}))

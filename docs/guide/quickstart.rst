@@ -22,6 +22,8 @@ Interaction Model
 High-level view of CoopIHC code
 --------------------------------
 
+.. code-block:: python
+
 
 
 
@@ -127,6 +129,53 @@ Finally, the render method is a way to display information to the screen. Here w
 
 
 
+You can verify that the task works as intended by bundling it with two ``BaseAgents`` (the simplest version of agents). Make sur that the actions spaces make sense, by specifying the policy for the two baseagents.
+
+.. code-block:: python
+
+    from core.bundle import PlayBoth
+    from core.policy import BasePolicy
+    from core.agents import BaseAgent
+
+    # Define agent action states (what actions they can take)
+    user_action_state = State()
+    user_action_state['action'] = StateElement(
+        values = None,
+        spaces = [Space([numpy.array([-1,0,1], dtype = numpy.int16)])]
+        )
+
+    assistant_action_state = State()
+    assistant_action_state['action'] = StateElement(
+        values = None,
+        spaces = [Space([numpy.array([-1,0,1], dtype = numpy.int16)])]
+        )
+
+    # Run a task together with two BaseAgents
+    bundle = PlayBoth(
+        ExampleTask(),
+        BaseAgent( 'user',
+            override_agent_policy = BasePolicy(user_action_state)),
+        BaseAgent( 'assistant',
+        override_agent_policy = BasePolicy(assistant_action_state))
+        )
+
+    # Reset the task, plot the state.
+    bundle.reset()
+    bundle.render("text")
+
+    # Test simple input
+    bundle.step([numpy.array([1]),numpy.array([1])])
+    bundle.render("text")
+
+    # Test with input sampled from the agent policies
+    bundle.reset()
+    while True:
+        task_state, sumrewards, is_done, listrewards = bundle.step([bundle.user.policy.sample()[0], bundle.assistant.policy.sample()[0]])
+        print(task_state)
+        if is_done:
+            break
+
+
 Agents
 ------------------
 Agents are defined by four components:
@@ -137,6 +186,10 @@ Agents are defined by four components:
 * Their policy
 
 Defining a new agent is done by subclassing the ``BaseAgent`` class.
+
+
+
+
 
 Bundles
 ---------------------

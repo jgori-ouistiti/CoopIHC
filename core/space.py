@@ -516,7 +516,6 @@ class StateElement:
             if v is None:
                 continue
             if self.typing_priority == 'space':
-
                 v = numpy.array(v).reshape(s.shape).astype(s.dtype)
             elif self.typing_priority == 'value':
                 v = numpy.array(v).reshape(s.shape)

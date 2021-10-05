@@ -29,8 +29,8 @@ import json
 
 
 
-class Bundle:
-    """A bundle combines a task with an user and an assistant. All bundles are obtained by subclassing this main Bundle class.
+class _Bundle:
+    """A bundle combines a task with an user and an assistant. All bundles are obtained by subclassing this main _Bundle class.
 
     A bundle will create the ``game_state`` by combining three states of the task, the user and the assistant as well as the turn index. It also takes care of adding the assistant action substate to the user state and vice-versa.
     It also takes care of rendering each of the three component in a single place.
@@ -53,12 +53,13 @@ class Bundle:
         self.assistant = assistant
         self.assistant.bundle = self
 
+
         # Form complete game state
         self.game_state = State()
 
         turn_index = StateElement(
             values = [0],
-            spaces = Space([numpy.array([0,1])], dtype = numpy.int8)
+            spaces = Space([numpy.array([0, 1, 2, 3])], dtype = numpy.int8)
             )
 
 
@@ -103,9 +104,18 @@ class Bundle:
         return {"Task": self.task.__content__(), "User": self.user.__content__(), "Assistant": self.assistant.__content__()}
 
 
+    @property
+    def turn_number(self):
+        return self.game_state['turn_index']['values'][0]
+
+    @turn_number.setter
+    def turn_number(self, value):
+        self._turn_number = value
+        self.game_state['turn_index']['values'] = numpy.array(value)
 
 
-    def reset(self, task = True, user = True, assistant = True, dic = {}):
+
+    def reset(self, turn = 0, task = True, user = True, assistant = True, dic = {}):
         """ Reset the bundle. When subclassing Bundle, make sure to call super().reset() in the new reset method
 
         :param dic: (dictionnary) Reset the bundle with a game_state
@@ -127,19 +137,82 @@ class Bundle:
             assistant_state = self.assistant.reset(dic = assistant_dic)
 
 
+        self.turn_number = turn
+        if turn == 0:
+            return self.game_state
+        if turn >= 1:
+            self._user_first_half_step()
+        if turn >= 2:
+            self.user.take_action()
+            self.broadcast_action('user', user_action)
+            self._user_second_half_step(user_action)
+        if turn >= 3:
+            self._assistant_first_half_step()
+
         return self.game_state
 
 
-    def step(self, action):
-        """ Define what happens with the bundle when applying a joint action. Should be redefined when subclassing bundle.
 
-        :param action: (list) joint action.
+    def step(self, *args, go_to_turn = None, **kwargs):
+        # step() was called
+        if not args:
+            user_action, assistant_action = None, None
+        elif len(args) == 1:
+            raise AttributeError('You must provide either 0 or 2 arguments. Consider providing None as an argument if you want to sample from an agent.')
+        # step(user_action, None) or step(None, assistant_action) or step(user_action, assistant_action) was called
+        else:
+            user_action, assistant_action = args
 
-        :return: observation, sum_rewards, is_done, rewards
 
-        :meta public:
-        """
-        return self.game_state, 0, False, [0]
+        if go_to_turn is None:
+            go_to_turn = self.turn_number
+
+
+        _started = False
+        rewards = OrderedDict()
+        rewards['user_observation_reward'] = 0
+        rewards['user_inference_reward'] = 0
+        rewards['first_task_reward'] = 0
+        rewards['assistant_observation_reward'] = 0
+        rewards['assistant_inference_reward'] = 0
+        rewards['second_task_reward'] = 0
+
+        while self.turn_number != go_to_turn or (not _started):
+            _started = True
+
+            if self.turn_number == 0:
+                user_obs_reward, user_infer_reward = self._user_first_half_step()
+                rewards['user_observation_reward'],                rewards['user_inference_reward'] = user_obs_reward, user_infer_reward
+
+            elif self.turn_number == 1:
+                if user_action is None:
+                    user_action, user_policy_reward = self.user.take_action()
+                else:
+                    user_policy_reward = 0
+                self.broadcast_action('user', user_action)
+                task_reward, is_done = self._user_second_half_step(user_action)
+                rewards['first_task_reward'] = task_reward
+                if is_done:
+                    return self.game_state, rewards, is_done
+            elif self.turn_number == 2:
+                assistant_obs_reward, assistant_infer_reward = self._assistant_first_half_step()
+                rewards['assistant_observation_reward'], rewards['assistant_inference_reward'] = assistant_obs_reward, assistant_infer_reward
+            elif self.turn_number == 3:
+                if assistant_action is None:
+                    assistant_action, assistant_policy_reward = self.assistant.take_action()
+                else:
+                    assistant_policy_reward = 0
+                self.broadcast_action('assistant', assistant_action)
+                task_reward, is_done = self._assistant_second_half_step(assistant_action)
+                rewards['second_task_reward'] = task_reward
+                if is_done:
+                    return self.game_state, rewards, is_done
+
+            self.turn_number = (self.turn_number + 1)%4
+
+        return self.game_state, rewards, is_done
+
+
 
     def render(self, mode, *args, **kwargs):
         """ Combines all render methods.
@@ -331,21 +404,42 @@ class Bundle:
         getattr(self, role).observation[state_key] = state
 
 
-
-    def broadcast_action(self, role, action, key = None):
+    def broadcast_action(self, role, action):
         # update game state and observations
-        if key is None:
+        if isinstance(action, StateElement):
             getattr(self, role).policy.action_state['action'] = action
             getattr(self, role).observation['{}_action'.format(role)]["action"] = action
         else:
-            getattr(self, role).policy.action_state['action'][key] = action
-            getattr(self, role).observation['{}_action'.format(role)]["action"][key] = action
+            getattr(self, role).policy.action_state['action']['values'] = action
+            getattr(self, role).observation['{}_action'.format(role)]["action"]['values'] = action
+
+
+
+class Bundle(_Bundle):
+    def __init__(self, *args, task = None, user = None, assistant = None, **kwargs):
+
+        if task is None:
+            task_bit = '0'
+            raise NotImplementedError
+        else:
+            task_bit = '1'
+        if user is None:
+            user = BaseAgent()
+            user_bit = '0'
+        else:
+            user_bit = '1'
+        if assistant is None:
+            assistant = Baseagent()
+            assistant_bit = '0'
+        else:
+            assistant_bit = '1'
+        self.bundle_bits = task_bit + user_bit + assistant_bit
+        super().__init__(task,  user, assistant, *args, **kwargs)
 
 
 
 
-
-class PlayNone(Bundle):
+class PlayNone(_Bundle):
     """ A bundle which samples actions directly from users and assistants. It is used to evaluate an user and an assistant where the policies are already implemented.
 
     :param task: (core.interactiontask.InteractionTask) A task, which is a subclass of InteractionTask
@@ -358,14 +452,14 @@ class PlayNone(Bundle):
         super().__init__(task, user, assistant, **kwargs)
         self.action_state = None
 
-    def reset(self, dic = {}, **kwargs):
-        """ Reset the bundle.
-
-        :param args: see Bundle
-
-        :meta public:
-        """
-        full_obs = super().reset(dic = dic, **kwargs)
+    # def reset(self, dic = {}, **kwargs):
+    #     """ Reset the bundle.
+    #
+    #     :param args: see Bundle
+    #
+    #     :meta public:
+    #     """
+    #     full_obs = super().reset(dic = dic, **kwargs)
 
 
     def step(self):
@@ -383,7 +477,7 @@ class PlayNone(Bundle):
         assistant_obs_reward, assistant_infer_reward, assistant_policy_reward, second_task_reward,  is_done = self._assistant_step()
         return self.game_state, sum([user_obs_reward, user_infer_reward, user_policy_reward, first_task_reward, assistant_obs_reward, assistant_infer_reward, assistant_policy_reward, second_task_reward]), is_done, [user_obs_reward, user_infer_reward, user_policy_reward, first_task_reward, assistant_obs_reward, assistant_infer_reward, assistant_policy_reward, second_task_reward]
 
-class PlayUser(Bundle):
+class PlayUser(_Bundle):
     """ A bundle which samples assistant actions directly from the assistant but uses user actions provided externally in the step() method.
 
     :param task: (core.interactiontask.InteractionTask) A task, which is a subclass of InteractionTask
@@ -397,17 +491,17 @@ class PlayUser(Bundle):
         self.action_space = copy.copy(self.user.policy.action_state['action']['spaces'])
 
 
-    def reset(self, dic = {}, **kwargs):
-        """ Reset the bundle. A first observation and inference is performed.
-
-        :param args: see Bundle
-
-        :meta public:
-        """
-        full_obs = super().reset(dic = dic, **kwargs)
-        self._user_first_half_step()
-        return self.user.observation
-        # return self.user.inference_engine.buffer[-1]
+    # def reset(self, dic = {}, **kwargs):
+    #     """ Reset the bundle. A first observation and inference is performed.
+    #
+    #     :param args: see Bundle
+    #
+    #     :meta public:
+    #     """
+    #     full_obs = super().reset(dic = dic, **kwargs)
+    #     self._user_first_half_step()
+    #     return self.user.observation
+    #     # return self.user.inference_engine.buffer[-1]
 
     def step(self, user_action):
         """ Play a step, assistant actions are obtained by sampling the agent's policy and user actions are given externally in the step() method.
@@ -433,7 +527,7 @@ class PlayUser(Bundle):
 
 
 
-class PlayAssistant(Bundle):
+class PlayAssistant(_Bundle):
     """ A bundle which samples oeprator actions directly from the user but uses assistant actions provided externally in the step() method.
 
     :param task: (core.interactiontask.InteractionTask) A task, which is a subclass of InteractionTask
@@ -452,17 +546,17 @@ class PlayAssistant(Bundle):
         #     possible_values = None
         #      )
 
-    def reset(self, dic = {}, **kwargs):
-        """ Reset the bundle. A first  user step and assistant observation and inference is performed.
-
-        :param args: see Bundle
-
-        :meta public:
-        """
-        full_obs = super().reset(dic = dic, **kwargs)
-        self._user_step()
-        self._assistant_first_half_step()
-        return self.assistant.inference_engine.buffer[-1]
+    # def reset(self, dic = {}, **kwargs):
+    #     """ Reset the bundle. A first  user step and assistant observation and inference is performed.
+    #
+    #     :param args: see Bundle
+    #
+    #     :meta public:
+    #     """
+    #     full_obs = super().reset(dic = dic, **kwargs)
+    #     self._user_step()
+    #     self._assistant_first_half_step()
+    #     return self.assistant.inference_engine.buffer[-1]
 
     def step(self, assistant_action):
         """ Play a step, user actions are obtained by sampling the agent's policy and assistant actions are given externally in the step() method.
@@ -483,7 +577,7 @@ class PlayAssistant(Bundle):
         assistant_obs_reward, assistant_infer_reward = self._assistant_first_half_step()
         return self.assistant.inference_engine.buffer[-1], sum([user_obs_reward, user_infer_reward, user_policy_reward, first_task_reward, assistant_obs_reward, assistant_infer_reward, second_task_reward]), is_done, [user_obs_reward, user_infer_reward, user_policy_reward, first_task_reward, assistant_obs_reward, assistant_infer_reward, second_task_reward]
 
-class PlayBoth(Bundle):
+class PlayBoth(_Bundle):
     """ A bundle which samples both actions directly from the user and assistant.
 
     :param task: (core.interactiontask.InteractionTask) A task, which is a subclass of InteractionTask
@@ -494,18 +588,17 @@ class PlayBoth(Bundle):
     """
     def __init__(self, task, user, assistant, **kwargs):
         super().__init__(task, user, assistant, **kwargs)
-        self.action_space = self._tuple_to_flat_space(gym.spaces.Tuple([self.user.action_space, self.assistant.action_space]))
 
-    def reset(self, dic = {}, **kwargs):
-        """ Reset the bundle. User observation and inference is performed.
-
-        :param args: see Bundle
-
-        :meta public:
-        """
-        full_obs = super().reset(dic = dic, **kwargs)
-        self._user_first_half_step()
-        return self.task.state
+    # def reset(self, dic = {}, **kwargs):
+    #     """ Reset the bundle. User observation and inference is performed.
+    #
+    #     :param args: see Bundle
+    #
+    #     :meta public:
+    #     """
+    #     full_obs = super().reset(dic = dic, **kwargs)
+    #     self._user_first_half_step()
+    #     return self.task.state
 
     def step(self, joint_action):
         """ Play a step, user and assistant actions are given externally in the step() method.
@@ -519,16 +612,37 @@ class PlayBoth(Bundle):
 
         super().step(joint_action)
 
+
         user_action, assistant_action = joint_action
-        first_task_reward, is_done = self._user_second_half_step(user_action)
-        if is_done:
-            return self.task.state, first_task_reward, is_done, [first_task_reward]
-        assistant_obs_reward, assistant_infer_reward, assistant_policy_reward, second_task_reward,  is_done = self._assistant_step()
+        if isinstance(user_action, StateElement):
+            self.broadcast_action('user', user_action)
+        else:
+            self.broadcast_action('user', user_action, key = 'values')
+
+
+        first_task_reward, first_is_done = self._user_second_half_step(user_action)
+        if first_is_done:
+            return self.task.state, first_task_reward, first_is_done, [first_task_reward]
+
+
+
+
+
+        assistant_obs_reward, assistant_infer_reward = self._assistant_first_half_step()
+
+        if isinstance(assistant_action, StateElement):
+            self.broadcast_action('assistant', assistant_action)
+        else:
+            self.broadcast_action('assistant', assistant_action, key = 'values')
+
+        second_task_reward, second_is_done = self._assistant_second_half_step(assistant_action)
+
+
         user_obs_reward, user_infer_reward = self._user_first_half_step()
-        return self.task.state, sum([user_obs_reward, user_infer_reward, first_task_reward, assistant_obs_reward, assistant_infer_reward, second_task_reward]), is_done, [user_obs_reward, user_infer_reward, first_task_reward, assistant_obs_reward, assistant_infer_reward, second_task_reward]
+        return self.task.state, sum([user_obs_reward, user_infer_reward, first_task_reward, assistant_obs_reward, assistant_infer_reward, second_task_reward]), second_is_done, [user_obs_reward, user_infer_reward, first_task_reward, assistant_obs_reward, assistant_infer_reward, second_task_reward]
 
 
-class SinglePlayUser(Bundle):
+class SinglePlayUser(_Bundle):
     """ A bundle without assistant. This is used e.g. to model psychophysical tasks such as perception, where there is no real interaction loop with a computing device.
 
     :param task: (core.interactiontask.InteractionTask) A task, which is a subclass of InteractionTask
@@ -576,7 +690,7 @@ class SinglePlayUser(Bundle):
         return self.user.inference_engine.buffer[-1], sum([user_obs_reward, user_infer_reward, first_task_reward]), is_done, [user_obs_reward, user_infer_reward, first_task_reward]
 
 
-class SinglePlayUserAuto(Bundle):
+class SinglePlayUserAuto(_Bundle):
     """ Same as SinglePlayUser, but this time the user action is obtained by sampling the user policy.
 
     :param task: (core.interactiontask.InteractionTask) A task, which is a subclass of InteractionTask
@@ -637,13 +751,13 @@ class SinglePlayUserAuto(Bundle):
 # ====================
 
 
-class BundleWrapper(Bundle):
+class BundleWrapper(_Bundle):
     def __init__(self, bundle):
         self.__class__ = type(bundle.__class__.__name__, (self.__class__, bundle.__class__), {})
         self.__dict__ = bundle.__dict__
 
 
-class PipedTaskBundleWrapper(Bundle):
+class PipedTaskBundleWrapper(_Bundle):
     # Wrap it by taking over bundles attribute via the instance __dict__. Methods can not be taken like that since they belong to the class __dict__ and have to be called via self.bundle.method()
     def __init__(self, bundle, taskwrapper, pipe):
         self.__dict__ = bundle.__dict__ # take over bundles attributes
@@ -793,41 +907,43 @@ class Train(gym.Env):
 
 
 
-
-
-class _DevelopTask(Bundle):
-    """ A bundle without user or assistant. It can be used when developping tasks to facilitate some things like rendering
-    """
-    def __init__(self, task, **kwargs):
-
-        agents = []
-        for role in ['user', 'assistant']:
-            agent = kwargs.get(role)
-            if agent is None:
-                agent_kwargs = {}
-                agent_policy = kwargs.get("{}_policy".format(role))
-                if agent_policy is not None:
-                    agent_kwargs['policy'] = agent_policy
-                agent = getattr(core.agents, "Dummy"+role.capitalize())(**agent_kwargs)
-            else:
-                kwargs.pop(agent)
-
-            agents.append(agent)
-
-
-        super().__init__(task, *agents, **kwargs)
-
-    def reset(self, dic = {}, **kwargs):
-        super().reset(dic = dic, **kwargs)
-
-    def step(self, joint_action):
-        user_action, assistant_action = joint_action
-        if isinstance(user_action, StateElement):
-            user_action = user_action['values']
-        if isinstance(assistant_action, StateElement):
-            assistant_action = assistant_action['values']
-        self.game_state["assistant_action"]['action']['values'] = assistant_action
-        self.game_state['user_action']['action']['values'] = user_action
-        ret_user = self.task.base_user_step(user_action)
-        ret_assistant = self.task.base_assistant_step(assistant_action)
-        return ret_user, ret_assistant
+#
+#
+# class _DevelopTask(Bundle):
+#     """ A bundle without user or assistant. It can be used when developping tasks to facilitate some things like rendering
+#     """
+#     def __init__(self, task, **kwargs):
+#
+#         agents = []
+#         for role in ['user', 'assistant']:
+#             agent = kwargs.get(role)
+#             if agent is None:
+#                 agent_kwargs = {}
+#                 agent_policy = kwargs.get("{}_policy".format(role))
+#                 self.agent_policy = agent_policy
+#                 if agent_policy is not None:
+#                     agent_kwargs['policy'] = agent_policy
+#                 agent = getattr(core.agents, "Dummy"+role.capitalize())(**agent_kwargs)
+#             else:
+#                 kwargs.pop(agent)
+#
+#             agents.append(agent)
+#         self.agents = agents
+#
+#
+#         super().__init__(task, *agents, **kwargs)
+#
+#     def reset(self, dic = {}, **kwargs):
+#         super().reset(dic = dic, **kwargs)
+#
+#     def step(self, joint_action):
+#         user_action, assistant_action = joint_action
+#         if isinstance(user_action, StateElement):
+#             user_action = user_action['values']
+#         if isinstance(assistant_action, StateElement):
+#             assistant_action = assistant_action['values']
+#         self.game_state["assistant_action"]['action']['values'] = assistant_action
+#         self.game_state['user_action']['action']['values'] = user_action
+#         ret_user = self.task.base_user_step(user_action)
+#         ret_assistant = self.task.base_assistant_step(assistant_action)
+#         return ret_user, ret_assistant
