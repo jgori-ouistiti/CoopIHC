@@ -5,35 +5,47 @@ import numpy
 import json
 import sys
 
-numpy.set_printoptions(precision = 3, suppress = True)
+numpy.set_printoptions(precision=3, suppress=True)
 
 
 from core.helpers import flatten, hard_flatten
 import itertools
 from tabulate import tabulate
 
+
 def remove_prefix(text, prefix):
     # from Python 3.9 use str.removeprefix() directly
     # copied from https://stackoverflow.com/questions/16891340/remove-a-prefix-from-a-string
-    return text[text.startswith(prefix) and len(prefix):]
+    return text[text.startswith(prefix) and len(prefix) :]
 
 
 from core.helpers import isdefined
 
+
 class Space:
-    def __init__(self, array, *args, **kwargs):
+    """The class that defines where values are contained.
+
+    :param type array_list: A list of input arrays that specifies the range of the Space. Input either a one-array list (possible values) for a discrete space or a two-array list (low and high arrays) for a continuous space.
+    :param type *args: For future use.
+    :param type **kwargs: For future use `**kwargs`.
+
+    """
+
+    def __init__(self, array_list, *args, **kwargs):
 
         self._cflag = None
         self.rng = numpy.random.default_rng()
 
         # Deal with variable format input
-        if isinstance(array, numpy.ndarray):
+        if isinstance(array_list, numpy.ndarray):
             pass
         else:
-            for _array in array:
+            for _array in array_list:
                 if not isinstance(_array, numpy.ndarray):
-                    raise AttributeError('Input argument array must be or must inherit from numpy.ndarray instance.')
-        self._array = array
+                    raise AttributeError(
+                        "Input argument array_list must be or must inherit from numpy.ndarray instance."
+                    )
+        self._array = array_list
 
         self._range = None
         self._shape = None
@@ -42,12 +54,13 @@ class Space:
     def __len__(self):
         return len(self._array)
 
-
     def __repr__(self):
         if self.continuous:
-            return 'Space[Continuous({}), {}]'.format(self.shape, self.dtype)
+            return "Space[Continuous({}), {}]".format(self.shape, self.dtype)
         else:
-            return 'Space[Discrete({}), {}]'.format([max(r.shape) for r in self.range], self.dtype)
+            return "Space[Discrete({}), {}]".format(
+                [max(r.shape) for r in self.range], self.dtype
+            )
 
     def __contains__(self, item):
         if item.shape != self.shape:
@@ -56,13 +69,14 @@ class Space:
                 item.reshape(self.shape)
             except ValueError:
                 return False
-        if not numpy.can_cast(item.dtype, self.dtype, 'same_kind'):
+        if not numpy.can_cast(item.dtype, self.dtype, "same_kind"):
             return False
         if self.continuous:
-            return (numpy.all(item >= self.low) and numpy.all(item <= self.high))
+            return numpy.all(item >= self.low) and numpy.all(item <= self.high)
         else:
-            return numpy.array([item[n] in r for n,r in enumerate(self.range)]).all()
-
+            return numpy.array(
+                [item[n] in r for n, r in enumerate(self.range)]
+            ).all()
 
     def __iter__(self):
         self.n = 0
@@ -84,32 +98,45 @@ class Space:
 
         if self.n < self.max:
             if not self.continuous:
-                result = Space(
-                    [self._array[self.n]]
-                    )
+                result = Space([self._array[self.n]])
             else:
                 if self.__iter__row:
-                    result = Space([self.low[self.n,:], self.high[self.n,:]])
+                    result = Space([self.low[self.n, :], self.high[self.n, :]])
                 else:
-                    result = Space([self.low[:,self.n], self.high[:,self.n]])
+                    result = Space([self.low[:, self.n], self.high[:, self.n]])
             self.n += 1
             return result
         else:
             raise StopIteration
 
-
-
     @property
     def range(self):
+        """Describes the Space. If continuous, return low and high, after having checked that they have the same shape. If discrete, returns the list of possible values. Reshaped to be 2d arrays.
+
+        :return: the 2d-reshaped ranges .
+        :rtype: list
+
+        """
+
         if self._range is None:
             if self.continuous:
                 if not self._array[0].shape == self._array[1].shape:
-                    return AttributeError("The low {} and high {} ranges don't have matching shapes".format(self._array[0], self._array[1]))
+                    return AttributeError(
+                        "The low {} and high {} ranges don't have matching shapes".format(
+                            self._array[0], self._array[1]
+                        )
+                    )
             self._range = [numpy.atleast_2d(_a) for _a in self._array]
         return self._range
 
     @property
     def low(self):
+        """Return the lower end of the range. For continuous simply return low, for discrete return smallest value.
+
+        :return: Description of returned object.
+        :rtype: type
+
+        """
         if self.continuous:
             low = self.range[0]
         else:
@@ -134,12 +161,11 @@ class Space:
             else:
                 return len(self.range[0].squeeze())
 
-
     @property
     def shape(self):
         if self._shape is None:
             if not self.continuous:
-                self._shape = (len(self),1)
+                self._shape = (len(self), 1)
             else:
                 self._shape = self.low.shape
         return self._shape
@@ -147,10 +173,12 @@ class Space:
     @property
     def dtype(self):
         if self._dtype is None:
-            if len(self._array) ==1:
+            if len(self._array) == 1:
                 self._dtype = self._array[0].dtype
             else:
-                self._dtype = numpy.find_common_type([ v.dtype for v in self._array], [])
+                self._dtype = numpy.find_common_type(
+                    [v.dtype for v in self._array], []
+                )
         return self._dtype
 
     @property
@@ -159,40 +187,50 @@ class Space:
             self._cflag = numpy.issubdtype(self.dtype, numpy.inexact)
         return self._cflag
 
-
-
     def sample(self):
         _l = []
         if self.continuous:
-            return (self.high - self.low) * self.rng.random(self.shape, dtype = self.dtype) + self.low
+            return (self.high - self.low) * self.rng.random(
+                self.shape, dtype=self.dtype
+            ) + self.low
         else:
-            return [self.rng.choice(r.squeeze(), replace = True).astype(self.dtype) for r in self.range]
-
-
-
-
+            # The conditional check for __iter__ is here to deal with single value spaces. Will not work if that value happens to be a string, but that is okay.
+            return [
+                self.rng.choice(r.squeeze(), replace=True).astype(self.dtype)
+                if hasattr(r.squeeze().tolist(), "__iter__")
+                else r
+                for r in self.range
+            ]
 
 
 class SpaceNotDefinedError(Exception):
     pass
 
+
 class StateLengthError(Exception):
     pass
 
+
 class BadSpaceError(Exception):
     pass
+
 
 class StateNotContainedError(Exception):
     pass
 
 
-
 class StateElement:
 
-    __array_priority__ = 1 # to make __rmatmul__ possible with numpy arrays
-    __precedence__ = ['error', 'warning', 'clip']
+    __array_priority__ = 1  # to make __rmatmul__ possible with numpy arrays
+    __precedence__ = ["error", "warning", "clip"]
 
-    def __init__(self, values = None, spaces = None, clipping_mode = 'warning', typing_priority = 'space'):
+    def __init__(
+        self,
+        values=None,
+        spaces=None,
+        clipping_mode="warning",
+        typing_priority="space",
+    ):
         self.clipping_mode = clipping_mode
         self.typing_priority = typing_priority
         self.__values, self.__spaces = None, None
@@ -200,10 +238,11 @@ class StateElement:
         if spaces is not None:
             for s in spaces:
                 if not isinstance(s, Space):
-                    raise AttributeError('Input argument spaces expects Space objects')
+                    raise AttributeError(
+                        "Input argument spaces expects Space objects"
+                    )
         self.spaces = spaces
         self.values = values
-
 
     # ============ Properties
 
@@ -223,8 +262,6 @@ class StateElement:
     def spaces(self, values):
         self.__spaces = self.preprocess_spaces(values)
 
-
-
     # ============ dunder/magic methods
 
     # Iteration
@@ -236,9 +273,10 @@ class StateElement:
     def __next__(self):
         if self.n < self.max:
             result = StateElement(
-                values = self.values[self.n],
-                spaces = self.spaces[self.n],
-                clipping_mode = self.clipping_mode  )
+                values=self.values[self.n],
+                spaces=self.spaces[self.n],
+                clipping_mode=self.clipping_mode,
+            )
             self.n += 1
             return result
         else:
@@ -250,25 +288,30 @@ class StateElement:
 
     # Itemization
     def __setitem__(self, key, item):
-        if key == 'values':
+        if key == "values":
             setattr(self, key, self.preprocess_values(item))
-        elif key == 'spaces':
+        elif key == "spaces":
             setattr(self, key, self.preprocess_spaces(item))
-        elif key == 'clipping_mode':
+        elif key == "clipping_mode":
             setattr(self, key, item)
         else:
-            raise ValueError('Key should belong to ["values", "spaces", "clipping_mode"]')
+            raise ValueError(
+                'Key should belong to ["values", "spaces", "clipping_mode"]'
+            )
 
     def __getitem__(self, key):
         if key in ["values", "spaces", "clipping_mode"]:
             return getattr(self, key)
         elif isinstance(key, (int, numpy.int)):
-            return StateElement(values = self.values[key],
-                                spaces = self.spaces[key],
-                                clipping_mode = self.clipping_mode )
+            return StateElement(
+                values=self.values[key],
+                spaces=self.spaces[key],
+                clipping_mode=self.clipping_mode,
+            )
         else:
-            raise NotImplementedError('Indexing only works with keys ("values", "spaces", "clipping_mode") or integers')
-
+            raise NotImplementedError(
+                'Indexing only works with keys ("values", "spaces", "clipping_mode") or integers'
+            )
 
     # Comparison
     def __comp_preface(self, other):
@@ -278,42 +321,47 @@ class StateElement:
             other = flatten(other)
         return self, other
 
-
     def __eq__(self, other):
         self, other = self.__comp_preface(other)
-        return numpy.array([numpy.equal(s, o) for s, o in zip(self['values'], other)]).all()
+        return numpy.array(
+            [numpy.equal(s, o) for s, o in zip(self["values"], other)]
+        ).all()
 
     def __lt__(self, other):
         self, other = self.__comp_preface(other)
-        return numpy.array([numpy.less(s, o) for s, o in zip(self['values'], other)]).all()
+        return numpy.array(
+            [numpy.less(s, o) for s, o in zip(self["values"], other)]
+        ).all()
 
     def __gt__(self, other):
         self, other = self.__comp_preface(other)
-        return numpy.array([numpy.greater(s, o) for s, o in zip(self['values'], other)]).all()
+        return numpy.array(
+            [numpy.greater(s, o) for s, o in zip(self["values"], other)]
+        ).all()
 
     def __le__(self, other):
         self, other = self.__comp_preface(other)
-        return numpy.array([numpy.less_equal(s, o) for s, o in zip(self['values'], other)]).all()
+        return numpy.array(
+            [numpy.less_equal(s, o) for s, o in zip(self["values"], other)]
+        ).all()
 
     def __ge__(self, other):
         self, other = self.__comp_preface(other)
-        return numpy.array([numpy.greater_equal(s, o) for s, o in zip(self['values'], other)]).all()
-
-
-
-
+        return numpy.array(
+            [numpy.greater_equal(s, o) for s, o in zip(self["values"], other)]
+        ).all()
 
     # Arithmetic
     def __neg__(self):
         return StateElement(
-            values = [-u for u in self['values']],
-            spaces = self.spaces,
-            clipping_mode = self.clipping_mode )
-
+            values=[-u for u in self["values"]],
+            spaces=self.spaces,
+            clipping_mode=self.clipping_mode,
+        )
 
     def __add__(self, other):
         _elem, other = self.__preface(other)
-        _elem['values'] = numpy.add(self['values'], other, casting = 'same_kind')
+        _elem["values"] = numpy.add(self["values"], other, casting="same_kind")
         return _elem
 
     def __radd__(self, other):
@@ -325,10 +373,11 @@ class StateElement:
     def __rsub__(self, other):
         return (-self).__add__(other)
 
-
     def __mul__(self, other):
         _elem, other = self.__preface(other)
-        _elem['values'] = numpy.multiply(self['values'], other, casting = 'same_kind')
+        _elem["values"] = numpy.multiply(
+            self["values"], other, casting="same_kind"
+        )
 
         return _elem
 
@@ -340,22 +389,24 @@ class StateElement:
         Coarse implementation. Does not deal with all cases
         """
         if isinstance(other, StateElement):
-            matA = self['values'][0]
-            matB = other['values'][0]
+            matA = self["values"][0]
+            matB = other["values"][0]
         elif isinstance(other, numpy.ndarray):
             matA = self.values[0]
             matB = other
         else:
-            raise TypeError('rhs of {}@{} should be either a StateElement containing a numpy.ndarray or a numpy.ndarray')
+            raise TypeError(
+                "rhs of {}@{} should be either a StateElement containing a numpy.ndarray or a numpy.ndarray"
+            )
 
         values = matA @ matB
-        low = self.spaces[0].low[:values.shape[0], :values.shape[1]]
-        high = self.spaces[0].high[:values.shape[0], :values.shape[1]]
+        low = self.spaces[0].low[: values.shape[0], : values.shape[1]]
+        high = self.spaces[0].high[: values.shape[0], : values.shape[1]]
 
-        return StateElement(    values = values,
-                                spaces = Space([low, high]),
-                                )
-
+        return StateElement(
+            values=values,
+            spaces=Space([low, high]),
+        )
 
     def __rmatmul__(self, other):
         se = copy.copy(self)
@@ -366,35 +417,36 @@ class StateElement:
             matA = self.values[0]
             matB = other
         else:
-            raise TypeError('lhs of {}@{} should be either a StateElement containing a numpy.ndarray or a numpy.ndarray')
+            raise TypeError(
+                "lhs of {}@{} should be either a StateElement containing a numpy.ndarray or a numpy.ndarray"
+            )
         values = matB @ matA
         if values.shape == se.spaces[0].shape:
-            se['values'] = [values]
+            se["values"] = [values]
             return se
 
         else:
             low = -numpy.inf * numpy.ones(values.shape)
             high = numpy.inf * numpy.ones(values.shape)
 
-            se.spaces = [gym.spaces.Space(
-                            range = [low, high],
-                            shape = values.shape,
-                            dtype = values.dtype
-                            )]
-            se['values'] = [values]
+            se.spaces = [
+                gym.spaces.Space(
+                    range=[low, high], shape=values.shape, dtype=values.dtype
+                )
+            ]
+            se["values"] = [values]
             return se
-
-
-
 
     # Representation
     def __str__(self):
-        return "[StateElement - {}] - Value {} in {}".format(self.clipping_mode, self.values, self.spaces)
+        return "[StateElement - {}] - Value {} in {}".format(
+            self.clipping_mode, self.values, self.spaces
+        )
 
     def __repr__(self):
-        return 'StateElement([{}] - {},...)'.format(self.clipping_mode, self.values.__repr__())
-
-
+        return "StateElement([{}] - {},...)".format(
+            self.clipping_mode, self.values.__repr__()
+        )
 
     # Copy
     # https://stackoverflow.com/questions/1500718/how-to-override-the-copy-deepcopy-operations-for-a-python-object
@@ -413,27 +465,24 @@ class StateElement:
             setattr(result, k, copy.deepcopy(v, memo))
         return result
 
-
-
     # ========== Helpers
 
     def __preface(self, other):
         if not isinstance(other, (StateElement, numpy.ndarray)):
             other = numpy.array(other)
-        if hasattr(other, 'values'):
-            other = other['values']
+        if hasattr(other, "values"):
+            other = other["values"]
 
         _elem = StateElement(
-            values = self.values,
-            spaces = self.spaces,
-            clipping_mode = self.mix_modes(other) )
+            values=self.values,
+            spaces=self.spaces,
+            clipping_mode=self.mix_modes(other),
+        )
         return _elem, other
-
-
 
     def serialize(self):
         v_list = []
-        for v in self['values']:
+        for v in self["values"]:
             try:
                 json.dumps(v)
                 v_list.append(v)
@@ -444,17 +493,18 @@ class StateElement:
                     v_list.append(v.item())
                 else:
                     raise TypeError("".format(msg))
-        return {"values": v_list, "spaces" : str(self['spaces'])}
-
-
+        return {"values": v_list, "spaces": str(self["spaces"])}
 
     def mix_modes(self, other):
-        if hasattr(other, 'clipping_mode'):
-            return self.__precedence__[min(self.__precedence__.index(self.clipping_mode), self.__precedence__.index(other.clipping_mode))]
+        if hasattr(other, "clipping_mode"):
+            return self.__precedence__[
+                min(
+                    self.__precedence__.index(self.clipping_mode),
+                    self.__precedence__.index(other.clipping_mode),
+                )
+            ]
         else:
             return self.clipping_mode
-
-
 
     def cartesian_product(self):
         lists = []
@@ -468,23 +518,26 @@ class StateElement:
                 if not isinstance(value, list):
                     value = [value]
                 lists.append(value)
-        return [StateElement(
-            values = list(element),
-            spaces = self.spaces,
-            clipping_mode = self.clipping_mode ) for element in itertools.product(*lists) ]
+        return [
+            StateElement(
+                values=list(element),
+                spaces=self.spaces,
+                clipping_mode=self.clipping_mode,
+            )
+            for element in itertools.product(*lists)
+        ]
 
-
-    def reset(self, dic = None):
+    def reset(self, dic=None):
         if not dic:
             # could add a mode which simulates sampling without replacement
-            self['values'] = [space.sample() for space in self.spaces]
+            self["values"] = [space.sample() for space in self.spaces]
         else:
-            values = dic.get('values')
+            values = dic.get("values")
             if values is not None:
-                self['values'] = values
-            spaces = dic.get('spaces')
+                self["values"] = values
+            spaces = dic.get("spaces")
             if spaces is not None:
-                self['spaces'] = spaces
+                self["spaces"] = spaces
 
     def preprocess_spaces(self, spaces):
 
@@ -505,40 +558,54 @@ class StateElement:
             k = 0
             for s in self.spaces:
                 l = len(s)
-                _values.append(values[k:k+l])
-                k+=l
+                _values.append(values[k : k + l])
+                k += l
             if len(_values) == len(self.spaces):
                 values = _values
             else:
-                raise StateLengthError('The size of the values ({}) being instantiated does not match the size of the space ({})'.format(len(values), len(self.spaces)))
+                raise StateLengthError(
+                    "The size of the values ({}) being instantiated does not match the size of the space ({})".format(
+                        len(values), len(self.spaces)
+                    )
+                )
         # Make sure values are contained
-        for ni, (v,s) in enumerate(zip(values, self.spaces)):
+        for ni, (v, s) in enumerate(zip(values, self.spaces)):
             if v is None:
                 continue
-            if self.typing_priority == 'space':
+            if self.typing_priority == "space":
                 v = numpy.array(v).reshape(s.shape).astype(s.dtype)
-            elif self.typing_priority == 'value':
+            elif self.typing_priority == "value":
                 v = numpy.array(v).reshape(s.shape)
                 s._dtype = v.dtype
             else:
                 raise NotImplementedError
 
             if v not in s:
-                if self.clipping_mode == 'error':
-                    raise StateNotContainedError('Instantiated Value {}({}) is not contained in corresponding space {} (low = {}, high = {})'.format(str(v), type(v), str(s), str(s.low), str(s.high)))
-                elif self.clipping_mode == 'warning':
-                    print('Warning: Instantiated Value {}({}) is not contained in corresponding space {} (low = {}, high = {})'.format(str(v), type(v), str(s), str(s.low), str(s.high)))
-                elif self.clipping_mode == 'clip':
+                if self.clipping_mode == "error":
+                    raise StateNotContainedError(
+                        "Instantiated Value {}({}) is not contained in corresponding space {} (low = {}, high = {})".format(
+                            str(v), type(v), str(s), str(s.low), str(s.high)
+                        )
+                    )
+                elif self.clipping_mode == "warning":
+                    print(
+                        "Warning: Instantiated Value {}({}) is not contained in corresponding space {} (low = {}, high = {})".format(
+                            str(v), type(v), str(s), str(s.low), str(s.high)
+                        )
+                    )
+                elif self.clipping_mode == "clip":
                     v = self._clip(v, s)
                 else:
                     pass
             values[ni] = v
         return values
 
-
     def flat(self):
-        return self['values'], self['spaces'], [str(i) for i,v in enumerate(self['values'])]
-
+        return (
+            self["values"],
+            self["spaces"],
+            [str(i) for i, v in enumerate(self["values"])],
+        )
 
     def clip(self, values):
         values = flatten([values])
@@ -549,7 +616,7 @@ class StateElement:
     def _clip(self, value, space):
         if value not in space:
             if space.continuous:
-                return numpy.clip( value, space.low, space.high)
+                return numpy.clip(value, space.low, space.high)
             else:
                 if value > space.high:
                     value = numpy.atleast_2d(space.high)
@@ -557,98 +624,139 @@ class StateElement:
                     value = numpy.atleast_2d(space.low)
                 return value
 
-
-    def _discrete2continuous(self, other, mode = 'center'):
+    def _discrete2continuous(self, other, mode="center"):
         values = []
-        for sv, ss, os in zip(self['values'][0], self['spaces'][0], other['spaces'][0]):
+        for sv, ss, os in zip(
+            self["values"][0], self["spaces"][0], other["spaces"][0]
+        ):
             if not (not ss.continuous and os.continuous):
-                raise AttributeError('Use this only to go from a discrete to a continuous space')
+                raise AttributeError(
+                    "Use this only to go from a discrete to a continuous space"
+                )
 
             _range = ss.range[0].squeeze()
 
-            if mode == 'edges':
+            if mode == "edges":
                 N = len(_range)
                 ls = numpy.linspace(os.low, os.high, N)
                 shift = 0
-            elif mode == 'center':
-                N = len(_range) +1
+            elif mode == "center":
+                N = len(_range) + 1
                 ls = numpy.linspace(os.low, os.high, N)
-                shift = (ls[1]-ls[0])/2
+                shift = (ls[1] - ls[0]) / 2
 
             values.append(ls[list(_range).index(sv)] + shift)
         return values
 
-    def _continuous2discrete(self, other, mode = 'center'):
+    def _continuous2discrete(self, other, mode="center"):
         values = []
-        for sv, ss, os in zip(self['values'][0], self['spaces'][0], other['spaces'][0]):
+        for sv, ss, os in zip(
+            self["values"][0], self["spaces"][0], other["spaces"][0]
+        ):
             if not (ss.continuous and not os.continuous):
-                raise AttributeError('Use this only to go from a continuous to a discrete space')
+                raise AttributeError(
+                    "Use this only to go from a continuous to a discrete space"
+                )
 
             _range = (ss.high - ss.low).squeeze()
-            if mode == 'edges':
+            if mode == "edges":
 
-                _remainder = (sv.squeeze()-ss.low.squeeze())%(_range/os.N)
-                index = int((sv.squeeze()-ss.low.squeeze()-_remainder)/_range*os.N)
-            elif mode == 'center':
-                N = os.N -1
-                _remainder = (sv.squeeze()-ss.low.squeeze() + (_range/2/N))%(_range/(N))
+                _remainder = (sv.squeeze() - ss.low.squeeze()) % (
+                    _range / os.N
+                )
+                index = int(
+                    (sv.squeeze() - ss.low.squeeze() - _remainder)
+                    / _range
+                    * os.N
+                )
+            elif mode == "center":
+                N = os.N - 1
+                _remainder = (
+                    sv.squeeze() - ss.low.squeeze() + (_range / 2 / N)
+                ) % (_range / (N))
 
-                index = int((sv.squeeze()-ss.low.squeeze()-_remainder + _range/2/N)/_range*N + 1e-5) # 1e-5 --> Hack to get around floating point arithmetic
+                index = int(
+                    (
+                        sv.squeeze()
+                        - ss.low.squeeze()
+                        - _remainder
+                        + _range / 2 / N
+                    )
+                    / _range
+                    * N
+                    + 1e-5
+                )  # 1e-5 --> Hack to get around floating point arithmetic
             values.append(os.range[0].squeeze()[index])
 
         return values
 
     def _continuous2continuous(self, other):
         values = []
-        for sv, ss, os in zip(self['values'][0], self['spaces'][0], other['spaces'][0]):
+        for sv, ss, os in zip(
+            self["values"][0], self["spaces"][0], other["spaces"][0]
+        ):
             if not (ss.continuous and os.continuous):
-                raise AttributeError('Use this only to go from a continuous to a continuous space')
+                raise AttributeError(
+                    "Use this only to go from a continuous to a continuous space"
+                )
             s_range = ss.high - ss.low
             o_range = os.high - os.low
-            s_mid = (ss.high + ss.low)/2
-            o_mid = (os.high + os.low)/2
+            s_mid = (ss.high + ss.low) / 2
+            o_mid = (os.high + os.low) / 2
 
-            values.append((sv - s_mid)/s_range*o_range + o_mid)
+            values.append((sv - s_mid) / s_range * o_range + o_mid)
             return values
 
     def _discrete2discrete(self, other):
 
         values = []
-        for sv, ss, os in zip(self['values'][0], self['spaces'][0], other['spaces'][0]):
+        for sv, ss, os in zip(
+            self["values"][0], self["spaces"][0], other["spaces"][0]
+        ):
             if ss.continuous or os.continuous:
-                raise AttributeError('Use this only to go from a discrete to a discrete space')
-            values.append(os.range[0].squeeze()[ss.range[0].squeeze().tolist().index(sv)])
+                raise AttributeError(
+                    "Use this only to go from a discrete to a discrete space"
+                )
+            values.append(
+                os.range[0].squeeze()[ss.range[0].squeeze().tolist().index(sv)]
+            )
             return values
 
-
-    def cast(self, other, mode = 'center'):
+    def cast(self, other, mode="center"):
         if not isinstance(other, StateElement):
-            raise TypeError("input arg {} must be of type StateElement".format(str(other)))
+            raise TypeError(
+                "input arg {} must be of type StateElement".format(str(other))
+            )
 
         values = []
         for s, o in zip(self, other):
-            for sv,ss,ov,os in zip(s['values'], s['spaces'], o['values'], o['spaces']):
-                if (not ss.continuous and os.continuous):
-                    value = s._discrete2continuous(o, mode = mode)
-                elif (ss.continuous and os.continuous):
+            for sv, ss, ov, os in zip(
+                s["values"], s["spaces"], o["values"], o["spaces"]
+            ):
+                if not ss.continuous and os.continuous:
+                    value = s._discrete2continuous(o, mode=mode)
+                elif ss.continuous and os.continuous:
                     value = s._continuous2continuous(o)
-                elif (ss.continuous and not os.continuous):
-                    value = s._continuous2discrete(o, mode = mode)
-                elif (not ss.continuous and not os.continuous):
+                elif ss.continuous and not os.continuous:
+                    value = s._continuous2discrete(o, mode=mode)
+                elif not ss.continuous and not os.continuous:
                     if ss.N == os.N:
                         value = s._discrete2discrete(o)
                     else:
-                        raise ValueError('You are trying to match a discrete space to another discrete space of different size.')
+                        raise ValueError(
+                            "You are trying to match a discrete space to another discrete space of different size."
+                        )
                 else:
                     raise NotImplementedError
                 values.extend(value)
 
         return StateElement(
-            values = values,
-            spaces = other['spaces'],
-            clipping_mode = self.mix_modes(other),
-            typing_priority = self.typing_priority
+            values=values,
+            spaces=other["spaces"],
+            clipping_mode=self.mix_modes(other),
+            typing_priority=self.typing_priority,
         )
+
 
 # class Action(StateElement):
 #     def __init__(self, bundle, role):
@@ -661,12 +769,12 @@ class StateElement:
 #                             spaces = self.spaces,
 #                             **kwargs)
 
+
 class State(OrderedDict):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-
-    def reset(self, dic = {}):
+    def reset(self, dic={}):
         for key, value in self.items():
             reset_dic = dic.get(key)
             if reset_dic is None:
@@ -677,16 +785,16 @@ class State(OrderedDict):
         values = []
         spaces = []
         labels = []
-        l,k = list(self.values()), list(self.keys())
-        for n,item in enumerate(l):
+        l, k = list(self.values()), list(self.keys())
+        for n, item in enumerate(l):
             _values, _spaces, _labels = item.flat()
             values.extend(_values)
             spaces.extend(_spaces)
-            labels.extend([k[n] + '|' + label for label in _labels])
+            labels.extend([k[n] + "|" + label for label in _labels])
 
         return values, spaces, labels
 
-    def filter(self, mode, filterdict = None):
+    def filter(self, mode, filterdict=None):
         new_state = OrderedDict()
         if filterdict is None:
             filterdict = self
@@ -696,8 +804,8 @@ class State(OrderedDict):
             elif isinstance(self[key], StateElement):
                 # to make S.filter("values", S) possible. Warning: Contrary to what one would expect values != self[key]
                 if isinstance(values, StateElement):
-                    values = slice(0,len(values), 1)
-                if mode == 'spaces':
+                    values = slice(0, len(values), 1)
+                if mode == "spaces":
                     new_state[key] = flatten([self[key][mode][values]])
                 else:
                     new_state[key] = self[key][mode][values]
@@ -705,7 +813,6 @@ class State(OrderedDict):
                 new_state[key] = self[key]
 
         return new_state
-
 
     def __content__(self):
         return list(self.keys())
@@ -736,22 +843,52 @@ class State(OrderedDict):
                 try:
                     value_ = value.serialize()
                 except AttributeError:
-                    print("warning: I don't know how to serialize {}. I'm sending the whole internal dictionnary of the object. Consider adding a serialize() method to your custom object".format(value.__str__()))
+                    print(
+                        "warning: I don't know how to serialize {}. I'm sending the whole internal dictionnary of the object. Consider adding a serialize() method to your custom object".format(
+                            value.__str__()
+                        )
+                    )
                     value_ = value.__dict__
             ret_dict[key] = value_
         return ret_dict
 
-
-
     def __str__(self):
-        """ Print out the game_state and the name of each substate with according indices.
-        """
+        """Print out the game_state and the name of each substate with according indices."""
 
-        table_header = ['Index', 'Label', 'Value','Space','Possible Value']
+        table_header = ["Index", "Label", "Value", "Space", "Possible Value"]
         table_rows = []
-        for i, (v, s,  l) in enumerate(zip(*self.flat())):
-                table_rows.append([str(i), l, str(v), str(s)])
+        for i, (v, s, l) in enumerate(zip(*self.flat())):
+            table_rows.append([str(i), l, str(v), str(s)])
 
         _str = tabulate(table_rows, table_header)
 
         return _str
+
+
+# ================ Some Examples ==============
+if __name__ == "__main__":
+
+    # [start-state-example]
+    # Continuous substate. Provide Space([low, high]). Value is optional
+    x = StateElement(
+        values=None,
+        spaces=Space(
+            [
+                numpy.array([-1.0]).reshape(1, 1),
+                numpy.array([1.0]).reshape(1, 1),
+            ]
+        ),
+    )
+
+    # Discrete substate. Provide Space([range]). Value is optional
+    y = StateElement(
+        values=2, spaces=Space([numpy.array([1, 2, 3], dtype=numpy.int)])
+    )
+
+    # Define a State, composed of two substates previously defined
+    s1 = State(substate_x=x, substate_y=y)
+
+    # Define a super-State that is composed of the State previously defined
+    S = State()
+    S["substate1"] = s1
+    # [end-state-example]

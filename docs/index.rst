@@ -46,27 +46,29 @@ Learn how to use *interaction-agents*:
 
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
     :caption: Tutorial
 
     guide/quickstart
-    guide/modularity
+    guide/more_complex_example
     guide/api
+    guide/modularity
+    guide/training
+    guide/external_components
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
     :caption: Examples
 
     guide/users
 
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
     :caption: User Guide
 
     guide/interaction_model
-    guide/design
-    guide/states
+    guide/spaces
     guide/agents
     guide/tasks
     guide/bundles
@@ -76,13 +78,14 @@ Learn how to use *interaction-agents*:
     guide/user_model
 
 
-..toctree:
+
+.. toctree:
     :caption: Miscellaneous
     guide/terminology
 
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
     :caption: What's next?
 
     roadmap

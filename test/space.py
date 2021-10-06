@@ -20,6 +20,13 @@ if _str == 'init' or _str == 'all':
         numpy.array([i for i in range(gridsize[1])], dtype = numpy.int16)] for j in range(number_of_targets)])
                                     )
 
+if _str == 'action-space':
+    h = Space(
+        flatten([[numpy.array([i for i in range(4)], dtype = numpy.int16),
+        numpy.array([i for i in range(4)], dtype = numpy.int16)] for j in range(3)])
+                        )
+    s = Space(  [numpy.array([1,2,3], dtype = numpy.int16)] )
+    a = Space([numpy.array([None], dtype = numpy.object)])
 
 if _str == 'contains' or _str == 'all':
     space = Space(  [numpy.array([1,2,3], dtype = numpy.int16)] )
