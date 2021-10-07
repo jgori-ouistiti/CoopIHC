@@ -101,6 +101,7 @@ List of Modules in *interaction-agents*
     :maxdepth: 2
     :caption: Core Module. This module is the core module of interaction-agents. Any new module should build heavily on existing classes, by subclassing them.
 
+    modules/core/space
     modules/core/baseagents
     modules/core/interactiontask
     modules/core/bundle

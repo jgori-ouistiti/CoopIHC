@@ -162,6 +162,21 @@ if _str == "len" or _str == "all":
 
 if _str == "cast" or _str == "all":
 
+    y.reset()
+    targetdomain = StateElement(
+        values=None,
+        spaces=[
+            core.space.Space(
+                [
+                    -numpy.ones((2, 1), dtype=numpy.float32),
+                    numpy.ones((2, 1), dtype=numpy.float32),
+                ]
+            )
+            for j in range(3)
+        ],
+    )
+    res = y.cast(targetdomain)
+
     b = StateElement(
         values=5,
         spaces=core.space.Space(
@@ -182,21 +197,6 @@ if _str == "cast" or _str == "all":
             ]
         ),
     )
-
-    y.reset()
-    targetdomain = StateElement(
-        values=None,
-        spaces=[
-            core.space.Space(
-                [
-                    -numpy.ones((2, 1), dtype=numpy.float32),
-                    numpy.ones((2, 1), dtype=numpy.float32),
-                ]
-            )
-            for j in range(3)
-        ],
-    )
-    res = y.cast(targetdomain)
     # C2D
     continuous = []
     discrete = []

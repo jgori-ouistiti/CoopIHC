@@ -1,6 +1,5 @@
 from collections import OrderedDict
 import copy
-import gym
 import numpy
 import json
 import sys
@@ -23,16 +22,21 @@ from core.helpers import isdefined
 
 
 class Space:
-    """The class that defines where values are contained.
+    """Class used to define in which domain values of state elements live.
 
-    :param type array_list: A list of input arrays that specifies the range of the Space. Input either a one-array list (possible values) for a discrete space or a two-array list (low and high arrays) for a continuous space.
-    :param type *args: For future use.
-    :param type **kwargs: For future use `**kwargs`.
 
+    Input should be given as a list of arrays:
+
+        * In case the data is continuous, then provide [low, high], where low and high are arrays that define the values of the lower and upper bounds
+        * In case the data is discrete, provide [a1, a2, a3, ...], where the ai's are different ranges corresponding to different subspaces (multidiscrete space)
+
+
+    :param [numpy.array] array_list: A list of NumPy arrays that specifies the ranges of the Space.
+    :param *args: For future use.
+    :param **kwargs: For future use `**kwargs`.
     """
 
     def __init__(self, array_list, *args, **kwargs):
-
         self._cflag = None
         self.rng = numpy.random.default_rng()
 
@@ -111,9 +115,9 @@ class Space:
 
     @property
     def range(self):
-        """Describes the Space. If continuous, return low and high, after having checked that they have the same shape. If discrete, returns the list of possible values. Reshaped to be 2d arrays.
+        """If the space is continuous, returns low and high arrays, after having checked that they have the same shape. If the space is discrete, returns the list of possible values. The output is reshaped to 2d arrays.
 
-        :return: the 2d-reshaped ranges .
+        :return: the 2d-reshaped ranges
         :rtype: list
 
         """
@@ -131,10 +135,10 @@ class Space:
 
     @property
     def low(self):
-        """Return the lower end of the range. For continuous simply return low, for discrete return smallest value.
+        """Return the lower end of the range. For continuous simply return low, for discrete return smallest value or the range array.
 
-        :return: Description of returned object.
-        :rtype: type
+        :return: The lower end of the range
+        :rtype: numpy.array
 
         """
         if self.continuous:
@@ -145,6 +149,12 @@ class Space:
 
     @property
     def high(self):
+        """Return the higher end of the range, see low.
+
+        :return: The higher end of the range
+        :rtype: numpy.array
+
+        """
         if self.continuous:
             high = self.range[1]
         else:
@@ -153,6 +163,12 @@ class Space:
 
     @property
     def N(self):
+        """Returns the number of elements in the range. Only useful for 1d discrete spaces.
+
+        :return: Description of returned object.
+        :rtype: type
+
+        """
         if self.continuous:
             return None
         else:
@@ -163,6 +179,12 @@ class Space:
 
     @property
     def shape(self):
+        """Returns the shape of the space, discrete(N) spaces are cast to (N,1).
+
+        :return: Shape of the space
+        :rtype: tuple
+
+        """
         if self._shape is None:
             if not self.continuous:
                 self._shape = (len(self), 1)
@@ -172,6 +194,12 @@ class Space:
 
     @property
     def dtype(self):
+        """Returns the dtype of the space. If data is in several types, will convert to the common type.
+
+        :return: dtype of the data
+        :rtype: numpy.dtype
+
+        """
         if self._dtype is None:
             if len(self._array) == 1:
                 self._dtype = self._array[0].dtype
@@ -183,11 +211,23 @@ class Space:
 
     @property
     def continuous(self):
+        """Whether the space is continuous or not. Based on the dtype of the provided data.
+
+        :return: is continuous.
+        :rtype: boolean
+
+        """
         if self._cflag is None:
             self._cflag = numpy.issubdtype(self.dtype, numpy.inexact)
         return self._cflag
 
     def sample(self):
+        """Uniforly samples from the space.
+
+        :return: random value in the space.
+        :rtype: numpy.array
+
+        """
         _l = []
         if self.continuous:
             return (self.high - self.low) * self.rng.random(
@@ -203,23 +243,40 @@ class Space:
             ]
 
 
-class SpaceNotDefinedError(Exception):
-    pass
+class SpaceLengthError(Exception):
+    """Error raised when the space length does not match the value length.
 
+    :meta private:
 
-class StateLengthError(Exception):
-    pass
+    """
 
-
-class BadSpaceError(Exception):
     pass
 
 
 class StateNotContainedError(Exception):
+    """Error raised when the value is not contained in the space.
+
+    :meta private:
+
+    """
+
     pass
 
 
 class StateElement:
+    """The container that defines a substate. StateElements allow:
+        - iteration
+        - indexing
+        - length
+        - comparisons
+        - various arithmetic operations
+
+    :param list(numpy.array) values: Value of the substate. Some processing is applied to values if the input does not match the space and correct syntax.
+    :param list(Space) spaces: Space (domain) in which value lives. Some processing is applied to spaces if the input does not match the correct syntax.
+    :param str clipping_mode: What to do when the value is not in the space. If 'error', raise a StateNotContainedError. If 'warning', print a warning on stdout. If 'clip', automatically clip the value so that it is contained. Defaults to 'warning'.
+    :param str typing_priority: What to do when the type of the space does not match the type of the value. If 'space', convert the value to the dtype of the space, if 'value' the converse. Default to space.
+
+    """
 
     __array_priority__ = 1  # to make __rmatmul__ possible with numpy arrays
     __precedence__ = ["error", "warning", "clip"]
@@ -248,19 +305,31 @@ class StateElement:
 
     @property
     def values(self):
+        """Return values of the StateElement.
+
+        :return: StateElement values.
+        :rtype: list(numpy.array)
+
+        """
         return self.__values
 
     @values.setter
     def values(self, values):
-        self.__values = self.preprocess_values(values)
+        self.__values = self.__preprocess_values(values)
 
     @property
     def spaces(self):
+        """Return spaces of the StateElement.
+
+        :return: StateElement spaces.
+        :rtype: list(Space)
+
+        """
         return self.__spaces
 
     @spaces.setter
     def spaces(self, values):
-        self.__spaces = self.preprocess_spaces(values)
+        self.__spaces = self.__preprocess_spaces(values)
 
     # ============ dunder/magic methods
 
@@ -289,9 +358,9 @@ class StateElement:
     # Itemization
     def __setitem__(self, key, item):
         if key == "values":
-            setattr(self, key, self.preprocess_values(item))
+            setattr(self, key, self.__preprocess_values(item))
         elif key == "spaces":
-            setattr(self, key, self.preprocess_spaces(item))
+            setattr(self, key, self.__preprocess_spaces(item))
         elif key == "clipping_mode":
             setattr(self, key, item)
         else:
@@ -430,7 +499,7 @@ class StateElement:
             high = numpy.inf * numpy.ones(values.shape)
 
             se.spaces = [
-                gym.spaces.Space(
+                Space(
                     range=[low, high], shape=values.shape, dtype=values.dtype
                 )
             ]
@@ -476,11 +545,17 @@ class StateElement:
         _elem = StateElement(
             values=self.values,
             spaces=self.spaces,
-            clipping_mode=self.mix_modes(other),
+            clipping_mode=self.__mix_modes(other),
         )
         return _elem, other
 
     def serialize(self):
+        """Call this to generate a json representation of StateElement.
+
+        :return: JSON blob-like.
+        :rtype: dictionnary
+
+        """
         v_list = []
         for v in self["values"]:
             try:
@@ -495,7 +570,7 @@ class StateElement:
                     raise TypeError("".format(msg))
         return {"values": v_list, "spaces": str(self["spaces"])}
 
-    def mix_modes(self, other):
+    def __mix_modes(self, other):
         if hasattr(other, "clipping_mode"):
             return self.__precedence__[
                 min(
@@ -507,6 +582,12 @@ class StateElement:
             return self.clipping_mode
 
     def cartesian_product(self):
+        """Computes the cartesian product of the space, i.e. produces all possible values of the space. This only makes sense for discrete spaces. If the space mixed continuous and discrete values, the continuous value is kept constant.
+
+        :return: The list of all possible StateElements
+        :rtype: list(StateElement)
+
+        """
         lists = []
         for value, space in zip(self.values, self.spaces):
             print(value, space)
@@ -528,6 +609,12 @@ class StateElement:
         ]
 
     def reset(self, dic=None):
+        """Initializes the values of the StateElement in place. If dic is not provided, uniformly samples from the space, else, apply the values supplied by the dictionnary.
+
+        :param dictionnary dic: {key: value} where key is either "values" or "spaces" and value is the actual value of that field.
+
+
+        """
         if not dic:
             # could add a mode which simulates sampling without replacement
             self["values"] = [space.sample() for space in self.spaces]
@@ -539,12 +626,12 @@ class StateElement:
             if spaces is not None:
                 self["spaces"] = spaces
 
-    def preprocess_spaces(self, spaces):
+    def __preprocess_spaces(self, spaces):
 
         spaces = flatten([spaces])
         return spaces
 
-    def preprocess_values(self, values):
+    def __preprocess_values(self, values):
         values = flatten([values])
         # Allow a single None syntax
         try:
@@ -563,7 +650,7 @@ class StateElement:
             if len(_values) == len(self.spaces):
                 values = _values
             else:
-                raise StateLengthError(
+                raise SpaceLengthError(
                     "The size of the values ({}) being instantiated does not match the size of the space ({})".format(
                         len(values), len(self.spaces)
                     )
@@ -594,26 +681,27 @@ class StateElement:
                         )
                     )
                 elif self.clipping_mode == "clip":
-                    v = self._clip(v, s)
+                    v = self.__clip(v, s)
+                    # v = self.__clip_1d(v, s)
                 else:
                     pass
             values[ni] = v
         return values
 
-    def flat(self):
+    def __flat(self):
         return (
             self["values"],
             self["spaces"],
             [str(i) for i, v in enumerate(self["values"])],
         )
 
-    def clip(self, values):
+    def __clip(self, values):
         values = flatten([values])
         for n, (value, space) in enumerate(zip(values, self.spaces)):
-            values[n] = self._clip(value, space)
+            values[n] = self.__clip_1d(value, space)
         return values
 
-    def _clip(self, value, space):
+    def __clip_1d(self, value, space):
         if value not in space:
             if space.continuous:
                 return numpy.clip(value, space.low, space.high)
@@ -624,7 +712,7 @@ class StateElement:
                     value = numpy.atleast_2d(space.low)
                 return value
 
-    def _discrete2continuous(self, other, mode="center"):
+    def __discrete2continuous(self, other, mode="center"):
         values = []
         for sv, ss, os in zip(
             self["values"][0], self["spaces"][0], other["spaces"][0]
@@ -648,7 +736,7 @@ class StateElement:
             values.append(ls[list(_range).index(sv)] + shift)
         return values
 
-    def _continuous2discrete(self, other, mode="center"):
+    def __continuous2discrete(self, other, mode="center"):
         values = []
         for sv, ss, os in zip(
             self["values"][0], self["spaces"][0], other["spaces"][0]
@@ -690,7 +778,7 @@ class StateElement:
 
         return values
 
-    def _continuous2continuous(self, other):
+    def __continuous2continuous(self, other):
         values = []
         for sv, ss, os in zip(
             self["values"][0], self["spaces"][0], other["spaces"][0]
@@ -707,7 +795,7 @@ class StateElement:
             values.append((sv - s_mid) / s_range * o_range + o_mid)
             return values
 
-    def _discrete2discrete(self, other):
+    def __discrete2discrete(self, other):
 
         values = []
         for sv, ss, os in zip(
@@ -723,6 +811,14 @@ class StateElement:
             return values
 
     def cast(self, other, mode="center"):
+        """Convert values from one StateElement with one space to another with another space, whenever a one-to-one mapping is possible. Equally spaced discrete spaces are assumed.
+
+        :param StateElement other: The StateElement to which the value is converted to.
+        :param type mode: How to convert between discrete and continuous spaces. If mode == 'center', then the continuous domain will finish at the center of the edge discrete items. If mode == 'edges', the continous domain will finisg at the edges of the edge discrete items.
+        :return: A new StateElement with the space from other and the converted value from self.
+        :rtype: StateElement
+
+        """
         if not isinstance(other, StateElement):
             raise TypeError(
                 "input arg {} must be of type StateElement".format(str(other))
@@ -734,14 +830,14 @@ class StateElement:
                 s["values"], s["spaces"], o["values"], o["spaces"]
             ):
                 if not ss.continuous and os.continuous:
-                    value = s._discrete2continuous(o, mode=mode)
+                    value = s.__discrete2continuous(o, mode=mode)
                 elif ss.continuous and os.continuous:
-                    value = s._continuous2continuous(o)
+                    value = s.__continuous2continuous(o)
                 elif ss.continuous and not os.continuous:
-                    value = s._continuous2discrete(o, mode=mode)
+                    value = s.__continuous2discrete(o, mode=mode)
                 elif not ss.continuous and not os.continuous:
                     if ss.N == os.N:
-                        value = s._discrete2discrete(o)
+                        value = s.__discrete2discrete(o)
                     else:
                         raise ValueError(
                             "You are trying to match a discrete space to another discrete space of different size."
@@ -753,41 +849,39 @@ class StateElement:
         return StateElement(
             values=values,
             spaces=other["spaces"],
-            clipping_mode=self.mix_modes(other),
+            clipping_mode=self.__mix_modes(other),
             typing_priority=self.typing_priority,
         )
 
 
-# class Action(StateElement):
-#     def __init__(self, bundle, role):
-#         self.role = role
-#         agent = getattr(bundle, role)
-#         self.spaces = agent.policy.action_state['action']['spaces']
-#
-#     def feed(self, value, **kwargs):
-#         return StateElement( values = value,
-#                             spaces = self.spaces,
-#                             **kwargs)
-
-
 class State(OrderedDict):
+    """The container that defines states.
+
+    :param *args: Same as collections.OrderedDict
+    :param **kwargs: Same as collections.OrderedDict
+    :return: A state Object
+    :rtype: State
+
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def reset(self, dic={}):
+        """Initialize the state. See StateElement"""
         for key, value in self.items():
             reset_dic = dic.get(key)
             if reset_dic is None:
                 reset_dic = {}
             value.reset(reset_dic)
 
-    def flat(self):
+    def __flat(self):
         values = []
         spaces = []
         labels = []
         l, k = list(self.values()), list(self.keys())
         for n, item in enumerate(l):
-            _values, _spaces, _labels = item.flat()
+            _values, _spaces, _labels = item.__flat()
             values.extend(_values)
             spaces.extend(_spaces)
             labels.extend([k[n] + "|" + label for label in _labels])
@@ -795,6 +889,22 @@ class State(OrderedDict):
         return values, spaces, labels
 
     def filter(self, mode, filterdict=None):
+        """Retain only parts of the state.
+
+        An example for filterdict's structure is as follows:
+
+        ordereddict = OrderedDict(
+        {"substate1": OrderedDict({"substate_x": 0, "substate_w": 0})}
+            )
+        will filter out every component but the first component (index 0) for substates x and w contained in substate_1.
+
+        :param str mode: Wheter the filtering operates on the 'values' or on the 'spaces'
+        :param collections.OrderedDict filterdict: The OrderedDict which specifies which substates to keep and which to leave out.
+        :return: The filtered state
+        :rtype: State
+
+        """
+
         new_state = OrderedDict()
         if filterdict is None:
             filterdict = self
@@ -802,7 +912,8 @@ class State(OrderedDict):
             if isinstance(self[key], State):
                 new_state[key] = self[key].filter(mode, values)
             elif isinstance(self[key], StateElement):
-                # to make S.filter("values", S) possible. Warning: Contrary to what one would expect values != self[key]
+                # to make S.filter("values", S) possible.
+                # Warning: Contrary to what one would expect values != self[key]
                 if isinstance(values, StateElement):
                     values = slice(0, len(values), 1)
                 if mode == "spaces":
@@ -835,6 +946,12 @@ class State(OrderedDict):
         return deepcopy_object
 
     def serialize(self):
+        """Serialize state --> JSON output.
+
+        :return: JSON-like blob
+        :rtype: dict
+
+        """
         ret_dict = {}
         for key, value in dict(self).items():
             try:
@@ -857,7 +974,7 @@ class State(OrderedDict):
 
         table_header = ["Index", "Label", "Value", "Space", "Possible Value"]
         table_rows = []
-        for i, (v, s, l) in enumerate(zip(*self.flat())):
+        for i, (v, s, l) in enumerate(zip(*self.__flat())):
             table_rows.append([str(i), l, str(v), str(s)])
 
         _str = tabulate(table_rows, table_header)
@@ -867,6 +984,105 @@ class State(OrderedDict):
 
 # ================ Some Examples ==============
 if __name__ == "__main__":
+
+    # [start-space-def]
+    continous_space = Space(
+        [
+            -numpy.ones((2, 2), dtype=numpy.float32),
+            numpy.ones((2, 2), dtype=numpy.float32),
+        ]
+    )
+
+    discrete_spaces = Space([numpy.array([1, 2, 3], dtype=numpy.int16)])
+    # [end-space-def]
+
+    # [start-space-complex-def]
+    h = Space(
+        flatten(
+            [
+                [
+                    numpy.array([i for i in range(4)], dtype=numpy.int16),
+                    numpy.array([i for i in range(4)], dtype=numpy.int16),
+                ]
+                for j in range(3)
+            ]
+        )
+    )
+
+    none_space = Space([numpy.array([None], dtype=numpy.object)])
+    # [end-space-complex-def]
+
+    # [start-space-contains]
+    space = Space([numpy.array([1, 2, 3], dtype=numpy.int16)])
+    x = numpy.array([2], dtype=numpy.int16)
+    y = numpy.array([2], dtype=numpy.float32)
+    yy = numpy.array([2])
+    z = numpy.array([5])
+    assert x in space
+    assert y not in space
+    assert yy in space
+    assert z not in space
+
+    space = Space(
+        [
+            -numpy.ones((2, 2), dtype=numpy.float32),
+            numpy.ones((2, 2), numpy.float32),
+        ]
+    )
+    x = numpy.array([[1, 1], [1, 1]], dtype=numpy.int16)
+    y = numpy.array([[1, 1], [1, 1]], dtype=numpy.float32)
+    yy = numpy.array([[1, 1], [1, 1]])
+    yyy = numpy.array([[1.0, 1.0], [1.0, 1.0]])
+    z = numpy.array([[5, 1], [1, 1]], dtype=numpy.float32)
+    assert x in space
+    assert y in space
+    assert yy in space
+    assert yyy in space
+    assert z not in space
+    # [end-space-contains]
+
+    # [start-space-sample]
+    f = Space(
+        [
+            numpy.array([[-2, -2], [-1, -1]], dtype=numpy.float32),
+            numpy.ones((2, 2), numpy.float32),
+        ]
+    )
+    g = Space(
+        [
+            numpy.array([i for i in range(31)], dtype=numpy.int16),
+            numpy.array([i for i in range(31)], dtype=numpy.int16),
+        ]
+    )
+    h = Space([numpy.array([i for i in range(10)], dtype=numpy.int16)])
+
+    f.sample()
+    g.sample()
+    h.sample()
+    # [end-space-sample]
+
+    # [start-space-iter]
+    g = Space(
+        [
+            numpy.array([i for i in range(31)], dtype=numpy.int16),
+            numpy.array([i for i in range(31)], dtype=numpy.int16),
+        ]
+    )
+    for _i in g:
+        print(_i)
+
+    h = Space(
+        [
+            -numpy.ones((3, 4), dtype=numpy.float32),
+            numpy.ones((3, 4), dtype=numpy.float32),
+        ]
+    )
+
+    for _h in h:
+        print(_h)
+        for __h in _h:
+            print(__h)
+    # [end-space-iter]
 
     # [start-state-example]
     # Continuous substate. Provide Space([low, high]). Value is optional
@@ -892,3 +1108,386 @@ if __name__ == "__main__":
     S = State()
     S["substate1"] = s1
     # [end-state-example]
+
+    # -------------- StateElement------------
+
+    # [start-stateelement-init]
+    x = StateElement(
+        values=None,
+        spaces=[
+            core.space.Space(
+                [
+                    numpy.array([-1], dtype=numpy.float32),
+                    numpy.array([1], dtype=numpy.float32),
+                ]
+            ),
+            core.space.Space([numpy.array([1, 2, 3], dtype=numpy.int16)]),
+            core.space.Space(
+                [numpy.array([-6, -5, -4, -3, -2, -1], dtype=numpy.int16)]
+            ),
+        ],
+    )
+
+    y = StateElement(
+        values=None,
+        spaces=[
+            Space(
+                [
+                    numpy.array([i for i in range(10)], dtype=numpy.int16),
+                    numpy.array([i for i in range(10)], dtype=numpy.int16),
+                ]
+            )
+            for j in range(3)
+        ],
+        clipping_mode="error",
+    )
+    # [end-stateelement-init]
+
+    # [start-stateelement-reset]
+    x.reset()
+    y.reset()
+    reset_dic = {"values": [-1 / 2, 2, -2]}
+    x.reset(dic=reset_dic)
+    reset_dic = {"values": [[0, 0], [10, 10], [5, 5]]}
+    y.reset(dic=reset_dic)
+    # [end-stateelement-reset]
+
+    # [start-stateelement-iter]
+    for _x in x:
+        print(_x)
+
+    for _y in y:
+        print(_y)
+    # [end-stateelement-iter]
+
+    # [start-stateelement-cp]
+    x.reset()
+    for n, _x in enumerate(x.cartesian_product()):
+        # print(n, _x.values)
+        print(n, _x)
+    y.reset()
+    # There are a million possible elements in y, so consider the first subspace only
+    for n, _y in enumerate(y[0].cartesian_product()):
+        print(n, _y.values)
+    # [end-stateelement-cp]
+
+    # [start-stateelement-comp]
+    x.reset()
+    a = x[0]
+    print(x < numpy.array([2, -2, 4]))
+    # [end-stateelement-comp]
+
+    y.reset()
+    targetdomain = StateElement(
+        values=None,
+        spaces=[
+            core.space.Space(
+                [
+                    -numpy.ones((2, 1), dtype=numpy.float32),
+                    numpy.ones((2, 1), dtype=numpy.float32),
+                ]
+            )
+            for j in range(3)
+        ],
+    )
+    res = y.cast(targetdomain)
+
+    # [start-stateelement-cast]
+    b = StateElement(
+        values=5,
+        spaces=core.space.Space(
+            [
+                numpy.array(
+                    [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5], dtype=numpy.int16
+                )
+            ]
+        ),
+    )
+
+    a = StateElement(
+        values=0,
+        spaces=core.space.Space(
+            [
+                numpy.array([-1], dtype=numpy.float32),
+                numpy.array([1], dtype=numpy.float32),
+            ]
+        ),
+    )
+    import matplotlib.pyplot as plt
+
+    # C2D
+    continuous = []
+    discrete = []
+    for elem in numpy.linspace(-1, 1, 200):
+        a["values"] = elem
+        continuous.append(a["values"][0].squeeze().tolist())
+        discrete.append(
+            a.cast(b, mode="center")["values"][0].squeeze().tolist()
+        )
+
+    plt.plot(continuous, discrete, "b*")
+    plt.show()
+
+    # D2C
+
+    continuous = []
+    discrete = []
+    for elem in [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]:
+        b["values"] = elem
+        discrete.append(elem)
+        continuous.append(
+            b.cast(a, mode="edges")["values"][0].squeeze().tolist()
+        )
+
+    plt.plot(discrete, continuous, "b*")
+    plt.show()
+
+    # C2C
+
+    a = StateElement(
+        values=0,
+        spaces=core.space.Space(
+            [
+                numpy.array([-2], dtype=numpy.float32),
+                numpy.array([1], dtype=numpy.float32),
+            ]
+        ),
+    )
+    b = StateElement(
+        values=3.5,
+        spaces=core.space.Space(
+            [
+                numpy.array([3], dtype=numpy.float32),
+                numpy.array([4], dtype=numpy.float32),
+            ],
+        ),
+    )
+
+    c1 = []
+    c2 = []
+    for elem in numpy.linspace(-2, 1, 100):
+        a["values"] = elem
+        c1.append(a["values"][0].squeeze().tolist())
+        c2.append(a.cast(b)["values"][0].squeeze().tolist())
+
+    plt.plot(c1, c2, "b*")
+    plt.show()
+
+    # D2D
+    a = StateElement(
+        values=5,
+        spaces=core.space.Space(
+            [numpy.array([i for i in range(11)], dtype=numpy.int16)]
+        ),
+    )
+    b = StateElement(
+        values=5,
+        spaces=core.space.Space(
+            [
+                numpy.array(
+                    [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5], dtype=numpy.int16
+                )
+            ]
+        ),
+    )
+
+    d1 = []
+    d2 = []
+    for i in range(11):
+        a["values"] = i
+        d1.append(i)
+        d2.append(a.cast(b)["values"][0].squeeze().tolist())
+
+    plt.plot(d1, d2, "b*")
+    plt.show()
+    # [end-stateelement-cast]
+
+    # [start-stateelement-arithmetic]
+    # Neg
+    x = StateElement(
+        values=numpy.array([[-0.237]], dtype=numpy.float32),
+        spaces=core.space.Space(
+            [
+                numpy.array([-1], dtype=numpy.float32),
+                numpy.array([1], dtype=numpy.float32),
+            ]
+        ),
+    )
+    print(-x)
+
+    # Sum
+    x = StateElement(
+        values=numpy.array([[-0.237]], dtype=numpy.float32),
+        spaces=core.space.Space(
+            [
+                numpy.array([-1], dtype=numpy.float32),
+                numpy.array([1], dtype=numpy.float32),
+            ]
+        ),
+    )
+    y = StateElement(
+        values=numpy.array([[-0.135]], dtype=numpy.float32),
+        spaces=core.space.Space(
+            [
+                numpy.array([-1], dtype=numpy.float32),
+                numpy.array([1], dtype=numpy.float32),
+            ]
+        ),
+    )
+    # adding two simple StateElements
+    print(x + y)
+    # add with a scalar
+    z = -0.5
+    print(x + z)
+
+    a = StateElement(
+        values=numpy.array([[-0.237, 0]], dtype=numpy.float32),
+        spaces=core.space.Space(
+            [
+                numpy.array([-1, -1], dtype=numpy.float32),
+                numpy.array([1, 1], dtype=numpy.float32),
+            ]
+        ),
+    )
+    b = StateElement(
+        values=numpy.array([[0.5, 0.5]], dtype=numpy.float32),
+        spaces=core.space.Space(
+            [
+                numpy.array([-1, -1], dtype=numpy.float32),
+                numpy.array([1, 1], dtype=numpy.float32),
+            ]
+        ),
+    )
+
+    print(a + b)
+    print(b + a)
+    print(a - b)
+    print(b - a)
+    c = numpy.array([0.12823329, -0.10512559])
+    print(a + c)
+    print(c + a)
+    print(a - c)
+    print(c - a)
+
+    # Mul
+    a = StateElement(
+        values=numpy.array([[-0.237, 0]], dtype=numpy.float32),
+        spaces=core.space.Space(
+            [
+                numpy.array([-1, -1], dtype=numpy.float32),
+                numpy.array([1, 1], dtype=numpy.float32),
+            ]
+        ),
+    )
+    b = StateElement(
+        values=numpy.array([[0.5, 0.5]], dtype=numpy.float32),
+        spaces=core.space.Space(
+            [
+                numpy.array([-1, -1], dtype=numpy.float32),
+                numpy.array([1, 1], dtype=numpy.float32),
+            ]
+        ),
+    )
+
+    c = 1
+    print(a * b)
+    print(a * c)
+    print(b * a)
+    print(c * a)
+
+    # Matmul
+    a = StateElement(
+        values=numpy.array([[-0.237, 0], [1, 1]], dtype=numpy.float32),
+        spaces=core.space.Space(
+            [
+                numpy.array([[-1, -1], [-1, -1]], dtype=numpy.float32),
+                numpy.array([[1, 1], [1, 1]], dtype=numpy.float32),
+            ]
+        ),
+    )
+    b = StateElement(
+        values=numpy.array([[0.5, 0.5]], dtype=numpy.float32),
+        spaces=core.space.Space(
+            [
+                numpy.array([-1, -1], dtype=numpy.float32).reshape(-1, 1),
+                numpy.array([1, 1], dtype=numpy.float32).reshape(-1, 1),
+            ]
+        ),
+    )
+
+    z = numpy.ones((2, 2))
+
+    print(a @ b)
+    print(z @ a)
+    print(a @ z)
+    # [end-stateelement-arithmetic]
+
+    # -------------- State------------
+
+    # [start-state-init]
+    x = StateElement(
+        values=1,
+        spaces=Space(
+            [
+                numpy.array([-1.0]).reshape(1, 1),
+                numpy.array([1.0]).reshape(1, 1),
+            ]
+        ),
+    )
+
+    y = StateElement(
+        values=2, spaces=Space(numpy.array([1, 2, 3], dtype=numpy.int))
+    )
+
+    z = StateElement(
+        values=5,
+        spaces=Space(numpy.array([i for i in range(10)], dtype=numpy.int)),
+    )
+
+    s1 = State(substate_x=x, substate_y=y, substate_z=z)
+
+    w = StateElement(
+        values=numpy.zeros((3, 3)),
+        spaces=Space([-3.5 * numpy.ones((3, 3)), 6 * numpy.ones((3, 3))]),
+    )
+    s1["substate_w"] = w
+
+    xx = StateElement(
+        values=numpy.ones((2, 2)),
+        spaces=Space([-0.5 * numpy.ones((2, 2)), 0.5 * numpy.ones((2, 2))]),
+        clipping_mode="clip",
+    )
+
+    yy = StateElement(
+        values=None,
+        spaces=Space(numpy.array([-3, -2, -1, 0, 1, 2, 3, 4, 5, 6])),
+    )
+
+    s2 = State(**{"substate_xx": xx, "substate_yy": yy})
+
+    S = State()
+    S["substate1"] = s1
+    S["substate2"] = s2
+    # [end-state-init]
+
+    # [start-state-reset]
+    print(S.reset())
+    # [end-state-reset]
+
+    # [start-state-filter]
+    from collections import OrderedDict
+
+    ordereddict = OrderedDict(
+        {"substate1": OrderedDict({"substate_x": 0, "substate_w": 0})}
+    )
+
+    ns1 = S.filter("values", filterdict=ordereddict)
+    ns2 = S.filter("spaces", filterdict=ordereddict)
+    ns5 = S.filter("values")
+    ns6 = S.filter("spaces")
+
+    # [end-state-filter]
+
+    # [start-state-serialize]
+    print(S.serialize())
+    # [end-state-serialize]

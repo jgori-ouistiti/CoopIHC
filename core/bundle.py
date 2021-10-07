@@ -26,6 +26,7 @@ import json
 
 
 class _Bundle:
+
     """A bundle combines a task with an user and an assistant. All bundles are obtained by subclassing this main _Bundle class.
 
     A bundle will create the ``game_state`` by combining three states of the task, the user and the assistant as well as the turn index. It also takes care of adding the assistant action substate to the user state and vice-versa.
