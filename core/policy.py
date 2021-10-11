@@ -7,7 +7,6 @@ import copy
 import math
 
 from tabulate import tabulate
-from core.core import Handbook
 import time
 import importlib
 from collections import OrderedDict

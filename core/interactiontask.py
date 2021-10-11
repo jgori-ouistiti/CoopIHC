@@ -6,7 +6,6 @@ from core.helpers import flatten
 import scipy.linalg
 from core.space import State, StateElement
 import core.space
-from core.core import Core, Handbook
 
 import copy
 import sys
@@ -19,7 +18,7 @@ import websockets
 # updated 04-10-21
 
 
-class InteractionTask(Core, ABC):
+class InteractionTask(ABC):
     """The class that defines an Interaction Task. Subclass this to define any new task. When doing so, make sure to call ``super()`` in ``__init__()``.
 
     The main API methods for this class are:
@@ -139,7 +138,7 @@ class InteractionTask(Core, ABC):
         else:
             pass
 
-    def base_reset(self, dic=None):
+    def _base_reset(self, dic=None):
         """Describe how the task state should be reset. This method has to be redefined when subclassing this class.
 
         :param args: (OrderedDict) state to which the task should be reset, if provided.
@@ -219,9 +218,7 @@ class PipeTaskWrapper(InteractionTask, ABC):
         super().user_step(*args, **kwargs)
         user_action_msg = {
             "type": "user_action",
-            "value": self.bundle.game_state["user_action"][
-                "action"
-            ].serialize(),
+            "value": self.bundle.game_state["user_action"]["action"].serialize(),
         }
         self.pipe.send(user_action_msg)
         self.pipe.poll(None)
@@ -234,9 +231,7 @@ class PipeTaskWrapper(InteractionTask, ABC):
         super().assistant_step(*args, **kwargs)
         assistant_action_msg = {
             "type": "assistant_action",
-            "value": self.bundle.game_state["assistant_action"][
-                "action"
-            ].serialize(),
+            "value": self.bundle.game_state["assistant_action"]["action"].serialize(),
         }
         self.pipe.send(assistant_action_msg)
         self.pipe.poll(None)
@@ -340,12 +335,8 @@ class ClassicControlTask(InteractionTask):
 
         # Generate noise samples
         if self.noise == "on":
-            beta, gamma = numpy.random.normal(
-                0, numpy.sqrt(self.timestep), (2, 1)
-            )
-            omega = numpy.random.normal(
-                0, numpy.sqrt(self.timestep), (self.dim, 1)
-            )
+            beta, gamma = numpy.random.normal(0, numpy.sqrt(self.timestep), (2, 1))
+            omega = numpy.random.normal(0, numpy.sqrt(self.timestep), (self.dim, 1))
         else:
             beta, gamma = numpy.random.normal(0, 0, (2, 1))
             omega = numpy.random.normal(0, 0, (self.dim, 1))
@@ -382,9 +373,7 @@ class ClassicControlTask(InteractionTask):
                 self.draw()
                 if self.turn_number == 3:
                     self.ax.legend(
-                        handles=[
-                            self.axes[i].lines[0] for i in range(self.dim)
-                        ]
+                        handles=[self.axes[i].lines[0] for i in range(self.dim)]
                     )
             else:
                 self.color = ["b", "g", "r", "c", "m", "y", "k"]
@@ -459,11 +448,7 @@ class ExampleTask(InteractionTask):
         self.state["x"] = StateElement(
             values=0,
             spaces=Space(
-                [
-                    numpy.array(
-                        [-4, -3, -2, -1, 0, 1, 2, 3, 4], dtype=numpy.int16
-                    )
-                ]
+                [numpy.array([-4, -3, -2, -1, 0, 1, 2, 3, 4], dtype=numpy.int16)]
             ),
             clipping_mode="clip",
         )
@@ -489,9 +474,7 @@ class ExampleTask(InteractionTask):
     def render(self, *args, mode="text"):
         if "text" in mode:
             print("\n")
-            print(
-                "Turn number {:f}".format(self.turn_number.squeeze().tolist())
-            )
+            print("Turn number {:f}".format(self.turn_number.squeeze().tolist()))
             print(self.state)
             print("\n")
         else:

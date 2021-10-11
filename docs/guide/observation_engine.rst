@@ -32,6 +32,8 @@ The Observation Engine class is the Base class from which all Observation Engine
 3. ``ProcessObservationEngine`` [link], which produces observations by having a 'process' start from the game state and finish at another state. The intent of this engine is to use a run of a fully functioning bundle to produce observations e.g. the ``ChenEyePointingTask`` [link] from the eye module.
 
 
+.. _rule-observation-engine-label:
+
 The ``RuleObservationEngine``
 ---------------------------------
  A rule observation engine is initialized with a rule e.g.

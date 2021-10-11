@@ -3,7 +3,6 @@ import numpy
 import queue
 from core.space import State
 from core.helpers import hard_flatten
-from core.core import Handbook
 import copy
 
 import matplotlib.pyplot as plt
@@ -291,19 +290,6 @@ class LinearGaussianContinuous(BaseInferenceEngine):
     def __init__(self, likelihood_binding):
         super().__init__()
         self.render_tag = ["text", "plot"]
-        _binding = {
-            "name": "likelihood_binding",
-            "value": str(likelihood_binding),
-            "meaning": "This inference engine requires as input a function that indicates the likelihood (mu and sigma) of the received observations. ",
-        }
-
-        self.handbook = Handbook(
-            {
-                "name": self.__class__.__name__,
-                "render_mode": ["plot", "text", "log"],
-                "parameters": [_binding],
-            }
-        )
 
         self.bind(likelihood_binding, "provide_likelihood")
 
@@ -485,17 +471,6 @@ class ContinuousKalmanUpdate(BaseInferenceEngine):
         super().__init__()
         self.fmd_flag = False
         self.K_flag = False
-
-        _K = {
-            "name": "K",
-            "meaning": "Prediction/observation gain. Set with set_K()",
-        }
-        _ABC = {
-            "name": "ABC",
-            "meaning": "dynamics of the forward model. Set A, B, C at once with set_forward_model_dynamics()",
-        }
-        self.handbook["required_bindings"] = []
-        self.handbook["required_bindings"].extend([_K, _ABC])
 
     def set_forward_model_dynamics(self, A, B, C):
         self.fmd_flag = True

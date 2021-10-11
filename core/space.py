@@ -78,9 +78,7 @@ class Space:
         if self.continuous:
             return numpy.all(item >= self.low) and numpy.all(item <= self.high)
         else:
-            return numpy.array(
-                [item[n] in r for n, r in enumerate(self.range)]
-            ).all()
+            return numpy.array([item[n] in r for n, r in enumerate(self.range)]).all()
 
     def __iter__(self):
         self.n = 0
@@ -204,9 +202,7 @@ class Space:
             if len(self._array) == 1:
                 self._dtype = self._array[0].dtype
             else:
-                self._dtype = numpy.find_common_type(
-                    [v.dtype for v in self._array], []
-                )
+                self._dtype = numpy.find_common_type([v.dtype for v in self._array], [])
         return self._dtype
 
     @property
@@ -295,9 +291,7 @@ class StateElement:
         if spaces is not None:
             for s in spaces:
                 if not isinstance(s, Space):
-                    raise AttributeError(
-                        "Input argument spaces expects Space objects"
-                    )
+                    raise AttributeError("Input argument spaces expects Space objects")
         self.spaces = spaces
         self.values = values
 
@@ -315,7 +309,7 @@ class StateElement:
 
     @values.setter
     def values(self, values):
-        self.__values = self.__preprocess_values(values)
+        self.__values = self._preprocess_values(values)
 
     @property
     def spaces(self):
@@ -329,7 +323,7 @@ class StateElement:
 
     @spaces.setter
     def spaces(self, values):
-        self.__spaces = self.__preprocess_spaces(values)
+        self.__spaces = self._preprocess_spaces(values)
 
     # ============ dunder/magic methods
 
@@ -358,9 +352,9 @@ class StateElement:
     # Itemization
     def __setitem__(self, key, item):
         if key == "values":
-            setattr(self, key, self.__preprocess_values(item))
+            setattr(self, key, self._preprocess_values(item))
         elif key == "spaces":
-            setattr(self, key, self.__preprocess_spaces(item))
+            setattr(self, key, self._preprocess_spaces(item))
         elif key == "clipping_mode":
             setattr(self, key, item)
         else:
@@ -383,7 +377,7 @@ class StateElement:
             )
 
     # Comparison
-    def __comp_preface(self, other):
+    def _comp_preface(self, other):
         if isinstance(other, StateElement):
             other = other["values"]
         if not isinstance(other, list):
@@ -391,31 +385,31 @@ class StateElement:
         return self, other
 
     def __eq__(self, other):
-        self, other = self.__comp_preface(other)
+        self, other = self._comp_preface(other)
         return numpy.array(
             [numpy.equal(s, o) for s, o in zip(self["values"], other)]
         ).all()
 
     def __lt__(self, other):
-        self, other = self.__comp_preface(other)
+        self, other = self._comp_preface(other)
         return numpy.array(
             [numpy.less(s, o) for s, o in zip(self["values"], other)]
         ).all()
 
     def __gt__(self, other):
-        self, other = self.__comp_preface(other)
+        self, other = self._comp_preface(other)
         return numpy.array(
             [numpy.greater(s, o) for s, o in zip(self["values"], other)]
         ).all()
 
     def __le__(self, other):
-        self, other = self.__comp_preface(other)
+        self, other = self._comp_preface(other)
         return numpy.array(
             [numpy.less_equal(s, o) for s, o in zip(self["values"], other)]
         ).all()
 
     def __ge__(self, other):
-        self, other = self.__comp_preface(other)
+        self, other = self._comp_preface(other)
         return numpy.array(
             [numpy.greater_equal(s, o) for s, o in zip(self["values"], other)]
         ).all()
@@ -429,7 +423,7 @@ class StateElement:
         )
 
     def __add__(self, other):
-        _elem, other = self.__preface(other)
+        _elem, other = self._preface(other)
         _elem["values"] = numpy.add(self["values"], other, casting="same_kind")
         return _elem
 
@@ -443,10 +437,8 @@ class StateElement:
         return (-self).__add__(other)
 
     def __mul__(self, other):
-        _elem, other = self.__preface(other)
-        _elem["values"] = numpy.multiply(
-            self["values"], other, casting="same_kind"
-        )
+        _elem, other = self._preface(other)
+        _elem["values"] = numpy.multiply(self["values"], other, casting="same_kind")
 
         return _elem
 
@@ -499,9 +491,7 @@ class StateElement:
             high = numpy.inf * numpy.ones(values.shape)
 
             se.spaces = [
-                Space(
-                    range=[low, high], shape=values.shape, dtype=values.dtype
-                )
+                Space(range=[low, high], shape=values.shape, dtype=values.dtype)
             ]
             se["values"] = [values]
             return se
@@ -536,7 +526,7 @@ class StateElement:
 
     # ========== Helpers
 
-    def __preface(self, other):
+    def _preface(self, other):
         if not isinstance(other, (StateElement, numpy.ndarray)):
             other = numpy.array(other)
         if hasattr(other, "values"):
@@ -545,7 +535,7 @@ class StateElement:
         _elem = StateElement(
             values=self.values,
             spaces=self.spaces,
-            clipping_mode=self.__mix_modes(other),
+            clipping_mode=self._mix_modes(other),
         )
         return _elem, other
 
@@ -570,7 +560,7 @@ class StateElement:
                     raise TypeError("".format(msg))
         return {"values": v_list, "spaces": str(self["spaces"])}
 
-    def __mix_modes(self, other):
+    def _mix_modes(self, other):
         if hasattr(other, "clipping_mode"):
             return self.__precedence__[
                 min(
@@ -626,12 +616,12 @@ class StateElement:
             if spaces is not None:
                 self["spaces"] = spaces
 
-    def __preprocess_spaces(self, spaces):
+    def _preprocess_spaces(self, spaces):
 
         spaces = flatten([spaces])
         return spaces
 
-    def __preprocess_values(self, values):
+    def _preprocess_values(self, values):
         values = flatten([values])
         # Allow a single None syntax
         try:
@@ -681,27 +671,27 @@ class StateElement:
                         )
                     )
                 elif self.clipping_mode == "clip":
-                    v = self.__clip(v, s)
-                    # v = self.__clip_1d(v, s)
+                    v = self._clip(v, s)
+                    # v = self._clip_1d(v, s)
                 else:
                     pass
             values[ni] = v
         return values
 
-    def __flat(self):
+    def _flat(self):
         return (
             self["values"],
             self["spaces"],
             [str(i) for i, v in enumerate(self["values"])],
         )
 
-    def __clip(self, values):
+    def _clip(self, values):
         values = flatten([values])
         for n, (value, space) in enumerate(zip(values, self.spaces)):
-            values[n] = self.__clip_1d(value, space)
+            values[n] = self._clip_1d(value, space)
         return values
 
-    def __clip_1d(self, value, space):
+    def _clip_1d(self, value, space):
         if value not in space:
             if space.continuous:
                 return numpy.clip(value, space.low, space.high)
@@ -712,11 +702,9 @@ class StateElement:
                     value = numpy.atleast_2d(space.low)
                 return value
 
-    def __discrete2continuous(self, other, mode="center"):
+    def _discrete2continuous(self, other, mode="center"):
         values = []
-        for sv, ss, os in zip(
-            self["values"][0], self["spaces"][0], other["spaces"][0]
-        ):
+        for sv, ss, os in zip(self["values"][0], self["spaces"][0], other["spaces"][0]):
             if not (not ss.continuous and os.continuous):
                 raise AttributeError(
                     "Use this only to go from a discrete to a continuous space"
@@ -736,11 +724,9 @@ class StateElement:
             values.append(ls[list(_range).index(sv)] + shift)
         return values
 
-    def __continuous2discrete(self, other, mode="center"):
+    def _continuous2discrete(self, other, mode="center"):
         values = []
-        for sv, ss, os in zip(
-            self["values"][0], self["spaces"][0], other["spaces"][0]
-        ):
+        for sv, ss, os in zip(self["values"][0], self["spaces"][0], other["spaces"][0]):
             if not (ss.continuous and not os.continuous):
                 raise AttributeError(
                     "Use this only to go from a continuous to a discrete space"
@@ -749,27 +735,18 @@ class StateElement:
             _range = (ss.high - ss.low).squeeze()
             if mode == "edges":
 
-                _remainder = (sv.squeeze() - ss.low.squeeze()) % (
-                    _range / os.N
-                )
+                _remainder = (sv.squeeze() - ss.low.squeeze()) % (_range / os.N)
                 index = int(
-                    (sv.squeeze() - ss.low.squeeze() - _remainder)
-                    / _range
-                    * os.N
+                    (sv.squeeze() - ss.low.squeeze() - _remainder) / _range * os.N
                 )
             elif mode == "center":
                 N = os.N - 1
-                _remainder = (
-                    sv.squeeze() - ss.low.squeeze() + (_range / 2 / N)
-                ) % (_range / (N))
+                _remainder = (sv.squeeze() - ss.low.squeeze() + (_range / 2 / N)) % (
+                    _range / (N)
+                )
 
                 index = int(
-                    (
-                        sv.squeeze()
-                        - ss.low.squeeze()
-                        - _remainder
-                        + _range / 2 / N
-                    )
+                    (sv.squeeze() - ss.low.squeeze() - _remainder + _range / 2 / N)
                     / _range
                     * N
                     + 1e-5
@@ -778,11 +755,9 @@ class StateElement:
 
         return values
 
-    def __continuous2continuous(self, other):
+    def _continuous2continuous(self, other):
         values = []
-        for sv, ss, os in zip(
-            self["values"][0], self["spaces"][0], other["spaces"][0]
-        ):
+        for sv, ss, os in zip(self["values"][0], self["spaces"][0], other["spaces"][0]):
             if not (ss.continuous and os.continuous):
                 raise AttributeError(
                     "Use this only to go from a continuous to a continuous space"
@@ -795,12 +770,10 @@ class StateElement:
             values.append((sv - s_mid) / s_range * o_range + o_mid)
             return values
 
-    def __discrete2discrete(self, other):
+    def _discrete2discrete(self, other):
 
         values = []
-        for sv, ss, os in zip(
-            self["values"][0], self["spaces"][0], other["spaces"][0]
-        ):
+        for sv, ss, os in zip(self["values"][0], self["spaces"][0], other["spaces"][0]):
             if ss.continuous or os.continuous:
                 raise AttributeError(
                     "Use this only to go from a discrete to a discrete space"
@@ -830,14 +803,14 @@ class StateElement:
                 s["values"], s["spaces"], o["values"], o["spaces"]
             ):
                 if not ss.continuous and os.continuous:
-                    value = s.__discrete2continuous(o, mode=mode)
+                    value = s._discrete2continuous(o, mode=mode)
                 elif ss.continuous and os.continuous:
-                    value = s.__continuous2continuous(o)
+                    value = s._continuous2continuous(o)
                 elif ss.continuous and not os.continuous:
-                    value = s.__continuous2discrete(o, mode=mode)
+                    value = s._continuous2discrete(o, mode=mode)
                 elif not ss.continuous and not os.continuous:
                     if ss.N == os.N:
-                        value = s.__discrete2discrete(o)
+                        value = s._discrete2discrete(o)
                     else:
                         raise ValueError(
                             "You are trying to match a discrete space to another discrete space of different size."
@@ -849,7 +822,7 @@ class StateElement:
         return StateElement(
             values=values,
             spaces=other["spaces"],
-            clipping_mode=self.__mix_modes(other),
+            clipping_mode=self._mix_modes(other),
             typing_priority=self.typing_priority,
         )
 
@@ -875,13 +848,13 @@ class State(OrderedDict):
                 reset_dic = {}
             value.reset(reset_dic)
 
-    def __flat(self):
+    def _flat(self):
         values = []
         spaces = []
         labels = []
         l, k = list(self.values()), list(self.keys())
         for n, item in enumerate(l):
-            _values, _spaces, _labels = item.__flat()
+            _values, _spaces, _labels = item._flat()
             values.extend(_values)
             spaces.extend(_spaces)
             labels.extend([k[n] + "|" + label for label in _labels])
@@ -974,7 +947,7 @@ class State(OrderedDict):
 
         table_header = ["Index", "Label", "Value", "Space", "Possible Value"]
         table_rows = []
-        for i, (v, s, l) in enumerate(zip(*self.__flat())):
+        for i, (v, s, l) in enumerate(zip(*self._flat())):
             table_rows.append([str(i), l, str(v), str(s)])
 
         _str = tabulate(table_rows, table_header)
@@ -1097,9 +1070,7 @@ if __name__ == "__main__":
     )
 
     # Discrete substate. Provide Space([range]). Value is optional
-    y = StateElement(
-        values=2, spaces=Space([numpy.array([1, 2, 3], dtype=numpy.int)])
-    )
+    y = StateElement(values=2, spaces=Space([numpy.array([1, 2, 3], dtype=numpy.int)]))
 
     # Define a State, composed of two substates previously defined
     s1 = State(substate_x=x, substate_y=y)
@@ -1196,11 +1167,7 @@ if __name__ == "__main__":
     b = StateElement(
         values=5,
         spaces=core.space.Space(
-            [
-                numpy.array(
-                    [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5], dtype=numpy.int16
-                )
-            ]
+            [numpy.array([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5], dtype=numpy.int16)]
         ),
     )
 
@@ -1221,9 +1188,7 @@ if __name__ == "__main__":
     for elem in numpy.linspace(-1, 1, 200):
         a["values"] = elem
         continuous.append(a["values"][0].squeeze().tolist())
-        discrete.append(
-            a.cast(b, mode="center")["values"][0].squeeze().tolist()
-        )
+        discrete.append(a.cast(b, mode="center")["values"][0].squeeze().tolist())
 
     plt.plot(continuous, discrete, "b*")
     plt.show()
@@ -1235,9 +1200,7 @@ if __name__ == "__main__":
     for elem in [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]:
         b["values"] = elem
         discrete.append(elem)
-        continuous.append(
-            b.cast(a, mode="edges")["values"][0].squeeze().tolist()
-        )
+        continuous.append(b.cast(a, mode="edges")["values"][0].squeeze().tolist())
 
     plt.plot(discrete, continuous, "b*")
     plt.show()
@@ -1283,11 +1246,7 @@ if __name__ == "__main__":
     b = StateElement(
         values=5,
         spaces=core.space.Space(
-            [
-                numpy.array(
-                    [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5], dtype=numpy.int16
-                )
-            ]
+            [numpy.array([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5], dtype=numpy.int16)]
         ),
     )
 
@@ -1435,9 +1394,7 @@ if __name__ == "__main__":
         ),
     )
 
-    y = StateElement(
-        values=2, spaces=Space(numpy.array([1, 2, 3], dtype=numpy.int))
-    )
+    y = StateElement(values=2, spaces=Space(numpy.array([1, 2, 3], dtype=numpy.int)))
 
     z = StateElement(
         values=5,

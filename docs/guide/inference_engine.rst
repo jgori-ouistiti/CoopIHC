@@ -12,6 +12,7 @@ All inference engines are obtained by subclassing the base class ``InferenceEngi
 
 
 
+.. _base-inference-engine-label:
 
 The ``InferenceEngine``
 ---------------------------

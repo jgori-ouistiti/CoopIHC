@@ -44,7 +44,7 @@ The interaction model heavily uses the concept of states, for which *CoopIHC* in
    :end-before: [end-state-example]
 
 
-To find out more about these, go to :doc:`spaces` and :doc:`states_stateelements`.
+To find out more about these, go to :doc:`Space, StateElement, State<space>`.
 
 
 Tasks
@@ -96,6 +96,8 @@ Agents are defined by four components:
 * Their observation engine
 * Their inference engine
 * Their policy
+
+.. _quickstart-define-user-label:
 
 Defining a new agent is done by subclassing the ``BaseAgent`` class:
 

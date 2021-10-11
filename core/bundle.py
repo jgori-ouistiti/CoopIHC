@@ -4,12 +4,10 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 import matplotlib.pyplot as plt
 
-import core
 from core.space import State, StateElement, Space
 from core.helpers import flatten, hard_flatten
 from core.agents import BaseAgent
 from core.observation import BaseObservationEngine
-from core.core import Handbook
 from core.interactiontask import PipeTaskWrapper
 from core.policy import BasePolicy
 
@@ -79,6 +77,8 @@ class _Bundle:
         self.user.finit()
         self.assistant.finit()
 
+        self.round_number = 0
+
         # Needed for render
         self.active_render_figure = None
         self.figure_layout = [211, 223, 224]
@@ -108,7 +108,9 @@ class _Bundle:
         self.game_state["turn_index"]["values"] = numpy.array(value)
 
     def reset(self, turn=0, task=True, user=True, assistant=True, dic={}):
-        """Reset the bundle. When subclassing Bundle, make sure to call super().reset() in the new reset method
+        """Reset the bundle.
+
+        When subclassing Bundle, make sure to call super().reset() in the new reset method.
 
         :param dic: (dictionnary) Reset the bundle with a game_state
 
@@ -118,15 +120,15 @@ class _Bundle:
         """
         if task:
             task_dic = dic.get("task_state")
-            task_state = self.task.base_reset(dic=task_dic)
+            task_state = self.task._base_reset(dic=task_dic)
 
         if user:
             user_dic = dic.get("user_state")
-            user_state = self.user.reset(dic=user_dic)
+            user_state = self.user._base_reset(dic=user_dic)
 
         if assistant:
             assistant_dic = dic.get("assistant_state")
-            assistant_state = self.assistant.reset(dic=assistant_dic)
+            assistant_state = self.assistant._base_reset(dic=assistant_dic)
 
         self.turn_number = turn
         if turn == 0:
@@ -185,7 +187,7 @@ class _Bundle:
 
             elif self.turn_number == 1:
                 if user_action is None:
-                    user_action, user_policy_reward = self.user.take_action()
+                    user_action, user_policy_reward = self.user._take_action()
                 else:
                     user_policy_reward = 0
                 self.broadcast_action("user", user_action)
@@ -207,7 +209,7 @@ class _Bundle:
                     (
                         assistant_action,
                         assistant_policy_reward,
-                    ) = self.assistant.take_action()
+                    ) = self.assistant._take_action()
                 else:
                     assistant_policy_reward = 0
                 self.broadcast_action("assistant", assistant_action)
@@ -220,6 +222,7 @@ class _Bundle:
 
             self.turn_number = (self.turn_number + 1) % 4
 
+        self.round_number += 1
         return self.game_state, rewards, False
 
     def render(self, mode, *args, **kwargs):
@@ -329,7 +332,7 @@ class _Bundle:
         """
 
         if not self.kwargs.get("onreset_deterministic_first_half_step"):
-            user_obs_reward, user_infer_reward = self.user.agent_step()
+            user_obs_reward, user_infer_reward = self.user._agent_step()
 
         else:
             # Store the probabilistic rules
@@ -337,9 +340,7 @@ class _Bundle:
             # Remove the probabilistic rules
             self.user.observation_engine.extraprobabilisticrules = {}
             # Generate an observation without generating an inference
-            user_obs_reward, user_infer_reward = self.user.agent_step(
-                infer=False
-            )
+            user_obs_reward, user_infer_reward = self.user._agent_step(infer=False)
             # Reposition the probabilistic rules, and reset mapping
             self.user.observation_engine.extraprobabilisticrules = store
             self.user.observation_engine.mapping = None
@@ -359,9 +360,7 @@ class _Bundle:
         """
 
         # Play user's turn in the task
-        task_state, task_reward, is_done, _ = self.task.base_user_step(
-            user_action
-        )
+        task_state, task_reward, is_done, _ = self.task.base_user_step(user_action)
 
         # update task state (likely not needed, remove ?)
         self.broadcast_state("user", "task_state", task_state)
@@ -379,7 +378,7 @@ class _Bundle:
         (
             assistant_obs_reward,
             assistant_infer_reward,
-        ) = self.assistant.agent_step()
+        ) = self.assistant._agent_step()
 
         return assistant_obs_reward, assistant_infer_reward
 
@@ -459,9 +458,7 @@ class _Bundle:
 
         self.broadcast_action("assistant", assistant_action)
 
-        task_reward, is_done = self._assistant_second_half_step(
-            assistant_action
-        )
+        task_reward, is_done = self._assistant_second_half_step(assistant_action)
         return (
             assistant_obs_reward,
             assistant_infer_reward,
@@ -478,16 +475,12 @@ class _Bundle:
         # update game state and observations
         if isinstance(action, StateElement):
             getattr(self, role).policy.action_state["action"] = action
-            getattr(self, role).observation["{}_action".format(role)][
-                "action"
-            ] = action
+            getattr(self, role).observation["{}_action".format(role)]["action"] = action
         else:
-            getattr(self, role).policy.action_state["action"][
+            getattr(self, role).policy.action_state["action"]["values"] = action
+            getattr(self, role).observation["{}_action".format(role)]["action"][
                 "values"
             ] = action
-            getattr(self, role).observation["{}_action".format(role)][
-                "action"
-            ]["values"] = action
 
 
 class Bundle(_Bundle):
@@ -628,9 +621,7 @@ class PlayUser(_Bundle):
 
     def __init__(self, task, user, assistant, **kwargs):
         super().__init__(task, user, assistant, **kwargs)
-        self.action_space = copy.copy(
-            self.user.policy.action_state["action"]["spaces"]
-        )
+        self.action_space = copy.copy(self.user.policy.action_state["action"]["spaces"])
 
     # def reset(self, dic = {}, **kwargs):
     #     """ Reset the bundle. A first observation and inference is performed.
@@ -711,9 +702,7 @@ class PlayAssistant(_Bundle):
 
     def __init__(self, task, user, assistant, **kwargs):
         super().__init__(task, user, assistant, **kwargs)
-        self.action_space = self.assistant.policy.action_state["action"][
-            "spaces"
-        ]
+        self.action_space = self.assistant.policy.action_state["action"]["spaces"]
 
         # assistant.policy.action_state['action'] = StateElement(
         #     values = None,
@@ -745,9 +734,7 @@ class PlayAssistant(_Bundle):
         super().step(assistant_action)
 
         self.broadcast_action("assistant", assistant_action, key="values")
-        second_task_reward, is_done = self._assistant_second_half_step(
-            assistant_action
-        )
+        second_task_reward, is_done = self._assistant_second_half_step(assistant_action)
         if is_done:
             return (
                 self.assistant.inference_engine.buffer[-1],
@@ -834,9 +821,7 @@ class PlayBoth(_Bundle):
         else:
             self.broadcast_action("user", user_action, key="values")
 
-        first_task_reward, first_is_done = self._user_second_half_step(
-            user_action
-        )
+        first_task_reward, first_is_done = self._user_second_half_step(user_action)
         if first_is_done:
             return (
                 self.task.state,
@@ -1100,17 +1085,10 @@ class Train(gym.Env):
             )
         elif self.observation_mode == "multidiscrete":
             self.observation_space = gym.spaces.MultiDiscrete(
-                [
-                    i.n
-                    for i in hard_flatten(
-                        obs.filter("spaces", self.observation_dict)
-                    )
-                ]
+                [i.n for i in hard_flatten(obs.filter("spaces", self.observation_dict))]
             )
         elif self.observation_mode == "dict":
-            self.observation_space = obs.filter(
-                "spaces", self.observation_dict
-            )
+            self.observation_space = obs.filter("spaces", self.observation_dict)
         else:
             raise NotImplementedError
 
@@ -1127,9 +1105,7 @@ class Train(gym.Env):
             raise NotImplementedError
 
     def convert_observation_tuple(self, observation):
-        return tuple(
-            hard_flatten(observation.filter("values", self.observation_dict))
-        )
+        return tuple(hard_flatten(observation.filter("values", self.observation_dict)))
 
     def convert_observation_multidiscrete(self, observation):
         return numpy.array(
@@ -1204,9 +1180,7 @@ if __name__ == "__main__":
     # Bundle a task together with two BaseAgents
     bundle = Bundle(
         task=ExampleTask(),
-        user=BaseAgent(
-            "user", override_agent_policy=BasePolicy(user_action_state)
-        ),
+        user=BaseAgent("user", override_agent_policy=BasePolicy(user_action_state)),
         assistant=BaseAgent(
             "assistant",
             override_agent_policy=BasePolicy(assistant_action_state),
