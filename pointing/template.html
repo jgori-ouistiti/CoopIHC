@@ -42,14 +42,14 @@
             Position:
             <div class="position">unknown</div>
             Goal:
-            <div class="goal">Determined by Operator inside Bundle</div>
+            <div class="goal">Determined by User inside Bundle</div>
             Parameters:
             <div class="param">unknown</div>
         </div>
 
         <div class='actions'>
-            Operator Action:
-            <div class='operator_action'>None Received</div>
+            User Action:
+            <div class='user_action'>None Received</div>
             Assistant Action:
             <div class='assistant_action'>None Received</div>
 
@@ -102,8 +102,8 @@
                     this.__targets_text = document.querySelector('.targets');
                     this.__position = null;
                     this.__targets = null;
-                    this.__operator_action_text = document.querySelector('.operator_action');
-                    this.__operator_action = null;
+                    this.__user_action_text = document.querySelector('.user_action');
+                    this.__user_action = null;
                     this.__assistant_action_text = document.querySelector('.assistant_action');
                     this.__assistant_action = null;
 
@@ -131,13 +131,13 @@
                     this.__targets_text.textContent = value.toString();
                 }
 
-                get operator_action(){
-                    return this.__operator_action;
+                get user_action(){
+                    return this.__user_action;
                 }
 
-                set operator_action(value){
-                    this.__operator_action = value;
-                    this.__operator_action_text.textContent = value.toString();
+                set user_action(value){
+                    this.__user_action = value;
+                    this.__user_action_text.textContent = value.toString();
                 }
 
                 get assistant_action(){
@@ -222,14 +222,14 @@
                 return action_array;
             }
 
-            function on_operator_action(received_dic){
+            function on_user_action(received_dic){
 
                 var is_done = false;
 
                 // convert action
                 action = unpack_actions(received_dic);
-                console.log("operator_action", action);
-                pointing_task_manager.operator_action = action;
+                console.log("user_action", action);
+                pointing_task_manager.user_action = action;
                 if (action == 0){
                     is_done = true;
                 }
@@ -246,8 +246,8 @@
                 console.log("assistant_action", action);
 
                 pointing_task_manager.assistant_action = action;
-                console.log("task  dynamics", pointing_task_manager.position, pointing_task_manager.operator_action, pointing_task_manager.assistant_action);
-                pointing_task_manager.position += pointing_task_manager.operator_action*pointing_task_manager.assistant_action;
+                console.log("task  dynamics", pointing_task_manager.position, pointing_task_manager.user_action, pointing_task_manager.assistant_action);
+                pointing_task_manager.position += pointing_task_manager.user_action*pointing_task_manager.assistant_action;
                 return_dic = {"state": pointing_task_manager.state, "reward": -.5, "is_done": false};
                 send_msg(return_dic);
 
@@ -283,8 +283,8 @@
                     case 'reset':
                         on_reset(dic_received);
                         break;
-                    case 'operator_action':
-                        on_operator_action(dic_received);
+                    case 'user_action':
+                        on_user_action(dic_received);
                         break;
                     case 'assistant_action':
                         on_assistant_action(dic_received);

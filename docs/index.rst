@@ -7,23 +7,23 @@
 Caution
 ============
 
-This is a version that is not ready for realease yet. Documentation is here solely for my own purpose.
+This is a version that is not ready for realease yet. Documentation  is likely outdated. Please contact me if you have any questions.
 
-Welcome to interaction-agents's documentation!
+Welcome to CoopIHC's documentation!
 ==============================================
 
 
-*Interaction-agents* is a Python module that
+*CoopIHC*, pronounced 'kopik', is a Python module that provides a common basis for describing computational Human Computer Interaction (HCI) contexts, mostly targeted at expressing models of users and intelligent assistants.
 
-1. Provides standardization of computational HCI models, and
-2. Helps design intelligent user interfaces (IUIs).
+1. It provides a common conceptual and practical reference, which facilitates reusing and extending other researcher's work
+2. It can help design intelligent assistants by translating an interactive context into a problem that can be solved (via other methods).
 
 
-The main idea of *interaction-agents* is to separate interactive systems into three components:
+The main idea of *CoopIHC* is to separate interactive systems into three components:
 
-1. A task,
-2. A user model, called the **operator**
-3. A tool, called the **assistant**.
+1. A **task**,
+2. A **user** (which may be a real user of a synthetic user model),
+3. An assisting agent, the so-called **assistant**.
 
 and **bundling** them back together. Different **bundles** are proposed, depending on the use case:
 
@@ -33,14 +33,9 @@ and **bundling** them back together. Different **bundles** are proposed, dependi
 * Jointly train interface and user models, to model adaptation ...
 * ... and more
 
-.. note::
-
-    Another benefit of this separation is that it facilitates implementations, comparisons and evaluations by proposing a standardization of computational models in HCI. This will likely foster sharing/re-use of HCI models across researchers, as has been the case with other communities.
 
 
-
-
-*Interaction-agents* builds on a two-agent interaction model. The terminology used in this module is explained in the [link].
+*CoopIHC* builds on a two-agent interaction model, see the :doc:`Terminology<guide/terminology>`.
 
 
 
@@ -51,39 +46,46 @@ Learn how to use *interaction-agents*:
 
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
     :caption: Tutorial
 
-    guide/terminology
     guide/quickstart
-    guide/modularity
+    guide/more_complex_example
     guide/api
+    guide/modularity
+    guide/training
+    guide/external_components
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
     :caption: Examples
 
-    guide/operators
+    guide/users
 
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
     :caption: User Guide
 
     guide/interaction_model
-    guide/design
-    guide/states
+    guide/spaces
     guide/agents
     guide/tasks
     guide/bundles
     guide/wrappers
     guide/observation_engine
     guide/inference_engine
-    guide/operator_model
+    guide/user_model
+
+
+
+.. toctree:
+    :caption: Miscellaneous
+    guide/terminology
 
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
     :caption: What's next?
 
     roadmap
@@ -99,6 +101,7 @@ List of Modules in *interaction-agents*
     :maxdepth: 2
     :caption: Core Module. This module is the core module of interaction-agents. Any new module should build heavily on existing classes, by subclassing them.
 
+    modules/core/space
     modules/core/baseagents
     modules/core/interactiontask
     modules/core/bundle
@@ -110,7 +113,7 @@ List of Modules in *interaction-agents*
     :maxdepth: 2
     :caption: Pointing Module. This module is used to model pointing tasks.
 
-    modules/pointing/operators
+    modules/pointing/users
     modules/pointing/envs
     modules/pointing/assistants
 
@@ -118,7 +121,7 @@ List of Modules in *interaction-agents*
     :maxdepth: 2
     :caption: Eye Module. This module is used to model eye movements of human observers.
 
-    modules/eye/operators
+    modules/eye/users
     modules/eye/envs
     modules/eye/noise
 

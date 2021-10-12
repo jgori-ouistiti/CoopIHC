@@ -14,7 +14,7 @@ Eye Fixation Model
 The model assumes the following:
 
 * There is a screen with some target, that the eye should point towards. This constitutes the task
-* The operator controls the eye; it does so by
+* The user controls the eye; it does so by
     * Receiving noisy information about the target location
     * Handling beliefs about where the target might be, based on received information
     * Issuing the next position of the eye by selecting the most probable location based on handled beliefs
@@ -26,7 +26,7 @@ In all cases, the noise intensity is dependent on the distance between the targe
 
 
 The code snippet below creates the needed bundle. First, we initialize a 1D pointing task, where the size and distance of the target are given by W and D.
-We associate a ChenEye operator to the task, also in 1D. It gets as input the scaling linear coefficient for signal dependent noise (noise = coef * N(0,1)), for observation (perceptualnoise) as well as for moving the eye (oculomotornoise). These are bundled into a SinglePlayOperator bundle, which allows one to play as operator to experiment with policies. One could have also used a SinglePlayOperatorAuto bundle to directly evaluate the policy explained above, based on beliefs.
+We associate a ChenEye user to the task, also in 1D. It gets as input the scaling linear coefficient for signal dependent noise (noise = coef * N(0,1)), for observation (perceptualnoise) as well as for moving the eye (oculomotornoise). These are bundled into a SinglePlayUser bundle, which allows one to play as user to experiment with policies. One could have also used a SinglePlayUserAuto bundle to directly evaluate the policy explained above, based on beliefs.
 
 .. code-block:: python
 
@@ -35,7 +35,7 @@ We associate a ChenEye operator to the task, also in 1D. It gets as input the sc
     perceptualnoise = 0.2
     oculomotornoise = 0.2
     task = ChenEyePointingTask(fitts_W, fitts_D, dimension = 1)
-    operator = ChenEye(perceptualnoise, oculomotornoise, dimension = 1)
-    bundle = SinglePlayOperator(task, operator)
+    user = ChenEye(perceptualnoise, oculomotornoise, dimension = 1)
+    bundle = SinglePlayUser(task, user)
 
     

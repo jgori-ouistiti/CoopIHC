@@ -15,10 +15,10 @@ if _str == 'convert' or _str == 'all':
                         action_values = None
     )
 
-    operator = CarefulPointer(agent_policy = policy)
-    bundle = PlayOperator(task, operator, unitcdgain)
+    user = CarefulPointer(agent_policy = policy)
+    bundle = PlayUser(task, user, unitcdgain)
 
-    observation_dict = OrderedDict({'task_state': OrderedDict({'Position': 0}), 'operator_state': OrderedDict({'Goal': 0})})
+    observation_dict = OrderedDict({'task_state': OrderedDict({'Position': 0}), 'user_state': OrderedDict({'Goal': 0})})
     dict_env = Train(bundle, observation_mode = 'dict', observation_dict= observation_dict)
     tuple_env = Train(bundle, observation_mode = 'tuple', observation_dict = observation_dict)
     md_env = Train(bundle, observation_mode = 'multidiscrete', observation_dict = observation_dict)

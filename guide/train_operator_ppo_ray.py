@@ -1,9 +1,9 @@
 from pointing.envs import SimplePointingTask
 from pointing.assistants import ConstantCDGain
-from pointing.operators import CarefulPointer
+from pointing.users import CarefulPointer
 
 from core.policy import Policy
-from core.bundle import PlayOperator, Train
+from core.bundle import PlayUser, Train
 
 from gym.wrappers import FlattenObservation
 
@@ -35,15 +35,15 @@ class Pointing(gym.Env):
                             action_values = None
         )
 
-        operator = CarefulPointer(agent_policy = policy)
-        bundle = PlayOperator(task, operator, unitcdgain)
+        user = CarefulPointer(agent_policy = policy)
+        bundle = PlayUser(task, user, unitcdgain)
 
         if env_config['observation_mode'] == 'flat':
             observation_mode = 'flat'
         elif env_config['observation_mode'] is None:
             observation_mode = None
         else:
-            observation_mode = OrderedDict({'task_state': OrderedDict({'Position': 0}), 'operator_state': OrderedDict({'Goal': 0})})
+            observation_mode = OrderedDict({'task_state': OrderedDict({'Position': 0}), 'user_state': OrderedDict({'Goal': 0})})
 
         env = Train(bundle, observation_mode = observation_mode)
         env = ThisActionWrapper(env)

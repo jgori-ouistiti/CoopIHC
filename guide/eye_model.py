@@ -1,6 +1,6 @@
 from eye.envs import ChenEyePointingTask
-from eye.operators import ChenEye
-from core.bundle import SinglePlayOperatorAuto
+from eye.users import ChenEye
+from core.bundle import SinglePlayUserAuto
 
 
 from loguru import logger
@@ -25,8 +25,8 @@ fitts_D = 0.8
 perceptualnoise = 0.1
 oculomotornoise = 0.02
 task = ChenEyePointingTask(fitts_W, fitts_D)
-operator = ChenEye(perceptualnoise, oculomotornoise)
-bundle = SinglePlayOperatorAuto(task, operator)
+user = ChenEye(perceptualnoise, oculomotornoise)
+bundle = SinglePlayUserAuto(task, user)
 bundle.reset()
 bundle.render('plotext')
 while True:

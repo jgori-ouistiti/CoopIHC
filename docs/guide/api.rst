@@ -50,7 +50,7 @@ Required methods:
 
 Additional information:
 
-* Policies are assigned a host when attached to an operator or assistant. That way, the policy can look at the agent's internal state (host.state), its observation (host.inference_engine.buffer[-1]).
+* Policies are assigned a host when attached to an user or assistant. That way, the policy can look at the agent's internal state (host.state), its observation (host.inference_engine.buffer[-1]).
 * Policies should return an iterable (usually a list, or a numpy array)
 * You can create a new policy by subclassing ``Policy``.
 
@@ -92,13 +92,13 @@ Agents should only ever be created by subclassing the ``BaseAgent`` class.
 
 Different behaviors can be obtained from an agent by redefining the following bound methods:
 
-* ``finit()`` which is run after the three components (task + 2 agents) of bundles have been initialized, which allows one to have initialization of agents dependent on the other components. When bundled, the agent has a bundle attribute, from which it can query properties of other components (e.g. an operator can call ``self.bundle.task.size_of_some_property_`` if it requires that size to initialize, say, its internal state)
+* ``finit()`` which is run after the three components (task + 2 agents) of bundles have been initialized, which allows one to have initialization of agents dependent on the other components. When bundled, the agent has a bundle attribute, from which it can query properties of other components (e.g. an user can call ``self.bundle.task.size_of_some_property_`` if it requires that size to initialize, say, its internal state)
 * ``reset()``, which by defaults resets the agent's internal state by calling its states' reset.
 * ``render()``, which describes what the agent should be render to the display
 
 BaseAgent are initialized by calling their __init__() method, which expects:
 
-* A role string ('operator' or 'assistant')
+* A role string ('user' or 'assistant')
 * A State() object (if not provided, empty State)
 * A Policy() object (if not provided, will likely fail -- should provide a default ?)
 * An ObservationEngine() object (if not provided, will fall back to an engine which sees all substates except those of the other agent)
@@ -113,7 +113,7 @@ Tasks should be created by subclassing the ``InteractionTask``.
 Different behavior can be obtained from a task by redefining the following bound methods:
 
 * ``finit()``, ``reset()``, ``render()`` with similar description as for the agent
-* ``operator_step()`` and ``assistant_step()``, which returns the new value of the task state, as well as the associated rewards, a boolean value to indicate whether or not the task has finished, after respectively an operator action or an assistant action.
+* ``user_step()`` and ``assistant_step()``, which returns the new value of the task state, as well as the associated rewards, a boolean value to indicate whether or not the task has finished, after respectively an user action or an assistant action.
 
 
 Bundles

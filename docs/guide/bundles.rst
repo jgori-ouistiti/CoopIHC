@@ -19,10 +19,10 @@ A bundle can be itinialized simply from a task and two compatible agents:
 .. code-block:: python
 
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-    operator = CarefulPointer()
+    user = CarefulPointer()
     assistant = ConstantCDGain(1)
 
-    bundle = PlayNone(task, operator, assistant)
+    bundle = PlayNone(task, user, assistant)
     game_state = bundle.reset()
     bundle.render('plotext')
     while True:
@@ -41,8 +41,8 @@ Some bundles accept only a task and one agent:
     ocular_std = 0
     swapping_std = 0.1
     task = ChenEyePointingTask(fitts_W, fitts_D, ocular_std)
-    operator = ChenEye(swapping_std)
-    bundle = SinglePlayOperatorAuto(task, operator)
+    user = ChenEye(swapping_std)
+    bundle = SinglePlayUserAuto(task, user)
     bundle.reset()
     bundle.render('plotext')
     while True:
@@ -62,16 +62,16 @@ The ``__init()__`` method
 """""""""""""""""""""""""""""
 The following operations are performed in the ``__init__()`` method
 
-* Adding a reference to the bundle to each of its components (task, operator, assistant). This allows either component to get information e.g. during rendering or initializing.
+* Adding a reference to the bundle to each of its components (task, user, assistant). This allows either component to get information e.g. during rendering or initializing.
 
-* Add an 'AssistantAction' substate to the operator's state and an 'OperatorAction' substate to the assistant's state.
+* Add an 'AssistantAction' substate to the user's state and an 'UserAction' substate to the assistant's state.
 
 * Produce the game state from the individual states of the components. The game state is an ``OrderedDict`` with explicit keys, whose values are the states of each component.
 
 .. code-block:: python
 
     >>> bundle.game_state
-    OrderedDict([('b_state', OrderedDict([('next_agent', [0])])), ('task_state', OrderedDict([('Gridsize', [31]), ('Position', [8]), ('Targets', [2, 3, 5, 10, 11, 15, 16, 23, 24, 29])])), ('operator_state', OrderedDict([('AssistantAction', [array([-4.9318438], dtype=float32)]), ('Goal', [24])])), ('assistant_state', OrderedDict([('OperatorAction', [0])]))])
+    OrderedDict([('b_state', OrderedDict([('next_agent', [0])])), ('task_state', OrderedDict([('Gridsize', [31]), ('Position', [8]), ('Targets', [2, 3, 5, 10, 11, 15, 16, 23, 24, 29])])), ('user_state', OrderedDict([('AssistantAction', [array([-4.9318438], dtype=float32)]), ('Goal', [24])])), ('assistant_state', OrderedDict([('UserAction', [0])]))])
 
 
 .. note::
@@ -94,12 +94,12 @@ The following operations are performed in the ``__init__()`` method
         task_state/Targets/7  23
         task_state/Targets/8  24
         task_state/Targets/9  29
-        operator_state/AssistantAction/0  -4.932
-        operator_state/Goal/0  24
-        assistant_state/OperatorAction/0  0
+        user_state/AssistantAction/0  -4.932
+        user_state/Goal/0  24
+        assistant_state/UserAction/0  0
 
 
-* Finish initializing the operator and the assistant by calling their ``finit()`` method.
+* Finish initializing the user and the assistant by calling their ``finit()`` method.
 
 * Merge the different action spaces into a single Box space.
 
@@ -125,7 +125,7 @@ The render() method
 
 Render is called with a 'mode' argument, which currently takes on 'plot' and 'text' values.
 
-The text mode simply calls the rendering method of each component in text mode. Below, we provide an example render for the SimplePointingTask with a GoalDrivenDiscreteOperator and a an assistant which derives from a DiscreteBayesianBelief assistant:
+The text mode simply calls the rendering method of each component in text mode. Below, we provide an example render for the SimplePointingTask with a GoalDrivenDiscreteUser and a an assistant which derives from a DiscreteBayesianBelief assistant:
 
 .. note::
 
@@ -139,14 +139,14 @@ The text mode simply calls the rendering method of each component in text mode. 
     [3, 5, 10, 11, 13, 19, 20, 22, 23, 28]
 
 
-    Operator Render
+    User Render
     CarefulPointer Goal
     3
     Assistant Render
     Targets [3, 5, 10, 11, 13, 19, 20, 22, 23, 28]
     Beliefs [0.9898959603276577, 0.009998949094218765, 0.0, 0.00010099948580018953, 0.0, 1.0201968262645412e-06, 1.0201968262645412e-06, 1.0201968262645412e-06, 1.0201968262645412e-06, 1.0305018447116578e-08]
 
-For the plot mode, render maintains a matplotlib figure, with one axes for each component. By default, the positions of the axes are (using matplotlib definitions) at (211) for the task, (223) for the operator, (224) for the assistant. The previous text render is represented in plot mode just below:
+For the plot mode, render maintains a matplotlib figure, with one axes for each component. By default, the positions of the axes are (using matplotlib definitions) at (211) for the task, (223) for the user, (224) for the assistant. The previous text render is represented in plot mode just below:
 
 .. image:: images/simplepointingtaskBundle_render.png
     :width: 600px
@@ -155,28 +155,28 @@ For the plot mode, render maintains a matplotlib figure, with one axes for each 
 
 .. note::
 
-    In plot mode, the bundle render method calls each component's render method by passing the three axes (task, operator, assistant) as arguments. The signature of the render method of each component should thus be ``def render(*args, mode = 'mode')``
+    In plot mode, the bundle render method calls each component's render method by passing the three axes (task, user, assistant) as arguments. The signature of the render method of each component should thus be ``def render(*args, mode = 'mode')``
 
 
 List of existing bundles
 -----------------------------
 
-* ``PlayNone`` [link]. A bundle which samples actions directly from operators and assistants. It is used to evaluate an operator and an assistant where the policies are already implemented.
-* ``PlayOperator`` [link]. A bundle which samples assistant actions directly from the assistant but uses operator actions provided externally in the step() method.
-* ``PlayAssistant`` [link]. A bundle which samples oeprator actions directly from the operator but uses assistant actions provided externally in the step() method.
-* ``PlayBoth`` [link]. A bundle which samples both actions directly from the operator and assistant.
-* ``SinglePlayOperator`` [link]. A bundle without assistant. This is used e.g. to model psychophysical tasks such as perception, where there is no real interaction loop with a computing device.
-* ``SinglePlayOperatorAuto`` [link]. Same as SinglePlayOperator, but this time the operator action is obtained by sampling the operator policy.
+* ``PlayNone`` [link]. A bundle which samples actions directly from users and assistants. It is used to evaluate an user and an assistant where the policies are already implemented.
+* ``PlayUser`` [link]. A bundle which samples assistant actions directly from the assistant but uses user actions provided externally in the step() method.
+* ``PlayAssistant`` [link]. A bundle which samples oeprator actions directly from the user but uses assistant actions provided externally in the step() method.
+* ``PlayBoth`` [link]. A bundle which samples both actions directly from the user and assistant.
+* ``SinglePlayUser`` [link]. A bundle without assistant. This is used e.g. to model psychophysical tasks such as perception, where there is no real interaction loop with a computing device.
+* ``SinglePlayUserAuto`` [link]. Same as SinglePlayUser, but this time the user action is obtained by sampling the user policy.
 
 ===========================  =====================================================
            Bundle                 Step call
 ===========================  =====================================================
 PlayNone                        bundle.step()
-PlayOperator                    bundle.step(operator_action)
+PlayUser                    bundle.step(user_action)
 PlayAssistant                   bundle.step(assistant_action)
-PlayBoth                        bundle.step([operator_action, assistant_action])
-SinglePlayOperator              bundle.step(operator_action)
-SinglePlayOperatorAuto          bundle.step()
+PlayBoth                        bundle.step([user_action, assistant_action])
+SinglePlayUser              bundle.step(user_action)
+SinglePlayUserAuto          bundle.step()
 ===========================  =====================================================
 
 .. note::

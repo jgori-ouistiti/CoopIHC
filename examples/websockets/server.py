@@ -1,5 +1,5 @@
 from pointing.envs import DiscretePointingTaskPipeWrapper, SimplePointingTask
-from pointing.operators import CarefulPointer
+from pointing.users import CarefulPointer
 from pointing.assistants import ConstantCDGain
 
 import core
@@ -16,7 +16,7 @@ policy = ELLDiscretePolicy(action_space = [core.space.Discrete(3)], action_set =
 def compute_likelihood(self, action, observation):
     # convert actions and observations
     action = action['human_values'][0]
-    goal = observation['operator_state']['goal']['values'][0]
+    goal = observation['user_state']['goal']['values'][0]
     position = observation['task_state']['position']['values'][0]
 
     # Write down all possible cases (5)
@@ -44,9 +44,9 @@ def compute_likelihood(self, action, observation):
 policy.attach_likelihood_function(compute_likelihood)
 
 # Define a user model defined elsewhere, but plug policy described just above inside to be used instead
-operator = CarefulPointer(agent_policy = policy)
+user = CarefulPointer(agent_policy = policy)
 assistant = ConstantCDGain(1)
-bundle = PlayNone(task, operator, assistant)
+bundle = PlayNone(task, user, assistant)
 server = Server(bundle, DiscretePointingTaskPipeWrapper, address='localhost', port = 4000)
 server.start()
 # Now run launch coopihc/pointing/task_bundles.html in a browser and hit F5 to reset the task.

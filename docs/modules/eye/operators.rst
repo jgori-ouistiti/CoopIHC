@@ -1,7 +1,7 @@
-.. operators:
+.. users:
 
-Operators
+Users
 *****************
 
-.. automodule:: eye.operators
+.. automodule:: eye.users
     :members:

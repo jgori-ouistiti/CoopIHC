@@ -1,9 +1,9 @@
 from pointing.envs import SimplePointingTask
-from core.bundle import _DevelopTask, SinglePlayOperatorAuto, PlayAssistant, PlayNone
+from core.bundle import _DevelopTask, SinglePlayUserAuto, PlayAssistant, PlayNone
 from eye.envs import ChenEyePointingTask
-from eye.operators import ChenEye
+from eye.users import ChenEye
 from core.observation import ObservationEngine, RuleObservationEngine, CascadedObservationEngine
-from pointing.operators import CarefulPointer
+from pointing.users import CarefulPointer
 from pointing.assistants import BIGGain
 
 import gym
@@ -20,9 +20,9 @@ class OldPositionMemorizedSimplePointingTask(SimplePointingTask):
         super().reset(dic = dic)
         self.state['OldPosition'] = copy.deepcopy(self.state['Position'])
 
-    def operator_step(self, *args, **kwargs):
+    def user_step(self, *args, **kwargs):
         self.memorized = copy.deepcopy(self.state['Position'])
-        obs, rewards, is_done, _doc = super().operator_step(*args, **kwargs)
+        obs, rewards, is_done, _doc = super().user_step(*args, **kwargs)
         obs['OldPosition'] = self.memorized
         return obs, rewards, is_done, _doc
 
@@ -41,8 +41,8 @@ fitts_D = 0.8
 perceptualnoise = 0.09
 oculomotornoise = 0.09
 task = ChenEyePointingTask(fitts_W, fitts_D, dimension = 1)
-operator = ChenEye( perceptualnoise, oculomotornoise, dimension = 1)
-obs_bundle = SinglePlayOperatorAuto(task, operator, start_at_action = True)
+user = ChenEye( perceptualnoise, oculomotornoise, dimension = 1)
+obs_bundle = SinglePlayUserAuto(task, user, start_at_action = True)
 
 # reset_dic = {'task_state':
 #                 {   'Targets': .5,
@@ -85,24 +85,24 @@ class ChenEyeObservationEngineWrapper(ObservationEngine):
 
 
 cursor_tracker = ChenEyeObservationEngineWrapper(obs_bundle)
-base_operator_engine_specification  =    [ ('turn_index', 'all'),
+base_user_engine_specification  =    [ ('turn_index', 'all'),
                                     ('task_state', 'all'),
-                                    ('operator_state', 'all'),
+                                    ('user_state', 'all'),
                                     ('assistant_state', None),
-                                    ('operator_action', 'all'),
+                                    ('user_action', 'all'),
                                     ('assistant_action', 'all')
                                     ]
 default_observation_engine = RuleObservationEngine(
-        deterministic_specification = base_operator_engine_specification,
+        deterministic_specification = base_user_engine_specification,
         )
 
 observation_engine = CascadedObservationEngine([cursor_tracker, default_observation_engine])
-binary_operator = CarefulPointer(observation_engine = observation_engine)
+binary_user = CarefulPointer(observation_engine = observation_engine)
 BIGpointer = BIGGain()
-# bundle = PlayAssistant(pointing_task, binary_operator, BIGpointer)
+# bundle = PlayAssistant(pointing_task, binary_user, BIGpointer)
 
 
-bundle = PlayNone(pointing_task, binary_operator, BIGpointer)
+bundle = PlayNone(pointing_task, binary_user, BIGpointer)
 game_state = bundle.reset()
 bundle.render('plotext')
 rewards = []

@@ -1,10 +1,10 @@
 from pointing.envs import SimplePointingTask
-from pointing.operators import LQGPointer
+from pointing.users import LQGPointer
 from pointing.assistants import ConstantCDGain
 from eye.envs import ChenEyePointingTask
-from eye.operators import ChenEye
+from eye.users import ChenEye
 
-from core.bundle import SinglePlayOperatorAuto, PlayNone
+from core.bundle import SinglePlayUserAuto, PlayNone
 from core.observation import WrapAsObservationEngine, RuleObservationEngine, CascadedObservationEngine
 
 import copy
@@ -19,9 +19,9 @@ class oldpositionMemorizedSimplePointingTask(SimplePointingTask):
         super().reset(dic = dic)
         self.state['oldposition'] = copy.deepcopy(self.state['position'])
 
-    def operator_step(self, *args, **kwargs):
+    def user_step(self, *args, **kwargs):
         self.memorized = copy.deepcopy(self.state['position'])
-        obs, rewards, is_done, _doc = super().operator_step(*args, **kwargs)
+        obs, rewards, is_done, _doc = super().user_step(*args, **kwargs)
         obs['oldposition'] = self.memorized
         return obs, rewards, is_done, _doc
 
@@ -41,8 +41,8 @@ perceptualnoise = 0.2
 oculomotornoise = 0.2
 # Define task, user model for Chen et al. and bundle together
 task = ChenEyePointingTask(fitts_W, fitts_D, dimension = 1)
-operator = ChenEye( perceptualnoise, oculomotornoise, dimension = 1)
-obs_bundle = SinglePlayOperatorAuto(task, operator, start_at_action = True)
+user = ChenEye( perceptualnoise, oculomotornoise, dimension = 1)
+obs_bundle = SinglePlayUserAuto(task, user, start_at_action = True)
 
 
 # Wrap the bundle into an observation engine. To do so, subclass from WrapAsObservationEngine and redefine the observe method.
@@ -81,24 +81,24 @@ class ChenEyeObservationEngineWrapper(WrapAsObservationEngine):
 # A observation engine
 cursor_tracker = ChenEyeObservationEngineWrapper(obs_bundle)
 # B observation engine
-base_operator_engine_specification  =    [ ('turn_index', 'all'),
+base_user_engine_specification  =    [ ('turn_index', 'all'),
                                     ('task_state', 'all'),
-                                    ('operator_state', 'all'),
+                                    ('user_state', 'all'),
                                     ('assistant_state', None),
-                                    ('operator_action', 'all'),
+                                    ('user_action', 'all'),
                                     ('assistant_action', 'all')
                                     ]
 default_observation_engine = RuleObservationEngine(
-        deterministic_specification = base_operator_engine_specification,
+        deterministic_specification = base_user_engine_specification,
         )
 # Cascading them
 observation_engine = CascadedObservationEngine([cursor_tracker, default_observation_engine])
 
 
-# LQG pointer is already a bundle which has Qian et al. 2013 model for limb movement implemented as bundle. See code in pointing.operators
-lqg_operator = LQGPointer(observation_engine = observation_engine)
+# LQG pointer is already a bundle which has Qian et al. 2013 model for limb movement implemented as bundle. See code in pointing.users
+lqg_user = LQGPointer(observation_engine = observation_engine)
 unitcdgain = ConstantCDGain(1)
-bundle = PlayNone(pointing_task, lqg_operator, unitcdgain)
+bundle = PlayNone(pointing_task, lqg_user, unitcdgain)
 game_state = bundle.reset()
 bundle.render('plotext')
 
