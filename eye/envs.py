@@ -1,6 +1,6 @@
 import numpy
 import math
-
+import copy
 
 from core.interactiontask import InteractionTask
 from core.space import StateElement, Space
@@ -98,7 +98,6 @@ class ChenEyePointingTask(InteractionTask):
         self.state["fixation"]["values"] = numpy.array(
             [0 for i in range(self.dimension)]
         )
-        super().reset(dic)
 
     def _is_done_user(self):
         if (
@@ -130,23 +129,15 @@ class ChenEyePointingTask(InteractionTask):
 
         :meta public:
         """
-        self.turn += 1 / 2
-        action = user_action["values"][0]
-        self.state["fixation"]["values"] = action
+        self.state["fixation"]["values"] = copy.copy(user_action["values"])
 
         reward = -1
 
         return self.state, reward, self._is_done_user(), {}
 
     def assistant_step(self, assistant_action):
-        """Do nothing but incrementing turns and rounds.
 
-        :meta public:
-        """
-        self.turn += 1 / 2
-        self.round += 1
-        is_done = False
-        return self.state, 0, self._is_done_assistant(), {}
+        return self.state, 0, False, {}
 
     def render(self, *args, mode="text", **kwargs):
         """Render the task.
@@ -160,7 +151,7 @@ class ChenEyePointingTask(InteractionTask):
 
         if "text" in mode:
             print("\n")
-            print("Turn number {:f}".format(self.turn))
+            print("Turn number {:f}".format(self.bundle.round_number))
             print("Target:")
             print(goal)
             print("fixation:")
@@ -186,8 +177,8 @@ class ChenEyePointingTask(InteractionTask):
                 axuser.set_aspect("equal")
 
             if self.dimension == 1:
-                goal = [goal[0], 0]
-                fx = [fx[0], 0]
+                goal = [goal, 0]
+                fx = [fx, 0]
             pgoal = self.ax.plot(*goal, "ro")
             traj = self.ax.plot(*fx, "og")
         if not ("plot" in mode or "text" in mode):

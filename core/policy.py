@@ -76,8 +76,8 @@ class BasePolicy:
         pass
 
     def sample(self):
-        self.action_state["action"].reset()
-        return self.action_state["action"], 0
+        self.action.reset()
+        return self.action, 0
 
 
 class LinearFeedback(BasePolicy):
@@ -114,15 +114,14 @@ class LinearFeedback(BasePolicy):
 
         if isinstance(self.feedback_gain, str):
             if self.feedback_gain == "identity":
-                self.feedback_gain = -numpy.eye(
-                    max(substate["values"][0].shape)
-                )
+                self.feedback_gain = -numpy.eye(max(substate["values"][0].shape))
 
-        noiseless_feedback = -self.feedback_gain @ substate
+        noiseless_feedback = -self.feedback_gain @ substate.reshape((-1, 1))
         noise = self.noise_function(
             noiseless_feedback, self.observation, *self.noise_args
         )
-        action = noiseless_feedback + noise
+        action = self.action
+        action["values"] = noiseless_feedback + noise.reshape((-1, 1))
         # if not hasattr(noise, '__iter__'):
         #     noise = [noise]
         # header = ['action', 'noiseless', 'noise']
@@ -162,9 +161,7 @@ class WrapAsPolicy(BasePolicy):
         # return action, rewards
 
     def __str__(self):
-        return "{} <[ {} ]>".format(
-            self.__class__.__name__, self.bundle.__str__()
-        )
+        return "{} <[ {} ]>".format(self.__class__.__name__, self.bundle.__str__())
 
     def __repr__(self):
         return self.__str__()
@@ -178,16 +175,12 @@ class BIGDiscretePolicy(BasePolicy):
 
         super().__init__(assistant_action_state)
 
-        self.assistant_action_set = self.action_state[
-            "action"
-        ].cartesian_product()
+        self.assistant_action_set = self.action_state["action"].cartesian_product()
         self.user_policy_model = user_policy_model
         self.user_action_set = user_policy_model.action_state[
             "action"
         ].cartesian_product()
-        self.user_policy_likelihood_function = (
-            user_policy_model.compute_likelihood
-        )
+        self.user_policy_likelihood_function = user_policy_model.compute_likelihood
 
     def attach_set_theta(self, set_theta):
         self.set_theta = set_theta
@@ -219,9 +212,7 @@ class BIGDiscretePolicy(BasePolicy):
         pYy__Xx = 0
         for potential_state, belief in zip(potential_states, beliefs):
             pYy__Xx += (
-                self.user_policy_likelihood_function(
-                    user_action, potential_state
-                )
+                self.user_policy_likelihood_function(user_action, potential_state)
                 * belief
             )
         return pYy__Xx
@@ -297,9 +288,9 @@ class BIGDiscretePolicy(BasePolicy):
                     potential_state[key[0]] = _state
             potential_states.append(potential_state)
 
-        return self.HY__Xx(
+        return self.HY__Xx(potential_states, assistant_action, beliefs) - self.HY__OoXx(
             potential_states, assistant_action, beliefs
-        ) - self.HY__OoXx(potential_states, assistant_action, beliefs)
+        )
 
     def find_best_action(self):
         """Finds expected information gain associated with each possible future cursor position and ranks them in order from the most to  less informative.

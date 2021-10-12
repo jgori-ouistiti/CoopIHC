@@ -130,9 +130,7 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
             print(
                 "Warning: This inference engine requires a policy defined by an explicit likelihood"
             )
-        print(
-            "Attached policy {} to {}".format(policy, self.__class__.__name__)
-        )
+        print("Attached policy {} to {}".format(policy, self.__class__.__name__))
         self.user_policy_model = policy
 
     def attach_set_theta(self, set_theta):
@@ -207,9 +205,7 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
             ticks = []
             ticklabels = []
             for i, b in enumerate(beliefs):
-                draw, fill, symbol = set_box(
-                    ax, 2 * i, shortcut="target", boxheight=b
-                )
+                draw, fill, symbol = set_box(ax, 2 * i, shortcut="target", boxheight=b)
                 ticks.append(2 * i)
                 ticklabels.append(i)
             self.ax.set_xticks(ticks)
@@ -319,9 +315,7 @@ class LinearGaussianContinuous(BaseInferenceEngine):
             y, v = self.provide_likelihood()
 
         oldmu, oldsigma = state["belief"]["values"]
-        new_sigma = numpy.linalg.inv(
-            (numpy.linalg.inv(oldsigma) + numpy.linalg.inv(v))
-        )
+        new_sigma = numpy.linalg.inv((numpy.linalg.inv(oldsigma) + numpy.linalg.inv(v)))
         newmu = new_sigma @ (
             numpy.linalg.inv(v) @ y.T + numpy.linalg.inv(oldsigma) @ oldmu.T
         )
@@ -349,10 +343,11 @@ class LinearGaussianContinuous(BaseInferenceEngine):
                 self.ax = ax
 
             self.draw_beliefs(ax, dim)
-            belief = self.host.state["belief"]["values"][0].squeeze()
+            mean_belief, std_belief = self.host.state["belief"]["values"]
             if dim == 1:
-                belief = [belief[0], 0]
-            axtask.plot(*belief, "r*")
+                mean_belief = numpy.array([mean_belief.squeeze().tolist(), 0])
+
+            axtask.plot(*mean_belief.squeeze().tolist(), "r*")
             self.ax.set_title(type(self).__name__ + " beliefs")
 
         if "text" in mode:
@@ -360,8 +355,9 @@ class LinearGaussianContinuous(BaseInferenceEngine):
 
     def draw_beliefs(self, ax, dim):
         mu, cov = self.host.state["belief"]["values"]
+        print(mu, cov)
         if dim == 2:
-            self.patch = self.confidence_ellipse(mu.squeeze(), cov, ax)
+            self.patch = self.confidence_ellipse(mu, cov, ax)
         else:
             self.patch = self.confidence_interval(mu, cov, ax)
 
@@ -405,10 +401,9 @@ class LinearGaussianContinuous(BaseInferenceEngine):
         """
         :meta private:
         """
+        mu = mu.squeeze()
         ## See https://matplotlib.org/devdocs/gallery/statistics/confidence_ellipse.html for source. Computing eigenvalues directly should lead to code that is more readily understandable
-        rho = numpy.sqrt(
-            covariance[0, 1] ** 2 / covariance[0, 0] / covariance[1, 1]
-        )
+        rho = numpy.sqrt(covariance[0, 1] ** 2 / covariance[0, 0] / covariance[1, 1])
         ellipse_radius_x = numpy.sqrt(1 + rho)
         ellipse_radius_y = numpy.sqrt(1 - rho)
 
@@ -514,9 +509,7 @@ class ContinuousKalmanUpdate(BaseInferenceEngine):
 
         xhat = xhat.reshape(-1, 1)
         u = u.reshape(-1, 1)
-        deltaxhat = (
-            self.A @ xhat + self.B @ u
-        ) * self.host.timestep + self.K @ (
+        deltaxhat = (self.A @ xhat + self.B @ u) * self.host.timestep + self.K @ (
             dy - self.C @ xhat * self.host.timestep
         )
         xhat += deltaxhat

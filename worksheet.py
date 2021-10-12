@@ -10,7 +10,7 @@ from eye.users import ChenEye
 import core
 from collections import OrderedDict
 from core.models import LinearEstimatedFeedback
-from core.helpers import flatten
+
 from core.agents import (
     BaseAgent,
     FHDT_LQRController,
@@ -325,7 +325,7 @@ if _str == "chen-play-1D":
         noise = user.eccentric_noise_gen(noise_obs, oculomotornoise)[0]
 
         noisy_action = action + noise
-        obs, reward, is_done, _ = bundle.step(noisy_action)
+        obs, reward_list, is_done = bundle.step(noisy_action)
         bundle.render("plotext")
         print(is_done)
         if is_done:
@@ -338,19 +338,19 @@ if _str == "chen-play":
     oculomotornoise = 0.05
     task = ChenEyePointingTask(fitts_W, fitts_D, threshold=0.1)
     user = ChenEye(perceptualnoise, oculomotornoise)
-    bundle = SinglePlayUser(task, user)
-    obs = bundle.reset()
+    bundle = Bundle(task=task, user=user)
+    game_state = bundle.reset(turn=1)
     bundle.render("plotext")
     while True:
-        _action = copy.deepcopy(obs["user_state"]["belief"])
+        _action = copy.deepcopy(game_state["user_state"]["belief"])
         action = _action[0]
         noise_obs = State()
         noise_obs["task_state"] = State()
         noise_obs["task_state"]["targets"] = action
-        noise_obs["task_state"]["fixation"] = obs["task_state"]["fixation"]
+        noise_obs["task_state"]["fixation"] = game_state["task_state"]["fixation"]
         noise = user.eccentric_noise_gen(noise_obs, oculomotornoise)[0]
         noisy_action = action + noise
-        obs, reward, is_done, _ = bundle.step(noisy_action)
+        obs, rewards, is_done = bundle.step(noisy_action)
         bundle.render("plotext")
         print(is_done)
         if is_done:
@@ -364,12 +364,12 @@ if _str == "chen-play-auto":
     swapping_std = 0.09
     task = ChenEyePointingTask(fitts_W, fitts_D)
     user = ChenEye(swapping_std, ocular_std)
-    bundle = SinglePlayUserAuto(task, user)
+    bundle = Bundle(task=task, user=user)
     bundle.reset()
     bundle.render("plotext")
     # bundle.fig.savefig('/home/jgori/Documents/img_tmp/{}.jpg'.format(str(bundle.task.round)))
     while True:
-        obs, reward, is_done, _ = bundle.step()
+        obs, rewards, is_done = bundle.step()
         bundle.render("plotext")
         # bundle.fig.savefig('/home/jgori/Documents/img_tmp/{}.jpg'.format(str(bundle.task.round)))
         if is_done:
@@ -400,7 +400,6 @@ if _str == "careful-with-obs":
             obs["oldposition"] = self.memorized
             return obs, rewards, is_done, _doc
 
-    logger.info("Pointing task definition")
     pointing_task = oldpositionMemorizedSimplePointingTask(
         gridsize=31, number_of_targets=8, mode="position"
     )
@@ -413,7 +412,8 @@ if _str == "careful-with-obs":
     oculomotornoise = 0.2
     task = ChenEyePointingTask(fitts_W, fitts_D, dimension=1)
     user = ChenEye(perceptualnoise, oculomotornoise, dimension=1)
-    obs_bundle = SinglePlayUserAuto(task, user, start_at_action=True)
+    # obs_bundle = SinglePlayUserAuto(task, user, start_at_action=True)
+    obs_bundle = Bundle(task=task, user=user)
 
     class ChenEyeObservationEngineWrapper(WrapAsObservationEngine):
         def __init__(self, obs_bundle):
@@ -428,14 +428,14 @@ if _str == "careful-with-obs":
                 self.game_state["task_state"]["fixation"]
             )
             reset_dic = {"task_state": {"targets": target, "fixation": fixation}}
-            self.reset(dic=reset_dic)
+            self.reset(dic=reset_dic, turn=1)
 
             # perform the run
             is_done = False
             rewards = 0
             while True:
-                obs, reward, is_done, _doc = self.step()
-                rewards += reward
+                obs, reward_dic, is_done = self.step()
+                rewards += sum(reward_dic.values())
                 if is_done:
                     break
 
@@ -464,20 +464,20 @@ if _str == "careful-with-obs":
 
     binary_user = CarefulPointer(observation_engine=observation_engine)
     BIGpointer = BIGGain()
-    bundle = PlayAssistant(pointing_task, binary_user, BIGpointer)
 
-    bundle = PlayNone(pointing_task, binary_user, BIGpointer)
+    bundle = Bundle(task=pointing_task, user=binary_user, assistant=BIGpointer)
     game_state = bundle.reset()
     bundle.render("plotext")
-    rewards = []
+    reward_list = []
     while True:
-        obs, reward, is_done, reward_list = bundle.step()
-        print(reward)
-        rewards.append(reward_list)
+        obs, rewards, is_done = bundle.step()
+        reward_list.append(rewards)
         bundle.render("plotext")
         if is_done:
             break
 
+
+#### Not tested w/r changes from Oct 2021 from here on.
 
 if _str == "LQR":
     m, d, k = 1, 1.2, 3

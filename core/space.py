@@ -31,6 +31,8 @@ class Space:
         * In case the data is discrete, provide [a1, a2, a3, ...], where the ai's are different ranges corresponding to different subspaces (multidiscrete space)
 
 
+    If data is discrete it is stored as a column (N,1) array.
+
     :param [numpy.array] array_list: A list of NumPy arrays that specifies the ranges of the Space.
     :param *args: For future use.
     :param **kwargs: For future use `**kwargs`.
@@ -246,7 +248,7 @@ class SpaceLengthError(Exception):
 
     """
 
-    pass
+    __module__ = Exception.__module__
 
 
 class StateNotContainedError(Exception):
@@ -256,7 +258,7 @@ class StateNotContainedError(Exception):
 
     """
 
-    pass
+    __module__ = Exception.__module__
 
 
 class StateElement:
@@ -376,6 +378,21 @@ class StateElement:
                 'Indexing only works with keys ("values", "spaces", "clipping_mode") or integers'
             )
 
+    def __getattr__(self, key):
+        _np = sys.modules["numpy"]
+        if hasattr(_np, key):
+            # adapted from https://stackoverflow.com/questions/13776504/how-are-arguments-passed-to-a-function-through-getattr
+            def wrapper(*args, **kwargs):
+                return getattr(_np, key)(self.values, *args, **kwargs)
+
+            return wrapper
+
+        raise AttributeError(
+            "StateElement does not have attribute {}. Tried to fall back to numpy but it also did not have this attribute".format(
+                key
+            )
+        )
+
     # Comparison
     def _comp_preface(self, other):
         if isinstance(other, StateElement):
@@ -444,6 +461,10 @@ class StateElement:
 
     def __rmul__(self, other):
         return self.__mul__(other)
+
+    def __pow__(self, other):
+        _elem, other = self._preface(other)
+        _elem["values"] = numpy.power(self["values"], other, casting="same_kind")
 
     def __matmul__(self, other):
         """
@@ -685,9 +706,15 @@ class StateElement:
             [str(i) for i, v in enumerate(self["values"])],
         )
 
-    def _clip(self, values):
+    # def _clip(self, values,):
+    #     values = flatten([values])
+    #     for n, (value, space) in enumerate(zip(values, self.spaces)):
+    #         values[n] = self._clip_1d(value, space)
+    #     return values
+
+    def _clip(self, values, spaces):
         values = flatten([values])
-        for n, (value, space) in enumerate(zip(values, self.spaces)):
+        for n, (value, space) in enumerate(zip(values, spaces)):
             values[n] = self._clip_1d(value, space)
         return values
 
@@ -1086,16 +1113,14 @@ if __name__ == "__main__":
     x = StateElement(
         values=None,
         spaces=[
-            core.space.Space(
+            Space(
                 [
                     numpy.array([-1], dtype=numpy.float32),
                     numpy.array([1], dtype=numpy.float32),
                 ]
             ),
-            core.space.Space([numpy.array([1, 2, 3], dtype=numpy.int16)]),
-            core.space.Space(
-                [numpy.array([-6, -5, -4, -3, -2, -1], dtype=numpy.int16)]
-            ),
+            Space([numpy.array([1, 2, 3], dtype=numpy.int16)]),
+            Space([numpy.array([-6, -5, -4, -3, -2, -1], dtype=numpy.int16)]),
         ],
     )
 
@@ -1120,7 +1145,10 @@ if __name__ == "__main__":
     reset_dic = {"values": [-1 / 2, 2, -2]}
     x.reset(dic=reset_dic)
     reset_dic = {"values": [[0, 0], [10, 10], [5, 5]]}
-    y.reset(dic=reset_dic)
+    try:
+        y.reset(dic=reset_dic)
+    except StateNotContainedError:
+        print("raised error as expected")
     # [end-stateelement-reset]
 
     # [start-stateelement-iter]
@@ -1152,7 +1180,7 @@ if __name__ == "__main__":
     targetdomain = StateElement(
         values=None,
         spaces=[
-            core.space.Space(
+            Space(
                 [
                     -numpy.ones((2, 1), dtype=numpy.float32),
                     numpy.ones((2, 1), dtype=numpy.float32),
@@ -1166,14 +1194,14 @@ if __name__ == "__main__":
     # [start-stateelement-cast]
     b = StateElement(
         values=5,
-        spaces=core.space.Space(
+        spaces=Space(
             [numpy.array([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5], dtype=numpy.int16)]
         ),
     )
 
     a = StateElement(
         values=0,
-        spaces=core.space.Space(
+        spaces=Space(
             [
                 numpy.array([-1], dtype=numpy.float32),
                 numpy.array([1], dtype=numpy.float32),
@@ -1209,7 +1237,7 @@ if __name__ == "__main__":
 
     a = StateElement(
         values=0,
-        spaces=core.space.Space(
+        spaces=Space(
             [
                 numpy.array([-2], dtype=numpy.float32),
                 numpy.array([1], dtype=numpy.float32),
@@ -1218,7 +1246,7 @@ if __name__ == "__main__":
     )
     b = StateElement(
         values=3.5,
-        spaces=core.space.Space(
+        spaces=Space(
             [
                 numpy.array([3], dtype=numpy.float32),
                 numpy.array([4], dtype=numpy.float32),
@@ -1239,13 +1267,11 @@ if __name__ == "__main__":
     # D2D
     a = StateElement(
         values=5,
-        spaces=core.space.Space(
-            [numpy.array([i for i in range(11)], dtype=numpy.int16)]
-        ),
+        spaces=Space([numpy.array([i for i in range(11)], dtype=numpy.int16)]),
     )
     b = StateElement(
         values=5,
-        spaces=core.space.Space(
+        spaces=Space(
             [numpy.array([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5], dtype=numpy.int16)]
         ),
     )
@@ -1265,7 +1291,7 @@ if __name__ == "__main__":
     # Neg
     x = StateElement(
         values=numpy.array([[-0.237]], dtype=numpy.float32),
-        spaces=core.space.Space(
+        spaces=Space(
             [
                 numpy.array([-1], dtype=numpy.float32),
                 numpy.array([1], dtype=numpy.float32),
@@ -1277,7 +1303,7 @@ if __name__ == "__main__":
     # Sum
     x = StateElement(
         values=numpy.array([[-0.237]], dtype=numpy.float32),
-        spaces=core.space.Space(
+        spaces=Space(
             [
                 numpy.array([-1], dtype=numpy.float32),
                 numpy.array([1], dtype=numpy.float32),
@@ -1286,7 +1312,7 @@ if __name__ == "__main__":
     )
     y = StateElement(
         values=numpy.array([[-0.135]], dtype=numpy.float32),
-        spaces=core.space.Space(
+        spaces=Space(
             [
                 numpy.array([-1], dtype=numpy.float32),
                 numpy.array([1], dtype=numpy.float32),
@@ -1301,7 +1327,7 @@ if __name__ == "__main__":
 
     a = StateElement(
         values=numpy.array([[-0.237, 0]], dtype=numpy.float32),
-        spaces=core.space.Space(
+        spaces=Space(
             [
                 numpy.array([-1, -1], dtype=numpy.float32),
                 numpy.array([1, 1], dtype=numpy.float32),
@@ -1310,7 +1336,7 @@ if __name__ == "__main__":
     )
     b = StateElement(
         values=numpy.array([[0.5, 0.5]], dtype=numpy.float32),
-        spaces=core.space.Space(
+        spaces=Space(
             [
                 numpy.array([-1, -1], dtype=numpy.float32),
                 numpy.array([1, 1], dtype=numpy.float32),
@@ -1331,7 +1357,7 @@ if __name__ == "__main__":
     # Mul
     a = StateElement(
         values=numpy.array([[-0.237, 0]], dtype=numpy.float32),
-        spaces=core.space.Space(
+        spaces=Space(
             [
                 numpy.array([-1, -1], dtype=numpy.float32),
                 numpy.array([1, 1], dtype=numpy.float32),
@@ -1340,7 +1366,7 @@ if __name__ == "__main__":
     )
     b = StateElement(
         values=numpy.array([[0.5, 0.5]], dtype=numpy.float32),
-        spaces=core.space.Space(
+        spaces=Space(
             [
                 numpy.array([-1, -1], dtype=numpy.float32),
                 numpy.array([1, 1], dtype=numpy.float32),
@@ -1357,7 +1383,7 @@ if __name__ == "__main__":
     # Matmul
     a = StateElement(
         values=numpy.array([[-0.237, 0], [1, 1]], dtype=numpy.float32),
-        spaces=core.space.Space(
+        spaces=Space(
             [
                 numpy.array([[-1, -1], [-1, -1]], dtype=numpy.float32),
                 numpy.array([[1, 1], [1, 1]], dtype=numpy.float32),
@@ -1366,7 +1392,7 @@ if __name__ == "__main__":
     )
     b = StateElement(
         values=numpy.array([[0.5, 0.5]], dtype=numpy.float32),
-        spaces=core.space.Space(
+        spaces=Space(
             [
                 numpy.array([-1, -1], dtype=numpy.float32).reshape(-1, 1),
                 numpy.array([1, 1], dtype=numpy.float32).reshape(-1, 1),
@@ -1394,11 +1420,11 @@ if __name__ == "__main__":
         ),
     )
 
-    y = StateElement(values=2, spaces=Space(numpy.array([1, 2, 3], dtype=numpy.int)))
+    y = StateElement(values=2, spaces=Space([numpy.array([1, 2, 3], dtype=numpy.int)]))
 
     z = StateElement(
         values=5,
-        spaces=Space(numpy.array([i for i in range(10)], dtype=numpy.int)),
+        spaces=Space([numpy.array([i for i in range(10)], dtype=numpy.int)]),
     )
 
     s1 = State(substate_x=x, substate_y=y, substate_z=z)
@@ -1417,7 +1443,9 @@ if __name__ == "__main__":
 
     yy = StateElement(
         values=None,
-        spaces=Space(numpy.array([-3, -2, -1, 0, 1, 2, 3, 4, 5, 6])),
+        spaces=Space(
+            [numpy.array([-3, -2, -1, 0, 1, 2, 3, 4, 5, 6], dtype=numpy.int16)]
+        ),
     )
 
     s2 = State(**{"substate_xx": xx, "substate_yy": yy})
