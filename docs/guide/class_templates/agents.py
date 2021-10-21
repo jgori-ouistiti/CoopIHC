@@ -1,3 +1,5 @@
+from core.agents import BaseAgent
+
 class MyNewAgent(BaseAgent):
     """ Use this class as template to build your new agent.
 
@@ -25,7 +27,7 @@ class MyNewAgent(BaseAgent):
         if state is None:
             # state =
 
-        super().__init__('operator',
+        super().__init__('user',
                             state = state,
                             policy = agent_policy,
                             observation_engine = observation_engine,

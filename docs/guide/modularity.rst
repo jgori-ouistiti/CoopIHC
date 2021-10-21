@@ -28,11 +28,11 @@ The eye-movement model is explained in the :doc:`User Modeling Failitation <user
     perceptualnoise = 0.09
     oculomotornoise = 0.09
     task = ChenEyePointingTask(fitts_W, fitts_D, dimension = 1)
-    operator = ChenEye( perceptualnoise, oculomotornoise, dimension = 1)
-    obs_bundle = SinglePlayOperatorAuto(task, operator, start_at_action = True)
+    user = ChenEye( perceptualnoise, oculomotornoise, dimension = 1)
+    obs_bundle = SinglePlayUserAuto(task, user, start_at_action = True)
 
 
-The task that is solved by this bundle is to position the eye (fixation) on top of the target. The operator is in charge of choosing the next fixation, based on noisy information it gets from the target location. We will consider that the target is the cursor, while the initial eye fixation is the last position of the cursor. We will then let the bundle play out in time, finding the cursor in a given number of steps.
+The task that is solved by this bundle is to position the eye (fixation) on top of the target. The user is in charge of choosing the next fixation, based on noisy information it gets from the target location. We will consider that the target is the cursor, while the initial eye fixation is the last position of the cursor. We will then let the bundle play out in time, finding the cursor in a given number of steps.
 
 
 This bundle, like any other, can be reset to a given state via a reset dictionary (see :doc:`Bundles<../modules/core/bundle>`), for example
@@ -52,9 +52,9 @@ This bundle, like any other, can be reset to a given state via a reset dictionar
           0  turn_index|0               0         Discrete(2)  None
           1  task_state|Targets|0       [0.5]     Box(1,)      None
           2  task_state|Fixation|0      [-0.5]    Box(1,)      None
-          3  operator_state|belief|0    [0]       Box(1,)      [None]
-          4  operator_state|belief|1    [[1000]]  Box(1, 1)    [None]
-          5  operator_action|action|0   None      Box(1,)      None
+          3  user_state|belief|0    [0]       Box(1,)      [None]
+          4  user_state|belief|1    [[1000]]  Box(1, 1)    [None]
+          5  user_action|action|0   None      Box(1,)      None
           6  assistant_action|action|0  None      None         [None]
 
 Adapting the task
@@ -74,9 +74,9 @@ To simulate tracking the cursor, we can reset the bundle by passing the new curs
             super().reset(reset_dic)
             self.state['OldPosition'] = copy.deepcopy(self.state['Position'])
 
-        def operator_step(self, *args, **kwargs):
+        def user_step(self, *args, **kwargs):
             self.memorized = copy.deepcopy(self.state['Position'])
-            obs, rewards, is_done, _doc = super().operator_step(*args, **kwargs)
+            obs, rewards, is_done, _doc = super().user_step(*args, **kwargs)
             obs['OldPosition'] = self.memorized
             return obs, rewards, is_done, _doc
 
@@ -104,7 +104,7 @@ To simulate tracking the cursor, we can reset the bundle by passing the new curs
           8  task_state|Targets|6       19       Discrete(31)  [None]
           9  task_state|Targets|7       26       Discrete(31)  [None]
          10  task_state|OldPosition|0   18       Discrete(31)  [None]
-         11  operator_action|action|0   None     None          [None]
+         11  user_action|action|0   None     None          [None]
          12  assistant_action|action|0  None     None          [None]
 
 
@@ -184,15 +184,15 @@ This observation engine can now be used by an agent. Now, it might be that diffe
 .. code-block:: python
 
     cursor_tracker = ChenEyeObservationEngineWrapper(obs_bundle)
-    base_operator_engine_specification  =    [ ('turn_index', 'all'),
+    base_user_engine_specification  =    [ ('turn_index', 'all'),
                                         ('task_state', 'all'),
-                                        ('operator_state', 'all'),
+                                        ('user_state', 'all'),
                                         ('assistant_state', None),
-                                        ('operator_action', 'all'),
+                                        ('user_action', 'all'),
                                         ('assistant_action', 'all')
                                         ]
     default_observation_engine = RuleObservationEngine(
-            deterministic_specification = base_operator_engine_specification,
+            deterministic_specification = base_user_engine_specification,
             )
 
     observation_engine = CascadedObservationEngine([cursor_tracker, default_observation_engine])
@@ -203,11 +203,11 @@ Now, simply continue as usual, e.g. to evaluate the setup:
 
 .. code-block:: python
 
-    binary_operator = CarefulPointer(observation_engine = observation_engine)
+    binary_user = CarefulPointer(observation_engine = observation_engine)
     BIGpointer = BIGGain()
 
 
-    bundle = PlayNone(pointing_task, binary_operator, BIGpointer)
+    bundle = PlayNone(pointing_task, binary_user, BIGpointer)
     game_state = bundle.reset()
     bundle.render('plotext')
     rewards = []

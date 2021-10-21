@@ -26,8 +26,8 @@
 \draw ($(gs_task_state.south) + (0,-.2)$) node[left, rotate = 90]{task state};
 
 
-% ------- operator state
-\draw (gs_task_state.east) node[name=gs_operator_state, rectangle split, rectangle split parts = 5, draw, rectangle split horizontal, minimum height = 1cm, rounded corners, thick, fill = green!10, right]{
+% ------- user state
+\draw (gs_task_state.east) node[name=gs_user_state, rectangle split, rectangle split parts = 5, draw, rectangle split horizontal, minimum height = 1cm, rounded corners, thick, fill = green!10, right]{
 {$S'_1$}
 \nodepart{two}{$S'_2$}
 \nodepart{three} {$S'_3$}
@@ -35,11 +35,11 @@
 \nodepart{five} {$S'_5$}
 };
 
-\draw ($(gs_operator_state.south) + (0,-.2)$) node[left, rotate = 90]{operator state};
+\draw ($(gs_user_state.south) + (0,-.2)$) node[left, rotate = 90]{user state};
 
 
 % --------- assistant state
-\draw (gs_operator_state.east) node[name=gs_assistant_state, rectangle split, rectangle split parts = 5, draw, rectangle split horizontal, minimum height = 1cm, rounded corners, thick, fill = yellow!10, right]{
+\draw (gs_user_state.east) node[name=gs_assistant_state, rectangle split, rectangle split parts = 5, draw, rectangle split horizontal, minimum height = 1cm, rounded corners, thick, fill = yellow!10, right]{
 {$S''_1$}
 \nodepart{two}{$S''_2$}
 \nodepart{three} {$S''_3$}
@@ -50,16 +50,16 @@
 \draw ($(gs_assistant_state.south) + (0,-.2)$) node[left, rotate = 90]{assistant state};
 
 
-% --------- operator action
-\draw (gs_assistant_state.east) node[name= gs_operator_action, rectangle split, rectangle split parts = 2, rectangle split horizontal, minimum height = 1cm, rounded corners, draw, thick, fill = green!50!white!80!black, right]{
+% --------- user action
+\draw (gs_assistant_state.east) node[name= gs_user_action, rectangle split, rectangle split parts = 2, rectangle split horizontal, minimum height = 1cm, rounded corners, draw, thick, fill = green!50!white!80!black, right]{
 {$A_1$}
 \nodepart{two}{$A_2$}
 };
 
-\draw ($(gs_operator_action.south) + (0,-.2)$) node[left, rotate = 90]{operator action};
+\draw ($(gs_user_action.south) + (0,-.2)$) node[left, rotate = 90]{user action};
 
 % ------------ assistant action
-\draw (gs_operator_action.east) node[name= gs_assistant_action, rectangle split, rectangle split parts = 2, rectangle split horizontal, minimum height = 1cm, rounded corners, draw, thick, fill = yellow!50!white!80!black, right]{
+\draw (gs_user_action.east) node[name= gs_assistant_action, rectangle split, rectangle split parts = 2, rectangle split horizontal, minimum height = 1cm, rounded corners, draw, thick, fill = yellow!50!white!80!black, right]{
 {$A'_1$}
 \nodepart{two}{$A'_2$}
 };
@@ -70,7 +70,7 @@
 \node[ultra thick, black, rounded corners, draw = black, fit=(gs_turn_index) (gs_assistant_action)](bundle_game_state) {};
 
 \draw[-triangle 60, ultra thick] (bundle_game_state.north) + (0,2) node[above]{StateElement} -- (gs_assistant_state.two north);
-\draw[-triangle 60, ultra thick] (bundle_game_state.north) + (0,2) -- (gs_operator_state.three north);
+\draw[-triangle 60, ultra thick] (bundle_game_state.north) + (0,2) -- (gs_user_state.three north);
 \draw [ultra thick, decorate,decoration={brace,amplitude=10pt}]
 ( $(gs_task_state.north west) + (0,.2)$) -- ($ (gs_task_state.north east) + (0,.2)$) node [black,midway, above, yshift = .3cm] 
 {State};

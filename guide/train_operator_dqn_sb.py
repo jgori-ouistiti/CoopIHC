@@ -1,9 +1,9 @@
 from pointing.envs import SimplePointingTask
 from pointing.assistants import ConstantCDGain
-from pointing.operators import CarefulPointer
+from pointing.users import CarefulPointer
 
 from core.policy import Policy
-from core.bundle import PlayOperator, Train
+from core.bundle import PlayUser, Train
 
 from gym.wrappers import FlattenObservation
 from core.helpers import FlattenAction
@@ -23,10 +23,10 @@ if __name__ == '__main__':
                         action_values = None
     )
 
-    operator = CarefulPointer(agent_policy = policy)
+    user = CarefulPointer(agent_policy = policy)
 
 
-    bundle = PlayOperator(task, operator, unitcdgain)
+    bundle = PlayUser(task, user, unitcdgain)
     env = Train(bundle)
     # print(env.bundle.reset())
     env.squeeze_output([0,9])

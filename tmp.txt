@@ -1,5 +1,5 @@
 Attached <function CarefulPointer.__init__.<locals>.compute_likelihood at 0x7fdf99015620> to ELLDiscretePolicy
-Attached policy <core.policy.ELLDiscretePolicy object at 0x7fdf99087cc0> to GoalInferenceWithOperatorPolicyGiven
+Attached policy <core.policy.ELLDiscretePolicy object at 0x7fdf99087cc0> to GoalInferenceWithUserPolicyGiven
 Task Render
 
 
@@ -9,7 +9,7 @@ Targets:
 [0, 3, 5, 11, 13, 16, 19, 20, 25, 29]
 
 
-Operator Render
+User Render
 CarefulPointer State
 Assistant Render
 BIGGain State
@@ -20,11 +20,11 @@ possible values:	[[None]]
 spaces:	[Discrete(31), Discrete(31), Discrete(31), Discrete(31), Discrete(31), Discrete(31), Discrete(31), Discrete(31), Discrete(31), Discrete(31)]
 possible values:	[[None], [None], [None], [None], [None], [None], [None], [None], [None], [None]]
 )])
-operator_state State([('Goal', value:	[3]
+user_state State([('Goal', value:	[3]
 spaces:	[Discrete(10)]
 possible values:	[[0, 3, 5, 11, 13, 16, 19, 20, 25, 29]]
 )])
-operator_action State([('action', value:	[None]
+user_action State([('action', value:	[None]
 spaces:	[Discrete(2)]
 possible values:	[[-1, 1]]
 )])
@@ -34,8 +34,8 @@ possible values:	[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
 )])
 task_state Position [30]
 task_state Targets [0, 3, 5, 11, 13, 16, 19, 20, 25, 29]
-operator_state Goal [3]
-operator_action action [None]
+user_state Goal [3]
+user_action action [None]
 assistant_action action [None]
 task_state State([('Position', value:	[30]
 spaces:	[Discrete(31)]
@@ -48,7 +48,7 @@ assistant_state State([('Beliefs', value:	[array([0.1]), array([0.1]), array([0.
 spaces:	[Box(1,), Box(1,), Box(1,), Box(1,), Box(1,), Box(1,), Box(1,), Box(1,), Box(1,), Box(1,)]
 possible values:	[[None], [None], [None], [None], [None], [None], [None], [None], [None], [None]]
 )])
-operator_action State([('action', value:	[0]
+user_action State([('action', value:	[0]
 spaces:	[Discrete(2)]
 possible values:	[[-1, 1]]
 )])
@@ -59,7 +59,7 @@ possible values:	[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
 task_state Position [30]
 task_state Targets [0, 3, 5, 11, 13, 16, 19, 20, 25, 29]
 assistant_state Beliefs [array([0.1]), array([0.1]), array([0.1]), array([0.1]), array([0.1]), array([0.1]), array([0.1]), array([0.1]), array([0.1]), array([0.1])]
-operator_action action [0]
+user_action action [0]
 assistant_action action [None]
 [array([0.1]), array([0.1]), array([0.1]), array([0.1]), array([0.1]), array([0.1]), array([0.1]), array([0.1]), array([0.1]), array([0.1])]
          2792323 function calls (2480777 primitive calls) in 6.216 seconds
@@ -759,9 +759,9 @@ assistant_action action [None]
         4    0.000    0.000    0.001    0.000 agents.py:179(render)
         1    0.000    0.000    0.000    0.000 agents.py:18(BaseAgent)
         1    0.000    0.000    0.000    0.000 agents.py:210(DummyAssistant)
-        1    0.000    0.000    0.000    0.000 agents.py:234(DummyOperator)
-        1    0.000    0.000    0.000    0.000 agents.py:259(GoalDrivenDiscreteOperator)
-        1    0.000    0.000    0.000    0.000 agents.py:335(GaussianContinuousBeliefOperator)
+        1    0.000    0.000    0.000    0.000 agents.py:234(DummyUser)
+        1    0.000    0.000    0.000    0.000 agents.py:259(GoalDrivenDiscreteUser)
+        1    0.000    0.000    0.000    0.000 agents.py:335(GaussianContinuousBeliefUser)
         1    0.000    0.000    0.000    0.000 agents.py:411(BIGAssistant)
         2    0.000    0.000    0.000    0.000 agents.py:43(__init__)
         1    0.000    0.000    0.000    0.000 agents.py:672(LQRController)
@@ -773,7 +773,7 @@ assistant_action action [None]
         1    0.000    0.000    0.000    0.000 agents.py:860(_MContainer)
         1    0.000    0.000    0.000    0.000 agents.py:948(counted_decorator)
         2    0.000    0.000    0.000    0.000 agents.py:95(attach_inference_engine)
-        1    0.000    0.000    0.000    0.000 agents.py:966(PackageToOperator)
+        1    0.000    0.000    0.000    0.000 agents.py:966(PackageToUser)
         1    0.000    0.000    0.002    0.002 api.py:1(<module>)
         1    0.000    0.000    0.000    0.000 api.py:23(FFI)
         1    0.000    0.000    0.000    0.000 argparse.py:1018(_HelpAction)
@@ -1122,20 +1122,20 @@ assistant_action action [None]
         1    0.000    0.000    0.014    0.014 bundle.py:132(reset)
         1    0.000    0.000    0.510    0.510 bundle.py:184(render)
         1    0.000    0.000    0.000    0.000 bundle.py:23(Bundle)
-        1    0.000    0.000    0.001    0.001 bundle.py:234(_operator_first_half_step)
-        1    0.000    0.000    0.000    0.000 bundle.py:260(_operator_second_half_step)
+        1    0.000    0.000    0.001    0.001 bundle.py:234(_user_first_half_step)
+        1    0.000    0.000    0.000    0.000 bundle.py:260(_user_second_half_step)
         1    0.000    0.000    0.191    0.191 bundle.py:279(_assistant_first_half_step)
-        1    0.000    0.000    0.001    0.001 bundle.py:308(_operator_step)
+        1    0.000    0.000    0.001    0.001 bundle.py:308(_user_step)
         1    0.000    0.000    0.000    0.000 bundle.py:361(broadcast_action)
         1    0.000    0.000    0.000    0.000 bundle.py:368(PlayNone)
         1    0.000    0.000    0.035    0.035 bundle.py:377(__init__)
         1    0.000    0.000    0.035    0.035 bundle.py:38(__init__)
         1    0.000    0.000    0.014    0.014 bundle.py:381(reset)
-        1    0.000    0.000    0.000    0.000 bundle.py:404(PlayOperator)
+        1    0.000    0.000    0.000    0.000 bundle.py:404(PlayUser)
         1    0.000    0.000    0.000    0.000 bundle.py:445(PlayAssistant)
         1    0.000    0.000    0.000    0.000 bundle.py:486(PlayBoth)
-        1    0.000    0.000    0.000    0.000 bundle.py:528(SinglePlayOperator)
-        1    0.000    0.000    0.000    0.000 bundle.py:569(SinglePlayOperatorAuto)
+        1    0.000    0.000    0.000    0.000 bundle.py:528(SinglePlayUser)
+        1    0.000    0.000    0.000    0.000 bundle.py:569(SinglePlayUserAuto)
         1    0.000    0.000    0.000    0.000 bundle.py:621(Train)
         1    0.000    0.000    0.000    0.000 bundle.py:705(_DevelopTask)
         1    0.000    0.000    0.000    0.000 bz2.py:32(BZ2File)
@@ -1585,7 +1585,7 @@ assistant_action action [None]
         1    0.000    0.000    0.001    0.001 envs.py:29(reset)
         1    0.000    0.000    0.000    0.000 envs.py:290(Screen_v0)
         1    0.000    0.000    0.000    0.000 envs.py:40(<listcomp>)
-        1    0.000    0.000    0.000    0.000 envs.py:54(operator_step)
+        1    0.000    0.000    0.000    0.000 envs.py:54(user_step)
         1    0.000    0.000    0.000    0.000 envs.py:8(SimplePointingTask)
         2    0.000    0.000    0.298    0.149 envs.py:88(render)
         1    0.000    0.000    0.001    0.001 error.py:1(<module>)
@@ -1855,7 +1855,7 @@ assistant_action action [None]
         2    0.000    0.000    0.000    0.000 inference.py:27(__init__)
         2    0.000    0.000    0.000    0.000 inference.py:31(add_observation)
         1    0.000    0.000    0.000    0.000 inference.py:46(infer)
-        1    0.000    0.000    0.000    0.000 inference.py:68(GoalInferenceWithOperatorPolicyGiven)
+        1    0.000    0.000    0.000    0.000 inference.py:68(GoalInferenceWithUserPolicyGiven)
         1    0.000    0.000    0.000    0.000 inference.py:75(__init__)
         1    0.000    0.000    0.000    0.000 inference.py:83(attach_policy)
         1    0.000    0.000    0.000    0.000 inference.py:89(attach_set_theta)
@@ -1905,7 +1905,7 @@ assistant_action action [None]
         1    0.000    0.000    0.000    0.000 interactiontask.py:15(InteractionTask)
         1    0.000    0.000    0.000    0.000 interactiontask.py:36(__init__)
         1    0.000    0.000    0.000    0.000 interactiontask.py:47(finit)
-        1    0.000    0.000    0.000    0.000 interactiontask.py:67(operator_step)
+        1    0.000    0.000    0.000    0.000 interactiontask.py:67(user_step)
         4    0.000    0.000    0.000    0.000 isoparser.py:22(_takes_ascii)
         1    0.000    0.000    0.000    0.000 isoparser.py:42(isoparser)
         1    0.000    0.000    0.000    0.000 isoparser.py:43(__init__)
@@ -2081,7 +2081,7 @@ assistant_action action [None]
        13    0.000    0.000    0.000    0.000 mixins.py:40(_inplace_binary_method)
        13    0.000    0.000    0.000    0.000 mixins.py:48(_numeric_methods)
         4    0.000    0.000    0.000    0.000 mixins.py:55(_unary_method)
-        1    0.000    0.000    0.000    0.000 mixins.py:63(NDArrayOperatorsMixin)
+        1    0.000    0.000    0.000    0.000 mixins.py:63(NDArrayUsersMixin)
         1    0.000    0.000    0.000    0.000 mlab.py:1398(GaussianKDE)
         1    0.000    0.000    0.002    0.002 mlab.py:54(<module>)
         1    0.000    0.000    0.000    0.000 model.py:1(<module>)
@@ -2110,10 +2110,10 @@ assistant_action action [None]
         1    0.000    0.000    0.000    0.000 model.py:88(__init__)
         1    0.000    0.000    0.000    0.000 model.py:97(BasePrimitiveType)
         1    0.000    0.000    0.000    0.000 models.py:1(<module>)
-        1    0.000    0.000    0.000    0.000 models.py:104(ContinuousGaussianOperatorModel)
+        1    0.000    0.000    0.000    0.000 models.py:104(ContinuousGaussianUserModel)
         1    0.000    0.000    0.000    0.000 models.py:123(LinearEstimatedFeedback)
-        1    0.000    0.000    0.000    0.000 models.py:6(DiscreteOperatorModelMax)
-        1    0.000    0.000    0.000    0.000 models.py:60(GoalDrivenBinaryOperatorModel)
+        1    0.000    0.000    0.000    0.000 models.py:6(DiscreteUserModelMax)
+        1    0.000    0.000    0.000    0.000 models.py:60(GoalDrivenBinaryUserModel)
         1    0.000    0.000    0.000    0.000 multi_binary.py:1(<module>)
         1    0.000    0.000    0.000    0.000 multi_binary.py:5(MultiBinary)
         1    0.000    0.000    0.000    0.000 multi_discrete.py:1(<module>)
@@ -2189,13 +2189,13 @@ assistant_action action [None]
         7    0.000    0.000    0.000    0.000 opcode.py:47(jrel_op)
         1    0.000    0.000    0.001    0.001 opcode.py:5(<module>)
         6    0.000    0.000    0.000    0.000 opcode.py:51(jabs_op)
-        2    0.000    0.000    0.000    0.000 operators.py:1(<module>)
-        1    0.000    0.000    0.000    0.000 operators.py:11(ChenEye)
-        1    0.000    0.000    0.001    0.001 operators.py:17(__init__)
-     1252    0.005    0.000    0.013    0.000 operators.py:26(compute_likelihood)
-        1    0.000    0.000    0.000    0.000 operators.py:8(CarefulPointer)
-        2    0.000    0.000    0.002    0.001 operators.py:81(finit)
-        1    0.000    0.000    0.001    0.001 operators.py:89(reset)
+        2    0.000    0.000    0.000    0.000 users.py:1(<module>)
+        1    0.000    0.000    0.000    0.000 users.py:11(ChenEye)
+        1    0.000    0.000    0.001    0.001 users.py:17(__init__)
+     1252    0.005    0.000    0.013    0.000 users.py:26(compute_likelihood)
+        1    0.000    0.000    0.000    0.000 users.py:8(CarefulPointer)
+        2    0.000    0.000    0.002    0.001 users.py:81(finit)
+        1    0.000    0.000    0.001    0.001 users.py:89(reset)
         1    0.000    0.000    0.000    0.000 os.py:1067(__subclasshook__)
         1    0.000    0.000    0.000    0.000 os.py:40(_get_exports_list)
         1    0.000    0.000    0.000    0.000 os.py:44(<listcomp>)
@@ -3568,7 +3568,7 @@ assistant_action action [None]
       408    0.000    0.000    0.000    0.000 {built-in method _imp.is_frozen}
      2506    0.001    0.000    0.001    0.000 {built-in method _imp.release_lock}
        36    0.000    0.000    0.000    0.000 {built-in method _locale.nl_langinfo}
-       60    0.000    0.000    0.000    0.000 {built-in method _operator.index}
+       60    0.000    0.000    0.000    0.000 {built-in method _user.index}
         1    0.001    0.001    0.001    0.001 {built-in method _posixsubprocess.fork_exec}
         3    0.000    0.000    0.000    0.000 {built-in method _socket.inet_aton}
       179    0.000    0.000    0.000    0.000 {built-in method _sre.compile}

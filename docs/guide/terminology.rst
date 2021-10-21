@@ -6,18 +6,18 @@ Terminology
 Model:
 
 * user: The human user that is taking part in an interaction.
-* operator: an artificial model of a user
+* user: an artificial model of a user
 * assistant: an intelligent tool or interface
-* agents: some entity that can produce observations, perform inferences and take actions. In practice this is used to qualify either the operator or assistant.
-* interaction task, task: a task defined by a given state, to be solved by the operator with the assistant's aid. A task is solved when it reaches a certain goal state.
-* interaction game, game: the game formed by combining a task, an operator, and an assistant
+* agents: some entity that can produce observations, perform inferences and take actions. In practice this is used to qualify either the user or assistant.
+* interaction task, task: a task defined by a given state, to be solved by the user with the assistant's aid. A task is solved when it reaches a certain goal state.
+* interaction game, game: the game formed by combining a task, an user, and an assistant
 
 
 Module:
 
 * modeler: that's you
-* bundle: the component that turns a task, an operator and an assistant into an interaction game
-* operator model: the description of the policy of the operator, expressed as a likelihood and a sampling rule
+* bundle: the component that turns a task, an user and an assistant into an interaction game
+* user model: the description of the policy of the user, expressed as a likelihood and a sampling rule
 * observation engine: the agent's component that produces observations from the game state
 * inference engine: the agent's component that is responsible for modifying its internal state
 * base agent: the most basic agent, with a random policy, an internal state that is not updated and an observation engine that allows perfect observations of the game and own internal states.

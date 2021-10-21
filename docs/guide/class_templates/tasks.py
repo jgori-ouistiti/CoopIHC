@@ -1,20 +1,16 @@
 class SimplePointingTask(InteractionTask):
     """ A 1D pointing task.
 
-    A 1D grid of size 'Gridsize'. The cursor is at a certain 'Position' and there are several potential 'Targets' on the grid. The operator action is modulated by the assistant.
+    A 1D grid of size 'Gridsize'. The cursor is at a certain 'Position' and there are several potential 'Targets' on the grid. The user action is modulated by the assistant.
 
     :param gridsize: (int) Size of the grid
     :param number_of_targets: (int) Number of targets on the grid
 
     :meta public:
     """
-    def __init__(self, arg1):
-        super().__init__()
-        self.arg1 = arg1
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-        self.handbook['render_mode'].extend(['plot', 'text', 'log'])
-        _arg1 = {'value': arg1, 'meaning': 'meaning of arg1'}
-        self.handbook['parameters'].extend([_arg1])
 
         self.state['mystate'] = StateElement(
                     values = None,
@@ -42,22 +38,26 @@ class SimplePointingTask(InteractionTask):
         if dic is not None:
             super().reset(dic = dic)
 
+        return self.state
 
-    def operator_step(self, *args, **kwargs):
-        """ Do nothing, increment turns, return half a timestep
+    def user_step(self, *args, **kwargs):
 
-        :meta public:
-        """
-        super().operator_step()
-        # do something
+        super().user_step()
+
+        is_done = False
+        user_action = self.bundle.game_state['user_action']['action']
+        assistant_action = self.bundle.game_state['assistant_action']['action']
+
+        # set state to some value
+        self.state['mystate'] =
 
         return self.state, reward, is_done, {}
 
 
     def assistant_step(self, *args, **kwargs):
-        """ Modulate the operator's action.
+        """ Modulate the user's action.
 
-        Multiply the operator action with the assistant action.
+        Multiply the user action with the assistant action.
         Update the position and grids.
 
         :param assistant_action: (list)
@@ -90,7 +90,7 @@ class SimplePointingTask(InteractionTask):
         if 'text' in mode:
             # print something
         if 'plot' in mode:
-            axtask, axoperator, axassistant = args[:3]
+            axtask, axuser, axassistant = args[:3]
             if self.ax is not None:
                 # plot something
             else:

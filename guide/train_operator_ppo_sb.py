@@ -1,9 +1,9 @@
 from pointing.envs import SimplePointingTask
 from pointing.assistants import ConstantCDGain
-from pointing.operators import CarefulPointer
+from pointing.users import CarefulPointer
 
 from core.policy import Policy
-from core.bundle import PlayOperator, Train
+from core.bundle import PlayUser, Train
 
 from gym.wrappers import FlattenObservation
 from core.helpers import hard_flatten
@@ -42,10 +42,10 @@ def make_env(rank, seed = 0):
                             action_values = None
         )
 
-        operator = CarefulPointer(agent_policy = policy)
-        bundle = PlayOperator(task, operator, unitcdgain)
+        user = CarefulPointer(agent_policy = policy)
+        bundle = PlayUser(task, user, unitcdgain)
 
-        observation_dict = OrderedDict({'task_state': OrderedDict({'Position': 0}), 'operator_state': OrderedDict({'Goal': 0})})
+        observation_dict = OrderedDict({'task_state': OrderedDict({'Position': 0}), 'user_state': OrderedDict({'Goal': 0})})
         env = ThisActionWrapper( Train(
                 bundle,
                 observation_mode = 'multidiscrete',
@@ -67,10 +67,10 @@ if __name__ == '__main__':
                         action_values = None
     )
 
-    operator = CarefulPointer(agent_policy = policy)
-    bundle = PlayOperator(task, operator, unitcdgain)
+    user = CarefulPointer(agent_policy = policy)
+    bundle = PlayUser(task, user, unitcdgain)
 
-    observation_dict = OrderedDict({'task_state': OrderedDict({'Position': 0}), 'operator_state': OrderedDict({'Goal': 0})})
+    observation_dict = OrderedDict({'task_state': OrderedDict({'Position': 0}), 'user_state': OrderedDict({'Goal': 0})})
     md_env = ThisActionWrapper( Train(
             bundle,
             observation_mode = 'multidiscrete',

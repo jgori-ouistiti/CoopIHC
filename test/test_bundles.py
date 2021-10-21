@@ -1,18 +1,18 @@
 import gym
 import numpy
 
-from core.bundle import PlayNone, PlayOperator, PlayAssistant, PlayBoth, Train, SinglePlayOperator, SinglePlayOperatorAuto, _DevelopTask
+from core.bundle import PlayNone, PlayUser, PlayAssistant, PlayBoth, Train, SinglePlayUser, SinglePlayUserAuto, _DevelopTask
 from pointing.envs import SimplePointingTask, Screen_v0
-from pointing.operators import CarefulPointer
+from pointing.users import CarefulPointer
 from pointing.assistants import ConstantCDGain, BIGGain
 from eye.envs import ChenEyePointingTask
-from eye.operators import ChenEye
+from eye.users import ChenEye
 
 from collections import OrderedDict
 from core.models import LinearEstimatedFeedback
 from core.helpers import flatten
 from core.agents import BaseAgent, FHDT_LQRController, IHDT_LQRController, IHCT_LQGController
-from core.observation import base_task_engine_specification, base_operator_engine_specification, RuleObservationEngine
+from core.observation import base_task_engine_specification, base_user_engine_specification, RuleObservationEngine
 from core.interactiontask import ClassicControlTask
 from core.policy import LLDiscretePolicy, Policy
 from core.space import State
@@ -25,16 +25,16 @@ from check_env import check_env
 
 if _str == 'basic-plot':
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-    operator = CarefulPointer(task)
+    user = CarefulPointer(task)
     assistant = ConstantCDGain(1)
 
-    bundle = PlayNone(task, operator, assistant)
+    bundle = PlayNone(task, user, assistant)
     game_state = bundle.reset()
     bundle.render('plotext')
 
 if _str == 'basic-PlayNone' or _str == 'all':
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-    binary_operator = CarefulPointer(task)
+    binary_user = CarefulPointer(task)
 
     # ====================  Implementing Assistant  ===============
     # We are going to implement an assistant which has a single action (always 1). This mimics a unit constant CD Gain. No internal state is needed, and the policy is a single action. While possible, there is no need to use a LLDiscretePolicy here, and we will directly use the baseclass Policy. No observation and inference engines are needed either. However, putting a blind observation_engine instead of nothing will be more efficient (likely, not tested).
@@ -47,9 +47,9 @@ if _str == 'basic-PlayNone' or _str == 'all':
 
     base_blind_engine_specification  =    [ ('bundle_state', 'all'),
                                         ('task_state', None),
-                                        ('operator_state', None),
+                                        ('user_state', None),
                                         ('assistant_state', None),
-                                        ('operator_action', 'all'),
+                                        ('user_action', 'all'),
                                         ('assistant_action', 'all')
                                         ]
 
@@ -60,7 +60,7 @@ if _str == 'basic-PlayNone' or _str == 'all':
                             observation_engine = observation_engine
                             )
 
-    bundle = PlayNone(task, binary_operator, unitcdgain)
+    bundle = PlayNone(task, binary_user, unitcdgain)
     game_state = bundle.reset()
     bundle.render('plotext')
     k = 0
@@ -76,10 +76,10 @@ if _str == 'basic-PlayNone' or _str == 'all':
 if _str == 'biggain-PlayNone' or _str == 'all':
     # Checking Evaluate with CarefulPointer, ConstantCDGain and SimplePointingTask
     task = SimplePointingTask(gridsize = 31, number_of_targets = 10)
-    operator = CarefulPointer()
-    assistant = BIGGain(operator.operator_model)
+    user = CarefulPointer()
+    assistant = BIGGain(user.user_model)
 
-    bundle = PlayNone(task, operator, assistant)
+    bundle = PlayNone(task, user, assistant)
     game_state = bundle.reset()
     bundle.render('plotext')
     k = 0
@@ -93,13 +93,13 @@ if _str == 'biggain-PlayNone' or _str == 'all':
 
             break
 
-if _str == 'basic-PlayOperator' or _str == 'all':
+if _str == 'basic-PlayUser' or _str == 'all':
     # Checking Evaluate with CarefulPointer, ConstantCDGain and SimplePointingTask
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-    operator = CarefulPointer()
+    user = CarefulPointer()
     assistant = ConstantCDGain(1)
 
-    bundle = PlayOperator(task, operator, assistant)
+    bundle = PlayUser(task, user, assistant)
     game_state = bundle.reset()
     bundle.render('plotext')
     # observation, sum_rewards, is_done, rewards = bundle.step([-1])
@@ -114,10 +114,10 @@ if _str == 'basic-PlayOperator' or _str == 'all':
 if _str == 'basic-PlayAssistant-0' or _str == 'all':
     # Checking Evaluate with CarefulPointer, ConstantCDGain and SimplePointingTask
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-    operator = CarefulPointer()
+    user = CarefulPointer()
     assistant = ConstantCDGain(1)
 
-    bundle = PlayAssistant(task, operator, assistant)
+    bundle = PlayAssistant(task, user, assistant)
     game_state = bundle.reset()
     bundle.render('plotext')
 
@@ -130,22 +130,22 @@ if _str == 'basic-PlayAssistant-0' or _str == 'all':
 
 if _str == 'basic-PlayAssistant-1' or _str == 'all':
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-    operator = CarefulPointer()
+    user = CarefulPointer()
     assistant = ConstantCDGain(1)
 
-    bundle = PlayAssistant(task, operator, assistant)
+    bundle = PlayAssistant(task, user, assistant)
     game_state = bundle.reset()
     bundle.render('plotext')
 
 
     gain = 4
 
-    sign_flag = game_state["assistant_state"]['OperatorAction'][0]
+    sign_flag = game_state["assistant_state"]['UserAction'][0]
     observation = game_state
     k = 0
     while True:
         k+=1
-        sign_flag = sign_flag * observation["assistant_state"]['OperatorAction'][0]
+        sign_flag = sign_flag * observation["assistant_state"]['UserAction'][0]
         if sign_flag == -1:
             gain = max(1,gain/2)
         observation, sum_rewards, is_done, rewards = bundle.step([gain])
@@ -159,10 +159,10 @@ if _str == 'basic-PlayAssistant-1' or _str == 'all':
 if _str == 'basic-PlayBoth' or _str == 'all':
     # Checking Evaluate with CarefulPointer, ConstantCDGain and SimplePointingTask
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-    operator = CarefulPointer()
+    user = CarefulPointer()
     assistant = ConstantCDGain(1)
 
-    bundle = PlayBoth(task, operator, assistant)
+    bundle = PlayBoth(task, user, assistant)
     game_state = bundle.reset()
     bundle.render('plotext')
     observation, sum_rewards, is_done, rewards = bundle.step([[-1], [2]])
@@ -174,30 +174,30 @@ if _str == 'basic-PlayBoth' or _str == 'all':
     #         break
 
 
-if _str == 'basic-TrainOperator' or _str == 'all':
+if _str == 'basic-TrainUser' or _str == 'all':
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-    operator = CarefulPointer()
+    user = CarefulPointer()
     assistant = ConstantCDGain(1)
 
-    bundle = PlayOperator(task, operator, assistant)
+    bundle = PlayUser(task, user, assistant)
     env = Train(bundle)
     check_env(env)
 
 if _str == 'basic-TrainAssistant' or _str == 'all':
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-    operator = CarefulPointer()
+    user = CarefulPointer()
     assistant = ConstantCDGain(1)
 
-    bundle = PlayAssistant(task, operator, assistant)
+    bundle = PlayAssistant(task, user, assistant)
     env = Train(bundle)
     check_env(env)
 
 if _str == 'basic-TrainBoth' or _str == 'all':
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-    operator = CarefulPointer()
+    user = CarefulPointer()
     assistant = ConstantCDGain(1)
 
-    bundle = PlayBoth(task, operator, assistant)
+    bundle = PlayBoth(task, user, assistant)
     env = Train(bundle)
     check_env(env)
 
@@ -207,12 +207,12 @@ if _str == 'chen-play':
     ocular_std = 0.09
     swapping_std = 0.09
     task = ChenEyePointingTask(fitts_W, fitts_D, ocular_std)
-    operator = ChenEye(swapping_std)
-    bundle = SinglePlayOperator(task, operator)
+    user = ChenEye(swapping_std)
+    bundle = SinglePlayUser(task, user)
     obs = bundle.reset()
     bundle.render('plotext')
     while True:
-        action = obs['operator_state']['MuBelief']
+        action = obs['user_state']['MuBelief']
         obs, reward, is_done, _ = bundle.step(action)
         bundle.render('plotext')
         if is_done:
@@ -224,8 +224,8 @@ if _str == 'chen-play-auto':
     ocular_std = 0
     swapping_std = 0.1
     task = ChenEyePointingTask(fitts_W, fitts_D, ocular_std)
-    operator = ChenEye(swapping_std)
-    bundle = SinglePlayOperatorAuto(task, operator)
+    user = ChenEye(swapping_std)
+    bundle = SinglePlayUserAuto(task, user)
     bundle.reset()
     bundle.render('plotext')
     # bundle.fig.savefig('/home/jgori/Documents/img_tmp/{}.jpg'.format(str(bundle.task.round)))
@@ -242,8 +242,8 @@ if _str == 'chen-train':
     ocular_std = 0.09
     swapping_std = 0.09
     task = ChenEyePointingTask(fitts_W, fitts_D, ocular_std)
-    operator = ChenEye(swapping_std)
-    bundle = SinglePlayOperator(task, operator)
+    user = ChenEye(swapping_std)
+    bundle = SinglePlayUser(task, user)
     bundle
     env = Train(bundle)
     env.squeeze_output(slice(3,5,1))
@@ -268,8 +268,8 @@ if _str == 'LQR':
 
     G = numpy.array([[ 0, 1]]).reshape((-1,1))
     task = ClassicControlTask(2, 0.002, F, G, discrete_dynamics = False)
-    operator = IHDT_LQRController("operator", Q, R)
-    bundle = SinglePlayOperatorAuto(task, operator)
+    user = IHDT_LQRController("user", Q, R)
+    bundle = SinglePlayUserAuto(task, user)
     bundle.reset()
     bundle.playspeed = 0.01
     bundle.render('plot')
@@ -302,8 +302,8 @@ if _str == 'LQRbis':
     G = numpy.array([[ 0, 0, 0, bu]]).reshape((-1,1))
 
     task = ClassicControlTask(0.002, F, G, discrete_dynamics = False)
-    operator = IHDT_LQRController("operator", Q, R)
-    bundle = SinglePlayOperatorAuto(task, operator)
+    user = IHDT_LQRController("user", Q, R)
+    bundle = SinglePlayUserAuto(task, user)
     bundle.reset()
     bundle.playspeed = 0.01
     bundle.render('plot')
@@ -356,8 +356,8 @@ if _str == 'LQG':
     U = numpy.diag([1, 0.1, 0.01, 0])
 
     task = ClassicControlTask(timestep, A, B, F = F, G = G, discrete_dynamics = False, noise = 'off')
-    operator = IHCT_LQGController('operator', timestep, Q, R, U, C, Gamma, D, noise = 'on')
-    bundle = SinglePlayOperator(task, operator, onreset_deterministic_first_half_step = True)
+    user = IHCT_LQGController('user', timestep, Q, R, U, C, Gamma, D, noise = 'on')
+    bundle = SinglePlayUser(task, user, onreset_deterministic_first_half_step = True)
     bundle.reset( {
             'task_state': {'x':  numpy.array([[-0.5],[0],[0],[0]]) }
                     } )
@@ -372,8 +372,8 @@ if _str == 'LQG':
 
 if _str == 'test':
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
-    operator = CarefulPointer()
+    user = CarefulPointer()
     assistant = ConstantCDGain(1)
 
-    bundle = PlayNone(task, operator, assistant)
+    bundle = PlayNone(task, user, assistant)
     game_state = bundle.reset()

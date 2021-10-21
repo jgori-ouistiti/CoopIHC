@@ -205,10 +205,10 @@ The relationship between agents, turns and rewards is recapitulated in Fig~\ref{
 \begin{tikzpicture}
 \draw (0,0) node[rectangle, draw = black, name = s0, text width = 3cm, text centered]{$0,s_T, s_O, s_A$};
 \draw (s0) + (0,-2) node[rectangle, draw = black, name = s1, text width = 3cm, text centered]{$1,s_T, s'_O, s_A$};
-\draw[->] (s0) -- node[midway, right, text width = 3cm, text centered]{\small operator observes and infers} (s1);
-\draw[->] (s1.0) -- + (1.5,0) node[right]{operator rewards};
+\draw[->] (s0) -- node[midway, right, text width = 3cm, text centered]{\small user observes and infers} (s1);
+\draw[->] (s1.0) -- + (1.5,0) node[right]{user rewards};
 \draw (s1) + (0,-2) node[rectangle, draw = black, name = s2, text width = 3cm, text centered]{$2,s'_T, s'_O, s_A$};
-\draw[->] (s1) -- node[midway, right, text width = 3cm, text centered]{\small operator acts} (s2);
+\draw[->] (s1) -- node[midway, right, text width = 3cm, text centered]{\small user acts} (s2);
 \draw[->] (s2.0) -- + (1.5,0) node[right]{task rewards};
 \draw (s2) + (0,-2) node[rectangle, draw = black, name = s3, text width = 3cm, text centered]{$3,s'_T, s'_O, s'_A$};
 \draw[->] (s2) -- node[midway, right, text width = 3cm, text centered]{\small assistant observes and infers} (s3);
@@ -257,29 +257,29 @@ Let us consider a simple toy pointing task, formulated as a 1D gridworld:
 
 
 
-The goal of the operator is to move the cursor to the goal \texttt{G}. To do so, he can produce an action $a_1 \in \mathcal{A}_1 =  \lbrace -N, -N +1, \dots{}, -m -1, -m, \dots{} m, m+1, \dots{} N-1, N \rbrace$. If $\mathcal{A}_1 = \lbrace-6, -5, -4, -3, -2, 2, 3, 4, 5, 6 \rbrace$, the operator is able to move to any place between 2 and 6 units away in both directions. 
+The goal of the user is to move the cursor to the goal \texttt{G}. To do so, he can produce an action $a_1 \in \mathcal{A}_1 =  \lbrace -N, -N +1, \dots{}, -m -1, -m, \dots{} m, m+1, \dots{} N-1, N \rbrace$. If $\mathcal{A}_1 = \lbrace-6, -5, -4, -3, -2, 2, 3, 4, 5, 6 \rbrace$, the user is able to move to any place between 2 and 6 units away in both directions. 
 
 
-The goal of the enhancer is to assist the operator in selecting his goal. To do so, he can produce an action $a_2 \in \mathcal{A}_2 = [0,K]$ (assume $K=5$), that will modulate the operator's action. If we denote $P(t)$ the position at timestep $t$, then the modulation has the following form:
+The goal of the enhancer is to assist the user in selecting his goal. To do so, he can produce an action $a_2 \in \mathcal{A}_2 = [0,K]$ (assume $K=5$), that will modulate the user's action. If we denote $P(t)$ the position at timestep $t$, then the modulation has the following form:
 \begin{align}
 P(t+1) = P(t) + \Delta t \label{eq:toy_problem_model_1} \\
 \Delta t =  a_1 \times (1 + a_1 \varepsilon) \times a_2, \label{eq:toy_problem_model_2}
 \end{align}
-\noindent where $\varepsilon \sim  \mathcal{N}(0,1)$. The term $a_1 \varepsilon$ represents signal dependent noise, i.e. the fact that in many real-world scenarios the noise in operator's actions increases with that actions' amplitude.
+\noindent where $\varepsilon \sim  \mathcal{N}(0,1)$. The term $a_1 \varepsilon$ represents signal dependent noise, i.e. the fact that in many real-world scenarios the noise in user's actions increases with that actions' amplitude.
 Although this model appears to be quite simple, it captures many interesting properties of the transfer function context:
 
 \begin{itemize}
-\item The action space of the operator is bounded. In this simple model, it has a minimum traveling distance ($|m|=2$), and a maximum traveling distance ($|M| = 6$). This captures the limitations that there is a minimum and maximum speed achievable when operating a mouse.
-\item The noise associated with the operator's action is signal dependent, i.e. noise increases with the signal value. This is characteristic of human produced movement.
-\item The enhancer's action is a simple gain applied to the operator's action, as is the case with transfer functions.
+\item The action space of the user is bounded. In this simple model, it has a minimum traveling distance ($|m|=2$), and a maximum traveling distance ($|M| = 6$). This captures the limitations that there is a minimum and maximum speed achievable when operating a mouse.
+\item The noise associated with the user's action is signal dependent, i.e. noise increases with the signal value. This is characteristic of human produced movement.
+\item The enhancer's action is a simple gain applied to the user's action, as is the case with transfer functions.
 \end{itemize}
 
-Why would the operator need gain ? Well for once, the enhancer allows the operator to go past it bounds, by increasing the maximum distance that can be traveled as well as decreasing the minimum distance that can be traveled. The range that is effectively attainable in one step is now (supposing noiseless case) $[0;30]$.
+Why would the user need gain ? Well for once, the enhancer allows the user to go past it bounds, by increasing the maximum distance that can be traveled as well as decreasing the minimum distance that can be traveled. The range that is effectively attainable in one step is now (supposing noiseless case) $[0;30]$.
 A second reason is because of noise: To move 6 units to the right, the following two couples will do 
 	
 \begin{itemize}
 	\item No enhancer action: $(a_1 = 6, a_2 = 1)$, in which case $\Delta t = 6 + 36 \varepsilon$
-	\item Smallest operator action: $(a_1 = 2, a_2 = 3)$, in which case $\Delta t = 6 + 6\varepsilon$
+	\item Smallest user action: $(a_1 = 2, a_2 = 3)$, in which case $\Delta t = 6 + 6\varepsilon$
 \end{itemize}		
 \noindent So, an other advantage provided by the enhancer is that it will lead to less propagation of noise.
 

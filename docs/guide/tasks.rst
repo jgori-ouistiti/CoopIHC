@@ -4,10 +4,10 @@ Tasks
 ==================
 Tasks are similar to gym environments. The main differences are:
 
-1. No action spaces and observations spaces need to be defined. These are all gathered automatically by the bundle from the operators and assistants.
+1. No action spaces and observations spaces need to be defined. These are all gathered automatically by the bundle from the users and assistants.
 2. The usual step() method is decomposed into two steps:
 
-    * An operator step which describes how the task changes state after the operator's turn
+    * An user step which describes how the task changes state after the user's turn
     * An assistant step which describes how the task changes state after the assistant's turn
 
 
@@ -21,7 +21,7 @@ Below we cover the example of the ``SimplePointingTask`` of the pointing module 
 The ``SimplePointingTask`` Example
 -----------------------------------
 
-The context of the task is as follows: Inside a 1D grid of size 'Gridsize', there is a cursor at a certain 'Position' and there are several potential 'Targets'. The operator picks a goal at the start of each run and will perform actions to move the cursor around. The assistant helps the operator by modulating the operator actions.
+The context of the task is as follows: Inside a 1D grid of size 'Gridsize', there is a cursor at a certain 'Position' and there are several potential 'Targets'. The user picks a goal at the start of each run and will perform actions to move the cursor around. The assistant helps the user by modulating the user actions.
 
 
 The ``__init__()`` method
@@ -63,22 +63,22 @@ In the reset method here, we simply draw new targets and initial cursor position
             self.state['Position'] = [position]
             self.state['Targets'] = targets
 
-The ``operator_step()`` method
+The ``user_step()`` method
 """""""""""""""""""""""""""""""""
-Since the assistant modulates the operator action, the task state will only evolve when the assistant issues an action. Thus, during the operator_step, nothing happens. It is recommended to call the super().operator_step method to increment the turns.
+Since the assistant modulates the user action, the task state will only evolve when the assistant issues an action. Thus, during the user_step, nothing happens. It is recommended to call the super().user_step method to increment the turns.
 
 
 .. code-block:: python
 
-    def operator_step(self, operator_action):
+    def user_step(self, user_action):
 
-        return super().operator_step(operator_action)
+        return super().user_step(user_action)
 
 
 The ``assistant_step()`` method
 """""""""""""""""""""""""""""""""
 
-Here the operator action is multiplied by the assistant action, and clipped to fit in the grid. The task state is then updated. If the cursor is on the correct target, then the task is finished.
+Here the user action is multiplied by the assistant action, and clipped to fit in the grid. The task state is then updated. If the cursor is on the correct target, then the task is finished.
 
 .. code-block:: python
 
@@ -86,10 +86,10 @@ Here the operator action is multiplied by the assistant action, and clipped to f
 
         super().assistant_step(assistant_action)
         is_done = False
-        operator_action = self.bundle.assistant.state['OperatorAction'][0]
+        user_action = self.bundle.assistant.state['UserAction'][0]
         assistant_action = assistant_action[0]
-        self.state['Position'] = [int(numpy.clip(numpy.round(self.state['Position'][0] + operator_action*assistant_action, decimals = 0), 0, self.state['Gridsize'][0]-1))]
-        if self.state['Position'][0] == self.bundle.operator.state['Goal'][0]:
+        self.state['Position'] = [int(numpy.clip(numpy.round(self.state['Position'][0] + user_action*assistant_action, decimals = 0), 0, self.state['Gridsize'][0]-1))]
+        if self.state['Position'][0] == self.bundle.user.state['Goal'][0]:
             is_done = True
         return self.state, -1/2, is_done, {}
 
@@ -101,7 +101,7 @@ The render method signature is ``def render(self, ax, *args, mode="text")``. The
 
     def render(self, ax, *args, mode="text"):
 
-        goal = self.bundle.operator.state['Goal'][0]
+        goal = self.bundle.user.state['Goal'][0]
         self.grid[goal] = 'G'
         if 'text' in mode:
             tmp = self.grid.copy()
@@ -159,8 +159,8 @@ Core Module:
 
 Pointing Module:
 
-* SimplePointingTask [link]: A 1D grid of size 'Gridsize'. The cursor is at a certain 'Position' and there are several potential 'Targets' on the grid. The operator action is modulated by the assistant.
+* SimplePointingTask [link]: A 1D grid of size 'Gridsize'. The cursor is at a certain 'Position' and there are several potential 'Targets' on the grid. The user action is modulated by the assistant.
 
 Eye Module:
 
-* ChenEyePointingTask [link]: A pointing task performed by the Eye, according to Chen, Xiuli, et al. "An Adaptive Model of Gaze-based Selection" Proceedings of the 2021 CHI Conference on Human Factors in Computing Systems. 2021. This tasks only requires an operator (human perception task).
+* ChenEyePointingTask [link]: A pointing task performed by the Eye, according to Chen, Xiuli, et al. "An Adaptive Model of Gaze-based Selection" Proceedings of the 2021 CHI Conference on Human Factors in Computing Systems. 2021. This tasks only requires an user (human perception task).

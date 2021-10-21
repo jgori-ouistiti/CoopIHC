@@ -1,9 +1,8 @@
 from .inference import RWInference
 
-import gym
 import numpy as np
 
-from core.space import StateElement
+from core.space import State, StateElement, Space
 from core.agents import BaseAgent
 from core.policy import ELLDiscretePolicy
 
@@ -13,7 +12,7 @@ class GenericPlayer(BaseAgent):
         self.user_model = user_model
         self.seed = seed
 
-        super().__init__('operator')
+        super().__init__("user")
 
     def render(self, *args, **kwargs):
         # super().render(*args, **kwargs)
@@ -24,8 +23,11 @@ class GenericPlayer(BaseAgent):
     def finit(self):
         self.N = self.bundle.task.N
 
-        agent_policy = ELLDiscretePolicy(action_values=[None], action_space=[
-                                         gym.spaces.Discrete(self.N)], seed=self.seed)
+        action_state = State()
+        action_state["action"] = StateElement(
+            values=None, spaces=[Space([np.arange(self.N, dtype=np.int16)])]
+        )
+        agent_policy = ELLDiscretePolicy(action_state=action_state, seed=self.seed)
 
         agent_policy.attach_likelihood_function(self.user_model)
 
@@ -33,13 +35,12 @@ class GenericPlayer(BaseAgent):
 
     def reset(self, dic=None):
         self.finit()
-        super().reset(dic)
 
 
-class RandomOperator(GenericPlayer):
+class RandomPlayer(GenericPlayer):
     def __init__(self, seed=None):
-        def user_model(_self, _action, _observation):
-            return 1/self.N
+        def user_model(_self, _choice, _observation):
+            return 1 / self.N
 
         super().__init__(user_model=user_model, seed=seed)
 
@@ -49,13 +50,13 @@ class WSLS(GenericPlayer):
         self.epsilon = epsilon
 
         def user_model(_self, action, observation):
-            choice = action['values'][0]
-            last_choice = self.action['values'][0]
+            choice = action.values[0][0][0]
+            last_choice = self.action["values"][0]
 
             if last_choice is None:
-                return 1/self.N
+                return 1 / self.N
 
-            last_reward = observation['task_state']['last_reward']['values'][0]
+            last_reward = observation["task_state"]["last_reward"]["values"][0]
 
             p_apply_rule = 1 - self.epsilon
             p_random = self.epsilon / self.N
@@ -78,9 +79,8 @@ class RW(GenericPlayer):
         self.initial_value = initial_value
 
         def user_model(_self, action, observation):
-            q_values = observation["operator_state"]["q_values"]["values"][0]
-
-            choice = action["values"][0]
+            choice = action.values[0][0][0]
+            q_values = self.state["q_values"]["values"][0][0]
 
             num = np.exp(self.q_beta * q_values[choice])
             denom = np.sum(np.exp(self.q_beta * q_values))
@@ -92,13 +92,17 @@ class RW(GenericPlayer):
     def finit(self):
         super().finit()
 
-        self.state["q_values"] = StateElement(values=[np.full(self.N, self.initial_value)], spaces=[
-                                              gym.spaces.Box(low=0., high=1., shape=(self.N,))])
+        self.state["q_values"] = StateElement(
+            values=np.full(self.N, self.initial_value),
+            spaces=[Space([np.zeros(self.N), np.ones(self.N)])],
+        )
 
         self.attach_inference_engine(RWInference())
 
     def reset(self, dic=None):
         super().reset()
         self.finit()
-        self.state["q_values"] = StateElement(values=[np.full(self.N, self.initial_value)], spaces=[
-                                              gym.spaces.Box(low=0., high=1., shape=(self.N,))])
+        self.state["q_values"] = StateElement(
+            values=np.full(self.N, self.initial_value),
+            spaces=[Space([np.zeros(self.N), np.ones(self.N)])],
+        )

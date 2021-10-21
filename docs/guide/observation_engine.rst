@@ -32,19 +32,21 @@ The Observation Engine class is the Base class from which all Observation Engine
 3. ``ProcessObservationEngine`` [link], which produces observations by having a 'process' start from the game state and finish at another state. The intent of this engine is to use a run of a fully functioning bundle to produce observations e.g. the ``ChenEyePointingTask`` [link] from the eye module.
 
 
+.. _rule-observation-engine-label:
+
 The ``RuleObservationEngine``
 ---------------------------------
  A rule observation engine is initialized with a rule e.g.
 
 .. code-block:: python
 
-    observation_engine = RuleObservationEngine(BaseOperatorObservationRule)
+    observation_engine = RuleObservationEngine(BaseUserObservationRule)
 
-A rule is an ``OrderedDict``, see e.g. the ``BaseOperatorObservationRule``
+A rule is an ``OrderedDict``, see e.g. the ``BaseUserObservationRule``
 
 .. code-block:: python
 
-    BaseOperatorObservationRule = OrderedDict([('b_state', 'all'), ('task_state', 'all'), ('operator_state', 'all'), ('assistant_state', None) ])
+    BaseUserObservationRule = OrderedDict([('b_state', 'all'), ('task_state', 'all'), ('user_state', 'all'), ('assistant_state', None) ])
 
 
 Values in the ordered dictionnary may be
@@ -56,12 +58,12 @@ Values in the ordered dictionnary may be
 Several rules are predefined:
 
 ==============================  =================  ============== ================= ====================
-Rule name                           Bundle state    Task state      Operator state      Assistant state
+Rule name                           Bundle state    Task state      User state      Assistant state
 ==============================  =================  ============== ================= ====================
 OracleObservationRule               ✔️                      ✔️              ✔️                  ✔️
 BaseBlindRule                       ✔️                      ❌               ❌               ❌
 TaskObservationRule                 ✔️                      ✔️              ❌               ❌
-BaseOperatorObservationRule         ✔️                      ✔️              ✔️              ❌
+BaseUserObservationRule         ✔️                      ✔️              ✔️              ❌
 BaseAssistantObservationRule        ✔️                  ✔️                 ❌                 ✔️
 ==============================  =================  ============== ================= ====================
 
@@ -91,7 +93,7 @@ A noisy rule observation engine can initialized like so:
 .. code-block:: python
 
     noiserules = [('task_state', 'Targets', 0, numpy.random.random)]
-    observation_engine = NoisyRuleObservationEngine(BaseOperatorObservationRule, noiserules)
+    observation_engine = NoisyRuleObservationEngine(BaseUserObservationRule, noiserules)
 
 The ``ProcessObservationEngine``
 ------------------------------------

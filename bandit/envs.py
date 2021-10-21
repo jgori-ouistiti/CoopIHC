@@ -1,11 +1,9 @@
-import gym
-from core.space import StateElement
+from core.space import StateElement, Space
 from core.interactiontask import InteractionTask
 import numpy as np
 
 
 class MultiBanditTask(InteractionTask):
-
     def __init__(self, N=2, P=[0.5, 0.75], T=100, seed=12345):
         super().__init__()
 
@@ -14,9 +12,11 @@ class MultiBanditTask(InteractionTask):
         self.T = T
 
         self.state["last_reward"] = StateElement(
-            values=[None], spaces=[gym.spaces.Discrete(2)])
+            values=None, spaces=[Space([np.array([0, 1], dtype=int)])]
+        )
         self.state["last_action"] = StateElement(
-            values=[None], spaces=[gym.spaces.Discrete(self.N)])
+            values=None, spaces=[Space([np.arange(self.N, dtype=int)])]
+        )
 
         self.seed = seed
         self.rng = np.random.default_rng(seed=seed)
@@ -24,16 +24,16 @@ class MultiBanditTask(InteractionTask):
     def _is_done(self):
         return self.round >= self.T - 1
 
-    def operator_step(self, operator_action):
-        super().operator_step()
+    def user_step(self, user_action):
+        super().user_step(user_action)
 
-        choice = operator_action['values'][0]
+        choice = user_action["values"][0][0][0]
 
         success = self.P[choice] > self.rng.random()
         reward = int(success)
 
-        self.state["last_action"]["values"] = [choice]
-        self.state["last_reward"]["values"] = [reward]
+        self.state["last_action"]["values"] = choice
+        self.state["last_reward"]["values"] = reward
 
         return self.state, reward, self._is_done(), {}
 
@@ -56,6 +56,6 @@ class MultiBanditTask(InteractionTask):
     def reset(self, dic=None):
         super().reset(dic=dic)
 
-        self.state["last_reward"]["values"] = [None]
-        self.state["last_action"]["values"] = [None]
+        self.state["last_reward"]["values"] = None
+        self.state["last_action"]["values"] = None
         self.rng = np.random.default_rng(seed=self.seed)

@@ -14,7 +14,7 @@ Eye Fixation Model
 The model assumes the following:
 
 * There is a screen with some target, that the eye should point towards. This constitutes the task
-* The operator controls the eye; it does so by
+* The user controls the eye; it does so by
     * Receiving noisy information about the target location
     * Handling beliefs about where the target might be, based on received information
     * Issuing the next position of the eye by selecting the most probable location based on handled beliefs
@@ -26,7 +26,7 @@ In all cases, the noise intensity is dependent on the distance between the targe
 
 
 The code snippet below creates the needed bundle. First, we initialize a 1D pointing task, where the size and distance of the target are given by W and D.
-We associate a ChenEye operator to the task, also in 1D. It gets as input the scaling linear coefficient for signal dependent noise (noise = coef * N(0,1)), for observation (perceptualnoise) as well as for moving the eye (oculomotornoise). These are bundled into a SinglePlayOperator bundle, which allows one to play as operator to experiment with policies. One could have also used a SinglePlayOperatorAuto bundle to directly evaluate the policy explained above, based on beliefs.
+We associate a ChenEye user to the task, also in 1D. It gets as input the scaling linear coefficient for signal dependent noise (noise = coef * N(0,1)), for observation (perceptualnoise) as well as for moving the eye (oculomotornoise). These are bundled into a SinglePlayUser bundle, which allows one to play as user to experiment with policies. One could have also used a SinglePlayUserAuto bundle to directly evaluate the policy explained above, based on beliefs.
 
 .. code-block:: python
 
@@ -35,8 +35,8 @@ We associate a ChenEye operator to the task, also in 1D. It gets as input the sc
     perceptualnoise = 0.2
     oculomotornoise = 0.2
     task = ChenEyePointingTask(fitts_W, fitts_D, dimension = 1)
-    operator = ChenEye(perceptualnoise, oculomotornoise, dimension = 1)
-    bundle = SinglePlayOperator(task, operator)
+    user = ChenEye(perceptualnoise, oculomotornoise, dimension = 1)
+    bundle = SinglePlayUser(task, user)
 
     
 Parameter Recovery
@@ -45,7 +45,7 @@ Parameter Recovery
 In parameter recovery, a user model is tested on its ability to infer known parameters from an artificial experiment dataset.
 If a model fails to do so, it is unlikely to be useful for inferring parameters from a dataset created with human users.
 
-In the code below, we define a new kind of interaction task--in this case a risky choice task called `MultiBanditTask`--and test an operator class, namely Win-Stay-Lose-Switch (`WSLS`) for its ability to recover the single parameter `epsilon`.
+In the code below, we define a new kind of interaction task--in this case a risky choice task called `MultiBanditTask`--and test an user class, namely Win-Stay-Lose-Switch (`WSLS`) for its ability to recover the single parameter `epsilon`.
 
 
 .. code-block:: python
@@ -54,9 +54,9 @@ In the code below, we define a new kind of interaction task--in this case a risk
     from matplotlib import pyplot as plt
 
     from envs import MultiBanditTask
-    from operators import WSLS
+    from agents import WSLS
 
-    from core.bundle import _DevelopOperator
+    from core.bundle import ModelChecks
 
     # Task parameters definition
     N = 2
@@ -66,12 +66,12 @@ In the code below, we define a new kind of interaction task--in this case a risk
     # Task definition
     multi_bandit_task = MultiBanditTask(N=N, P=P, T=T)
 
-    # Operator definition
+    # User definition
     wsls = WSLS(epsilon=0.1)
 
 
-In order to test the model for parameter recovery, we need to use the `_DevelopOperator` bundle and pass it both the operator as well as the task.
-In turn, it gives us access to a method called `test_parameter_recovery` that can be used to evaluate parameter recovery for the given operator class and task.
+In order to test the model for parameter recovery, we need to use the `ModelChecks` bundle and pass it both the user as well as the task.
+In turn, it gives us access to a method called `test_parameter_recovery` that can be used to evaluate parameter recovery for the given user class and task.
 
 The `test_parameter_recovery` expects an argument called `parameter_fit_bounds` which is a `dict` containing the parameter name and its minimum and maximum value (i.e. its fit bounds).
 These fit bounds will be used to create `n_simulations` artificial agents with random parameters within them.
@@ -81,14 +81,14 @@ The result of calling `test_parameter_recovery` is an object giving access to, a
 
 .. code-block:: python
 
-    # Parameter fit bounds for operator
+    # Parameter fit bounds for user
     wsls_parameter_fit_bounds = {"epsilon": (0., 1.)}
 
     # Population size
     N_SIMULATIONS = 20
 
     # Bundle defintion
-    wsls_bundle = _DevelopOperator(task=multi_bandit_task, operator=wsls)
+    wsls_bundle = ModelChecks(task=multi_bandit_task, user=wsls)
 
     # Parameter recovery check
     parameter_recovery_test_result = wsls_bundle.test_parameter_recovery(parameter_fit_bounds=wsls_parameter_fit_bounds, correlation_threshold=0.6, significance_level=0.1, n_simulations=N_SIMULATIONS)
@@ -107,7 +107,7 @@ Model Recovery
 In model recovery, a user model is tested on its ability to be inferred from an artificial experiment dataset in competition to alternative user models.
 If a model fails to do so, it is unlikely to be successfully recovered from a dataset created with human users.
 
-In the code below, we use the same interaction task as above--again a risky choice task called `MultiBanditTask`--and test the operator class used above, namely Win-Stay-Lose-Switch (`WSLS`), against two new operator classes, a random operator (`RandomOperator`) and Rescorla-Wagner (`RW`), for its ability to be recovered from an artificial dataset.
+In the code below, we use the same interaction task as above--again a risky choice task called `MultiBanditTask`--and test the user class used above, namely Win-Stay-Lose-Switch (`WSLS`), against two new user classes, a random user (`RandomPlayer`) and Rescorla-Wagner (`RW`), for its ability to be recovered from an artificial dataset.
 
 
 .. code-block:: python
@@ -116,9 +116,9 @@ In the code below, we use the same interaction task as above--again a risky choi
     from matplotlib import pyplot as plt
 
     from envs import MultiBanditTask
-    from operators import WSLS, RW, RandomOperator
+    from users import WSLS, RW, RandomPlayer
 
-    from core.bundle import _DevelopOperator
+    from core.bundle import ModelChecks
 
     # Task parameters definition
     N = 2
@@ -128,15 +128,15 @@ In the code below, we use the same interaction task as above--again a risky choi
     # Task definition
     multi_bandit_task = MultiBanditTask(N=N, P=P, T=T)
 
-    # Operator definition
+    # User definition
     wsls = WSLS(epsilon=0.1)
     rw = RW(q_alpha=0.1, q_beta=1.)
 
 
-In order to test the model for model recovery, we need to, again, use the `_DevelopOperator` bundle and pass it both the operator as well as the task.
-In turn, it gives us access to a method called `test_model_recovery` that can be used to evaluate model recovery for the given operator classes and task.
+In order to test the model for model recovery, we need to, again, use the `ModelChecks` bundle and pass it both the user as well as the task.
+In turn, it gives us access to a method called `test_model_recovery` that can be used to evaluate model recovery for the given user classes and task.
 
-The `test_model_recovery` expects an argument called `other_competing_models` which is a list of dictionaries specifying the competing models and their parameter fit bounds (e.g. `[{"model": OperatorClass, "parameter_fit_bounds": {"alpha": (0., 1.), ...}}, ...]`) as well as `this_parameter_fit_bounds` which is a `dict` containing the parameter name and its minimum and maximum value (i.e. its fit bounds) for the operator class to test.
+The `test_model_recovery` expects an argument called `other_competing_models` which is a list of dictionaries specifying the competing models and their parameter fit bounds (e.g. `[{"model": UserClass, "parameter_fit_bounds": {"alpha": (0., 1.), ...}}, ...]`) as well as `this_parameter_fit_bounds` which is a `dict` containing the parameter name and its minimum and maximum value (i.e. its fit bounds) for the user class to test.
 These fit bounds will be used to create `n_simulations` artificial agents for all specified models with random parameters within them.
 Each of the artificial agents will execute the task to create simulated data which in turn can be used to infer the best-fit model using an evaluation method, in this case BIC-score.
 
@@ -144,7 +144,7 @@ The result of calling `test_model_recovery` is an object giving access to, among
 
 .. code-block:: python
 
-    # Parameter fit bounds for operators
+    # Parameter fit bounds for users
     wsls_parameter_fit_bounds = {"epsilon": (0., 1.)}
     rw_parameter_fit_bounds = {"q_alpha": (0., 1.), "q_beta": (0., 20.)}
 
@@ -152,11 +152,11 @@ The result of calling `test_model_recovery` is an object giving access to, among
     N_SIMULATIONS = 20
 
     # Bundle defintion
-    wsls_bundle = _DevelopOperator(task=multi_bandit_task, operator=wsls)
+    wsls_bundle = ModelChecks(task=multi_bandit_task, user=wsls)
 
     # Competing models definitions
     other_competing_models = [
-        {"model": RandomOperator, "parameter_fit_bounds": {}},
+        {"model": RandomPlayer, "parameter_fit_bounds": {}},
         {"model": RW, "parameter_fit_bounds": rw_parameter_fit_bounds},
     ]
 
@@ -178,10 +178,10 @@ Testing parameter recovery for a parameter's entire theoretical or practical ran
 Parameters could, for example, be generally recoverable for the entire parameter value range, but might not be recoverable for the specific parameter range that the real user data demands.
 Or, in the opposite case, while the model's parameters might not be recoverable for the entire parameter range, they could be recoverable for the specific user data in question.
 To give just two reasons as to why this might be the case, the parameters might not be independent and therefore introduce unwanted interaction effects when testing the entire parameter range or one of the parameters might enact such a strong influence on the resulting behavior exhibited by a user given certain values that recovery for the other parameter values becomes nearly impossible (e.g. in the case of large inverse temperature parameter values).
-For this reason, testing recovery for different sub-ranges of the parameters' spectrum can give important insights towards the usefulness and limitations of a given user model or operator class.
+For this reason, testing recovery for different sub-ranges of the parameters' spectrum can give important insights towards the usefulness and limitations of a given user model or user class.
 
-The code below gives an example on how the `_DevelopOperator` bundle provides support in identifying those parameter ranges that can be recovered.
-For this, we will again use the interaction task `MultiBanditTask` and the operator class Win-Stay-Lose-Switch (`WSLS`) with its parameter `epsilon`.
+The code below gives an example on how the `ModelChecks` bundle provides support in identifying those parameter ranges that can be recovered.
+For this, we will again use the interaction task `MultiBanditTask` and the user class Win-Stay-Lose-Switch (`WSLS`) with its parameter `epsilon`.
 This parameter has a theoretical range from `0.0` to `1.0`. We will try to identify the recoverable sub-ranges within those theoretical bounds using the `test_recoverable_parameter_ranges` helper method.
 
 .. code-block:: python
@@ -190,9 +190,9 @@ This parameter has a theoretical range from `0.0` to `1.0`. We will try to ident
     from matplotlib import pyplot as plt
 
     from envs import MultiBanditTask
-    from operators import WSLS, RW, RandomOperator
+    from users import WSLS, RW, RandomPlayer
 
-    from core.bundle import _DevelopOperator
+    from core.bundle import ModelChecks
 
     # Task parameters definition
     N = 2
@@ -202,7 +202,7 @@ This parameter has a theoretical range from `0.0` to `1.0`. We will try to ident
     # Task definition
     multi_bandit_task = MultiBanditTask(N=N, P=P, T=T)
 
-    # Operator definition
+    # User definition
     wsls = WSLS(epsilon=0.1)
 
 First, we specify those parameter ranges that we want to test using the `numpy.linspace` function.
@@ -215,7 +215,7 @@ It returns an object that--among other useful information--gives access to a plo
 .. code-block:: python
 
     # Define bundle for recoverable parameter ranges test
-    wsls_bundle = _DevelopOperator(task=multi_bandit_task, operator=wsls)
+    wsls_bundle = ModelChecks(task=multi_bandit_task, user=wsls)
 
     # Define parameter ranges
     wsls_parameter_ranges = {
