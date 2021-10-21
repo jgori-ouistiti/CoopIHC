@@ -103,22 +103,22 @@ print("## Parameter Recovery: WSLS")
 wsls_bundle = ModelChecks(task=multi_bandit_task, user=wsls)
 
 # Check if WSLS can recover parameters
-# wsls_parameter_recovery_test_result = wsls_bundle.test_parameter_recovery(
-#     parameter_fit_bounds=wsls_parameter_fit_bounds,
-#     correlation_threshold=0.6,
-#     significance_level=0.1,
-#     n_simulations=N_SIMULATIONS,
-#     seed=RANDOM_SEED,
-# )
+wsls_parameter_recovery_test_result = wsls_bundle.test_parameter_recovery(
+    parameter_fit_bounds=wsls_parameter_fit_bounds,
+    correlation_threshold=0.6,
+    significance_level=0.1,
+    n_simulations=N_SIMULATIONS,
+    seed=RANDOM_SEED,
+)
 
-# # Display scatterplot
-# wsls_parameter_recovery_test_result.plot
-# plt.show()
+# Display scatterplot
+wsls_parameter_recovery_test_result.plot
+plt.show()
 
-# # Print result
-# print(
-#     f"WSLS: Parameter recovery was {'successful' if wsls_parameter_recovery_test_result.success else 'unsuccessful'}."
-# )
+# Print result
+print(
+    f"WSLS: Parameter recovery was {'successful' if wsls_parameter_recovery_test_result.success else 'unsuccessful'}."
+)
 
 # %% [markdown]
 # ## Parameter Recovery: RW
@@ -236,3 +236,63 @@ plt.show()
 print(
     f"RW: Parameter recovery possible within these ranges: {recoverable_parameter_ranges_test_result.recoverable_parameter_ranges}"
 )
+
+
+# %% [markdown]
+# ## Model Selection
+#
+# Until now, we have only tested our modeling using simulated data and artificial tests.
+# Since we are fairly confident in our models' ability to be recovered from real-world data, we can proceed to infer the best-fit model from a real-word dataset.
+
+# %%
+# Model Selection
+print("## Model Selection")
+
+# Load real-world dataset
+import pandas as pd
+
+real_world_data = pd.read_csv("../data/WSLS_example.csv")
+
+# Transform dataset to follow convention for model selection
+real_world_data = real_world_data.rename(columns={"choice": "action"})
+
+# Define competing models
+all_user_classes = [
+    {"model": RandomPlayer, "parameter_fit_bounds": {}},
+    {"model": WSLS, "parameter_fit_bounds": wsls_parameter_fit_bounds},
+    {"model": RW, "parameter_fit_bounds": rw_parameter_fit_bounds},
+]
+
+# Determine best-fit models
+best_fit_models, _ = ModelChecks.best_fit_models(
+    task=multi_bandit_task, all_user_classes=all_user_classes, data=real_world_data
+)
+
+# Print result
+best_fit_model = best_fit_models[0]
+best_fit_model_name = best_fit_model["model"].__name__
+best_fit_model_parameters = best_fit_model["parameters"]
+print(
+    f"Best-fit model: {best_fit_model_name} (Parameters: {best_fit_model_parameters})"
+)
+
+# %% [markdown]
+# ## Parameter Inference
+#
+# In the example above, we do not know the model that best fits the real-world data.
+# If, however, we are only interested in the best-fit parameter values for one particular model, we can also use the provided method to just infer those parameters for one specified model.
+
+# %%
+# Parameter Inference
+print("## Parameter Inference")
+
+# Determine best-fit parameter values
+best_fit_parameters, _ = ModelChecks.best_fit_parameters(
+    task=multi_bandit_task,
+    user_class=WSLS,
+    parameter_fit_bounds=wsls_parameter_fit_bounds,
+    data=real_world_data,
+)
+
+# Print result
+print(f"Best-fit parameters: {best_fit_parameters}")

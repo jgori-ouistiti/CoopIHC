@@ -22,7 +22,7 @@ class MultiBanditTask(InteractionTask):
         self.rng = np.random.default_rng(seed=seed)
 
     def _is_done(self):
-        return self.round >= self.T - 1
+        return self.round >= self.T
 
     def user_step(self, user_action):
         super().user_step(user_action)

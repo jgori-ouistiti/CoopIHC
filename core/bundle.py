@@ -1610,7 +1610,8 @@ class ModelChecks(Bundle):
             for _ in range(n_recovery_trials_per_simulation):
 
                 # Determine best-fit parameter values
-                best_fit_parameters, _ = self.best_fit_parameters(
+                best_fit_parameters, _ = ModelChecks.best_fit_parameters(
+                    task=self.task,
                     user_class=self.user.__class__,
                     parameter_fit_bounds=parameter_fit_bounds,
                     data=simulated_data,
@@ -1727,15 +1728,17 @@ class ModelChecks(Bundle):
         return simulated_data
 
     def best_fit_parameters(
-        self,
+        task,
         user_class,
         parameter_fit_bounds,
         data,
-        random_number_generator=None,
+        random_number_generator=numpy.random.default_rng(),
         **kwargs,
     ):
         """Returns a list of the parameters with their best-fit values based on the supplied data.
 
+        :param task: The interaction task to be performed
+        :type task: core.interactiontask.InteractionTask
         :param user_class: The user class to find best-fit parameters for
         :type user_class: core.agents.BaseAgent
         :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
@@ -1744,7 +1747,7 @@ class ModelChecks(Bundle):
         :param data: The behavioral data to infer the best-fit parameters from
         :type data: pandas.DataFrame
         :param random_number_generator: The random number generator which controls how the 'true' parameter values are
-            generated, defaults to None
+            generated, defaults to numpy.random.default_rng()
         :type random_number_generator: numpy.random.Generator, optional
         :return: A list of the parameters with their best-fit values based on the supplied data
         :rtype: list
@@ -1753,7 +1756,8 @@ class ModelChecks(Bundle):
         if not len(parameter_fit_bounds) > 0:
             # Calculate the negative log likelihood for the data without parameters...
             best_parameters = []
-            ll = self._log_likelihood(
+            ll = ModelChecks._log_likelihood(
+                task=task,
                 user_class=user_class,
                 parameter_values=best_parameters,
                 data=data,
@@ -1774,10 +1778,10 @@ class ModelChecks(Bundle):
 
         # Run the optimizer
         res = scipy.optimize.minimize(
-            fun=self._objective,
+            fun=ModelChecks._objective,
             x0=initial_guess,
             bounds=[fit_bounds for _, fit_bounds in parameter_fit_bounds.items()],
-            args=(user_class, data),
+            args=(task, user_class, data),
             **kwargs,
         )
 
@@ -1798,9 +1802,11 @@ class ModelChecks(Bundle):
 
         return best_parameters, best_objective_value
 
-    def _log_likelihood(self, user_class, parameter_values, data):
+    def _log_likelihood(task, user_class, parameter_values, data):
         """Returns the log-likelihood of the specified parameter values given the provided data.
 
+        :param task: The interaction task to be performed
+        :type task: core.interactiontask.InteractionTask
         :param user_class: The user class to compute the log-likelihood for
         :type user_class: core.agents.BaseAgent
         :param parameter_values: A list of the parameter values to compute the log-likelihood for
@@ -1821,7 +1827,7 @@ class ModelChecks(Bundle):
             agent = user_class(*parameter_values)
 
         # Bundle definition
-        bundle = Bundle(task=self.task, user=agent)
+        bundle = Bundle(task=task, user=agent)
 
         bundle.reset()
 
@@ -1850,11 +1856,13 @@ class ModelChecks(Bundle):
 
         return numpy.sum(ll)
 
-    def _objective(self, parameter_values, user_class, data):
+    def _objective(parameter_values, task, user_class, data):
         """Returns the negative log-likelihood of the specified parameter values given the provided data.
 
         :param parameter_values: A list of the parameter values to compute the log-likelihood for
         :type parameter_values: list
+        :param task: The interaction task to be performed
+        :type task: core.interactiontask.InteractionTask
         :param user_class: The user class to calculate the negative log-likelihood for
         :type user_class: core.agents.BaseAgent
         :param data: The behavioral data to compute the log-likelihood for
@@ -1864,8 +1872,11 @@ class ModelChecks(Bundle):
         """
         # Since we will look for the minimum,
         # let's return -LLS instead of LLS
-        return -self._log_likelihood(
-            user_class=user_class, parameter_values=parameter_values, data=data
+        return -ModelChecks._log_likelihood(
+            task=task,
+            user_class=user_class,
+            parameter_values=parameter_values,
+            data=data,
         )
 
     def _correlations_plot(parameter_fit_bounds, data, statistics=None, kind="reg"):
@@ -2228,7 +2239,8 @@ class ModelChecks(Bundle):
                     )
 
                     # Determine best-fit models
-                    best_fit_models, _ = self.best_fit_models(
+                    best_fit_models, _ = ModelChecks.best_fit_models(
+                        task=self.task,
                         all_user_classes=all_user_classes,
                         data=simulated_data,
                         method=method,
@@ -2240,7 +2252,11 @@ class ModelChecks(Bundle):
                     idx_min = [
                         user_class_index
                         for user_class_index, user_class in enumerate(all_user_classes)
-                        if user_class in best_fit_models
+                        if user_class["model"].__name__
+                        in [
+                            best_fit_model["model"].__name__
+                            for best_fit_model in best_fit_models
+                        ]
                     ]
 
                     # Add result in matrix
@@ -2260,16 +2276,18 @@ class ModelChecks(Bundle):
         return confusion
 
     def best_fit_models(
-        self,
+        task,
         all_user_classes,
         data,
         method="BIC",
-        random_number_generator=None,
+        random_number_generator=numpy.random.default_rng(),
         **kwargs,
     ):
         """Returns a list of the recovered best-fit model(s) based on the BIC-score and
         a list of dictionaries containing the BIC-score for all competing models.
 
+        :param task: The interaction task to be performed
+        :type task: core.interactiontask.InteractionTask
         :param all_user_classes: The user models that are competing and can be
         recovered (example: `[{"model": UserClass, "parameter_fit_bounds": {"alpha": (0., 1.), ...}}, ...]`)
         :type all_user_classes: list(dict)
@@ -2278,7 +2296,7 @@ class ModelChecks(Bundle):
         :param method: The metric by which to choose the recovered model, should be one of "BIC" (Bayesian Information Criterion)
             or "AIC" (Akaike Information Criterion), defaults to "BIC"
         :type method: str, optional
-        :param random_number_generator: The random number generator which controls how the initial guess for the parameter values are generated, defaults to None
+        :param random_number_generator: The random number generator which controls how the initial guess for the parameter values are generated, defaults to numpy.random.default_rng()
         :type random_number_generator: numpy.Generator, optional
         :return: A list of the recovered best-fit model(s) based on the BIC-score and
         a list of dictionaries containing the BIC-score for all competing models
@@ -2298,6 +2316,9 @@ class ModelChecks(Bundle):
         # Container for BIC scores
         bs_scores = numpy.zeros(n_models)
 
+        # Container for best-fit parameters
+        all_best_fit_parameters = []
+
         # For each model
         for k, user_class_to_fit in enumerate(all_user_classes):
 
@@ -2305,7 +2326,11 @@ class ModelChecks(Bundle):
             parameters_for_fit = user_class_to_fit["parameter_fit_bounds"]
 
             # Determine best-fit parameter values
-            _, best_fit_objective_value = self.best_fit_parameters(
+            (
+                best_fit_parameters,
+                best_fit_objective_value,
+            ) = ModelChecks.best_fit_parameters(
+                task=task,
                 user_class=m_to_fit,
                 parameter_fit_bounds=parameters_for_fit,
                 data=data,
@@ -2326,6 +2351,9 @@ class ModelChecks(Bundle):
             else:
                 raise NotImplementedError("method has to be one of 'BIC' or 'AIC'")
 
+            # Store best-fit parameters
+            all_best_fit_parameters.append(best_fit_parameters)
+
         # Get minimum value for BIC/AIC (min => best)
         min_score = numpy.min(bs_scores)
 
@@ -2333,7 +2361,11 @@ class ModelChecks(Bundle):
         idx_min = numpy.flatnonzero(bs_scores == min_score)
 
         # Identify best-fit models
-        best_fit_models = [all_user_classes[i] for i in idx_min]
+        best_fit_models = []
+        for i in idx_min:
+            best_fit_model = copy(all_user_classes[i])
+            best_fit_model["parameters"] = all_best_fit_parameters[i]
+            best_fit_models.append(best_fit_model)
 
         # Create list for all models and their BIC/AIC scores
         all_bic_scores = [
@@ -2613,7 +2645,8 @@ class ModelChecks(Bundle):
                             for current_parameter_name, current_parameter_fit_bounds in parameter_fit_bounds.items()
                         }
                         # Determine best-fit parameter values
-                        best_fit_parameters, _ = self.best_fit_parameters(
+                        best_fit_parameters, _ = ModelChecks.best_fit_parameters(
+                            task=self.task,
                             user_class=self.user.__class__,
                             parameter_fit_bounds=parameter_fit_bounds,
                             data=simulated_data,

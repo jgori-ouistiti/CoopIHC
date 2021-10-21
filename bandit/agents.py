@@ -1,4 +1,4 @@
-from .inference import RWInference
+from bandit.inference import RWInference
 
 import numpy as np
 

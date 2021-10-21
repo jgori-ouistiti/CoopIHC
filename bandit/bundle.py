@@ -6,7 +6,7 @@ from core.bundle import Bundle
 
 N = 2
 P = [0.5, 0.75]
-T = 2
+T = 5
 
 # Task definition
 multi_bandit_task = MultiBanditTask(N=N, P=P, T=T)
@@ -18,8 +18,8 @@ rw = RW(q_alpha=0.1, q_beta=2.0)
 
 # Bundle definition
 # bundle = Bundle(task=multi_bandit_task, user=random_player)
-# bundle = Bundle(task=multi_bandit_task, user=wsls)
-bundle = Bundle(task=multi_bandit_task, user=rw)
+bundle = Bundle(task=multi_bandit_task, user=wsls)
+# bundle = Bundle(task=multi_bandit_task, user=rw)
 
 bundle.reset()
 bundle.render("text")
@@ -28,7 +28,7 @@ choices = []
 rewards = []
 
 while True:
-    game_state, round_rewards, is_done, _ = bundle.step()
+    game_state, round_rewards, is_done = bundle.step()
 
     choice = game_state["task_state"]["last_action"]["values"][0][0][0]
 
