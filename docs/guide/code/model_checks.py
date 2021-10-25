@@ -46,7 +46,7 @@ print("Imports complete.")
 
 # %%
 # Seed for reproduceability of the 'true' parameters
-RANDOM_SEED = 12345
+RANDOM_SEED = 42
 
 # Task parameters definition
 N = 2
@@ -242,7 +242,8 @@ print(
 # ## Model Selection
 #
 # Until now, we have only tested our modeling using simulated data and artificial tests.
-# Since we are fairly confident in our models' ability to be recovered from real-world data, we can proceed to infer the best-fit model from a real-word dataset.
+# Since we are fairly confident in our models' ability to be recovered from real-world data,
+# we can proceed to infer the best-fit model from a real-word dataset.
 
 # %%
 # Model Selection
@@ -280,7 +281,8 @@ print(
 # ## Parameter Inference
 #
 # In the example above, we do not know the model that best fits the real-world data.
-# If, however, we are only interested in the best-fit parameter values for one particular model, we can also use the provided method to just infer those parameters for one specified model.
+# If, however, we are only interested in the best-fit parameter values for one particular model,
+# we can also use the provided method to just infer those parameters for one specified model.
 
 # %%
 # Parameter Inference
