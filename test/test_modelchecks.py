@@ -4,16 +4,12 @@ import numpy as np
 import pandas as pd
 import matplotlib.axes
 
-# Import task and operators
+# Import task and users
 from bandit.envs import MultiBanditTask
-from bandit.operators import RW, WSLS, RandomOperator
+from bandit.agents import RW, WSLS, RandomPlayer
 
 # Import development helper bundle
-from core.bundle import _DevelopOperator
-
-# Disable additional logging
-from loguru import logger
-logger.remove()
+from core.bundle import ModelChecks
 
 # Seed for reproduceability of the 'true' parameters
 RANDOM_SEED = 12345
@@ -26,13 +22,13 @@ T = 100
 # Task definition
 multi_bandit_task = MultiBanditTask(N=N, P=P, T=T)
 
-# Operator definitions
+# User definitions
 wsls = WSLS(epsilon=0.1)
-rw = RW(q_alpha=0.1, q_beta=1.)
+rw = RW(q_alpha=0.1, q_beta=1.0)
 
-# Parameter fit bounds for operators
-wsls_parameter_fit_bounds = {"epsilon": (0., 1.)}
-rw_parameter_fit_bounds = {"q_alpha": (0., 1.), "q_beta": (0., 20.)}
+# Parameter fit bounds for users
+wsls_parameter_fit_bounds = {"epsilon": (0.0, 1.0)}
+rw_parameter_fit_bounds = {"q_alpha": (0.0, 1.0), "q_beta": (0.0, 20.0)}
 
 # Population size
 N_SIMULATIONS = 20
@@ -40,8 +36,7 @@ N_SIMULATIONS = 20
 
 def test_parameter_recovery():
     # Define bundle for model checks
-    wsls_bundle = _DevelopOperator(
-        task=multi_bandit_task, operator=wsls)
+    wsls_bundle = ModelChecks(task=multi_bandit_task, user=wsls)
 
     # Define thresholds
     CORRELATION_THRESHOLD = 0.6
@@ -53,13 +48,14 @@ def test_parameter_recovery():
         correlation_threshold=CORRELATION_THRESHOLD,
         significance_level=SIGNIFICANCE_LEVEL,
         n_simulations=N_SIMULATIONS,
-        seed=RANDOM_SEED)
+        seed=RANDOM_SEED,
+    )
 
     # Check if parameter recovery was successful
     assert parameter_recovery_result.success
 
     # Check recovery result's correlation data
-    assert hasattr(parameter_recovery_result, 'correlation_data')
+    assert hasattr(parameter_recovery_result, "correlation_data")
     assert type(parameter_recovery_result.correlation_data) is pd.DataFrame
     assert "Subject" in parameter_recovery_result.correlation_data.columns
     assert "Parameter" in parameter_recovery_result.correlation_data.columns
@@ -68,27 +64,33 @@ def test_parameter_recovery():
     assert len(parameter_recovery_result.correlation_data) == N_SIMULATIONS
 
     # Check recovery result's threshold information
-    assert hasattr(parameter_recovery_result, 'correlation_treshold')
+    assert hasattr(parameter_recovery_result, "correlation_treshold")
     assert type(parameter_recovery_result.correlation_threshold) is float
     assert parameter_recovery_result.correlation_threshold == CORRELATION_THRESHOLD
 
-    assert hasattr(parameter_recovery_result, 'significance_level')
+    assert hasattr(parameter_recovery_result, "significance_level")
     assert type(parameter_recovery_result.significance_level) is float
     assert parameter_recovery_result.significance_level == SIGNIFICANCE_LEVEL
 
     # Check recovery result's number of simulations information
-    assert hasattr(parameter_recovery_result, 'n_simulations')
+    assert hasattr(parameter_recovery_result, "n_simulations")
     assert type(parameter_recovery_result.n_simulations) is int
     assert parameter_recovery_result.n_simulations == N_SIMULATIONS
 
     # Check recovery result's correlation statistics
-    assert hasattr(parameter_recovery_result, 'correlation_statistics')
+    assert hasattr(parameter_recovery_result, "correlation_statistics")
     assert type(parameter_recovery_result.correlation_statistics) is pd.DataFrame
     assert "parameter" in parameter_recovery_result.correlation_statistics.columns
     assert "r" in parameter_recovery_result.correlation_statistics.columns
     assert "p" in parameter_recovery_result.correlation_statistics.columns
-    assert f"r>{parameter_recovery_result.correlation_threshold}" in parameter_recovery_result.correlation_statistics.columns
-    assert f"p<{parameter_recovery_result.significance_level}" in parameter_recovery_result.correlation_statistics.columns
+    assert (
+        f"r>{parameter_recovery_result.correlation_threshold}"
+        in parameter_recovery_result.correlation_statistics.columns
+    )
+    assert (
+        f"p<{parameter_recovery_result.significance_level}"
+        in parameter_recovery_result.correlation_statistics.columns
+    )
     parameter_count = len(wsls_parameter_fit_bounds)
     assert len(parameter_recovery_result.correlation_statistics) == parameter_count
 
@@ -97,17 +99,17 @@ def test_parameter_recovery():
     assert parameter_recovery_result.recovered_parameters_correlate
 
     # Check recovery result's plot
-    assert hasattr(parameter_recovery_result, 'plot')
+    assert hasattr(parameter_recovery_result, "plot")
     assert type(parameter_recovery_result.plot) is matplotlib.axes.Axes
 
 
 def test_model_recovery():
     # Define bundle for model checks
-    rw_bundle = _DevelopOperator(task=multi_bandit_task, operator=rw)
+    rw_bundle = ModelChecks(task=multi_bandit_task, user=rw)
 
     # Define competing models
     other_competing_models = [
-        {"model": RandomOperator, "parameter_fit_bounds": {}},
+        {"model": RandomPlayer, "parameter_fit_bounds": {}},
         {"model": WSLS, "parameter_fit_bounds": wsls_parameter_fit_bounds},
     ]
 
@@ -120,13 +122,14 @@ def test_model_recovery():
         this_parameter_fit_bounds=rw_parameter_fit_bounds,
         f1_threshold=F1_THRESHOLD,
         n_simulations_per_model=N_SIMULATIONS,
-        seed=RANDOM_SEED)
+        seed=RANDOM_SEED,
+    )
 
     # Check if model recovery was successful
     assert model_recovery_result.success
 
     # Check recovery result's confusion matrix data
-    assert hasattr(model_recovery_result, 'confusion_data')
+    assert hasattr(model_recovery_result, "confusion_data")
     assert type(model_recovery_result.confusion_data) is pd.DataFrame
     for competitor in other_competing_models + {"model": RW}:
         model_class_name = type(competitor.model).__name__
@@ -135,17 +138,17 @@ def test_model_recovery():
     assert len(model_recovery_result.confusion_data) == all_competing_models_count
 
     # Check recovery result's threshold information
-    assert hasattr(model_recovery_result, 'f1_threshold')
+    assert hasattr(model_recovery_result, "f1_threshold")
     assert type(model_recovery_result.f1_threshold) is float
     assert model_recovery_result.f1_threshold == F1_THRESHOLD
 
     # Check recovery result's number of simulations information
-    assert hasattr(model_recovery_result, 'n_simulations_per_model')
+    assert hasattr(model_recovery_result, "n_simulations_per_model")
     assert type(model_recovery_result.n_simulations_per_model) is int
     assert model_recovery_result.n_simulations_per_model == N_SIMULATIONS
 
     # Check recovery result's robustness statistics
-    assert hasattr(model_recovery_result, 'robustness_statistics')
+    assert hasattr(model_recovery_result, "robustness_statistics")
     assert type(model_recovery_result.robustness_statistics) is pd.DataFrame
     assert "model" in model_recovery_result.robustness_statistics.columns
     assert "Recall" in model_recovery_result.robustness_statistics.columns
@@ -153,19 +156,22 @@ def test_model_recovery():
     assert "Precision" in model_recovery_result.robustness_statistics.columns
     assert "Precision [CI]" in model_recovery_result.robustness_statistics.columns
     assert "F1 score" in model_recovery_result.robustness_statistics.columns
-    assert f"f1>{model_recovery_result.f1_threshold}" in model_recovery_result.robustness_statistics.columns
-    assert len(
-        model_recovery_result.robustness_statistics) == all_competing_models_count
+    assert (
+        f"f1>{model_recovery_result.f1_threshold}"
+        in model_recovery_result.robustness_statistics.columns
+    )
+    assert (
+        len(model_recovery_result.robustness_statistics) == all_competing_models_count
+    )
 
     # Check recovery result's plot
-    assert hasattr(model_recovery_result, 'confusion_matrix')
+    assert hasattr(model_recovery_result, "confusion_matrix")
     assert type(model_recovery_result.confusion_matrix) is matplotlib.axes.Axes
 
 
 def test_recoverable_parameter_ranges():
     # Define bundle for model checks
-    wsls_bundle = _DevelopOperator(
-        task=multi_bandit_task, operator=wsls)
+    wsls_bundle = ModelChecks(task=multi_bandit_task, user=wsls)
 
     # Define thresholds
     CORRELATION_THRESHOLD = 0.7
@@ -182,71 +188,96 @@ def test_recoverable_parameter_ranges():
         correlation_threshold=CORRELATION_THRESHOLD,
         significance_level=SIGNIFICANCE_LEVEL,
         n_simulations_per_sub_range=N_SIMULATIONS,
-        seed=RANDOM_SEED)
+        seed=RANDOM_SEED,
+    )
 
     # Check if recoverable parameter ranges could be identified
     assert recoverable_parameter_ranges_result.success
 
     # Check recovery result's correlation data
-    assert hasattr(recoverable_parameter_ranges_result, 'correlation_data')
-    assert type(
-        recoverable_parameter_ranges_result.correlation_data) is pd.DataFrame
+    assert hasattr(recoverable_parameter_ranges_result, "correlation_data")
+    assert type(recoverable_parameter_ranges_result.correlation_data) is pd.DataFrame
     assert "Subject" in recoverable_parameter_ranges_result.correlation_data.columns
     assert "Parameter" in recoverable_parameter_ranges_result.correlation_data.columns
-    assert "Used to simulate" in recoverable_parameter_ranges_result.correlation_data.columns
+    assert (
+        "Used to simulate"
+        in recoverable_parameter_ranges_result.correlation_data.columns
+    )
     assert "Recovered" in recoverable_parameter_ranges_result.correlation_data.columns
 
     # Check recovery result's threshold information
-    assert hasattr(recoverable_parameter_ranges_result, 'correlation_treshold')
-    assert type(
-        recoverable_parameter_ranges_result.correlation_threshold) is float
-    assert recoverable_parameter_ranges_result.correlation_threshold == CORRELATION_THRESHOLD
+    assert hasattr(recoverable_parameter_ranges_result, "correlation_treshold")
+    assert type(recoverable_parameter_ranges_result.correlation_threshold) is float
+    assert (
+        recoverable_parameter_ranges_result.correlation_threshold
+        == CORRELATION_THRESHOLD
+    )
 
-    assert hasattr(recoverable_parameter_ranges_result, 'significance_level')
+    assert hasattr(recoverable_parameter_ranges_result, "significance_level")
     assert type(recoverable_parameter_ranges_result.significance_level) is float
     assert recoverable_parameter_ranges_result.significance_level == SIGNIFICANCE_LEVEL
 
-    assert hasattr(recoverable_parameter_ranges_result,
-                   'recovered_parameter_correlation_threshold')
-    assert recoverable_parameter_ranges_result.recovered_parameter_correlation_threshold is None
+    assert hasattr(
+        recoverable_parameter_ranges_result, "recovered_parameter_correlation_threshold"
+    )
+    assert (
+        recoverable_parameter_ranges_result.recovered_parameter_correlation_threshold
+        is None
+    )
 
     # Check recovery result's number of simulations information
-    assert hasattr(recoverable_parameter_ranges_result,
-                   'n_simulations_per_sub_range')
-    assert type(
-        recoverable_parameter_ranges_result.n_simulations_per_sub_range) is int
-    assert recoverable_parameter_ranges_result.n_simulations_per_sub_range == N_SIMULATIONS
+    assert hasattr(recoverable_parameter_ranges_result, "n_simulations_per_sub_range")
+    assert type(recoverable_parameter_ranges_result.n_simulations_per_sub_range) is int
+    assert (
+        recoverable_parameter_ranges_result.n_simulations_per_sub_range == N_SIMULATIONS
+    )
 
     # Check recovery result's correlation statistics
-    assert hasattr(recoverable_parameter_ranges_result,
-                   'correlation_statistics')
-    assert type(
-        recoverable_parameter_ranges_result.correlation_statistics) is pd.DataFrame
-    assert "parameter" in recoverable_parameter_ranges_result.correlation_statistics.columns
+    assert hasattr(recoverable_parameter_ranges_result, "correlation_statistics")
+    assert (
+        type(recoverable_parameter_ranges_result.correlation_statistics) is pd.DataFrame
+    )
+    assert (
+        "parameter"
+        in recoverable_parameter_ranges_result.correlation_statistics.columns
+    )
     assert "r" in recoverable_parameter_ranges_result.correlation_statistics.columns
     assert "p" in recoverable_parameter_ranges_result.correlation_statistics.columns
-    assert f"r>{recoverable_parameter_ranges_result.correlation_threshold}" in recoverable_parameter_ranges_result.correlation_statistics.columns
-    assert f"p<{recoverable_parameter_ranges_result.significance_level}" in recoverable_parameter_ranges_result.correlation_statistics.columns
+    assert (
+        f"r>{recoverable_parameter_ranges_result.correlation_threshold}"
+        in recoverable_parameter_ranges_result.correlation_statistics.columns
+    )
+    assert (
+        f"p<{recoverable_parameter_ranges_result.significance_level}"
+        in recoverable_parameter_ranges_result.correlation_statistics.columns
+    )
     parameter_count = len(wsls_parameter_fit_bounds)
-    assert len(
-        recoverable_parameter_ranges_result.correlation_statistics) == parameter_count
+    assert (
+        len(recoverable_parameter_ranges_result.correlation_statistics)
+        == parameter_count
+    )
 
     # Check recovery result's success flags
-    assert recoverable_parameter_ranges_result.parameters_can_be_recovered_for_entire_range
+    assert (
+        recoverable_parameter_ranges_result.parameters_can_be_recovered_for_entire_range
+    )
     assert recoverable_parameter_ranges_result.recovered_parameters_correlate
 
     # Check recovery result's plot
-    assert hasattr(recoverable_parameter_ranges_result, 'plot')
-    assert type(
-        recoverable_parameter_ranges_result.plot) is matplotlib.axes.Axes
+    assert hasattr(recoverable_parameter_ranges_result, "plot")
+    assert type(recoverable_parameter_ranges_result.plot) is matplotlib.axes.Axes
 
     # Check recovery result's recoverable ranges
-    assert hasattr(recoverable_parameter_ranges_result,
-                   'recoverable_parameter_ranges')
-    assert type(
-        recoverable_parameter_ranges_result.recoverable_parameter_ranges) is collections.OrderedDict
+    assert hasattr(recoverable_parameter_ranges_result, "recoverable_parameter_ranges")
+    assert (
+        type(recoverable_parameter_ranges_result.recoverable_parameter_ranges)
+        is collections.OrderedDict
+    )
     if recoverable_parameter_ranges_result.success:
-        for parameter_name, recoverable_ranges in recoverable_parameter_ranges_result.recoverable_parameter_ranges.items():
+        for (
+            parameter_name,
+            recoverable_ranges,
+        ) in recoverable_parameter_ranges_result.recoverable_parameter_ranges.items():
             assert parameter_name in wsls_parameter_ranges.keys()
             assert type(recoverable_ranges) is list
             assert len(recoverable_ranges) > 0
