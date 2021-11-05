@@ -157,6 +157,7 @@ class _Bundle:
 
         while self.turn_number != go_to_turn or (not _started):
             _started = True
+            # User observes and infers
             if self.turn_number == 0:
                 (
                     user_obs_reward,
@@ -167,6 +168,7 @@ class _Bundle:
                     rewards["user_inference_reward"],
                 ) = (user_obs_reward, user_infer_reward)
 
+            # User takes action and receives reward from task
             elif self.turn_number == 1:
                 if user_action is None:
                     user_action, user_policy_reward = self.user._take_action()
@@ -177,7 +179,11 @@ class _Bundle:
                 rewards["first_task_reward"] = task_reward
                 if is_done:
                     return self.game_state, rewards, is_done
-            elif self.turn_number == 2:
+
+            # Assistant observes and infers
+            elif (
+                self.turn_number == 2 and not self.kwargs.get("name") == "no-assistant"
+            ):
                 (
                     assistant_obs_reward,
                     assistant_infer_reward,
@@ -186,7 +192,11 @@ class _Bundle:
                     rewards["assistant_observation_reward"],
                     rewards["assistant_inference_reward"],
                 ) = (assistant_obs_reward, assistant_infer_reward)
-            elif self.turn_number == 3:
+
+            # Assistant takes action and receives reward from task
+            elif (
+                self.turn_number == 3 and not self.kwargs.get("name") == "no-assistant"
+            ):
                 if assistant_action is None:
                     (
                         assistant_action,
@@ -205,6 +215,8 @@ class _Bundle:
             self.turn_number = (self.turn_number + 1) % 4
 
         self.round_number += 1
+        self.task.round += 1
+
         return self.game_state, rewards, False
 
     def render(self, mode, *args, **kwargs):

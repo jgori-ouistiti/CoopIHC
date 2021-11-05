@@ -114,8 +114,6 @@ class InteractionTask(ABC):
 
         :meta public:
         """
-        self.round += 1
-
         ret = self.assistant_step(*args, **kwargs)
         if ret is None:
             return self.state, -1 / 2, False, {}
