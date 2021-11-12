@@ -61,12 +61,23 @@ class WSLS(GenericPlayer):
             p_apply_rule = 1 - self.epsilon
             p_random = self.epsilon / self.N
 
+            p_stay = p_apply_rule + p_random
+            p_switch = p_apply_rule / (self.N - 1) + p_random
+
+            # If last choice resulted in a success...
             if last_reward:
+                # The probability of switching...
                 if choice != last_choice:
+                    # ...is determined by epsilon (randomness)
                     return p_random
-                return p_apply_rule + p_random
+                # The probability of staying is determined by 1 - epsilon
+                return p_stay
+            # If the last choice resulted in failure...
+            # The probability of switching...
             if choice != last_choice:
-                return p_apply_rule / (self.N - 1) + p_random
+                # ...is determined by 1 - epsilon
+                return p_switch
+            # The probability of staying is determined by epsilon (randomess)
             return p_random
 
         super().__init__(user_model=user_model, seed=seed)

@@ -28,6 +28,9 @@ jupyter = "*"
 tqdm = "*"
 seaborn = "*"
 statsmodels = "*"
+numpyro = "*"
+torch = "*"
+pyro-ppl = "*"
 
 [dev-packages]
 autopep8 = "*"

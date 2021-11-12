@@ -1,4 +1,6 @@
 # Core libraries
+from typing import Dict, List, Tuple
+from core.agents import BaseAgent
 from core.bundle import Bundle
 from core.helpers import (
     order_class_parameters_by_signature,
@@ -23,6 +25,10 @@ import ast
 import statsmodels.stats.proportion
 from tabulate import tabulate
 from collections import OrderedDict
+import pyro
+import pyro.distributions
+import torch
+import jax
 
 
 class ModelChecks(Bundle):
@@ -63,6 +69,493 @@ class ModelChecks(Bundle):
     class ParameterRecoveryTestResult:
         """Represents the results of a test for parameter recovery."""
 
+        n_simulations: int
+        """The number of agents that were simulated (i.e. the population size) for the parameter recovery"""
+
+        parameter_fit_bounds: Dict[str, Tuple[float, float]]
+        """The parameter names and associated minimum and maximum values used to set the plot axis limits."""
+
+    @dataclass
+    class BayesianParameterRecoveryTestResult(ParameterRecoveryTestResult):
+        """Represents the results of a test for parameter recovery using a Bayesian approach."""
+
+        success: bool
+        """`True` if all parameters can be recovered, `False` otherwise"""
+
+        parameter_priors: Dict[str, pyro.distributions.Distribution]
+        """The parameter names and associated priors that were used to test the parameter recovery."""
+
+        @dataclass
+        class Simulation:
+            """Represents a single run of parameter recovery for one agent and its simulated actions."""
+
+            id: int
+            "The ID for this simulation or run."
+
+            user: BaseAgent
+            "The artificial agent that was generated for this run."
+
+            data: pd.DataFrame
+            "The simulated behavioral data for this run."
+
+            mcmc: pyro.infer.MCMC
+            """The Markov Chain Monte Carlo (MCMM) algorithm used for the Bayesian inference."""
+
+            true_parameters: Dict[str, float]
+            """The parameter values that were used to generate the simulated data (also accessible via the user)."""
+
+            parameter_fit_bounds: Dict[str, Tuple[float, float]]
+            """The parameter names and associated minimum and maximum values used to set the plot axis limits."""
+
+            def plot(self):
+                """Plot the posterior distributions for all parameters."""
+                # Construct posterior plot
+                mcmc_samples = {
+                    k: v.numpy() for k, v in self.mcmc.get_samples().items()
+                }
+                ModelChecks._posterior_plot(
+                    parameter_fit_bounds=self.parameter_fit_bounds,
+                    mcmc_samples=mcmc_samples,
+                )
+
+        simulations: List[Simulation]
+        """A list of the simulated agents and Bayesian parameter inference results for those agents."""
+
+        def plot(self):
+            """Plot the Bayesian parameter recovery results for all parameters."""
+            # Literals definition
+            PARAMETER = "Parameter"
+            USED_TO_SIMULATE = "Used to simulate"
+            RECOVERED = "Recovered"
+
+            # Prepare MCMC samples for plotting
+            all_mcmc_samples = [
+                {
+                    PARAMETER: param_name,
+                    USED_TO_SIMULATE: true_param_value,
+                    RECOVERED: mcmc_sample,
+                }
+                for simulation in self.simulations
+                for param_name, true_param_value in simulation.true_parameters.items()
+                for mcmc_sample in {
+                    k: v.numpy() for k, v in simulation.mcmc.get_samples().items()
+                }[param_name]
+            ]
+            mcmc_samples_df = pd.DataFrame(all_mcmc_samples)
+
+            # Construct plot for parameter recovery result
+            ModelChecks._bayesian_parameter_recovery_plot(
+                parameter_fit_bounds=self.parameter_fit_bounds,
+                mcmc_samples_df=mcmc_samples_df,
+            )
+
+    def test_bayesian_parameter_recovery(
+        self,
+        parameter_priors,
+        num_mcmc_samples=1000,
+        n_simulations=20,
+        seed=None,
+        **kwargs,
+    ):
+        """Returns whether the recovered user parameters correlate to the used parameters for a simulation given the supplied thresholds
+        and that the recovered parameters do not correlate using a Bayesian approach (test only available for users with a policy
+        that has a compute_likelihood method).
+
+        :param parameter_priors: A dictionary of the parameter names, their prior distributions and bounds that will be used to generate
+            the random parameter values for simulation (example: `{"alpha": {"prior": pyro.distributions.Uniform(0.0, 1.0), "bounds": (0., 1.)},
+            "beta": {"prior": pyro.distributions.Normal(5.0, 1.0), "bounds": (0., 20.)}}`)
+        :type parameter_priors: dict[str, dict]
+        :param num_mcmc_samples: Number of samples to generate from the Markov chain, defaults to 1000
+        :type num_mcmc_samples: int
+        :param n_simulations: The number of agents to simulate (i.e. the population size) for the parameter recovery, defaults to 20
+        :type n_simulations: int, optional
+        :param seed: The seed for the random number generator which controls how the 'true' parameter values are generated, defaults to None
+        :type seed: int, optional
+        :return: The result of the parameter recovery test
+        :rtype: ModelChecks.BayesianParameterRecoveryTestResult
+        """
+        # Make sure user has a policy that can compute likelihood of an action given an observation
+        user_can_compute_likelihood = ModelChecks._user_can_compute_likelihood(
+            self.user
+        )
+
+        # If it cannot compute likelihood...
+        if not user_can_compute_likelihood:
+            # Raise an exception
+            raise ValueError(
+                "Sorry, the given checks are only implemented for user's with a policy that has a compute_likelihood method so far."
+            )
+
+        # Transform the specified dict of parameter fit bounds into an OrderedDict
+        # based on the order of parameters in the user class constructor
+        ordered_parameter_priors = order_class_parameters_by_signature(
+            self.user.__class__, parameter_priors
+        )
+
+        # Compute parameter fit bounds (i.e. min and max value for plots)
+        parameter_fit_bounds = {
+            param_name: param_details["bounds"]
+            for param_name, param_details in ordered_parameter_priors.items()
+        }
+
+        # Literals definition
+        PRIOR = "prior"
+
+        # Define model function to be used with NUTS MCMC
+        def model(observed_data):
+            """A callable representation of the supplied user model.
+
+            :param observed_data: The observed data from which to calculate the posterior distribution
+                for all parameters of the user model.
+            :type observed_data: pandas.DataFrame
+            :return: A tensor of actions taken by the agent at each time step
+            :rtype: torch.tensor
+            """
+            # Transform actions and rewards
+            observed_choices = torch.from_numpy(
+                observed_data.action.apply(lambda action: action[0][0]).values
+            ).float()
+
+            # Calculate number of time steps
+            T = len(observed_choices)
+
+            # Parameters container
+            params = {}
+
+            # For each parameter...
+            for param_name, param_details in ordered_parameter_priors.items():
+                # Sample a value from the prior distribution (e.g. Uniform(0.0, 1.0))
+                # WARNING: Here, the sampled parameter value (a tensor) is transformed to a single float.
+                # This might not be appropriate, if the parameter is non-numeric or multi-dimensional.
+                params[param_name] = float(
+                    pyro.sample(param_name, param_details[PRIOR])
+                )
+
+            # Create a new agent with the current parameters
+            agent = self._generate_random_agent(
+                user_class=self.user.__class__,
+                random_parameters=params,
+            )
+
+            # Bundle definition
+            bundle = Bundle(task=self.task, user=agent)
+
+            bundle.reset()
+
+            # Probabilities container for likelihoods of all options at time step t
+            action_stateelement = agent.policy.action_state["action"]
+            possible_actions = action_stateelement.cartesian_product()
+            tensor_llh = torch.zeros(T, len(possible_actions))
+
+            # Simulate the task
+            for t in range(T):
+
+                # Compute likelihood of all actions
+                _, llh = agent.policy.forward_summary(agent.observation)
+
+                # Store likelihood
+                tensor_llh[t] = torch.tensor(llh)
+
+                # Get action that was actually taken at time step t
+                action_values = observed_choices[t]
+                action = agent.policy.new_action
+                action["values"] = action_values
+
+                # Make user take specified action
+                bundle.step(action)
+
+            # The actions' probabilites include potential developments across time.
+            # They are therefore only dependent on the model parameters and can be treated as conditionally independent
+            with pyro.plate("data", len(observed_choices)):
+                # The chosen actions are determined by sampling from a discrete Categorical distribution
+                # with the choice probabilities at that step and the observation of the actual choices
+                # from the simulated data.
+                sampled_actions = pyro.sample(
+                    "actions",
+                    pyro.distributions.Categorical(probs=tensor_llh),
+                    obs=observed_choices,
+                )
+                return sampled_actions
+
+        # Random number generators
+        random_number_generator = numpy.random.default_rng(seed)
+        torch_seed = 0 if seed is None else seed
+        torch.manual_seed(torch_seed)
+
+        # Data container for the simulation results
+        simulation_results = []
+
+        # For each of the specified number of simulations...
+        for i in tqdm(range(n_simulations), file=sys.stdout):
+
+            # Define No-U-Turn Sampler (NUTS) and Markov Chain Monte Carlo (MCMC)
+            # The NUTS kernel eliminates the need for hand-tuning of MCMC algorithms.
+            # MCMC is used as a way to infer a parameter distribution for even high-dimensionality
+            # parameters where sampling the parameter values from the posterior is impossible or inefficient.
+            nuts_kernel = pyro.infer.NUTS(model)
+            mcmc = pyro.infer.MCMC(
+                nuts_kernel,
+                num_samples=num_mcmc_samples,
+                disable_progbar=True,
+                **kwargs,
+            )
+
+            # Parameters container
+            params = {}
+
+            # For each parameter...
+            for param_name, param_details in ordered_parameter_priors.items():
+                # Sample a value from the prior distribution (e.g. Uniform(0.0, 1.0))
+                # WARNING: Here, the sampled parameter value (a tensor) is transformed to a single float.
+                # This might not be appropriate, if the parameter is non-numeric or multi-dimensional.
+                params[param_name] = float(
+                    pyro.sample(param_name, param_details[PRIOR])
+                )
+
+            # Generate a random agent
+            random_agent = self._generate_random_agent(
+                user_class=self.user.__class__,
+                random_parameters=params,
+            )
+
+            # Store 'true' parameters
+            true_parameters = {
+                param_name: getattr(random_agent, param_name)
+                for param_name in ordered_parameter_priors.keys()
+            }
+
+            # Simulate the task
+            simulated_data = self._simulate(
+                user=random_agent, random_number_generator=random_number_generator
+            )
+
+            # Add column for simulation ID to simulated data
+            id = i + 1
+            simulated_data["subject"] = id
+
+            # Run the MCMC
+            mcmc.run(observed_data=simulated_data)
+
+            # Construct simulation result object and store it
+            simulation_result = (
+                ModelChecks.BayesianParameterRecoveryTestResult.Simulation(
+                    id=id,
+                    user=random_agent,
+                    data=simulated_data,
+                    mcmc=mcmc,
+                    parameter_fit_bounds=parameter_fit_bounds,
+                    true_parameters=true_parameters,
+                )
+            )
+            simulation_results.append(simulation_result)
+
+        # Return test result
+        return ModelChecks.BayesianParameterRecoveryTestResult(
+            success=True,
+            n_simulations=n_simulations,
+            simulations=simulation_results,
+            parameter_priors=parameter_priors,
+            parameter_fit_bounds=parameter_fit_bounds,
+        )
+
+    def _bayesian_parameter_recovery_plot(parameter_fit_bounds, mcmc_samples_df):
+        """Plot the Bayesian parameter recovery results for all parameters.
+
+        :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be
+            used to set the axis limits and titles for the plot (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
+        :type parameter_fit_bounds: dict
+        :mcmc_samples_df: A DataFrame containing the samples from the posterior distribution for all
+            parameter recovery simulations
+        :type mcmc_samples_df: pandas.DataFrame
+        """
+        # Literals definition
+        PARAMETER = "Parameter"
+        USED_TO_SIMULATE = "Used to simulate"
+        RECOVERED = "Recovered"
+
+        # Make sure mcmc_samples_df adheres to required format
+        assert type(mcmc_samples_df) is pd.DataFrame
+        for col_name in [PARAMETER, USED_TO_SIMULATE, RECOVERED]:
+            assert col_name in mcmc_samples_df.columns
+
+        # Calculate number of parameters
+        n_param = len(parameter_fit_bounds)
+
+        # Container
+        param_names = []
+        param_bounds = []
+
+        # Store parameter names and fit bounds in separate lists
+        for (parameter_name, fit_bounds) in parameter_fit_bounds.items():
+            param_names.append(parameter_name)
+            param_bounds.append(fit_bounds)
+
+        # Define colors
+        colors = [f"C{i}" for i in range(n_param)]
+
+        # Create fig and axes
+        _, axes = plt.subplots(ncols=n_param, figsize=(10, 9))
+
+        # For each parameter...
+        for i in range(n_param):
+
+            # Select ax
+            ax = axes
+            if n_param > 1:
+                ax = axes[i]
+
+            # Get param name
+            p_name = param_names[i]
+
+            # Set title
+            ax.set_title(p_name)
+
+            # Create KDE plot
+            sns.scatterplot(
+                data=mcmc_samples_df.loc[mcmc_samples_df[PARAMETER] == p_name],
+                x=USED_TO_SIMULATE,
+                y=RECOVERED,
+                color=colors[i],
+                alpha=0.3,
+                ax=ax,
+            )
+
+            # Plot identity function
+            ax.plot(
+                param_bounds[i],
+                param_bounds[i],
+                linestyle="--",
+                alpha=0.5,
+                color="black",
+                zorder=-10,
+            )
+
+            # Set axes limits
+            ax.set_xlim(*param_bounds[i])
+            ax.set_ylim(*param_bounds[i])
+
+            # Square aspect
+            ax.set_aspect(1)
+
+        plt.show()
+
+    def _posterior_plot(parameter_fit_bounds, mcmc_samples):
+        """Plot the posterior distributions for all parameters.
+
+        :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be
+            used to set the axis limits and titles for the plot (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
+        :type parameter_fit_bounds: dict
+        :param mcmc_samples: A dict of the parameter names and the associated samples from the posterior
+        :type mcmc_samples: dict[str, numpy.ndarray]
+        """
+        # Calculate number of parameters
+        n_param = len(parameter_fit_bounds)
+
+        # Container
+        param_names = []
+        param_bounds = []
+
+        # Store parameter names and fit bounds in separate lists
+        for (parameter_name, fit_bounds) in parameter_fit_bounds.items():
+            param_names.append(parameter_name)
+            param_bounds.append(fit_bounds)
+
+        # Define colors
+        colors = [f"C{i}" for i in range(n_param)]
+
+        # Create fig and axes
+        _, axes = plt.subplots(ncols=n_param, figsize=(10, 9))
+
+        # For each parameter...
+        for i in range(n_param):
+
+            # Select ax
+            ax = axes
+            if n_param > 1:
+                ax = axes[i]
+
+            # Get param name
+            p_name = param_names[i]
+
+            # Set title
+            ax.set_title(p_name)
+
+            # Create distribution plot
+            sns.displot(mcmc_samples[p_name], kde=True, color=colors[i], ax=ax)
+
+            # Set axes limits
+            ax.set_xlim(*param_bounds[i])
+            ax.set_ylim(*param_bounds[i])
+
+            # Square aspect
+            ax.set_aspect(1)
+
+        plt.show()
+
+    def _generate_random_agent(
+        self,
+        user_class,
+        parameter_fit_bounds={},
+        random_parameters={},
+        random_number_generator=numpy.random.default_rng(),
+    ):
+        """Returns an instance of the specified user_class with random parameters (either specified or generated
+        using the parameter_fit_bounds and random_number_generator).
+
+        :param user_class: The class to create the random agent from
+        :type user_class: core.BaseAgent
+        :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
+            the random parameter values for simulation (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
+        :type parameter_fit_bounds: dict
+        :param random_parameters: A dictionary of the parameter names and their value (example: `{"alpha": 0.1, "beta": 5.6}`), defaults to {}
+        :type random_parameters: dict, optional
+        :param random_number_generator: The random number generator which controls how the 'true' parameter values are
+            generated, defaults to numpy.random.default_rng()
+        :type random_number_generator: numpy.random.Generator, optional
+        :return: An instance of the specified user_class with random parameters (either specified or generated
+            using the parameter_fit_bounds and random_number_generator)
+        :rtype: core.BaseAgent
+        """
+        # Get attributes from self.user for initialization
+        attributes_from_self_user = {
+            attr: getattr(self.user, attr)
+            for attr in dir(self.user)
+            if attr in inspect.signature(self.user.__class__).parameters
+        }
+
+        # Prepare variable
+        random_agent = None
+
+        # If no parameters were specified...
+        if not len(parameter_fit_bounds) > 0 and not len(random_parameters) > 0:
+            if user_class == self.user.__class__:
+                # Just use the init attributes
+                random_agent = user_class(**attributes_from_self_user)
+            else:
+                random_agent = user_class()
+
+        # If parameters were specified
+        else:
+            if not len(random_parameters) > 0:
+                # Generate random parameter values inside fit bounds
+                random_parameters = ModelChecks._random_parameters(
+                    parameter_fit_bounds=parameter_fit_bounds,
+                    random_number_generator=random_number_generator,
+                )
+            if user_class == self.user.__class__:
+                # Create random agent with random parameter values
+                random_agent = user_class(
+                    **{**attributes_from_self_user, **random_parameters}
+                )
+            else:
+                random_agent = user_class(**random_parameters)
+
+        return random_agent
+
+    @dataclass
+    class FrequentistParameterRecoveryTestResult(ParameterRecoveryTestResult):
+        """Represents the results of a test for parameter recovery."""
+
         correlation_data: pd.DataFrame
         """The 'true' and recovered parameter value pairs"""
 
@@ -75,110 +568,33 @@ class ModelChecks(Bundle):
         recovered_parameters_correlate: bool
         """`True` if any correlation between two recovered parameters exceeds the supplied threshold, `False` otherwise"""
 
-        plot: matplotlib.axes.Axes
-        """The scatterplot displaying the 'true' and recovered parameter values for each parameter"""
-
         correlation_threshold: float
         """The threshold for Pearson's r value (i.e. the correlation coefficient between the used and recovered parameters)"""
 
         significance_level: float
         """The threshold for the p-value to consider the correlation significant"""
 
-        n_simulations: int
-        """The number of agents that were simulated (i.e. the population size) for the parameter recovery"""
+        simulated_data: pd.DataFrame
+        """A DataFrame containing the behavioral data from simulating the given task with the specified user"""
 
         @property
         def success(self):
             """`True` if all parameters can be recovered and none of the recovered parameters correlate, `False` otherwise"""
             return (
-                self.parameters_can_be_recovered and self.recovered_parameters_correlate
+                self.parameters_can_be_recovered
+                and not self.recovered_parameters_correlate
+            )
+
+        def plot(self):
+            """Plot the correlation between the true and recovered parameters."""
+            # Plot the correlations between the used and recovered parameters as a graph
+            ModelChecks._correlations_plot(
+                parameter_fit_bounds=self.parameter_fit_bounds,
+                data=self.correlation_data,
+                kind="reg",
             )
 
     def test_parameter_recovery(
-        self,
-        parameter_fit_bounds,
-        correlation_threshold=0.7,
-        significance_level=0.05,
-        n_simulations=20,
-        n_recovery_trials_per_simulation=1,
-        recovered_parameter_correlation_threshold=0.5,
-        seed=None,
-        workflow="maximum-likelihood",
-        **kwargs,
-    ):
-        """Returns whether the recovered user parameters correlate to the used parameters for a simulation given the supplied thresholds
-        and that the recovered parameters do not correlate (test only available for users with a policy that has a compute_likelihood method).
-
-        It simulates n_simulations agents of the user's class using random parameters within the supplied parameter_fit_bounds,
-        executes the provided task and tries to recover the user's parameters from the simulated data. These recovered parameters are then
-        correlated to the originally used parameters for the simulation using Pearson's r and checks for the given correlation and significance
-        thresholds.
-
-        :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
-            the random parameter values for simulation (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
-        :type parameter_fit_bounds: dict
-        :param correlation_threshold: The threshold for Pearson's r value (i.e. the correlation coefficient between the used and recovered
-            parameters), defaults to 0.7
-        :type correlation_threshold: float, optional
-        :param significance_level: The threshold for the p-value to consider the correlation significant, defaults to 0.05
-        :type significance_level: float, optional
-        :param n_simulations: The number of agents to simulate (i.e. the population size) for the parameter recovery, defaults to 20
-        :type n_simulations: int, optional
-        :param n_recovery_trials_per_simulation: The number of trials to recover the true parameter value (i.e. to determine the
-            best-fit parameter values) for one set of simulated data, defaults to 1
-        :type n_recovery_trials_per_simulation: int, optional
-        :param recovered_parameter_correlation_threshold: The threshold for Pearson's r value between the recovered parameters, defaults to 0.7
-        :type recovered_parameter_correlation_threshold: float, optional
-        :param seed: The seed for the random number generator which controls how the 'true' parameter values are generated, defaults to None
-        :type seed: int, optional
-        :param workflow: The kind of inference technique or workflow that will be used (one of "maximum-likelihood"
-            or "bayesian"), defaults to "maximum-likelihood"
-        :type workflow: str, optional
-        :return: The result of the parameter recovery test
-        :rtype: ModelChecks.ParameterRecoveryResult
-        """
-        # Transform the specified dict of parameter fit bounds into an OrderedDict
-        # based on the order of parameters in the user class constructor
-        ordered_parameter_fit_bounds = order_class_parameters_by_signature(
-            self.user.__class__, parameter_fit_bounds
-        )
-
-        # Depending on specified workflow...
-        if workflow == "maximum-likelihood":
-            return self.test_mle_parameter_recovery(
-                parameter_fit_bounds=parameter_fit_bounds,
-                correlation_threshold=correlation_threshold,
-                significance_level=significance_level,
-                n_simulations=n_simulations,
-                n_recovery_trials_per_simulation=n_recovery_trials_per_simulation,
-                recovered_parameter_correlation_threshold=recovered_parameter_correlation_threshold,
-                seed=seed,
-                **kwargs,
-            )
-
-        elif workflow == "bayesian":
-            return self.test_bayesian_parameter_recovery()
-
-        else:
-            raise ValueError(
-                "Sorry, no other workflow has been implemented yet. workflow needs to be either 'maximum-likelihood' or 'bayesian'"
-            )
-
-    @dataclass
-    class BayesianParameterRecoveryTestResult:
-        """Represents the results of a test for parameter recovery using a Bayesian approach."""
-
-        success: bool = False
-        """`True` if all parameters can be recovered and none of the recovered parameters correlate, `False` otherwise"""
-
-    def test_bayesian_parameter_recovery(self):
-        """Returns whether the recovered user parameters correlate to the used parameters for a simulation given the supplied thresholds
-        and that the recovered parameters do not correlate using a Bayesian approach (test only available for users with a policy
-        that has a compute_likelihood method).
-        """
-        return ModelChecks.BayesianParameterRecoveryTestResult(success=True)
-
-    def test_mle_parameter_recovery(
         self,
         parameter_fit_bounds,
         correlation_threshold=0.7,
@@ -219,22 +635,21 @@ class ModelChecks(Bundle):
             or "bayesian"), defaults to "maximum-likelihood"
         :type workflow: str, optional
         :return: The result of the parameter recovery test
-        :rtype: ModelChecks.ParameterRecoveryResult
+        :rtype: ModelChecks.FrequentistParameterRecoveryTestResult
         """
+        # Transform the specified dict of parameter fit bounds into an OrderedDict
+        # based on the order of parameters in the user class constructor
+        ordered_parameter_fit_bounds = order_class_parameters_by_signature(
+            self.user.__class__, parameter_fit_bounds
+        )
+
         # Compute the likelihood data (i.e. the used and recovered parameter pairs)
-        correlation_data = self._likelihood(
+        simulated_data, correlation_data = self._likelihood(
             parameter_fit_bounds=parameter_fit_bounds,
             n_simulations=n_simulations,
             n_recovery_trials_per_simulation=n_recovery_trials_per_simulation,
             seed=seed,
             **kwargs,
-        )
-
-        # Plot the correlations between the used and recovered parameters as a graph
-        regplot = ModelChecks._correlations_plot(
-            parameter_fit_bounds=parameter_fit_bounds,
-            data=correlation_data,
-            kind="reg",
         )
 
         # Compute the correlation metric Pearson's r and its significance for each parameter pair and return it
@@ -264,12 +679,13 @@ class ModelChecks(Bundle):
         )
 
         # Create result object and return it
-        result = ModelChecks.ParameterRecoveryTestResult(
+        result = ModelChecks.FrequentistParameterRecoveryTestResult(
+            simulated_data=simulated_data,
             correlation_data=correlation_data,
             correlation_statistics=correlation_statistics,
             parameters_can_be_recovered=parameters_can_be_recovered,
             recovered_parameters_correlate=recovered_parameters_correlate,
-            plot=regplot,
+            parameter_fit_bounds=parameter_fit_bounds,
             correlation_threshold=correlation_threshold,
             significance_level=significance_level,
             n_simulations=n_simulations,
@@ -359,8 +775,9 @@ class ModelChecks(Bundle):
         :type n_recovery_trials_per_simulation: int, optional
         :param seed: The seed for the random number generator which controls how the 'true' parameter values are generated, defaults to None
         :type seed: int, optional
-        :return: A DataFrame containing the likelihood of each recovered parameter.
-        :rtype: pandas.DataFrame
+        :return: A pair of DataFrames containing the likelihood of each recovered parameter at index 1 and the simulated data that led to
+            those results at index 0.
+        :rtype: tuple[pandas.DataFrame, pandas.DataFrame]
         """
         # Make sure user has a policy that can compute likelihood of an action given an observation
         user_can_compute_likelihood = ModelChecks._user_can_compute_likelihood(
@@ -375,6 +792,7 @@ class ModelChecks(Bundle):
             )
 
         # Data container
+        all_simulated_data_frames = []
         likelihood_data = []
 
         # Random number generator
@@ -383,28 +801,30 @@ class ModelChecks(Bundle):
         # For each agent...
         for i in tqdm(range(n_simulations), file=sys.stdout):
 
-            # Generate a random agent
-            attributes_from_self_user = {
-                attr: getattr(self.user, attr)
-                for attr in dir(self.user)
-                if attr in inspect.signature(self.user.__class__).parameters
-            }
-            random_agent = None
-            if not len(parameter_fit_bounds) > 0:
-                random_agent = self.user.__class__(**attributes_from_self_user)
-            else:
-                random_parameters = ModelChecks._random_parameters(
+            # Generate random parameters
+            random_parameters = (
+                ModelChecks._random_parameters(
                     parameter_fit_bounds=parameter_fit_bounds,
                     random_number_generator=random_number_generator,
                 )
-                random_agent = self.user.__class__(
-                    **{**attributes_from_self_user, **random_parameters}
-                )
+                if len(parameter_fit_bounds) > 0
+                else []
+            )
+
+            # Generate a random agent
+            random_agent = self._generate_random_agent(
+                user_class=self.user.__class__,
+                parameter_fit_bounds=parameter_fit_bounds,
+                random_parameters=random_parameters,
+                random_number_generator=random_number_generator,
+            )
 
             # Simulate the task
             simulated_data = self._simulate(
                 user=random_agent, random_number_generator=random_number_generator
             )
+            simulated_data["subject"] = i + 1
+            all_simulated_data_frames.append(simulated_data)
 
             # For n_recovery_trials_per_simulation...
             for _ in range(n_recovery_trials_per_simulation):
@@ -433,10 +853,11 @@ class ModelChecks(Bundle):
                         }
                     )
 
-        # Create dataframe and return it
+        # Create dataframes and return them
+        all_simulated_data = pd.concat(all_simulated_data_frames)
         likelihood = pd.DataFrame(likelihood_data)
 
-        return likelihood
+        return all_simulated_data, likelihood
 
     def _random_parameters(
         parameter_fit_bounds, random_number_generator=numpy.random.default_rng()
@@ -514,12 +935,15 @@ class ModelChecks(Bundle):
             # Save the action that the artificial agent made
             action_values = copy(bundle.user.policy.action_state["action"].values[0])
 
+            # Save the task reward solely associated with the user action
+            user_reward = rewards["first_task_reward"]
+
             # Store this round's data
             data.append(
                 {
                     "time": round,
                     "action": action_values,
-                    "reward": rewards["first_task_reward"],
+                    "reward": user_reward,
                 }
             )
 
@@ -649,10 +1073,13 @@ class ModelChecks(Bundle):
             # Make user take specified action
             _, rewards, _ = bundle.step(action)
 
+            # Save the task reward solely associated with the user action
+            user_reward = rewards["first_task_reward"]
+
             # Compare simulated and resulting reward
             failure_message = """The provided user action did not yield the same reward from the task.
             Maybe there is some randomness involved that could be solved by seeding."""
-            assert reward == rewards["first_task_reward"], failure_message
+            assert reward == user_reward, failure_message
 
         return numpy.sum(ll)
 
@@ -731,7 +1158,7 @@ class ModelChecks(Bundle):
             # Depending on specified kind...
             if kind == "reg":
                 # Create regression plot
-                scatterplot = sns.regplot(
+                plot = sns.regplot(
                     data=current_parameter_data,
                     x="Used to simulate",
                     y="Recovered",
@@ -743,7 +1170,7 @@ class ModelChecks(Bundle):
 
             elif kind == "scatter":
                 # Create scatter plot
-                scatterplot = sns.scatterplot(
+                plot = sns.scatterplot(
                     data=data[data["Parameter"] == p_name],
                     x="Used to simulate",
                     y="Recovered",
@@ -797,7 +1224,7 @@ class ModelChecks(Bundle):
             # Square aspect
             ax.set_aspect(1)
 
-        return scatterplot
+        plt.show()
 
     def _pearsons_r(
         self,
@@ -872,9 +1299,6 @@ class ModelChecks(Bundle):
         success: bool
         """`True` if the F1-score for all models exceeded the supplied threshold, `False` otherwise"""
 
-        plot: matplotlib.axes.Axes
-        """The heatmap displaying the 'true' (i.e. actually simulated) and recovered models (i.e. the confusion matrix)"""
-
         f1_threshold: float
         """The threshold for F1-score to consider the recovery successful for a model"""
 
@@ -883,6 +1307,11 @@ class ModelChecks(Bundle):
 
         method: str
         """The metric by which the recovered model was chosen"""
+
+        def plot(self):
+            """Plot the heatmap displaying the 'true' (i.e. actually simulated) and recovered models (i.e. the confusion matrix)"""
+            # Create the confusion matrix
+            ModelChecks._confusion_matrix_plot(data=self.confusion_data)
 
     def test_model_recovery(
         self,
@@ -962,7 +1391,6 @@ class ModelChecks(Bundle):
             confusion_data=confusion_matrix,
             robustness_statistics=robustness,
             success=all_f1_meet_threshold,
-            plot=confusion_matrix_plot,
             f1_threshold=f1_threshold,
             n_simulations_per_model=n_simulations_per_model,
             method=method,
@@ -1007,30 +1435,11 @@ class ModelChecks(Bundle):
                 for _ in range(n_simulations):
 
                     # Generate a random agent
-                    attributes_from_self_user = {
-                        attr: getattr(self.user, attr)
-                        for attr in dir(self.user)
-                        if attr in inspect.signature(self.user.__class__).parameters
-                    }
-                    random_agent = None
-                    if not len(parameters_for_sim) > 0:
-                        random_agent = (
-                            m_to_sim(**attributes_from_self_user)
-                            if m_to_sim == self.user.__class__
-                            else m_to_sim()
-                        )
-                    else:
-                        random_parameters = ModelChecks._random_parameters(
-                            parameter_fit_bounds=parameters_for_sim,
-                            random_number_generator=random_number_generator,
-                        )
-                        random_agent = (
-                            m_to_sim(
-                                **{**attributes_from_self_user, **random_parameters}
-                            )
-                            if m_to_sim == self.user.__class__
-                            else m_to_sim(**random_parameters)
-                        )
+                    random_agent = self._generate_random_agent(
+                        user_class=m_to_sim,
+                        parameter_fit_bounds=parameters_for_sim,
+                        random_number_generator=random_number_generator,
+                    )
 
                     # Simulate the task
                     simulated_data = self._simulate(
@@ -1181,8 +1590,6 @@ class ModelChecks(Bundle):
 
         :param data: The confusion matrix (model used to simulate vs recovered model) as a DataFrame
         :type data: pandas.DataFrame
-        :return: A plot of the confusion matrix for the model recovery comparison
-        :rtype: matplotlib.axes.Axes
         """
         # Create figure and axes
         _, ax = plt.subplots(figsize=(12, 10))
@@ -1194,7 +1601,7 @@ class ModelChecks(Bundle):
         ax.set_xlabel("Recovered")
         ax.set_ylabel("Used to simulate")
 
-        return heatmap
+        plt.show()
 
     def _recall(model_name, data):
         """Returns the recall value and its confidence interval for the given model and confusion matrix.
@@ -1295,6 +1702,9 @@ class ModelChecks(Bundle):
     class RecoverableParameterRangesTestResult:
         """Represents the results of a test for recoverable parameter ranges."""
 
+        parameter_ranges: Dict[str, numpy.ndarray]
+        """A dictionary of the parameter names and their respective ranges."""
+
         correlation_data: pd.DataFrame
         """The 'true' and recovered parameter value pairs"""
 
@@ -1324,6 +1734,14 @@ class ModelChecks(Bundle):
         def success(self):
             """`True` if recoverable parameter ranges could be identified, `False` otherwise"""
             return len(self.recoverable_parameter_ranges) > 0
+
+        def plot(self):
+            # Create scatterplot of the recoverable parameter fit bounds test
+            ModelChecks._recoverable_fit_bounds_result_plot(
+                ordered_parameter_ranges=self.parameter_ranges,
+                correlation_data=self.correlation_data,
+                correlation_statistics=self.correlation_statistics,
+            )
 
     def test_recoverable_parameter_ranges(
         self,
@@ -1410,24 +1828,20 @@ class ModelChecks(Bundle):
                             for current_parameter_name, maximum_fit_bounds_tuple in max_fit_bounds.items()
                         }
                         # Generate a random agent
-                        attributes_from_self_user = {
-                            attr: getattr(self.user, attr)
-                            for attr in dir(self.user)
-                            if attr in inspect.signature(self.user.__class__).parameters
-                        }
-                        random_agent = None
-                        if not len(parameter_fit_bounds) > 0:
-                            random_agent = self.user.__class__(
-                                **attributes_from_self_user
-                            )
-                        else:
-                            random_parameters = ModelChecks._random_parameters(
+                        random_parameters = (
+                            ModelChecks._random_parameters(
                                 parameter_fit_bounds=parameter_fit_bounds,
                                 random_number_generator=rng,
                             )
-                            random_agent = self.user.__class__(
-                                **{**attributes_from_self_user, **random_parameters}
-                            )
+                            if len(parameter_fit_bounds) > 0
+                            else []
+                        )
+                        random_agent = self._generate_random_agent(
+                            user_class=self.user.__class__,
+                            parameter_fit_bounds=parameter_fit_bounds,
+                            random_parameters=random_parameters,
+                            random_number_generator=rng,
+                        )
 
                         # Simulate behavior and store parameter values
                         simulated_data = self._simulate(
@@ -1508,18 +1922,11 @@ class ModelChecks(Bundle):
         all_correlation_data = pd.concat(all_correlation_data)
         all_correlation_statistics = pd.concat(all_correlation_statistics)
 
-        # Create scatterplot of the recoverable parameter fit bounds test
-        scatterplot = ModelChecks._recoverable_fit_bounds_result_plot(
-            ordered_parameter_ranges=ordered_parameter_ranges,
-            correlation_data=all_correlation_data,
-            correlation_statistics=all_correlation_statistics,
-        )
-
         # Create result and return it
         result = ModelChecks.RecoverableParameterRangesTestResult(
+            parameter_ranges=ordered_parameter_ranges,
             correlation_data=all_correlation_data,
             correlation_statistics=all_correlation_statistics,
-            plot=scatterplot,
             correlation_threshold=correlation_threshold,
             significance_level=significance_level,
             n_simulations_per_sub_range=n_simulations_per_sub_range,
@@ -1592,8 +1999,6 @@ class ModelChecks(Bundle):
         :type correlation_data: pandas.DataFrame
         :param correlation_statistics: The correlation statistics for the parameter recovery
         :type correlation_statistics: pandas.DataFrame
-        :return: A plot for the correlations of the 'true' and recovered parameter values and prints the correlation statistics
-        :rtype: matplotlib.axes.Axes
         """
         # Format the specified parameter ranges into parameter fit bounds (i.e. without step size)
         parameter_fit_bounds = ModelChecks._formatted_parameter_fit_bounds(
@@ -1601,7 +2006,7 @@ class ModelChecks(Bundle):
         )
 
         # Plot the correlations of the 'true' and recovered parameter values
-        scatterplot = ModelChecks._correlations_plot(
+        ModelChecks._correlations_plot(
             parameter_fit_bounds=parameter_fit_bounds,
             data=correlation_data,
             statistics=correlation_statistics,
@@ -1611,7 +2016,7 @@ class ModelChecks(Bundle):
         # Print the correlation statistics for the 'true' and recovered parameter values per sub-range
         ModelChecks._print_correlation_statistics(correlation_statistics)
 
-        return scatterplot
+        plt.show()
 
     def _formatted_parameter_fit_bounds(ordered_parameter_ranges):
         """Returns an OrderedDict of each parameter and its associated fit bounds (i.e. minimum and maximum value) from
