@@ -112,8 +112,7 @@ wsls_parameter_recovery_test_result = wsls_bundle.test_parameter_recovery(
 )
 
 # Display scatterplot
-wsls_parameter_recovery_test_result.plot
-plt.show()
+wsls_parameter_recovery_test_result.plot()
 
 # Print result
 print(
@@ -144,8 +143,7 @@ rw_parameter_recovery_test_result = rw_bundle.test_parameter_recovery(
 )
 
 # Display scatterplot
-rw_parameter_recovery_test_result.plot
-plt.show()
+rw_parameter_recovery_test_result.plot()
 
 # Print result
 print(
@@ -186,8 +184,7 @@ rw_model_recovery_test_result = rw_bundle.test_model_recovery(
 )
 
 # Display confusion matrix
-rw_model_recovery_test_result.plot
-plt.show()
+rw_model_recovery_test_result.plot()
 
 # Print result
 print(
@@ -229,8 +226,7 @@ recoverable_parameter_ranges_test_result = rw_bundle.test_recoverable_parameter_
 )
 
 # Display scatterplot
-recoverable_parameter_ranges_test_result.plot
-plt.show()
+recoverable_parameter_ranges_test_result.plot()
 
 # Print result
 print(

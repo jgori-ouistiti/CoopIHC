@@ -100,7 +100,6 @@ def test_parameter_recovery():
 
     # Check recovery result's plot
     assert hasattr(parameter_recovery_result, "plot")
-    assert type(parameter_recovery_result.plot) is matplotlib.axes.Axes
 
 
 def test_model_recovery():
@@ -166,7 +165,6 @@ def test_model_recovery():
 
     # Check recovery result's plot
     assert hasattr(model_recovery_result, "confusion_matrix")
-    assert type(model_recovery_result.confusion_matrix) is matplotlib.axes.Axes
 
 
 def test_recoverable_parameter_ranges():
@@ -265,7 +263,6 @@ def test_recoverable_parameter_ranges():
 
     # Check recovery result's plot
     assert hasattr(recoverable_parameter_ranges_result, "plot")
-    assert type(recoverable_parameter_ranges_result.plot) is matplotlib.axes.Axes
 
     # Check recovery result's recoverable ranges
     assert hasattr(recoverable_parameter_ranges_result, "recoverable_parameter_ranges")

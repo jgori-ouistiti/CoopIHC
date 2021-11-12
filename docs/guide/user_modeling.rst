@@ -94,8 +94,7 @@ The result of calling `test_parameter_recovery` is an object giving access to, a
     parameter_recovery_test_result = wsls_bundle.test_parameter_recovery(parameter_fit_bounds=wsls_parameter_fit_bounds, correlation_threshold=0.6, significance_level=0.1, n_simulations=N_SIMULATIONS)
 
     # Display scatter plot
-    parameter_recovery_test_result.plot
-    plt.show()
+    parameter_recovery_test_result.plot()
 
     # Print result
     print(f"WSLS: Parameter recovery was {'successful' if parameter_recovery_test_result.success else 'unsuccessful'}.")
@@ -165,8 +164,7 @@ The result of calling `test_model_recovery` is an object giving access to, among
         other_competing_models=other_competing_models, this_parameter_fit_bounds=wsls_parameter_fit_bounds, f1_threshold=0.8, n_simulations=N_SIMULATIONS)
 
     # Display confusion matrix
-    model_recovery_test_result.plot
-    plt.show()
+    model_recovery_test_result.plot()
 
     print(f"WSLS: Model recovery was {'successful' if model_recovery_test_result.success else 'unsuccessful'}.")
 
@@ -231,8 +229,7 @@ It returns an object that--among other useful information--gives access to a plo
         seed=RANDOM_SEED)
 
     # Display scatter plot
-    recoverable_parameter_ranges_test_result.plot
-    plt.show()
+    recoverable_parameter_ranges_test_result.plot()
 
     # Print result
     print(f"RW: Parameter recovery possible within these ranges: {recoverable_parameter_ranges_test_result.recoverable_parameter_ranges}")
