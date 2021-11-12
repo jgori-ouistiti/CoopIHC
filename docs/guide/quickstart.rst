@@ -24,7 +24,7 @@ High-level view of CoopIHC code
 
 At a high level, CoopIHC code will usually look like this
 
-.. literalinclude:: ../../core/bundle.py
+.. literalinclude:: ../../core/bundle/__init__.py
    :language: python
    :linenos:
    :start-after: [start-highlevel-code]
@@ -82,7 +82,7 @@ Finally, the render method is a way to display information to the screen. Here w
 
 You can verify that the task works as intended by bundling it with two ``BaseAgents`` (the simplest version of agents). Make sur that the actions spaces make sense, by specifying the policy for the two baseagents.
 
-.. literalinclude:: ../../core/bundle.py
+.. literalinclude:: ../../core/bundle/__init__.py
    :language: python
    :linenos:
    :start-after: [start-check-task]
@@ -112,7 +112,7 @@ Defining a new agent is done by subclassing the ``BaseAgent`` class:
 
 You can check that the user model works as intended by bundling it with the task. Below, we try it out without an assistant, so we modify the task very simply by redefining its ``assistant_step()`` method.
 
-.. literalinclude:: ../../core/bundle.py
+.. literalinclude:: ../../core/bundle/__init__.py
     :language: python
     :linenos:
     :start-after: [start-check-taskuser]
