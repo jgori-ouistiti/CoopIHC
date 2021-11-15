@@ -75,7 +75,7 @@ Learn how to use *interaction-agents*:
     guide/wrappers
     guide/observation_engine
     guide/inference_engine
-    guide/user_model
+    guide/user_modeling
 
 
 

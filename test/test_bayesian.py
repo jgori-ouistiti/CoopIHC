@@ -27,9 +27,8 @@ multi_bandit_task = MultiBanditTask(N=N, P=P, T=T)
 wsls = WSLS(epsilon=0.26)
 
 # Parameter priors for users
-wsls_parameter_priors = {
-    "epsilon": {"prior": pyro.distributions.Uniform(0.0, 1.0), "bounds": (0.0, 1.0)}
-}
+wsls_parameter_priors = {"epsilon": pyro.distributions.Uniform(0.0, 1.0)}
+wsls_parameter_bounds = {"epsilon": (0.0, 1.0)}
 
 # Population size
 N_SIMULATIONS = 3
@@ -112,13 +111,15 @@ def test_bayesian_parameter_recovery():
     # Print and plot results of the first simulation
     bayesian_parameter_recovery_result.simulations[0].mcmc.summary(prob=0.95)
 
-    bayesian_parameter_recovery_result.simulations[0].plot()
+    bayesian_parameter_recovery_result.simulations[0].plot(
+        parameter_fit_bounds=wsls_parameter_bounds
+    )
 
     # Check recovery result's plot
     assert hasattr(bayesian_parameter_recovery_result, "plot")
 
     # Display scatterplot
-    bayesian_parameter_recovery_result.plot()
+    bayesian_parameter_recovery_result.plot(parameter_fit_bounds=wsls_parameter_bounds)
 
 
 if __name__ == "__main__":

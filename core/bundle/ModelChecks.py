@@ -72,9 +72,6 @@ class ModelChecks(Bundle):
         n_simulations: int
         """The number of agents that were simulated (i.e. the population size) for the parameter recovery"""
 
-        parameter_fit_bounds: Dict[str, Tuple[float, float]]
-        """The parameter names and associated minimum and maximum values used to set the plot axis limits."""
-
     @dataclass
     class BayesianParameterRecoveryTestResult(ParameterRecoveryTestResult):
         """Represents the results of a test for parameter recovery using a Bayesian approach."""
@@ -104,25 +101,34 @@ class ModelChecks(Bundle):
             true_parameters: Dict[str, float]
             """The parameter values that were used to generate the simulated data (also accessible via the user)."""
 
-            parameter_fit_bounds: Dict[str, Tuple[float, float]]
-            """The parameter names and associated minimum and maximum values used to set the plot axis limits."""
+            def plot(self, parameter_fit_bounds):
+                """
+                Plot the posterior distributions for all parameters.
 
-            def plot(self):
-                """Plot the posterior distributions for all parameters."""
+                :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be
+                    used to set the axis limits and titles for the plot (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
+                :type parameter_fit_bounds: dict
+                """
                 # Construct posterior plot
                 mcmc_samples = {
                     k: v.numpy() for k, v in self.mcmc.get_samples().items()
                 }
                 ModelChecks._posterior_plot(
-                    parameter_fit_bounds=self.parameter_fit_bounds,
+                    parameter_fit_bounds=parameter_fit_bounds,
                     mcmc_samples=mcmc_samples,
                 )
 
         simulations: List[Simulation]
         """A list of the simulated agents and Bayesian parameter inference results for those agents."""
 
-        def plot(self):
-            """Plot the Bayesian parameter recovery results for all parameters."""
+        def plot(self, parameter_fit_bounds):
+            """
+            Plot the Bayesian parameter recovery results for all parameters.
+
+            :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be
+                used to set the axis limits and titles for the plot (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
+            :type parameter_fit_bounds: dict
+            """
             # Literals definition
             PARAMETER = "Parameter"
             USED_TO_SIMULATE = "Used to simulate"
@@ -145,7 +151,7 @@ class ModelChecks(Bundle):
 
             # Construct plot for parameter recovery result
             ModelChecks._bayesian_parameter_recovery_plot(
-                parameter_fit_bounds=self.parameter_fit_bounds,
+                parameter_fit_bounds=parameter_fit_bounds,
                 mcmc_samples_df=mcmc_samples_df,
             )
 
@@ -162,8 +168,8 @@ class ModelChecks(Bundle):
         that has a compute_likelihood method).
 
         :param parameter_priors: A dictionary of the parameter names, their prior distributions and bounds that will be used to generate
-            the random parameter values for simulation (example: `{"alpha": {"prior": pyro.distributions.Uniform(0.0, 1.0), "bounds": (0., 1.)},
-            "beta": {"prior": pyro.distributions.Normal(5.0, 1.0), "bounds": (0., 20.)}}`)
+            the random parameter values for simulation (example: `{"alpha": pyro.distributions.Uniform(0.0, 1.0),
+            "beta": pyro.distributions.Normal(5.0, 1.0)}`)
         :type parameter_priors: dict[str, dict]
         :param num_mcmc_samples: Number of samples to generate from the Markov chain, defaults to 1000
         :type num_mcmc_samples: int
@@ -192,15 +198,6 @@ class ModelChecks(Bundle):
             self.user.__class__, parameter_priors
         )
 
-        # Compute parameter fit bounds (i.e. min and max value for plots)
-        parameter_fit_bounds = {
-            param_name: param_details["bounds"]
-            for param_name, param_details in ordered_parameter_priors.items()
-        }
-
-        # Literals definition
-        PRIOR = "prior"
-
         # Define model function to be used with NUTS MCMC
         def model(observed_data):
             """A callable representation of the supplied user model.
@@ -223,13 +220,11 @@ class ModelChecks(Bundle):
             params = {}
 
             # For each parameter...
-            for param_name, param_details in ordered_parameter_priors.items():
+            for param_name, param_prior in ordered_parameter_priors.items():
                 # Sample a value from the prior distribution (e.g. Uniform(0.0, 1.0))
                 # WARNING: Here, the sampled parameter value (a tensor) is transformed to a single float.
                 # This might not be appropriate, if the parameter is non-numeric or multi-dimensional.
-                params[param_name] = float(
-                    pyro.sample(param_name, param_details[PRIOR])
-                )
+                params[param_name] = float(pyro.sample(param_name, param_prior))
 
             # Create a new agent with the current parameters
             agent = self._generate_random_agent(
@@ -304,13 +299,11 @@ class ModelChecks(Bundle):
             params = {}
 
             # For each parameter...
-            for param_name, param_details in ordered_parameter_priors.items():
+            for param_name, param_prior in ordered_parameter_priors.items():
                 # Sample a value from the prior distribution (e.g. Uniform(0.0, 1.0))
                 # WARNING: Here, the sampled parameter value (a tensor) is transformed to a single float.
                 # This might not be appropriate, if the parameter is non-numeric or multi-dimensional.
-                params[param_name] = float(
-                    pyro.sample(param_name, param_details[PRIOR])
-                )
+                params[param_name] = float(pyro.sample(param_name, param_prior))
 
             # Generate a random agent
             random_agent = self._generate_random_agent(
@@ -343,7 +336,6 @@ class ModelChecks(Bundle):
                     user=random_agent,
                     data=simulated_data,
                     mcmc=mcmc,
-                    parameter_fit_bounds=parameter_fit_bounds,
                     true_parameters=true_parameters,
                 )
             )
@@ -355,7 +347,6 @@ class ModelChecks(Bundle):
             n_simulations=n_simulations,
             simulations=simulation_results,
             parameter_priors=parameter_priors,
-            parameter_fit_bounds=parameter_fit_bounds,
         )
 
     def _bayesian_parameter_recovery_plot(parameter_fit_bounds, mcmc_samples_df):
@@ -576,6 +567,9 @@ class ModelChecks(Bundle):
 
         simulated_data: pd.DataFrame
         """A DataFrame containing the behavioral data from simulating the given task with the specified user"""
+
+        parameter_fit_bounds: Dict[str, Tuple[float, float]]
+        """The parameter names and associated minimum and maximum values."""
 
         @property
         def success(self):

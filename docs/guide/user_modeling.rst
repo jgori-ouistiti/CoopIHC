@@ -40,12 +40,12 @@ We associate a ChenEye user to the task, also in 1D. It gets as input the scalin
 
     
 Parameter Recovery
--------------------
+---------------------------------
 
 In parameter recovery, a user model is tested on its ability to infer known parameters from an artificial experiment dataset.
 If a model fails to do so, it is unlikely to be useful for inferring parameters from a dataset created with human users.
 
-In the code below, we define a new kind of interaction task--in this case a risky choice task called `MultiBanditTask`--and test an user class, namely Win-Stay-Lose-Switch (`WSLS`) for its ability to recover the single parameter `epsilon`.
+In the code below, we define a new kind of interaction task--in this case a risky choice task called ``MultiBanditTask``--and test an user class, namely Win-Stay-Lose-Switch (``WSLS``) for its ability to recover the single parameter ``epsilon``.
 
 
 .. code-block:: python
@@ -70,14 +70,19 @@ In the code below, we define a new kind of interaction task--in this case a risk
     wsls = WSLS(epsilon=0.1)
 
 
-In order to test the model for parameter recovery, we need to use the `ModelChecks` bundle and pass it both the user as well as the task.
-In turn, it gives us access to a method called `test_parameter_recovery` that can be used to evaluate parameter recovery for the given user class and task.
+In order to test the model for parameter recovery, we need to use the ``ModelChecks`` bundle and pass it both the user as well as the task.
+In turn, it gives us access to two methods called ``test_parameter_recovery`` for a Frequentist and ``test_bayesian_parameter_recovery`` for a Bayesian workflow that can be used to evaluate parameter recovery for the given user class and task.
 
-The `test_parameter_recovery` expects an argument called `parameter_fit_bounds` which is a `dict` containing the parameter name and its minimum and maximum value (i.e. its fit bounds).
-These fit bounds will be used to create `n_simulations` artificial agents with random parameters within them.
+Depending on the modeling workflow, Frequentist or Bayesian, the ``ModelChecks`` bundle provides two different methods to perform parameter recovery, either based on maximum likelihood (Frequentist) or a prior distribution for each parameter (Bayesian).
+
+Frequentist Parameter Recovery
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``test_parameter_recovery`` expects an argument called ``parameter_fit_bounds`` which is a ``dict`` containing the parameter name and its minimum and maximum value (i.e. its fit bounds).
+These fit bounds will be used to create ``n_simulations`` artificial agents with random parameters within them.
 Each of the artificial agents will execute the task to create simulated data which in turn can be used to infer the best-fit parameter values using an evaluation method, in this case maximum log-likelihood.
 
-The result of calling `test_parameter_recovery` is an object giving access to, among other details, a boolean whether all parameter correlations (i.e. Pearson's r for the correlation between the used and recovered parameter values) meet the specified `correlation_threshold` at the specified `significance_level`.
+The result of calling ``test_parameter_recovery`` is an object giving access to, among other details, a boolean whether all parameter correlations (i.e. Pearson's r for the correlation between the used and recovered parameter values) meet the specified ``correlation_threshold`` at the specified ``significance_level``.
 
 .. code-block:: python
 
@@ -91,13 +96,53 @@ The result of calling `test_parameter_recovery` is an object giving access to, a
     wsls_bundle = ModelChecks(task=multi_bandit_task, user=wsls)
 
     # Parameter recovery check
-    parameter_recovery_test_result = wsls_bundle.test_parameter_recovery(parameter_fit_bounds=wsls_parameter_fit_bounds, correlation_threshold=0.6, significance_level=0.1, n_simulations=N_SIMULATIONS)
+    parameter_recovery_test_result = wsls_bundle.test_parameter_recovery(
+        parameter_fit_bounds=wsls_parameter_fit_bounds,
+        correlation_threshold=0.6,
+        significance_level=0.1,
+        n_simulations=N_SIMULATIONS
+    )
 
     # Display scatter plot
     parameter_recovery_test_result.plot()
 
     # Print result
-    print(f"WSLS: Parameter recovery was {'successful' if parameter_recovery_test_result.success else 'unsuccessful'}.")
+    successful = 'successful' if parameter_recovery_test_result.success else 'unsuccessful'
+    print(f"WSLS: Parameter recovery was {successful}.")
+
+
+Bayesian Parameter Recovery
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``test_bayesian_parameter_recovery`` expects an argument called ``parameter_priors`` which is a ``dict`` containing the parameter name and prior distribution as a ``pyro.distributions.Distribution``.
+These priors will be used to create ``n_simulations`` artificial agents with random parameters sampled from the priors within them.
+Each of the artificial agents will execute the task to create simulated data which in turn can be used to infer a posterior distribution of the best-fit parameter values using an evaluation method, in this case Markov Chain Monte Carlo (MCMC) with a No-U-Turn Sampler (NUTS).
+
+The result of calling ``test_bayesian_parameter_recovery`` is an object giving access to, among other details, a plot method to inspect the posterior distributions for the parameters.
+
+.. code-block:: python
+
+    # Parameter priors for user definition
+    wsls_parameter_priors = {"epsilon": pyro.distributions.Uniform(0.0, 1.0)}
+
+    # Parameter fit bounds for plot
+    wsls_parameter_fit_bounds = {"epsilon": (0., 1.)}
+
+    # Population size
+    N_SIMULATIONS = 20
+
+    # Bundle defintion
+    wsls_bundle = ModelChecks(task=multi_bandit_task, user=wsls)
+
+    # Parameter recovery check
+    bayesian_parameter_recovery_test_result = wsls_bundle.test_bayesian_parameter_recovery(
+        parameter_priors=wsls_parameter_priors,
+        num_mcmc_samples=100,
+        n_simulations=N_SIMULATIONS,
+    )
+
+    # Display scatter plot for posteriors
+    parameter_recovery_test_result.plot(parameter_fit_bounds=wsls_parameter_fit_bounds)
 
 
 Model Recovery
@@ -106,7 +151,7 @@ Model Recovery
 In model recovery, a user model is tested on its ability to be inferred from an artificial experiment dataset in competition to alternative user models.
 If a model fails to do so, it is unlikely to be successfully recovered from a dataset created with human users.
 
-In the code below, we use the same interaction task as above--again a risky choice task called `MultiBanditTask`--and test the user class used above, namely Win-Stay-Lose-Switch (`WSLS`), against two new user classes, a random user (`RandomPlayer`) and Rescorla-Wagner (`RW`), for its ability to be recovered from an artificial dataset.
+In the code below, we use the same interaction task as above--again a risky choice task called ``MultiBanditTask``--and test the user class used above, namely Win-Stay-Lose-Switch (``WSLS``), against two new user classes, a random user (``RandomPlayer``) and Rescorla-Wagner (``RW``), for its ability to be recovered from an artificial dataset.
 
 
 .. code-block:: python
@@ -132,14 +177,14 @@ In the code below, we use the same interaction task as above--again a risky choi
     rw = RW(q_alpha=0.1, q_beta=1.)
 
 
-In order to test the model for model recovery, we need to, again, use the `ModelChecks` bundle and pass it both the user as well as the task.
-In turn, it gives us access to a method called `test_model_recovery` that can be used to evaluate model recovery for the given user classes and task.
+In order to test the model for model recovery, we need to, again, use the ``ModelChecks`` bundle and pass it both the user as well as the task.
+In turn, it gives us access to a method called ``test_model_recovery`` that can be used to evaluate model recovery for the given user classes and task.
 
-The `test_model_recovery` expects an argument called `other_competing_models` which is a list of dictionaries specifying the competing models and their parameter fit bounds (e.g. `[{"model": UserClass, "parameter_fit_bounds": {"alpha": (0., 1.), ...}}, ...]`) as well as `this_parameter_fit_bounds` which is a `dict` containing the parameter name and its minimum and maximum value (i.e. its fit bounds) for the user class to test.
-These fit bounds will be used to create `n_simulations` artificial agents for all specified models with random parameters within them.
+The ``test_model_recovery`` expects an argument called ``other_competing_models`` which is a list of dictionaries specifying the competing models and their parameter fit bounds (e.g. ``[{"model": UserClass, "parameter_fit_bounds": {"alpha": (0., 1.), ...}}, ...]``) as well as ``this_parameter_fit_bounds`` which is a ``dict`` containing the parameter name and its minimum and maximum value (i.e. its fit bounds) for the user class to test.
+These fit bounds will be used to create ``n_simulations`` artificial agents for all specified models with random parameters within them.
 Each of the artificial agents will execute the task to create simulated data which in turn can be used to infer the best-fit model using an evaluation method, in this case BIC-score.
 
-The result of calling `test_model_recovery` is an object giving access to, among other details, a boolean whether all robustness statistics (i.e. F1-score for the precision and recall between the used and recovered models) meet the specified `f1_threshold`.
+The result of calling ``test_model_recovery`` is an object giving access to, among other details, a boolean whether all robustness statistics (i.e. F1-score for the precision and recall between the used and recovered models) meet the specified ``f1_threshold``.
 
 .. code-block:: python
 
@@ -161,12 +206,18 @@ The result of calling `test_model_recovery` is an object giving access to, among
 
     # Model recovery check
     model_recovery_test_result = wsls_bundle.test_model_recovery(
-        other_competing_models=other_competing_models, this_parameter_fit_bounds=wsls_parameter_fit_bounds, f1_threshold=0.8, n_simulations=N_SIMULATIONS)
+        other_competing_models=other_competing_models,
+        this_parameter_fit_bounds=wsls_parameter_fit_bounds, 
+        f1_threshold=0.8,
+        n_simulations=N_SIMULATIONS
+    )
 
     # Display confusion matrix
     model_recovery_test_result.plot()
 
-    print(f"WSLS: Model recovery was {'successful' if model_recovery_test_result.success else 'unsuccessful'}.")
+    # Print result
+    successful = 'successful' if model_recovery_test_result.success else 'unsuccessful'
+    print(f"WSLS: Model recovery was {successful}.")
 
 
 Recoverable Parameter Ranges
@@ -178,9 +229,9 @@ Or, in the opposite case, while the model's parameters might not be recoverable 
 To give just two reasons as to why this might be the case, the parameters might not be independent and therefore introduce unwanted interaction effects when testing the entire parameter range or one of the parameters might enact such a strong influence on the resulting behavior exhibited by a user given certain values that recovery for the other parameter values becomes nearly impossible (e.g. in the case of large inverse temperature parameter values).
 For this reason, testing recovery for different sub-ranges of the parameters' spectrum can give important insights towards the usefulness and limitations of a given user model or user class.
 
-The code below gives an example on how the `ModelChecks` bundle provides support in identifying those parameter ranges that can be recovered.
-For this, we will again use the interaction task `MultiBanditTask` and the user class Win-Stay-Lose-Switch (`WSLS`) with its parameter `epsilon`.
-This parameter has a theoretical range from `0.0` to `1.0`. We will try to identify the recoverable sub-ranges within those theoretical bounds using the `test_recoverable_parameter_ranges` helper method.
+The code below gives an example on how the ``ModelChecks`` bundle provides support in identifying those parameter ranges that can be recovered.
+For this, we will again use the interaction task ``MultiBanditTask`` and the user class Win-Stay-Lose-Switch (``WSLS``) with its parameter ``epsilon``.
+This parameter has a theoretical range from ``0.0`` to ``1.0``. We will try to identify the recoverable sub-ranges within those theoretical bounds using the ``test_recoverable_parameter_ranges`` helper method.
 
 .. code-block:: python
 
@@ -203,11 +254,11 @@ This parameter has a theoretical range from `0.0` to `1.0`. We will try to ident
     # User definition
     wsls = WSLS(epsilon=0.1)
 
-First, we specify those parameter ranges that we want to test using the `numpy.linspace` function.
-This function returns an `ndarray` with `num` (in this case 6) entries linearly spaced out over the specified range.
-In effect, this will split the theoretical range for the `epsilon` parameter into sub-ranges of width 0.2.
+First, we specify those parameter ranges that we want to test using the ``numpy.linspace`` function.
+This function returns an ``ndarray`` with ``num`` (in this case 6) entries linearly spaced out over the specified range.
+In effect, this will split the theoretical range for the ``epsilon`` parameter into sub-ranges of width 0.2.
 
-This range is then passed, together with some additional arguments like the thresholds for the Pearson's r correlation coefficient and the significance level or the number of simulated agents per sub-range, to the `test_recoverable_parameter_ranges` method.
+This range is then passed, together with some additional arguments like the thresholds for the Pearson's r correlation coefficient and the significance level or the number of simulated agents per sub-range, to the ``test_recoverable_parameter_ranges`` method.
 It returns an object that--among other useful information--gives access to a plot (in this case a scatter plot displaying the 'known' and recovered parameter values and highlighting the recoverable sub-ranges with a green area) and a dictionary containing the ranges for each parameter where the recovery was successful.
 
 .. code-block:: python
@@ -232,4 +283,5 @@ It returns an object that--among other useful information--gives access to a plo
     recoverable_parameter_ranges_test_result.plot()
 
     # Print result
-    print(f"RW: Parameter recovery possible within these ranges: {recoverable_parameter_ranges_test_result.recoverable_parameter_ranges}")
+    recoverable_ranges = recoverable_parameter_ranges_test_result.recoverable_parameter_ranges
+    print(f"RW: Parameter recovery possible within these ranges: {recoverable_ranges}")
