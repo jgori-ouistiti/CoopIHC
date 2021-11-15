@@ -129,8 +129,9 @@ Each of the artificial agents will execute the task to create simulated data whi
 The result of calling ``test_bayesian_parameter_recovery`` is an object giving access to, among other details, a plot method to inspect the posterior distributions for the parameters.
 
 .. code-block:: python
+
     # Imports
-    import pyro.distributions
+    import pyro
 
     # Parameter priors for user definition
     wsls_parameter_priors = {"epsilon": pyro.distributions.Uniform(0.0, 1.0)}
@@ -141,7 +142,7 @@ The result of calling ``test_bayesian_parameter_recovery`` is an object giving a
     # Population size
     N_SIMULATIONS = 20
 
-    # Bundle defintion
+    # Bundle definition
     wsls_bundle = ModelChecks(task=multi_bandit_task, user=wsls)
 
     # Parameter recovery check
@@ -152,7 +153,7 @@ The result of calling ``test_bayesian_parameter_recovery`` is an object giving a
     )
 
     # Display scatter plot for posteriors
-    parameter_recovery_test_result.plot(parameter_fit_bounds=wsls_parameter_fit_bounds)
+    bayesian_parameter_recovery_test_result.plot(parameter_fit_bounds=wsls_parameter_fit_bounds)
 
 
 To give an intuition of the kind of plot that can be expected as a result of the Bayesian parameter recovery test, see the scatter plot below:
