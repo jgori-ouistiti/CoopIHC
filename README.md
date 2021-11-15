@@ -78,6 +78,7 @@ Defining a new agent is done by subclassing the `BaseAgent` class:
 ```Python
 from core.agents import BaseAgent
 from core.space import StateStateElement, Space
+from core.policy import BasePolicy
 
 class ExampleUser(BaseAgent):
     """An agent that handles the BasePolicy."""
