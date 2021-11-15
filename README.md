@@ -9,7 +9,7 @@ _CoopIHC_, pronounced 'kopik', is a Python module that provides a common basis f
 
 ## Installing
 
-Copy the files somewhere and run (-e for editable, optional):
+Copy the files into your current project and run (-e for editable, optional):
 
 ```Shell
 
@@ -17,9 +17,11 @@ pip install -e .
 
 ```
 
+You can them import the necessary packages from `core`.
+
 ## Quickstart
 
-At a high level, CoopIHC code will usually consist of defining tasks, users, assistants, bundling them together, and playing several rounds of interaction until the game ends.
+At a high level, CoopIHC code will usually consist of defining tasks, agents (users and assistants), bundling them together, and playing several rounds of interaction until the game ends.
 
 ### Task
 
@@ -65,7 +67,7 @@ class ExampleTask(InteractionTask):
         return self.state, -1, is_done, {}
 
     def render(self):
-            print(f"Turn number {self.turn_number}"
+            print(f"Turn number {self.turn_number}")
             print(self.state)
 ```
 
@@ -102,11 +104,40 @@ class ExampleUser(BaseAgent):
             agent_state=state,
         )
 
-    # Override default behaviour of BaseAgent which would randomly sample new goal values on each reset.
+    # Override default behaviour of BaseAgent which would randomly
+    # sample new goal values on each reset.
     # Here for purpose of demonstration we impose a goal = 4.
     def reset(self, dic=None):
         self.state["goal"]["values"] = 4
 ```
+
+### Bundle
+
+Defining a bundle consists of (at least) a task and a user.
+It can optionally include an assistant.
+
+```Python
+from core.agents import BaseAgent
+from core.space import StateStateElement, Space
+
+# Define a task
+example_task = ExampleTask()
+# Define a user
+example_user = ExampleUser()
+# Bundle them together
+bundle = Bundle(task=example_task, user=example_user)
+# Reset the bundle (i.e. initialize it to a random or presecribed states)
+bundle.reset(turn=1)
+# Step through the bundle (i.e. play a full round)
+while 1:
+    user_action = bundle.user.policy.sample()[0]
+    state, rewards, is_done = bundle.step(user_action)
+    print(state, rewards, is_done)
+    if is_done:
+        break
+```
+
+It consists of defining tasks, users, assistants, bundling them together, and playing several rounds of interaction until the game ends.
 
 ## Contribution Guidelines
 
