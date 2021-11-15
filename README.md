@@ -117,8 +117,7 @@ Defining a bundle consists of (at least) a task and a user.
 It can optionally include an assistant.
 
 ```Python
-from core.agents import BaseAgent
-from core.space import StateStateElement, Space
+from core.bundle import Bundle
 
 # Define a task
 example_task = ExampleTask()
