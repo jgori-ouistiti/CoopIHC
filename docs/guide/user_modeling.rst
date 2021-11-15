@@ -51,8 +51,6 @@ In the code below, we define a new kind of interaction task--in this case a risk
 .. code-block:: python
 
     # Imports
-    from matplotlib import pyplot as plt
-
     from envs import MultiBanditTask
     from agents import WSLS
 
@@ -111,6 +109,16 @@ The result of calling ``test_parameter_recovery`` is an object giving access to,
     print(f"WSLS: Parameter recovery was {successful}.")
 
 
+To give an intuition of the kind of plot that can be expected as a result of the Frequentist parameter recovery test, see the scatter plot below:
+
+.. _parameter_recovery_fig_label:
+
+.. figure::  images/WSLS_parameterrecovery.png
+    :width: 100%
+
+    The resulting parameter recovery plot for one example parameter recovered via a maximum likelihood (Frequentist) workflow. The dashed identity line represents perfect recovery.
+
+
 Bayesian Parameter Recovery
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -121,6 +129,8 @@ Each of the artificial agents will execute the task to create simulated data whi
 The result of calling ``test_bayesian_parameter_recovery`` is an object giving access to, among other details, a plot method to inspect the posterior distributions for the parameters.
 
 .. code-block:: python
+    # Imports
+    import pyro.distributions
 
     # Parameter priors for user definition
     wsls_parameter_priors = {"epsilon": pyro.distributions.Uniform(0.0, 1.0)}
@@ -145,6 +155,16 @@ The result of calling ``test_bayesian_parameter_recovery`` is an object giving a
     parameter_recovery_test_result.plot(parameter_fit_bounds=wsls_parameter_fit_bounds)
 
 
+To give an intuition of the kind of plot that can be expected as a result of the Bayesian parameter recovery test, see the scatter plot below:
+
+.. _bayesian_parameter_recovery_fig_label:
+
+.. figure::  images/WSLS_bayesianparameterrecovery.png
+    :width: 100%
+
+    The resulting parameter recovery plot for one example parameter recovered via a maximum likelihood (Frequentist) workflow. The dashed identity line represents perfect recovery.
+
+
 Model Recovery
 -------------------
 
@@ -157,8 +177,6 @@ In the code below, we use the same interaction task as above--again a risky choi
 .. code-block:: python
 
     # Imports
-    from matplotlib import pyplot as plt
-
     from envs import MultiBanditTask
     from users import WSLS, RW, RandomPlayer
 
@@ -220,6 +238,16 @@ The result of calling ``test_model_recovery`` is an object giving access to, amo
     print(f"WSLS: Model recovery was {successful}.")
 
 
+To give an intuition of the kind of plot that can be expected as a result of the model recovery test, see the confusion matrix below:
+
+.. _model_recovery_fig_label:
+
+.. figure::  images/model_recovery.png
+    :width: 100%
+
+    The resulting model recovery plot for three example user models recovered via the Bayesian Information Criterion (BIC). In perfect recovery, all artificial agents would be correctly recovered (diagonal of the heatmap).
+
+
 Recoverable Parameter Ranges
 ----------------------------
 
@@ -236,8 +264,6 @@ This parameter has a theoretical range from ``0.0`` to ``1.0``. We will try to i
 .. code-block:: python
 
     # Imports
-    from matplotlib import pyplot as plt
-
     from envs import MultiBanditTask
     from users import WSLS, RW, RandomPlayer
 
@@ -285,3 +311,13 @@ It returns an object that--among other useful information--gives access to a plo
     # Print result
     recoverable_ranges = recoverable_parameter_ranges_test_result.recoverable_parameter_ranges
     print(f"RW: Parameter recovery possible within these ranges: {recoverable_ranges}")
+
+
+To give an intuition of the kind of plot that can be expected as a result of the test for recoverable parameter ranges, see the scatter plot below:
+
+.. _recoverable_parameter_ranges_fig_label:
+
+.. figure::  images/WSLS_recoverableranges.png
+    :width: 100%
+
+    The resulting recoverable parameter ranges plot for one example user model recovered via a maximum likelihood (Frequentist) workflow. The dashed identity line represents perfect recovery. The green areas represent recoverable bounds for the parameter value where both the correlation and significance level meet the specified thresholds.

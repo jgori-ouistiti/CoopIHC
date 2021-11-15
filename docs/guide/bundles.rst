@@ -167,6 +167,7 @@ List of existing bundles
 * ``PlayBoth`` [link]. A bundle which samples both actions directly from the user and assistant.
 * ``SinglePlayUser`` [link]. A bundle without assistant. This is used e.g. to model psychophysical tasks such as perception, where there is no real interaction loop with a computing device.
 * ``SinglePlayUserAuto`` [link]. Same as SinglePlayUser, but this time the user action is obtained by sampling the user policy.
+* ``ModelChecks`` [link]. Same as PlayNone, but includes methods for user modeling workflows.
 
 ===========================  =====================================================
            Bundle                 Step call

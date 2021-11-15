@@ -282,3 +282,61 @@ def test_recoverable_parameter_ranges():
                 assert type(recoverable_range) is tuple
                 for bound in recoverable_range:
                     assert type(bound) is float
+
+
+def test_recoverable_ranges_plot():
+    import numpy.random
+
+    wsls_parameter_ranges = {
+        "epsilon": numpy.linspace(0.0, 1.0, num=6),
+    }
+
+    correlation_threshold = 0.7
+    significance_level = 0.05
+    len_b = 4
+    n_sim_per_range = 10
+
+    statistics = []
+    data = []
+    for b_min in range(len_b):
+        r = numpy.random.normal(loc=correlation_threshold, scale=0.05)
+        p = numpy.random.normal(loc=significance_level, scale=0.01)
+        fit_bounds = (b_min / len_b, (b_min + 1) / len_b)
+
+        statistics.append(
+            {
+                "parameter": "epsilon",
+                "r": r,
+                f"r>{correlation_threshold}": r > correlation_threshold,
+                "p": p,
+                f"p<{significance_level}": p < significance_level,
+                "recoverable": (r > correlation_threshold) and (p < significance_level),
+                "fit_bounds": str(fit_bounds),
+            }
+        )
+
+        for subject_index in range(n_sim_per_range):
+            sim_param = np.random.uniform(*fit_bounds)
+
+            data.append(
+                {
+                    "Subject": subject_index + 1,
+                    "Parameter": "epsilon",
+                    "Used to simulate": sim_param,
+                    "Recovered": np.random.normal(loc=sim_param, scale=0.05),
+                    "Fit bounds": str(fit_bounds),
+                }
+            )
+
+    correlation_data = pd.DataFrame(data)
+    correlation_statistics = pd.DataFrame(statistics)
+
+    ModelChecks._recoverable_fit_bounds_result_plot(
+        ordered_parameter_ranges=wsls_parameter_ranges,
+        correlation_data=correlation_data,
+        correlation_statistics=correlation_statistics,
+    )
+
+
+if __name__ == "__main__":
+    test_recoverable_ranges_plot()

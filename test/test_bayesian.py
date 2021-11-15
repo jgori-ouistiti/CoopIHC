@@ -122,5 +122,22 @@ def test_bayesian_parameter_recovery():
     bayesian_parameter_recovery_result.plot(parameter_fit_bounds=wsls_parameter_bounds)
 
 
+def test_posterior_plot():
+    import numpy.random
+
+    data = [
+        {
+            "Parameter": "epsilon",
+            "Used to simulate": u * 5 / 100,
+            "Recovered": r,
+        }
+        for u in range(20)
+        for r in numpy.random.normal(loc=u * 5 / 100, scale=0.05, size=20)
+    ]
+    ModelChecks._bayesian_parameter_recovery_plot(
+        parameter_fit_bounds=wsls_parameter_bounds, mcmc_samples_df=pd.DataFrame(data)
+    )
+
+
 if __name__ == "__main__":
     test_bayesian_parameter_recovery()

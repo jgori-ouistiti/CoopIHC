@@ -1239,6 +1239,8 @@ class ModelChecks(Bundle):
         :type correlation_threshold: float, optional
         :param significance_level: The threshold for the p-value to consider the correlation significant, defaults to 0.05
         :type significance_level: float, optional
+        :return: A DataFrame containing the correlation value (Pearson's r) and significance for each parameter
+        :rtype: pandas.DataFrame
         """
 
         def pearson_r_data(parameter_name):
@@ -1704,9 +1706,6 @@ class ModelChecks(Bundle):
 
         correlation_statistics: pd.DataFrame
         """The correlation statistics (i.e. the correlation coefficient and its p-value) for the parameter recovery of each sub-range"""
-
-        plot: matplotlib.axes.Axes
-        """The scatterplot displaying the 'true' and recovered parameter values for each parameter, highlighting the recoverable ranges"""
 
         correlation_threshold: float
         """The threshold for Pearson's r value (i.e. the correlation coefficient between the used and recovered parameters)"""
