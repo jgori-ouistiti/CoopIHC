@@ -45,6 +45,11 @@ Parameter Recovery
 In parameter recovery, a user model is tested on its ability to infer known parameters from an artificial experiment dataset.
 If a model fails to do so, it is unlikely to be useful for inferring parameters from a dataset created with human users.
 
+.. note::
+
+    Parameter recovery has only been implemented for agents with an ``ELLDiscretePolicy`` (explicit discrete likelihood).
+    While a likelihood-free approach is possible, it is not a part of this package so far.
+
 In the code below, we define a new kind of interaction task--in this case a risky choice task called ``MultiBanditTask``--and test an user class, namely Win-Stay-Lose-Switch (``WSLS``) for its ability to recover the single parameter ``epsilon``.
 
 
@@ -172,6 +177,11 @@ Model Recovery
 In model recovery, a user model is tested on its ability to be inferred from an artificial experiment dataset in competition to alternative user models.
 If a model fails to do so, it is unlikely to be successfully recovered from a dataset created with human users.
 
+.. note::
+
+    Model recovery has only been implemented for agents with an ``ELLDiscretePolicy`` (explicit discrete likelihood).
+    While a likelihood-free approach is possible, it is not a part of this package so far.
+
 In the code below, we use the same interaction task as above--again a risky choice task called ``MultiBanditTask``--and test the user class used above, namely Win-Stay-Lose-Switch (``WSLS``), against two new user classes, a random user (``RandomPlayer``) and Rescorla-Wagner (``RW``), for its ability to be recovered from an artificial dataset.
 
 
@@ -257,6 +267,11 @@ Parameters could, for example, be generally recoverable for the entire parameter
 Or, in the opposite case, while the model's parameters might not be recoverable for the entire parameter range, they could be recoverable for the specific user data in question.
 To give just two reasons as to why this might be the case, the parameters might not be independent and therefore introduce unwanted interaction effects when testing the entire parameter range or one of the parameters might enact such a strong influence on the resulting behavior exhibited by a user given certain values that recovery for the other parameter values becomes nearly impossible (e.g. in the case of large inverse temperature parameter values).
 For this reason, testing recovery for different sub-ranges of the parameters' spectrum can give important insights towards the usefulness and limitations of a given user model or user class.
+
+.. note::
+
+    Parameter recovery has only been implemented for agents with an ``ELLDiscretePolicy`` (explicit discrete likelihood).
+    While a likelihood-free approach is possible, it is not a part of this package so far.
 
 The code below gives an example on how the ``ModelChecks`` bundle provides support in identifying those parameter ranges that can be recovered.
 For this, we will again use the interaction task ``MultiBanditTask`` and the user class Win-Stay-Lose-Switch (``WSLS``) with its parameter ``epsilon``.
