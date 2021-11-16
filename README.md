@@ -1,4 +1,4 @@
-![CoopIHC Logo](https://raw.githubusercontent.com/jgori-ouistiti/interaction-agents/cj_opensource/docs/guide/images/coopihc-logo.png)
+![CoopIHC Logo](https://raw.githubusercontent.com/jgori-ouistiti/interaction-agents/cj_modelchecks/docs/guide/images/coopihc-logo.png)
 
 ---
 
