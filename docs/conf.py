@@ -31,7 +31,12 @@ release = "0.0.1"
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["sphinx.ext.autodoc", "sphinx.ext.mathjax", "sphinxcontrib.tikz"]
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.mathjax",
+    "sphinxcontrib.tikz",
+    "sphinx_rtd_theme",
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -63,7 +68,5 @@ numfig = True
 # tikz stuff
 tikz_proc_suite = "GhostScript"
 tikz_resolution = 184
-tikz_tikzlibraries = (
-    "calc,shapes,arrows,fit,positioning,decorations.pathreplacing"
-)
+tikz_tikzlibraries = "calc,shapes,arrows,fit,positioning,decorations.pathreplacing"
 # tikz_latex_preamble = '\usepackage\{ulem\}'
