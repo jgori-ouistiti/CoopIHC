@@ -294,54 +294,54 @@ class BaseAgent(ABC):
 # Should not be needed anymore
 
 
-class DummyAssistant(BaseAgent):
-    """An Assistant that does nothing, used by Bundles that don't use an assistant.
-
-    :meta private:
-    """
-
-    def __init__(self, **kwargs):
-        """
-        :meta private:
-        """
-        super().__init__("assistant", **kwargs)
-
-    def finit(self):
-        """
-        :meta private:
-        """
-        pass
-
-    def reset(self, dic=None):
-        """
-        :meta private:
-        """
-        pass
-
-
-class DummyUser(BaseAgent):
-    """An User that does nothing, used by Bundles that don't use an user.
-
-    :meta private:
-    """
-
-    def __init__(self, **kwargs):
-        """
-        :meta private:
-        """
-        super().__init__("user", **kwargs)
-
-    def finit(self):
-        """
-        :meta private:
-        """
-        pass
-
-    def reset(self, dic=None):
-        """
-        :meta private:
-        """
-        pass
+# class DummyAssistant(BaseAgent):
+#     """An Assistant that does nothing, used by Bundles that don't use an assistant.
+#
+#     :meta private:
+#     """
+#
+#     def __init__(self, **kwargs):
+#         """
+#         :meta private:
+#         """
+#         super().__init__("assistant", **kwargs)
+#
+#     def finit(self):
+#         """
+#         :meta private:
+#         """
+#         pass
+#
+#     def reset(self, dic=None):
+#         """
+#         :meta private:
+#         """
+#         pass
+#
+#
+# class DummyUser(BaseAgent):
+#     """An User that does nothing, used by Bundles that don't use an user.
+#
+#     :meta private:
+#     """
+#
+#     def __init__(self, **kwargs):
+#         """
+#         :meta private:
+#         """
+#         super().__init__("user", **kwargs)
+#
+#     def finit(self):
+#         """
+#         :meta private:
+#         """
+#         pass
+#
+#     def reset(self, dic=None):
+#         """
+#         :meta private:
+#         """
+#         pass
 
 
 ### Goal could be defined as a target state of the task, in a more general description.
