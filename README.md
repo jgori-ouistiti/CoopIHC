@@ -1,4 +1,4 @@
-![CoopIHC Logo](https://raw.githubusercontent.com/jgori-ouistiti/interaction-agents/main/docs/guide/images/coopihc-logo.png)
+![CoopIHC Logo](https://raw.githubusercontent.com/jgori-ouistiti/CoopIHC/main/docs/guide/images/coopihc-logo.png)
 
 ---
 
@@ -9,9 +9,9 @@ _CoopIHC_, pronounced 'kopik', is a Python module that provides a common basis f
 
 ## Resources
 
-- [Getting Started](https://jgori-ouistiti.github.io/interaction-agents/guide/quickstart.html)
-- [Documentation](https://jgori-ouistiti.github.io/interaction-agents/)
-- [Contributing](https://github.com/jgori-ouistiti/interaction-agents/blob/main/CONTRIBUTING.md)
+- [Getting Started](https://jgori-ouistiti.github.io/CoopIHC/guide/quickstart.html)
+- [Documentation](https://jgori-ouistiti.github.io/CoopIHC/)
+- [Contributing](https://github.com/jgori-ouistiti/CoopIHC/blob/main/CONTRIBUTING.md)
 
 ## Installing
 
