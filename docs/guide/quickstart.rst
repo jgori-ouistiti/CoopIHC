@@ -207,13 +207,13 @@ You have seen a couple of examples above where bundles are used, including their
 
     Documentation is out of date below
 
-An overview of *interaction-agents*
+An overview of *CoopIHC*
 -----------------------------------------------------
 
-1. *interaction-agents* comes equipped with presently two tasks (pointing with a cursor, and a human eye-gaze selection task). Look at the list of modules [link].
+1. *CoopIHC* comes equipped with presently two tasks (pointing with a cursor, and a human eye-gaze selection task). Look at the list of modules [link].
 2. Several operators and assistants are provided, some generic and described in the agent sections [link], others adapted to one of the tasks, described in the modules [link]
 3. Several bundles are provided, that cover many use cases. These are described in the bundles section [link]
-4. One can define new agents by minimally writing new code, by taking advantage of the modular approach of *interaction-agents*. In particular, inference engines [link], observation engines [link], and operator models [link] can be re-used and sub-classed.
+4. One can define new agents by minimally writing new code, by taking advantage of the modular approach of *CoopIHC*. In particular, inference engines [link], observation engines [link], and operator models [link] can be re-used and sub-classed.
 
 
 What's next?

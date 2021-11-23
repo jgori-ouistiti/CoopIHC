@@ -5,7 +5,7 @@ The Inference Engines
 
 The internal states of users and assistants are expected to evolve over time, namely because both of them are learning from their observations during a run or several runs.
 
-To account for this, *interaction-agents* provides an inference engine, which updates agent's internal states from their observations.
+To account for this, *CoopIHC* provides an inference engine, which updates agent's internal states from their observations.
 
 All inference engines are obtained by subclassing the base class ``InferenceEngine``. This inference engine provides a buffer and an API used by bundles to add observations to the engine.
 

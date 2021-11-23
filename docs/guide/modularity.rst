@@ -3,7 +3,7 @@
 Modularity
 ===============
 
-The API used in *interaction-agents* being straightforward, one can create new classes from scratch, by subclassing one of the core classes, adding a few methods, and adhering to a few conventions.
+The API used in *CoopIHC* being straightforward, one can create new classes from scratch, by subclassing one of the core classes, adding a few methods, and adhering to a few conventions.
 
 Another way in which one can create new classes, which we explain now, is by re-using existing classes, and wrapping them appropriately.
 We present a fully worked example where a complex sequence of interactions is described in a relatively simple manner using relatively few lines of code, and by maximally re-using existing code.

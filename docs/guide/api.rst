@@ -10,7 +10,7 @@ States
 
 States hold the information about the state value and spaces. They are used by policies to store actions, by agents to store internal states, and by bundles to generate the aggregated states.
 
-You should not have to modify this class. In *interaction-agents*, states are derived from the ``OrderedDict`` class, a dictionary which guarantees the same order when iterating over it.
+You should not have to modify this class. In *CoopIHC*, states are derived from the ``OrderedDict`` class, a dictionary which guarantees the same order when iterating over it.
 
 A state can be composed of several entries, each entry (key, values) is a substate named 'key' and which takes values 'values'.
 

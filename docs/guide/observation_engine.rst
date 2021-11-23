@@ -13,7 +13,7 @@ Furthermore, there might be a cost associated with making observations:
     * A human observer may take some time to locate a target. Usually, there will be a tradeoff between the time needed to produce and observation and the quality of that observation (speed-accuracy tradeoff)
     * A human observer may enjoy making observations which are very different (according to some criterion) to the previous ones, in which case it would be rewarded for satisfying its curiosity
 
-*interaction-agents* provides a generic object called an observation engine which specifies how an observation is created from the game state. Each substate of the game state can be addressed specifically. For example, in the example below, the observation engine is defined in a way that it will not observe the first substate, that it will have a noisy observation of the second substate, and that it will perfectly observe the remainder of the state.
+*CoopIHC* provides a generic object called an observation engine which specifies how an observation is created from the game state. Each substate of the game state can be addressed specifically. For example, in the example below, the observation engine is defined in a way that it will not observe the first substate, that it will have a noisy observation of the second substate, and that it will perfectly observe the remainder of the state.
 
 .. tikz:: The observation engine
     :include: tikz/observation_engine.tikz
@@ -25,7 +25,7 @@ The ``Observation Engine`` class
 ---------------------------------
 The Observation Engine class is the Base class from which all Observation Engines are derived. It provides nothing but a type attribute and an observe method. This method is redefined in the observation engines derived from this base class.
 
-*interaction-agents* currently provide three observation engines:
+*CoopIHC* currently provide three observation engines:
 
 1. ``RuleObservationEngine`` [link], which produces perfect observations on the substates targeted by the 'rule'.
 2. ``NoisyRuleObservationEngine`` [link], which produces perfect and/or noisy observations on the substates targeted by a 'rule' and some 'noiserules'
