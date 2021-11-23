@@ -1,4 +1,4 @@
-.. interaction-agents documentation master file, created by
+.. CoopIHC documentation master file, created by
    sphinx-quickstart on Fri Apr  9 10:33:38 2021.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
@@ -40,7 +40,7 @@ and **bundling** them back together. Different **bundles** are proposed, dependi
 
 
 
-Learn how to use *interaction-agents*:
+Learn how to use *CoopIHC*:
 ===============================================
 
 
@@ -93,13 +93,13 @@ Learn how to use *interaction-agents*:
 
 .. _modules-label:
 
-List of Modules in *interaction-agents*
+List of Modules in *CoopIHC*
 ============================================
 
 
 .. toctree::
     :maxdepth: 2
-    :caption: Core Module. This module is the core module of interaction-agents. Any new module should build heavily on existing classes, by subclassing them.
+    :caption: Core Module. This module is the core module of CoopIHC. Any new module should build heavily on existing classes, by subclassing them.
 
     modules/core/space
     modules/core/baseagents
@@ -137,7 +137,7 @@ TODO list:
 * Have a template for each main component (possibly using metaclasses)
 * verify full arithmetic operations for StateElement
 * make a mapping object for RuleObservationEngine, smoothen the ruleObservationEngine specification
-* profile interaction-agents to see whether there are any bottlenecks (deepcopies are one)
+* profile CoopIHC to see whether there are any bottlenecks (deepcopies are one)
 * make sure attach_policy and such can be called whenever and not just on init
 
 

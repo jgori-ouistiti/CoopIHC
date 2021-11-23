@@ -47,7 +47,7 @@ The model further assumes that the user and assistant act sequentially (one afte
     :xscale: 80
     :align: center
 
-    The graphical interaction model used in *interaction-agents*
+    The graphical interaction model used in *CoopIHC*
 
 
 

@@ -143,7 +143,7 @@ We see that the Position substate has not been attributed a value yet, but can t
     spaces:	[Discrete(15), Discrete(15), Discrete(15)]
     possible values:	[[None], [None], [None]]
 
-Targets and cursor position have been set. To verify that the task behaves as intended, we should couple it with two other agents that provide actions. However, for now, we have no agents yet that are capable of interacting with this task. To help in developing tasks, *interaction-agents* introduces a bundle called ``_DevelopTask`` which allows one to wrap a task in a bundle without specifying any agents. Actions are provided manually via a step method. This also allows one to call render.
+Targets and cursor position have been set. To verify that the task behaves as intended, we should couple it with two other agents that provide actions. However, for now, we have no agents yet that are capable of interacting with this task. To help in developing tasks, *CoopIHC* introduces a bundle called ``_DevelopTask`` which allows one to wrap a task in a bundle without specifying any agents. Actions are provided manually via a step method. This also allows one to call render.
 
 .. code-block:: python
 
@@ -198,7 +198,7 @@ An operator is made of 4 components:
 Defining an operator involves subclassing the ``BaseAgent`` class and specifying those 4 components (each of which can be set to None).
 
 Let us first fill in the State (accessible as ``self.state``); an immediate difficulty is that one cannot define the substate 'Goal' without knowing the task, since the goal will depend on the size of the gridworld, the available targets and so forth.
-This problem is very common, since usually agent will have to adapt to the task. Because of that, *interaction-agents* introduces a method called ``finit()`` which is called by the bundle after the task and agents have been instantiated, see :doc:`bundles` for more information on the initialization of a bundle.
+This problem is very common, since usually agent will have to adapt to the task. Because of that, *CoopIHC* introduces a method called ``finit()`` which is called by the bundle after the task and agents have been instantiated, see :doc:`bundles` for more information on the initialization of a bundle.
 
 .. code-block:: python
 
@@ -231,7 +231,7 @@ Notice two things here:
 * The actual value of the Goal has been left empty. It is the reset's method job to put a value there, which should usually be different upon each call to reset. This is achieved here by calling the reset method from the parent class ``BaseAgent``, which fills the state with values sampled randomly from each state's component's spaces attribute.
 
 Now, let's turn to the observation engine, whose goal is to provide partial observations from the common game state. Essentially, the observation engine is an object with an ``observe`` method, which modifies the game state (e.g. removing some of the substates, altering others).
-*interaction-agents* defines several observation engines. The most common one is a rule-based observation engine, where the modeler specifies some deterministic or probabilistic rules to be applied to the game state.
+*CoopIHC* defines several observation engines. The most common one is a rule-based observation engine, where the modeler specifies some deterministic or probabilistic rules to be applied to the game state.
 We can define observation rules on a macro level, which indicate which substates are observable by the agent, and then add specific micro rules on top. More details can be found in :doc:`observation_engine`.
 Here, we will assume that the operator can see everything, except the state of the assistant:
 
@@ -259,7 +259,7 @@ Here, we will assume that the operator can see everything, except the state of t
                 extraprobabilisticrules = extraprobabilisticrules   )
 
 
-Let's now turn to the inference engine. Since here the goal of the operator (and thus, its state) will not change during the episode, there is no need for an inference engine and we can simply not provide it during initialization. Nothing special needs to be undertaken here, as *interaction-agents* will handle this case behind the scenes.
+Let's now turn to the inference engine. Since here the goal of the operator (and thus, its state) will not change during the episode, there is no need for an inference engine and we can simply not provide it during initialization. Nothing special needs to be undertaken here, as *CoopIHC* will handle this case behind the scenes.
 
 
 Finally, let's turn to the policy for the operator. A policy is essentially an object with a ``sample`` method, which specifies how the agent's action is chosen with respect to the current state and observation of the agent.
@@ -405,7 +405,7 @@ For example, let's try out a simple rule with adaptive gain. The gain is set at 
 
 
 Run this multiple times and compare with the previous case and see that the returns are much better than what one would get with the constant CD gain.
-Now, you could explore other policies, or better, use an optimization process to find the best policy (and use the bundle to give you the return on policy). This simple example sketches one use of *interaction-agents*, namely the design of intelligent assistants.
+Now, you could explore other policies, or better, use an optimization process to find the best policy (and use the bundle to give you the return on policy). This simple example sketches one use of *CoopIHC*, namely the design of intelligent assistants.
 
 .. note::
 
