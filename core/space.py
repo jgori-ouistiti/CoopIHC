@@ -240,6 +240,27 @@ class Space:
                 for r in self.range
             ]
 
+    def serialize(self):
+        """Call this to generate a dict representation of Space.
+
+        :return: dictionary representation of a Space object
+        :rtype: dict
+        """
+        return {"array_list": self._array}
+
+    def from_dict(data):
+        """Call this to generate a Space from a representation as a dictionary.
+
+        :param data: dictionary representation of a Space
+        :type data: dict
+        :return: Space with the supplied information
+        :rtype: Space
+        """
+        # Do not create new instance, if type is already Space
+        if type(data) is Space:
+            return data
+        return Space(**data)
+
 
 class SpaceLengthError(Exception):
     """Error raised when the space length does not match the value length.
@@ -579,7 +600,25 @@ class StateElement:
                     v_list.append(v.item())
                 else:
                     raise TypeError("".format(msg))
-        return {"values": v_list, "spaces": str(self["spaces"])}
+        return {
+            "values": v_list,
+            "spaces": [space.serialize() for space in self["spaces"]],
+        }
+
+    def from_dict(data):
+        """Call this to generate a StateElement from a representation as a dictionary.
+
+        :param data: dictionary representation of a StateElement
+        :type data: dict
+        :return: StateElement with the supplied information
+        :rtype: StateElement
+        """
+        kwargs = data
+        if "spaces" in data:
+            kwargs["spaces"] = [
+                Space.from_dict(space_dict) for space_dict in data["spaces"]
+            ]
+        return StateElement(**kwargs)
 
     def _mix_modes(self, other):
         if hasattr(other, "clipping_mode"):
@@ -601,7 +640,7 @@ class StateElement:
         """
         lists = []
         for value, space in zip(self.values, self.spaces):
-            print(value, space)
+            # print(value, space)
             if not space.continuous:
                 for r in space.range:
                     lists.append(r.squeeze().tolist())

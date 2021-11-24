@@ -1,7 +1,16 @@
 import gym
 import numpy
 
-from core.bundle import Bundle
+from core.bundle import (
+    Bundle,
+    PlayUser,
+    Train,
+    PlayAssistant,
+    SinglePlayUserAuto,
+    PlayNone,
+    PlayBoth,
+    SinglePlayUser,
+)
 from pointing.envs import SimplePointingTask, Screen_v0
 from pointing.users import CarefulPointer, LQGPointer
 from pointing.assistants import ConstantCDGain, BIGGain

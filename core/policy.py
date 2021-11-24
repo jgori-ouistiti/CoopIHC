@@ -170,6 +170,8 @@ class WrapAsPolicy(BasePolicy):
 # ============= Discrete Policies =================
 
 # ----------- Bayesian Information Gain Policy ---------
+
+
 class BIGDiscretePolicy(BasePolicy):
     def __init__(self, assistant_action_state, user_policy_model):
 
@@ -335,6 +337,7 @@ class ELLDiscretePolicy(BasePolicy):
         action_state = kwargs.pop("action_state")
         super().__init__(action_state, *args, **kwargs)
         self.explicit_likelihood = True
+        self.rng = numpy.random.default_rng(kwargs.get("seed"))
 
     @classmethod
     def attach_likelihood_function(cls, _function):
@@ -349,7 +352,7 @@ class ELLDiscretePolicy(BasePolicy):
 
         observation = self.host.inference_engine.buffer[-1]
         actions, llh = self.forward_summary(observation)
-        action = actions[numpy.random.choice(len(llh), p=llh)]
+        action = actions[self.rng.choice(len(llh), p=llh)]
         self.action_state["action"] = action
         return action, 0
 
@@ -367,7 +370,9 @@ class ELLDiscretePolicy(BasePolicy):
         for action in action_stateelement.cartesian_product():
             llh.append(self.compute_likelihood(action, observation))
             actions.append(action)
-        if sum(llh) != 1:
+        ACCEPTABLE_ERROR = 1e-13
+        error = 1 - sum(llh)
+        if error > ACCEPTABLE_ERROR:
             raise BadlyDefinedLikelihoodError(
                 "Likelihood does not sum to 1: {}".format(llh)
             )

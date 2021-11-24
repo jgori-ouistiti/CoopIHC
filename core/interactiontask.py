@@ -4,7 +4,7 @@ import numpy
 
 from core.helpers import flatten
 import scipy.linalg
-from core.space import State, StateElement
+from core.space import State, StateElement, Space
 import core.space
 
 import copy
@@ -114,8 +114,6 @@ class InteractionTask(ABC):
 
         :meta public:
         """
-        self.round += 1
-
         ret = self.assistant_step(*args, **kwargs)
         if ret is None:
             return self.state, -1 / 2, False, {}
@@ -162,6 +160,8 @@ class InteractionTask(ABC):
             if value is not None:
                 self.state[key]["values"] = value
 
+
+# Outdated
 
 # Outdated
 

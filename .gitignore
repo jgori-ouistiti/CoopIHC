@@ -127,3 +127,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# VSCode
+.vscode/
+
+# Pipfile (use requirements.txt instead)
+Pipfile
+Pipfile.lock

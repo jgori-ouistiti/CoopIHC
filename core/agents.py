@@ -26,6 +26,7 @@ import scipy.linalg
 
 import sys
 import copy
+import gym.spaces
 
 
 class BaseAgent(ABC):
@@ -148,7 +149,11 @@ class BaseAgent(ABC):
     @property
     def observation(self):
         """Returns the latest observation"""
-        return self.inference_engine.buffer[-1]
+        return (
+            self.inference_engine.buffer[-1]
+            if self.inference_engine.buffer is not None
+            else None
+        )
 
     @property
     def action(self):
@@ -543,7 +548,6 @@ class GoalDrivenDiscreteUser(BaseAgent):
 #             print("Targets", targets)
 #             print("Beliefs", beliefs)
 
-
 # ===================== Classic Control ==================== #
 
 # An LQR Controller (implements a linear feedback policy)
@@ -717,7 +721,7 @@ class IHCT_LQGController(BaseAgent):
         self.role = role
         self.timespace = "continuous"
 
-        ### Initialize Random Kalmain gains
+        # Initialize Random Kalmain gains
         self.K = numpy.random.rand(*C.T.shape)
         self.L = numpy.random.rand(1, Q.shape[1])
         self.noise = noise
@@ -976,6 +980,7 @@ class IHCT_LQGController(BaseAgent):
         return X, res
 
     # Counting decorator
+
     def counted_decorator(f):
         def wrapped(*args, **kwargs):
             wrapped.calls += 1
