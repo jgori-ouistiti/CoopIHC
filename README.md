@@ -1,6 +1,5 @@
 ![CoopIHC Logo](https://raw.githubusercontent.com/jgori-ouistiti/CoopIHC/main/docs/guide/images/coopihc-logo.png)
 
----
 
 _CoopIHC_, pronounced 'kopik', is a Python module that provides a common basis for describing computational Human Computer Interaction (HCI) contexts, mostly targeted at expressing models of users and intelligent assistants.
 
@@ -153,3 +152,7 @@ If you plan to contribute new features, utility functions, or extensions to the 
 Sending a PR without discussion might end up resulting in a rejected PR because we might be taking the core in a different direction than you might be aware of.
 
 To learn more about making a contribution to CoopIHC, please see our [Contribution page](CONTRIBUTING.md).
+
+
+Link to the project site: https://jgori-ouistiti.github.io/CoopIHC
+

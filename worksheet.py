@@ -53,16 +53,16 @@ import sys
 
 _str = sys.argv[1]
 
-from loguru import logger
+# from loguru import logger
 
-logger.remove()
-try:
-    import os
+# logger.remove()
+# try:
+#     import os
 
-    os.remove("logs/{}.log".format(_str))
-except FileNotFoundError:
-    pass
-logger.add("logs/{}.log".format(_str), format="{time} {level} {message}")
+#     os.remove("logs/{}.log".format(_str))
+# except FileNotFoundError:
+#     pass
+# logger.add("logs/{}.log".format(_str), format="{time} {level} {message}")
 
 if _str == "basic-plot":
     task = SimplePointingTask(gridsize=31, number_of_targets=8)
