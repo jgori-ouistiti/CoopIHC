@@ -44,7 +44,19 @@ Some examples require matplotlib, which itself requires a graphical backend to d
 Constraints for formatting code include 
 1. Using black https://pypi.org/project/black/
 2. Line wrapping width of 79 (see PEP8 https://www.python.org/dev/peps/pep-0008/)
-3. Writing sphinx-style dosctrings with name and extended summary (recommend using a tool such as autoDocString)
+3. Writing sphinx-style dosctrings with name and extended summary (recommend using a tool such as autoDocString). It should look like that:
+
+```Python
+   """ [summary]
+
+   [extended_summary]
+
+   :raises RunTimeError: [description]
+   :return: [description]
+   :rtype: [type]
+   """
+```
+   
 
 If you are using vsCode, you can paste this into your settings.json 
 
