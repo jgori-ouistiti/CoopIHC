@@ -44,6 +44,7 @@ Some examples require matplotlib, which itself requires a graphical backend to d
 Constraints for formatting code include 
 1. Using black https://pypi.org/project/black/
 2. Line wrapping width of 79 (see PEP8 https://www.python.org/dev/peps/pep-0008/)
+3. Writing sphinx-style dosctrings with name and extended summary (recommend using a tool such as autoDocString)
 
 If you are using vsCode, you can paste this into your settings.json 
 
@@ -51,4 +52,9 @@ If you are using vsCode, you can paste this into your settings.json
     "python.formatting.provider": "black",
     "editor.formatOnSave": true,
     "editor.wordWrap": "wordWrapColumn",
-    "editor.wordWrapColumn": 79
+    "editor.wordWrapColumn": 79,
+    "autoDocstring.docstringFormat": "sphinx",
+    "autoDocstring.includeExtendedSummary": true,
+    "autoDocstring.includeName": true
+
+
