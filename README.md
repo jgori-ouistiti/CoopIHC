@@ -21,7 +21,7 @@ Copy the files into your current project and run (-e for editable, optional):
 
 ```Shell
 
-pip install -e .
+pip install coopihc
 
 ```
 

@@ -11,7 +11,7 @@ Copy the files somewhere and run (-e for editable, optional)
 
 .. code-block:: python
 
-    pip install -e .
+    pip install coopihc
 
 Interaction Model
 -------------------
