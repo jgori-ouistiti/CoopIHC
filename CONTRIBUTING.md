@@ -22,7 +22,7 @@ CoopIHC uses pipenv to manage dependencies. You should run
 
 ```Shell
 
-pipenv install
+pipenv install --dev
 
 ```
 to get the required dependencies.
@@ -31,13 +31,21 @@ CoopIHC does not ship a requirements.txt file, but you can recreate it from the 
 ```Shell
 
 pipenv lock -r > requirements.txt
+pipenv lock -r -d > dev-requirements.txt
 
+
+pip install -r requirements.txt
+pip install -r dev-requirements.txt --dev
 ```
 
 if you want to use that mechanism.
 
 
 Some examples require matplotlib, which itself requires a graphical backend to display graphs. Since many backends exist, CoopIHC does not require a specific one as a dependency. If the examples do not display, then you should likely either install a graphical backend (e.g. pyqt5, see matplotlib documentation for others) with pipenv, or, if you have a system-wide install for some backend (likely) go to the configuration file of your pipfile and allow system-wide packages to be installed.
+
+# Documentation
+
+Documentation uses [Sphinx](https://www.sphinx-doc.org/en/master/). Make sure it is installed on your side. 
 
 # Editor settings
 
@@ -47,14 +55,18 @@ Constraints for formatting code include
 3. Writing sphinx-style dosctrings with name and extended summary (recommend using a tool such as autoDocString). It should look like that:
 
 ```Python
-   """ [summary]
+	"""function [summary]
 
-   [extended_summary]
+	[extended_summary]
 
-   :raises RunTimeError: [description]
-   :return: [description]
-   :rtype: [type]
-   """
+	:param a: [description]
+	:type a: [type]
+	:param b: [description]
+	:type b: [type]
+	:raises RunTimeError: [description]
+	:return: [description]
+	:rtype: [type]
+	"""
 ```
    
 

@@ -6,6 +6,10 @@ _CoopIHC_, pronounced 'kopik', is a Python module that provides a common basis f
 1. It provides a common conceptual and practical reference, which facilitates reusing and extending other researcher's work
 2. It can help design intelligent assistants by translating an interactive context into a problem that can be solved (via other methods).
 
+## Requirements
+
+CoopIHC is known to work with Python 3.6.9 and above. 
+
 ## Resources
 
 - [Getting Started](https://jgori-ouistiti.github.io/CoopIHC/guide/quickstart.html)

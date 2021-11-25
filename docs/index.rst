@@ -51,7 +51,6 @@ Learn how to use *CoopIHC*:
 
     guide/quickstart
     guide/more_complex_example
-    guide/api
     guide/modularity
     guide/training
     guide/external_components
@@ -99,7 +98,7 @@ List of Modules in *CoopIHC*
 
 .. toctree::
     :maxdepth: 2
-    :caption: Core Module. This module is the core module of CoopIHC. Any new module should build heavily on existing classes, by subclassing them.
+    :caption: Core module of CoopIHC. Any new module should build heavily on existing classes, by subclassing them.
 
     modules/core/space
     modules/core/baseagents

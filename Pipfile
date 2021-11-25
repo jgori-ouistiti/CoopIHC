@@ -10,8 +10,11 @@ tabulate = "*"
 scipy = "*"
 websockets = "*"
 pyyaml = "*"
+pandas = "*"
+tqdm = "*"
+seaborn = "*"
+statsmodels = "*"
 
 [dev-packages]
-
-[requires]
-python_version = "3.6.9"
+sphinx-rtd-theme = "*"
+sphinxcontrib-tikz = "*"
