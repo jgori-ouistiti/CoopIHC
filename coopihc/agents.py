@@ -2,21 +2,21 @@ import numpy
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 
-import core.observation
-from core.space import State, StateElement, Space
-from core.policy import BasePolicy, LinearFeedback
-from core.observation import (
+import coopihc.observation
+from coopihc.space import State, StateElement, Space
+from coopihc.policy import BasePolicy, LinearFeedback
+from coopihc.observation import (
     RuleObservationEngine,
     base_user_engine_specification,
     base_assistant_engine_specification,
     base_task_engine_specification,
 )
-from core.inference import (
+from coopihc.inference import (
     BaseInferenceEngine,
     GoalInferenceWithUserPolicyGiven,
     ContinuousKalmanUpdate,
 )
-from core.helpers import flatten, sort_two_lists
+from coopihc.helpers import flatten, sort_two_lists
 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
@@ -392,8 +392,8 @@ class GoalDrivenDiscreteUser(BaseAgent):
 #
 #     :param action_space: (list(gym.spaces)) space in which the actions of the user take place, e.g.``[gym.spaces.Box(low=-1, high=1, shape=(2, ), dtype=numpy.float64)]``
 #     :param action_set: (list) possible action set for each subspace (None for Box) e.g. ``[None, None]``
-#     :param user_model: (core.user_model) user_model used by the assistant to form the likelihood in Bayes rule. It can be the exact same model that is used by the user, or a different one (e.g. if the assistant has to learn the model)
-#     :param observation_engine: (core.observation_engine).
+#     :param user_model: (coopihc.user_model) user_model used by the assistant to form the likelihood in Bayes rule. It can be the exact same model that is used by the user, or a different one (e.g. if the assistant has to learn the model)
+#     :param observation_engine: (coopihc.observation_engine).
 #
 #     :meta public:
 #     """
@@ -807,7 +807,7 @@ class IHCT_LQGController(BaseAgent):
 
             obs_matrix = {
                 ("task_state", "x"): (
-                    core.observation.observation_linear_combination,
+                    coopihc.observation.observation_linear_combination,
                     (C,),
                 )
             }
@@ -817,7 +817,7 @@ class IHCT_LQGController(BaseAgent):
             # extraprobabilisticrule
             agn_rule = {
                 ("task_state", "x"): (
-                    core.observation.additive_gaussian_noise,
+                    coopihc.observation.additive_gaussian_noise,
                     (
                         D,
                         numpy.zeros((C.shape[0], 1)).reshape(
@@ -1010,7 +1010,7 @@ class IHCT_LQGController(BaseAgent):
 
 
 # ================ Examples ================
-from core.policy import ExamplePolicy
+from coopihc.policy import ExamplePolicy
 
 
 class ExampleUser(BaseAgent):

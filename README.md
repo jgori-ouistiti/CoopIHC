@@ -1,6 +1,5 @@
 ![CoopIHC Logo](https://raw.githubusercontent.com/jgori-ouistiti/CoopIHC/main/docs/guide/images/coopihc-logo.png)
 
-
 _CoopIHC_, pronounced 'kopik', is a Python module that provides a common basis for describing computational Human Computer Interaction (HCI) contexts, mostly targeted at expressing models of users and intelligent assistants.
 
 1. It provides a common conceptual and practical reference, which facilitates reusing and extending other researcher's work
@@ -8,7 +7,7 @@ _CoopIHC_, pronounced 'kopik', is a Python module that provides a common basis f
 
 ## Requirements
 
-CoopIHC is known to work with Python 3.6.9 and above. 
+CoopIHC is known to work with Python 3.6.9 and above.
 
 ## Resources
 
@@ -26,7 +25,7 @@ pip install -e .
 
 ```
 
-You can them import the necessary packages from `core`.
+You can them import the necessary packages from `coopihc`.
 
 ## Quickstart
 
@@ -41,8 +40,8 @@ Tasks represent whatever the user is interacting with. They are essentially char
 - An **assistant step (transition) function**, which describes how the task state changes based on the assistant action.
 
 ```Python
-from core.interactiontask import InteractionTask
-from core.space import StateElement, Space
+from coopihc.interactiontask import InteractionTask
+from coopihc.space import StateElement, Space
 
 class ExampleTask(InteractionTask):
     """
@@ -85,9 +84,9 @@ class ExampleTask(InteractionTask):
 Defining a new agent is done by subclassing the `BaseAgent` class:
 
 ```Python
-from core.agents import BaseAgent
-from core.space import StateStateElement, Space
-from core.policy import BasePolicy
+from coopihc.agents import BaseAgent
+from coopihc.space import StateStateElement, Space
+from coopihc.policy import BasePolicy
 
 class ExampleUser(BaseAgent):
     """An agent that handles the BasePolicy."""
@@ -127,7 +126,7 @@ Defining a bundle consists of (at least) a task and a user.
 It can optionally include an assistant.
 
 ```Python
-from core.bundle import Bundle
+from coopihc.bundle import Bundle
 
 # Define a task
 example_task = ExampleTask()
@@ -157,6 +156,4 @@ Sending a PR without discussion might end up resulting in a rejected PR because 
 
 To learn more about making a contribution to CoopIHC, please see our [Contribution page](CONTRIBUTING.md).
 
-
 Link to the project site: https://jgori-ouistiti.github.io/CoopIHC
-

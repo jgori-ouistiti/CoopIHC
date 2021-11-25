@@ -1,5 +1,5 @@
-import core
-from core.space import StateElement, State, StateNotContainedError, Space
+import coopihc
+from coopihc.space import StateElement, State, StateNotContainedError, Space
 import gym
 import numpy
 import sys
@@ -14,14 +14,14 @@ if _str == "correct" or _str == "all":
     x = StateElement(
         values=None,
         spaces=[
-            core.space.Space(
+            coopihc.space.Space(
                 [
                     numpy.array([-1], dtype=numpy.float32),
                     numpy.array([1], dtype=numpy.float32),
                 ]
             ),
-            core.space.Space([numpy.array([1, 2, 3], dtype=numpy.int16)]),
-            core.space.Space(
+            coopihc.space.Space([numpy.array([1, 2, 3], dtype=numpy.int16)]),
+            coopihc.space.Space(
                 [numpy.array([-6, -5, -4, -3, -2, -1], dtype=numpy.int16)]
             ),
         ],
@@ -34,12 +34,8 @@ if _str == "correct" or _str == "all":
         spaces=[
             Space(
                 [
-                    numpy.array(
-                        [i for i in range(gridsize[0])], dtype=numpy.int16
-                    ),
-                    numpy.array(
-                        [i for i in range(gridsize[1])], dtype=numpy.int16
-                    ),
+                    numpy.array([i for i in range(gridsize[0])], dtype=numpy.int16),
+                    numpy.array([i for i in range(gridsize[1])], dtype=numpy.int16),
                 ]
             )
             for j in range(number_of_targets)
@@ -51,16 +47,14 @@ if _str == "correct" or _str == "all":
 x = StateElement(
     values=None,
     spaces=[
-        core.space.Space(
+        coopihc.space.Space(
             [
                 numpy.array([-1], dtype=numpy.float32),
                 numpy.array([1], dtype=numpy.float32),
             ]
         ),
-        core.space.Space([numpy.array([1, 2, 3], dtype=numpy.int16)]),
-        core.space.Space(
-            [numpy.array([-6, -5, -4, -3, -2, -1], dtype=numpy.int16)]
-        ),
+        coopihc.space.Space([numpy.array([1, 2, 3], dtype=numpy.int16)]),
+        coopihc.space.Space([numpy.array([-6, -5, -4, -3, -2, -1], dtype=numpy.int16)]),
     ],
 )
 
@@ -72,12 +66,8 @@ y = StateElement(
     spaces=[
         Space(
             [
-                numpy.array(
-                    [i for i in range(gridsize[0])], dtype=numpy.int16
-                ),
-                numpy.array(
-                    [i for i in range(gridsize[1])], dtype=numpy.int16
-                ),
+                numpy.array([i for i in range(gridsize[0])], dtype=numpy.int16),
+                numpy.array([i for i in range(gridsize[1])], dtype=numpy.int16),
             ]
         )
         for j in range(number_of_targets)
@@ -166,7 +156,7 @@ if _str == "cast" or _str == "all":
     targetdomain = StateElement(
         values=None,
         spaces=[
-            core.space.Space(
+            coopihc.space.Space(
                 [
                     -numpy.ones((2, 1), dtype=numpy.float32),
                     numpy.ones((2, 1), dtype=numpy.float32),
@@ -179,18 +169,14 @@ if _str == "cast" or _str == "all":
 
     b = StateElement(
         values=5,
-        spaces=core.space.Space(
-            [
-                numpy.array(
-                    [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5], dtype=numpy.int16
-                )
-            ]
+        spaces=coopihc.space.Space(
+            [numpy.array([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5], dtype=numpy.int16)]
         ),
     )
 
     a = StateElement(
         values=0,
-        spaces=core.space.Space(
+        spaces=coopihc.space.Space(
             [
                 numpy.array([-1], dtype=numpy.float32),
                 numpy.array([1], dtype=numpy.float32),
@@ -203,9 +189,7 @@ if _str == "cast" or _str == "all":
     for elem in numpy.linspace(-1, 1, 200):
         a["values"] = elem
         continuous.append(a["values"][0].squeeze().tolist())
-        discrete.append(
-            a.cast(b, mode="center")["values"][0].squeeze().tolist()
-        )
+        discrete.append(a.cast(b, mode="center")["values"][0].squeeze().tolist())
     import matplotlib.pyplot as plt
 
     plt.plot(continuous, discrete, "b*")
@@ -218,9 +202,7 @@ if _str == "cast" or _str == "all":
     for elem in [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]:
         b["values"] = elem
         discrete.append(elem)
-        continuous.append(
-            b.cast(a, mode="edges")["values"][0].squeeze().tolist()
-        )
+        continuous.append(b.cast(a, mode="edges")["values"][0].squeeze().tolist())
     import matplotlib.pyplot as plt
 
     plt.plot(discrete, continuous, "b*")
@@ -230,7 +212,7 @@ if _str == "cast" or _str == "all":
 
     a = StateElement(
         values=0,
-        spaces=core.space.Space(
+        spaces=coopihc.space.Space(
             [
                 numpy.array([-2], dtype=numpy.float32),
                 numpy.array([1], dtype=numpy.float32),
@@ -239,7 +221,7 @@ if _str == "cast" or _str == "all":
     )
     b = StateElement(
         values=3.5,
-        spaces=core.space.Space(
+        spaces=coopihc.space.Space(
             [
                 numpy.array([3], dtype=numpy.float32),
                 numpy.array([4], dtype=numpy.float32),
@@ -260,18 +242,14 @@ if _str == "cast" or _str == "all":
     # D2D
     a = StateElement(
         values=5,
-        spaces=core.space.Space(
+        spaces=coopihc.space.Space(
             [numpy.array([i for i in range(11)], dtype=numpy.int16)]
         ),
     )
     b = StateElement(
         values=5,
-        spaces=core.space.Space(
-            [
-                numpy.array(
-                    [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5], dtype=numpy.int16
-                )
-            ]
+        spaces=coopihc.space.Space(
+            [numpy.array([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5], dtype=numpy.int16)]
         ),
     )
 
@@ -289,7 +267,7 @@ if _str == "cast" or _str == "all":
 if _str == "neg" or _str == "all":
     x = StateElement(
         values=numpy.array([[-0.237]], dtype=numpy.float32),
-        spaces=core.space.Space(
+        spaces=coopihc.space.Space(
             [
                 numpy.array([-1], dtype=numpy.float32),
                 numpy.array([1], dtype=numpy.float32),
@@ -302,7 +280,7 @@ if _str == "neg" or _str == "all":
 if _str == "typing_priority" or _str == "all":
     x = StateElement(
         values=numpy.array([[-0.237]], dtype=numpy.float16),
-        spaces=core.space.Space(
+        spaces=coopihc.space.Space(
             [
                 numpy.array([-1], dtype=numpy.float32),
                 numpy.array([1], dtype=numpy.float32),
@@ -312,7 +290,7 @@ if _str == "typing_priority" or _str == "all":
 
     y = StateElement(
         values=numpy.array([[-0.237]], dtype=numpy.float16),
-        spaces=core.space.Space(
+        spaces=coopihc.space.Space(
             [
                 numpy.array([-1], dtype=numpy.float32),
                 numpy.array([1], dtype=numpy.float32),
@@ -324,7 +302,7 @@ if _str == "typing_priority" or _str == "all":
 if _str == "add" or _str == "all":
     x = StateElement(
         values=numpy.array([[-0.237]], dtype=numpy.float32),
-        spaces=core.space.Space(
+        spaces=coopihc.space.Space(
             [
                 numpy.array([-1], dtype=numpy.float32),
                 numpy.array([1], dtype=numpy.float32),
@@ -333,7 +311,7 @@ if _str == "add" or _str == "all":
     )
     y = StateElement(
         values=numpy.array([[-0.135]], dtype=numpy.float32),
-        spaces=core.space.Space(
+        spaces=coopihc.space.Space(
             [
                 numpy.array([-1], dtype=numpy.float32),
                 numpy.array([1], dtype=numpy.float32),
@@ -348,7 +326,7 @@ if _str == "add" or _str == "all":
 
     a = StateElement(
         values=numpy.array([[-0.237, 0]], dtype=numpy.float32),
-        spaces=core.space.Space(
+        spaces=coopihc.space.Space(
             [
                 numpy.array([-1, -1], dtype=numpy.float32),
                 numpy.array([1, 1], dtype=numpy.float32),
@@ -357,7 +335,7 @@ if _str == "add" or _str == "all":
     )
     b = StateElement(
         values=numpy.array([[0.5, 0.5]], dtype=numpy.float32),
-        spaces=core.space.Space(
+        spaces=coopihc.space.Space(
             [
                 numpy.array([-1, -1], dtype=numpy.float32),
                 numpy.array([1, 1], dtype=numpy.float32),
@@ -378,7 +356,7 @@ if _str == "add" or _str == "all":
 if _str == "mul" or _str == "all":
     a = StateElement(
         values=numpy.array([[-0.237, 0]], dtype=numpy.float32),
-        spaces=core.space.Space(
+        spaces=coopihc.space.Space(
             [
                 numpy.array([-1, -1], dtype=numpy.float32),
                 numpy.array([1, 1], dtype=numpy.float32),
@@ -387,7 +365,7 @@ if _str == "mul" or _str == "all":
     )
     b = StateElement(
         values=numpy.array([[0.5, 0.5]], dtype=numpy.float32),
-        spaces=core.space.Space(
+        spaces=coopihc.space.Space(
             [
                 numpy.array([-1, -1], dtype=numpy.float32),
                 numpy.array([1, 1], dtype=numpy.float32),
@@ -405,7 +383,7 @@ if _str == "mul" or _str == "all":
 if _str == "matmul" or _str == "all":
     a = StateElement(
         values=numpy.array([[-0.237, 0], [1, 1]], dtype=numpy.float32),
-        spaces=core.space.Space(
+        spaces=coopihc.space.Space(
             [
                 numpy.array([[-1, -1], [-1, -1]], dtype=numpy.float32),
                 numpy.array([[1, 1], [1, 1]], dtype=numpy.float32),
@@ -414,7 +392,7 @@ if _str == "matmul" or _str == "all":
     )
     b = StateElement(
         values=numpy.array([[0.5, 0.5]], dtype=numpy.float32),
-        spaces=core.space.Space(
+        spaces=coopihc.space.Space(
             [
                 numpy.array([-1, -1], dtype=numpy.float32).reshape(-1, 1),
                 numpy.array([1, 1], dtype=numpy.float32).reshape(-1, 1),
@@ -431,7 +409,7 @@ if _str == "matmul" or _str == "all":
 if _str == "mode" or _str == "all":
     b = StateElement(
         values=numpy.array([[3, -5]], dtype=numpy.float32),
-        spaces=core.space.Space(
+        spaces=coopihc.space.Space(
             [
                 numpy.array([-1, -1], dtype=numpy.float32).reshape(-1, 1),
                 numpy.array([1, 1], dtype=numpy.float32).reshape(-1, 1),
@@ -444,7 +422,7 @@ if _str == "mode" or _str == "all":
 
     b = StateElement(
         values=numpy.array([[3, -5]], dtype=numpy.float32),
-        spaces=core.space.Space(
+        spaces=coopihc.space.Space(
             [
                 numpy.array([-1, -1], dtype=numpy.float32).reshape(-1, 1),
                 numpy.array([1, 1], dtype=numpy.float32).reshape(-1, 1),
@@ -457,7 +435,7 @@ if _str == "mode" or _str == "all":
     try:
         b = StateElement(
             values=numpy.array([[3, -5]], dtype=numpy.float32),
-            spaces=core.space.Space(
+            spaces=coopihc.space.Space(
                 [
                     numpy.array([-1, -1], dtype=numpy.float32).reshape(-1, 1),
                     numpy.array([1, 1], dtype=numpy.float32).reshape(-1, 1),

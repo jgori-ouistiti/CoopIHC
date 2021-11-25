@@ -1,7 +1,7 @@
 import gym
-from core.space import State, StateElement, Space
+from coopihc.space import State, StateElement, Space
 import itertools
-from core.helpers import sort_two_lists
+from coopihc.helpers import sort_two_lists
 import numpy
 import copy
 import math

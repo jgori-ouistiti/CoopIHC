@@ -2,8 +2,8 @@ import numpy
 import math
 import copy
 
-from core.interactiontask import InteractionTask
-from core.space import StateElement, Space
+from coopihc.interactiontask import InteractionTask
+from coopihc.space import StateElement, Space
 
 # import eye.noise
 

@@ -1,4 +1,4 @@
-from core.space import State, StateElement, Space
+from coopihc.space import State, StateElement, Space
 import numpy
 import yaml
 from collections import OrderedDict
@@ -15,9 +15,9 @@ class _Bundle:
     Bundle subclasses should only have to redefine the step() and reset() methods.
 
 
-    :param task: (core.interactiontask.InteractionTask) A task, which is a subclass of InteractionTask
-    :param user: (core.agents.BaseAgent) an user, which is a subclass of BaseAgent
-    :param assistant: (core.agents.BaseAgent) an assistant, which is a subclass of BaseAgent
+    :param task: (coopihc.interactiontask.InteractionTask) A task, which is a subclass of InteractionTask
+    :param user: (coopihc.agents.BaseAgent) an user, which is a subclass of BaseAgent
+    :param assistant: (coopihc.agents.BaseAgent) an assistant, which is a subclass of BaseAgent
 
     :meta public:
     """

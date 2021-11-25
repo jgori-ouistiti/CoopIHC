@@ -1,7 +1,16 @@
 import gym
 import numpy
 
-from core.bundle import PlayNone, PlayUser, PlayAssistant, PlayBoth, Train, SinglePlayUser, SinglePlayUserAuto, _DevelopTask
+from coopihc.bundle import (
+    PlayNone,
+    PlayUser,
+    PlayAssistant,
+    PlayBoth,
+    Train,
+    SinglePlayUser,
+    SinglePlayUserAuto,
+    _DevelopTask,
+)
 from pointing.envs import SimplePointingTask, Screen_v0
 from pointing.users import CarefulPointer
 from pointing.assistants import ConstantCDGain, BIGGain
@@ -9,31 +18,41 @@ from eye.envs import ChenEyePointingTask
 from eye.users import ChenEye
 
 from collections import OrderedDict
-from core.models import LinearEstimatedFeedback
-from core.helpers import flatten
-from core.agents import BaseAgent, FHDT_LQRController, IHDT_LQRController, IHCT_LQGController
-from core.observation import base_task_engine_specification, base_user_engine_specification, RuleObservationEngine
-from core.interactiontask import ClassicControlTask
-from core.policy import LLDiscretePolicy, Policy
-from core.space import State
+from coopihc.models import LinearEstimatedFeedback
+from coopihc.helpers import flatten
+from coopihc.agents import (
+    BaseAgent,
+    FHDT_LQRController,
+    IHDT_LQRController,
+    IHCT_LQGController,
+)
+from coopihc.observation import (
+    base_task_engine_specification,
+    base_user_engine_specification,
+    RuleObservationEngine,
+)
+from coopihc.interactiontask import ClassicControlTask
+from coopihc.policy import LLDiscretePolicy, Policy
+from coopihc.space import State
 
 import sys
+
 _str = sys.argv[1]
 
 from check_env import check_env
 
 
-if _str == 'basic-plot':
-    task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
+if _str == "basic-plot":
+    task = SimplePointingTask(gridsize=31, number_of_targets=8)
     user = CarefulPointer(task)
     assistant = ConstantCDGain(1)
 
     bundle = PlayNone(task, user, assistant)
     game_state = bundle.reset()
-    bundle.render('plotext')
+    bundle.render("plotext")
 
-if _str == 'basic-PlayNone' or _str == 'all':
-    task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
+if _str == "basic-PlayNone" or _str == "all":
+    task = SimplePointingTask(gridsize=31, number_of_targets=8)
     binary_user = CarefulPointer(task)
 
     # ====================  Implementing Assistant  ===============
@@ -43,128 +62,129 @@ if _str == 'basic-PlayNone' or _str == 'all':
     # ------- Policy -------
     action_space = [gym.spaces.Discrete(1)]
     action_set = [[1]]
-    agent_policy = Policy(action_space, action_set = action_set)
+    agent_policy = Policy(action_space, action_set=action_set)
 
-    base_blind_engine_specification  =    [ ('bundle_state', 'all'),
-                                        ('task_state', None),
-                                        ('user_state', None),
-                                        ('assistant_state', None),
-                                        ('user_action', 'all'),
-                                        ('assistant_action', 'all')
-                                        ]
+    base_blind_engine_specification = [
+        ("bundle_state", "all"),
+        ("task_state", None),
+        ("user_state", None),
+        ("assistant_state", None),
+        ("user_action", "all"),
+        ("assistant_action", "all"),
+    ]
 
-    observation_engine = RuleObservationEngine(deterministic_specification = base_blind_engine_specification)
+    observation_engine = RuleObservationEngine(
+        deterministic_specification=base_blind_engine_specification
+    )
 
-    unitcdgain = BaseAgent( 'assistant',
-                            policy = agent_policy,
-                            observation_engine = observation_engine
-                            )
+    unitcdgain = BaseAgent(
+        "assistant", policy=agent_policy, observation_engine=observation_engine
+    )
 
     bundle = PlayNone(task, binary_user, unitcdgain)
     game_state = bundle.reset()
-    bundle.render('plotext')
+    bundle.render("plotext")
     k = 0
     while True:
         k += 1
         sum_rewards, is_done, rewards = bundle.step()
-        bundle.render('plotext')
+        bundle.render("plotext")
         # bundle.fig.savefig("/home/jgori/Documents/img_tmp/{}.pdf".format(k))
         if is_done:
             bundle.close()
             break
 
-if _str == 'biggain-PlayNone' or _str == 'all':
+if _str == "biggain-PlayNone" or _str == "all":
     # Checking Evaluate with CarefulPointer, ConstantCDGain and SimplePointingTask
-    task = SimplePointingTask(gridsize = 31, number_of_targets = 10)
+    task = SimplePointingTask(gridsize=31, number_of_targets=10)
     user = CarefulPointer()
     assistant = BIGGain(user.user_model)
 
     bundle = PlayNone(task, user, assistant)
     game_state = bundle.reset()
-    bundle.render('plotext')
+    bundle.render("plotext")
     k = 0
     while True:
         bundle.fig.savefig("/home/jgori/Documents/img_tmp/{}.png".format(k))
         sum_rewards, is_done, rewards = bundle.step()
-        k+= 1
-        bundle.render('plotext')
+        k += 1
+        bundle.render("plotext")
         if is_done:
             bundle.fig.savefig("/home/jgori/Documents/img_tmp/{}.png".format(k))
 
             break
 
-if _str == 'basic-PlayUser' or _str == 'all':
+if _str == "basic-PlayUser" or _str == "all":
     # Checking Evaluate with CarefulPointer, ConstantCDGain and SimplePointingTask
-    task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
+    task = SimplePointingTask(gridsize=31, number_of_targets=8)
     user = CarefulPointer()
     assistant = ConstantCDGain(1)
 
     bundle = PlayUser(task, user, assistant)
     game_state = bundle.reset()
-    bundle.render('plotext')
+    bundle.render("plotext")
     # observation, sum_rewards, is_done, rewards = bundle.step([-1])
     while True:
         observation, sum_rewards, is_done, rewards = bundle.step([1])
-        bundle.render('plotext')
+        bundle.render("plotext")
         if is_done:
             bundle.close()
             break
 
 
-if _str == 'basic-PlayAssistant-0' or _str == 'all':
+if _str == "basic-PlayAssistant-0" or _str == "all":
     # Checking Evaluate with CarefulPointer, ConstantCDGain and SimplePointingTask
-    task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
+    task = SimplePointingTask(gridsize=31, number_of_targets=8)
     user = CarefulPointer()
     assistant = ConstantCDGain(1)
 
     bundle = PlayAssistant(task, user, assistant)
     game_state = bundle.reset()
-    bundle.render('plotext')
+    bundle.render("plotext")
 
     while True:
         observation, sum_rewards, is_done, rewards = bundle.step([1])
-        bundle.render('plotext')
+        bundle.render("plotext")
         if is_done:
             bundle.close()
             break
 
-if _str == 'basic-PlayAssistant-1' or _str == 'all':
-    task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
+if _str == "basic-PlayAssistant-1" or _str == "all":
+    task = SimplePointingTask(gridsize=31, number_of_targets=8)
     user = CarefulPointer()
     assistant = ConstantCDGain(1)
 
     bundle = PlayAssistant(task, user, assistant)
     game_state = bundle.reset()
-    bundle.render('plotext')
-
+    bundle.render("plotext")
 
     gain = 4
 
-    sign_flag = game_state["assistant_state"]['UserAction'][0]
+    sign_flag = game_state["assistant_state"]["UserAction"][0]
     observation = game_state
     k = 0
     while True:
-        k+=1
-        sign_flag = sign_flag * observation["assistant_state"]['UserAction'][0]
+        k += 1
+        sign_flag = sign_flag * observation["assistant_state"]["UserAction"][0]
         if sign_flag == -1:
-            gain = max(1,gain/2)
+            gain = max(1, gain / 2)
         observation, sum_rewards, is_done, rewards = bundle.step([gain])
-        bundle.render('plotext')
+        bundle.render("plotext")
         bundle.fig.savefig("/home/jgori/Documents/img_tmp/{}.pdf".format(k))
 
         if is_done:
             bundle.close()
             break
 
-if _str == 'basic-PlayBoth' or _str == 'all':
+if _str == "basic-PlayBoth" or _str == "all":
     # Checking Evaluate with CarefulPointer, ConstantCDGain and SimplePointingTask
-    task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
+    task = SimplePointingTask(gridsize=31, number_of_targets=8)
     user = CarefulPointer()
     assistant = ConstantCDGain(1)
 
     bundle = PlayBoth(task, user, assistant)
     game_state = bundle.reset()
-    bundle.render('plotext')
+    bundle.render("plotext")
     observation, sum_rewards, is_done, rewards = bundle.step([[-1], [2]])
     # while True:
     #     observation, sum_rewards, is_done, rewards = bundle.step(1)
@@ -174,8 +194,8 @@ if _str == 'basic-PlayBoth' or _str == 'all':
     #         break
 
 
-if _str == 'basic-TrainUser' or _str == 'all':
-    task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
+if _str == "basic-TrainUser" or _str == "all":
+    task = SimplePointingTask(gridsize=31, number_of_targets=8)
     user = CarefulPointer()
     assistant = ConstantCDGain(1)
 
@@ -183,8 +203,8 @@ if _str == 'basic-TrainUser' or _str == 'all':
     env = Train(bundle)
     check_env(env)
 
-if _str == 'basic-TrainAssistant' or _str == 'all':
-    task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
+if _str == "basic-TrainAssistant" or _str == "all":
+    task = SimplePointingTask(gridsize=31, number_of_targets=8)
     user = CarefulPointer()
     assistant = ConstantCDGain(1)
 
@@ -192,8 +212,8 @@ if _str == 'basic-TrainAssistant' or _str == 'all':
     env = Train(bundle)
     check_env(env)
 
-if _str == 'basic-TrainBoth' or _str == 'all':
-    task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
+if _str == "basic-TrainBoth" or _str == "all":
+    task = SimplePointingTask(gridsize=31, number_of_targets=8)
     user = CarefulPointer()
     assistant = ConstantCDGain(1)
 
@@ -201,7 +221,7 @@ if _str == 'basic-TrainBoth' or _str == 'all':
     env = Train(bundle)
     check_env(env)
 
-if _str == 'chen-play':
+if _str == "chen-play":
     fitts_W = 4e-2
     fitts_D = 0.8
     ocular_std = 0.09
@@ -210,15 +230,15 @@ if _str == 'chen-play':
     user = ChenEye(swapping_std)
     bundle = SinglePlayUser(task, user)
     obs = bundle.reset()
-    bundle.render('plotext')
+    bundle.render("plotext")
     while True:
-        action = obs['user_state']['MuBelief']
+        action = obs["user_state"]["MuBelief"]
         obs, reward, is_done, _ = bundle.step(action)
-        bundle.render('plotext')
+        bundle.render("plotext")
         if is_done:
             break
 
-if _str == 'chen-play-auto':
+if _str == "chen-play-auto":
     fitts_W = 4e-2
     fitts_D = 0.8
     ocular_std = 0
@@ -227,16 +247,16 @@ if _str == 'chen-play-auto':
     user = ChenEye(swapping_std)
     bundle = SinglePlayUserAuto(task, user)
     bundle.reset()
-    bundle.render('plotext')
+    bundle.render("plotext")
     # bundle.fig.savefig('/home/jgori/Documents/img_tmp/{}.jpg'.format(str(bundle.task.round)))
     while True:
         obs, reward, is_done, _ = bundle.step()
-        bundle.render('plotext')
+        bundle.render("plotext")
         # bundle.fig.savefig('/home/jgori/Documents/img_tmp/{}.jpg'.format(str(bundle.task.round)))
         if is_done:
             break
 
-if _str == 'chen-train':
+if _str == "chen-train":
     fitts_W = 4e-2
     fitts_D = 0.5
     ocular_std = 0.09
@@ -246,39 +266,38 @@ if _str == 'chen-train':
     bundle = SinglePlayUser(task, user)
     bundle
     env = Train(bundle)
-    env.squeeze_output(slice(3,5,1))
+    env.squeeze_output(slice(3, 5, 1))
     check_env(env)
 
     # if __name__ == "__main__":
 
-if _str == 'screen':
-    task = Screen_v0([500,500], 10)
+if _str == "screen":
+    task = Screen_v0([500, 500], 10)
     bundle = _DevelopTask(task)
     bundle.reset()
-    bundle.render('plot')
-    bundle.step([[100,100],[1,1]])
+    bundle.render("plot")
+    bundle.step([[100, 100], [1, 1]])
 
-if _str == 'LQR':
+if _str == "LQR":
     m, d, k = 1, 1.2, 3
-    Q = numpy.array([ [1,0], [0,0] ])
-    R = 1e-4*numpy.array([[1]])
+    Q = numpy.array([[1, 0], [0, 0]])
+    R = 1e-4 * numpy.array([[1]])
 
-    F = numpy.array([   [0, 1],
-                        [-k/m, -d/m]    ])
+    F = numpy.array([[0, 1], [-k / m, -d / m]])
 
-    G = numpy.array([[ 0, 1]]).reshape((-1,1))
-    task = ClassicControlTask(2, 0.002, F, G, discrete_dynamics = False)
+    G = numpy.array([[0, 1]]).reshape((-1, 1))
+    task = ClassicControlTask(2, 0.002, F, G, discrete_dynamics=False)
     user = IHDT_LQRController("user", Q, R)
     bundle = SinglePlayUserAuto(task, user)
     bundle.reset()
     bundle.playspeed = 0.01
-    bundle.render('plot')
+    bundle.render("plot")
     for i in range(1500):
         bundle.step()
-        if not i%10:
+        if not i % 10:
             bundle.render("plot")
 
-if _str == 'LQRbis':
+if _str == "LQRbis":
     m, d, k = 1, 1.2, 3
     Q = numpy.diag([1, 0.01, 0, 0])
     R = numpy.array([[1e-3]])
@@ -288,90 +307,76 @@ if _str == 'LQRbis':
     ta = 0.03
     te = 0.04
 
-    a1 = b/(ta*te*I)
-    a2 = 1/(ta*te) + (1/ta + 1/te)*b/I
-    a3 = b/I + 1/ta + 1/te
-    bu = 1/(ta*te*I)
+    a1 = b / (ta * te * I)
+    a2 = 1 / (ta * te) + (1 / ta + 1 / te) * b / I
+    a3 = b / I + 1 / ta + 1 / te
+    bu = 1 / (ta * te * I)
 
     timestep = 0.01
     # Task dynamics
-    F = numpy.array([   [0, 1, 0, 0],
-                        [0, 0, 1, 0],
-                        [0, 0, 0, 1],
-                        [0, -a1, -a2, -a3]    ])
-    G = numpy.array([[ 0, 0, 0, bu]]).reshape((-1,1))
+    F = numpy.array([[0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1], [0, -a1, -a2, -a3]])
+    G = numpy.array([[0, 0, 0, bu]]).reshape((-1, 1))
 
-    task = ClassicControlTask(0.002, F, G, discrete_dynamics = False)
+    task = ClassicControlTask(0.002, F, G, discrete_dynamics=False)
     user = IHDT_LQRController("user", Q, R)
     bundle = SinglePlayUserAuto(task, user)
     bundle.reset()
     bundle.playspeed = 0.01
-    bundle.render('plot')
+    bundle.render("plot")
     for i in range(1500):
         bundle.step()
-        if not i%10:
+        if not i % 10:
             bundle.render("plot")
 
-if _str == 'LQG':
+if _str == "LQG":
     I = 0.25
     b = 0.2
     ta = 0.03
     te = 0.04
 
-    a1 = b/(ta*te*I)
-    a2 = 1/(ta*te) + (1/ta + 1/te)*b/I
-    a3 = b/I + 1/ta + 1/te
-    bu = 1/(ta*te*I)
+    a1 = b / (ta * te * I)
+    a2 = 1 / (ta * te) + (1 / ta + 1 / te) * b / I
+    a3 = b / I + 1 / ta + 1 / te
+    bu = 1 / (ta * te * I)
 
     timestep = 0.01
     # Task dynamics
-    A = numpy.array([   [0, 1, 0, 0],
-                        [0, 0, 1, 0],
-                        [0, 0, 0, 1],
-                        [0, -a1, -a2, -a3]    ])
-    B = numpy.array([[ 0, 0, 0, bu]]).reshape((-1,1))
+    A = numpy.array([[0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1], [0, -a1, -a2, -a3]])
+    B = numpy.array([[0, 0, 0, bu]]).reshape((-1, 1))
 
     # Task noise
     F = numpy.diag([0, 0, 0, 0.001])
-    G = 0.03*numpy.diag([1,1,0,0])
-
+    G = 0.03 * numpy.diag([1, 1, 0, 0])
 
     # Determinstic Observation Filter
-    C = numpy.array([   [1, 0, 0, 0],
-                        [0, 1, 0, 0],
-                        [0, 0, 1, 0]
-                            ])
+    C = numpy.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0]])
 
     # Motor and observation noise
     Gamma = numpy.array(0.08)
-    D = numpy.array([   [0.01, 0, 0],
-                        [0, 0.01, 0],
-                        [0, 0, 0.05]
-                        ])
-
+    D = numpy.array([[0.01, 0, 0], [0, 0.01, 0], [0, 0, 0.05]])
 
     # Cost matrices
     Q = numpy.diag([1, 0.01, 0, 0])
     R = numpy.array([[1e-3]])
     U = numpy.diag([1, 0.1, 0.01, 0])
 
-    task = ClassicControlTask(timestep, A, B, F = F, G = G, discrete_dynamics = False, noise = 'off')
-    user = IHCT_LQGController('user', timestep, Q, R, U, C, Gamma, D, noise = 'on')
-    bundle = SinglePlayUser(task, user, onreset_deterministic_first_half_step = True)
-    bundle.reset( {
-            'task_state': {'x':  numpy.array([[-0.5],[0],[0],[0]]) }
-                    } )
+    task = ClassicControlTask(
+        timestep, A, B, F=F, G=G, discrete_dynamics=False, noise="off"
+    )
+    user = IHCT_LQGController("user", timestep, Q, R, U, C, Gamma, D, noise="on")
+    bundle = SinglePlayUser(task, user, onreset_deterministic_first_half_step=True)
+    bundle.reset({"task_state": {"x": numpy.array([[-0.5], [0], [0], [0]])}})
     bundle.playspeed = 0.001
-    bundle.render('plot')
+    bundle.render("plot")
     for i in range(1):
         bundle.step([1])
-        if not i%10:
+        if not i % 10:
             bundle.render("plot")
-        bundle.render('plot')
+        bundle.render("plot")
 
 
-if _str == 'test':
-    task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
+if _str == "test":
+    task = SimplePointingTask(gridsize=31, number_of_targets=8)
     user = CarefulPointer()
     assistant = ConstantCDGain(1)
 

@@ -1,5 +1,5 @@
-from core.space import StateElement, Space
-from core.interactiontask import InteractionTask
+from coopihc.space import StateElement, Space
+from coopihc.interactiontask import InteractionTask
 import numpy as np
 
 

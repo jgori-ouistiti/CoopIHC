@@ -1,5 +1,5 @@
-from core.bundle import _Bundle
-from core.agents import BaseAgent
+from coopihc.bundle import _Bundle
+from coopihc.agents import BaseAgent
 
 
 class Bundle(_Bundle):

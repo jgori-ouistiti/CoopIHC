@@ -1,4 +1,4 @@
-from core.helpers import hard_flatten
+from coopihc.helpers import hard_flatten
 import gym
 import numpy
 
@@ -9,7 +9,7 @@ class Train(gym.Env):
 
     The observation size can be reduced by using the squeeze_output function, removing irrelevant substates of the game state.
 
-    :param bundle: (core.bundle.Bundle) A bundle.
+    :param bundle: (coopihc.bundle.Bundle) A bundle.
 
     :meta public:
     """

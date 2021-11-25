@@ -2,10 +2,10 @@ import numpy
 import matplotlib.pyplot as plt
 from collections import OrderedDict
 import gym
-import core
-from core.interactiontask import InteractionTask, PipeTaskWrapper
-from core.space import StateElement, Space
-from core.helpers import sort_two_lists
+import coopihc
+from coopihc.interactiontask import InteractionTask, PipeTaskWrapper
+from coopihc.space import StateElement, Space
+from coopihc.helpers import sort_two_lists
 import functools
 
 
@@ -615,7 +615,7 @@ class Screen_v0(InteractionTask):
         # Define state
         self.state["position"] = StateElement(
             values=numpy.array([0.1, 0.1]),
-            spaces=[core.space.Box(low=self.screen_low, high=self.screen_high)],
+            spaces=[coopihc.space.Box(low=self.screen_low, high=self.screen_high)],
             possible_values=None,
         )
 
@@ -631,7 +631,7 @@ class Screen_v0(InteractionTask):
                 for i in range(self.number_of_targets)
             ],
             spaces=[
-                core.space.Box(low=self.screen_low, high=self.screen_high)
+                coopihc.space.Box(low=self.screen_low, high=self.screen_high)
                 for i in range(self.number_of_targets)
             ],
             possible_values=None,

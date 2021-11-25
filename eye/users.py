@@ -1,8 +1,8 @@
-from core.agents import BaseAgent
-from core.observation import RuleObservationEngine, base_user_engine_specification
-from core.policy import LinearFeedback
-from core.space import State, StateElement, Space
-from core.inference import LinearGaussianContinuous
+from coopihc.agents import BaseAgent
+from coopihc.observation import RuleObservationEngine, base_user_engine_specification
+from coopihc.policy import LinearFeedback
+from coopihc.space import State, StateElement, Space
+from coopihc.inference import LinearGaussianContinuous
 import eye.noise
 from scipy.linalg import toeplitz
 

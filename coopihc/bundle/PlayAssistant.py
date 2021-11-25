@@ -1,12 +1,12 @@
-from core.bundle import _Bundle
+from coopihc.bundle import _Bundle
 
 
 class PlayAssistant(_Bundle):
     """A bundle which samples oeprator actions directly from the user but uses assistant actions provided externally in the step() method.
 
-    :param task: (core.interactiontask.InteractionTask) A task, which is a subclass of InteractionTask
-    :param user: (core.agents.BaseAgent) an user, which is a subclass of BaseAgent
-    :param assistant: (core.agents.BaseAgent) an assistant, which is a subclass of BaseAgent
+    :param task: (coopihc.interactiontask.InteractionTask) A task, which is a subclass of InteractionTask
+    :param user: (coopihc.agents.BaseAgent) an user, which is a subclass of BaseAgent
+    :param assistant: (coopihc.agents.BaseAgent) an assistant, which is a subclass of BaseAgent
 
     :meta public:
     """

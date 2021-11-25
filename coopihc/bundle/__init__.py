@@ -9,9 +9,9 @@ from .SinglePlayUser import SinglePlayUser
 from .SinglePlayUserAuto import SinglePlayUserAuto
 from .Train import Train
 
-from core.space import State, StateElement, Space
-from core.agents import BaseAgent, ExampleUser
-from core.policy import BasePolicy
+from coopihc.space import State, StateElement, Space
+from coopihc.agents import BaseAgent, ExampleUser
+from coopihc.policy import BasePolicy
 
 import numpy
 
@@ -42,7 +42,7 @@ import numpy
 
 # ====================== Examples ==================
 if __name__ == "__main__":
-    from core.interactiontask import ExampleTask
+    from coopihc.interactiontask import ExampleTask
 
     # [start-check-task]
     # Define agent action states (what actions they can take)
@@ -140,7 +140,7 @@ if __name__ == "__main__":
 #                 self.agent_policy = agent_policy
 #                 if agent_policy is not None:
 #                     agent_kwargs['policy'] = agent_policy
-#                 agent = getattr(core.agents, "Dummy"+role.capitalize())(**agent_kwargs)
+#                 agent = getattr(coopihc.agents, "Dummy"+role.capitalize())(**agent_kwargs)
 #             else:
 #                 kwargs.pop(agent)
 #

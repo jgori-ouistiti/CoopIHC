@@ -1,11 +1,11 @@
-from core.bundle import _Bundle
+from coopihc.bundle import _Bundle
 
 
 class SinglePlayUserAuto(_Bundle):
     """Same as SinglePlayUser, but this time the user action is obtained by sampling the user policy.
 
-    :param task: (core.interactiontask.InteractionTask) A task, which is a subclass of InteractionTask
-    :param user: (core.agents.BaseAgent) an user, which is a subclass of BaseAgent
+    :param task: (coopihc.interactiontask.InteractionTask) A task, which is a subclass of InteractionTask
+    :param user: (coopihc.agents.BaseAgent) an user, which is a subclass of BaseAgent
     :param kwargs: additional controls to account for some specific subcases. See Doc for a full list.
 
     :meta public:

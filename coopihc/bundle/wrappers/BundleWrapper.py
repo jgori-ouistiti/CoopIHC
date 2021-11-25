@@ -1,4 +1,4 @@
-from core.bundle import _Bundle
+from coopihc.bundle import _Bundle
 
 
 class BundleWrapper(_Bundle):

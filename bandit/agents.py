@@ -2,9 +2,9 @@ from bandit.inference import RWInference
 
 import numpy as np
 
-from core.space import State, StateElement, Space
-from core.agents import BaseAgent
-from core.policy import ELLDiscretePolicy
+from coopihc.space import State, StateElement, Space
+from coopihc.agents import BaseAgent
+from coopihc.policy import ELLDiscretePolicy
 
 
 class GenericPlayer(BaseAgent):

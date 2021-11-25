@@ -1,8 +1,8 @@
 from collections import OrderedDict
 import numpy
 import queue
-from core.space import State
-from core.helpers import hard_flatten
+from coopihc.space import State
+from coopihc.helpers import hard_flatten
 import copy
 
 import matplotlib.pyplot as plt

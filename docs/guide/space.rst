@@ -10,7 +10,7 @@ Spaces are used by ``StateElement``, to specify in which domain a substate can l
 
 Spaces can be continuous or discrete. In each case, you have to specify the range of values (lower and upper bounds and possible values for resp. continuous and discrete spaces:
 
-.. literalinclude:: ../../core/space.py
+.. literalinclude:: ../../coopihc/space.py
    :language: python
    :linenos:
    :start-after: [start-space-def]
@@ -20,7 +20,7 @@ Spaces can be continuous or discrete. In each case, you have to specify the rang
 
 Spaces with subspaces can also be defined, as well as spaces with single values:
 
-.. literalinclude:: ../../core/space.py
+.. literalinclude:: ../../coopihc/space.py
    :language: python
    :linenos:
    :start-after: [start-space-complex-def]
@@ -36,7 +36,7 @@ Spaces with subspaces can also be defined, as well as spaces with single values:
 
 You can check if a value belongs to a space with Python's ``in`` operator:
 
-.. literalinclude:: ../../core/space.py
+.. literalinclude:: ../../coopihc/space.py
    :language: python
    :linenos:
    :start-after: [start-space-contains]
@@ -45,7 +45,7 @@ You can check if a value belongs to a space with Python's ``in`` operator:
 
 You can sample values from spaces using the ``sample()`` method:
 
-.. literalinclude:: ../../core/space.py
+.. literalinclude:: ../../coopihc/space.py
    :language: python
    :linenos:
    :start-after: [start-space-sample]
@@ -55,14 +55,14 @@ You can sample values from spaces using the ``sample()`` method:
 
 You can iterate over spaces, potentially several times:
 
-.. literalinclude:: ../../core/space.py
+.. literalinclude:: ../../coopihc/space.py
    :language: python
    :linenos:
    :start-after: [start-space-iter]
    :end-before: [end-space-iter]
 
 
-.. autoclass:: core.space.Space
+.. autoclass:: coopihc.space.Space
     :members:
 
 
@@ -77,7 +77,7 @@ StateElements are the lowest level substates in *CoopIHC*. They are containers t
 
 You define a StateElement by specifying the values/spaces couple to the StateElement constructor.
 
-.. literalinclude:: ../../core/space.py
+.. literalinclude:: ../../coopihc/space.py
    :language: python
    :linenos:
    :start-after: [start-stateelement-init]
@@ -99,7 +99,7 @@ You can set and get data with either itemization or the dot syntax. In all cases
 Many useful operations have been defined on StateElements:
 
 + **You can randomize its values**
-    .. literalinclude:: ../../core/space.py
+    .. literalinclude:: ../../coopihc/space.py
        :language: python
        :linenos:
        :start-after: [start-stateelement-reset]
@@ -108,7 +108,7 @@ Many useful operations have been defined on StateElements:
 
 + **You can iterate over them**
 
-    .. literalinclude:: ../../core/space.py
+    .. literalinclude:: ../../coopihc/space.py
        :language: python
        :linenos:
        :start-after: [start-stateelement-iter]
@@ -117,7 +117,7 @@ Many useful operations have been defined on StateElements:
 
 + **You can perform many arithmetic operations, including matrix multiplication**
 
-    .. literalinclude:: ../../core/space.py
+    .. literalinclude:: ../../coopihc/space.py
        :language: python
        :linenos:
        :start-after: [start-stateelement-arithmetic]
@@ -125,7 +125,7 @@ Many useful operations have been defined on StateElements:
 
 + **You can perform logical comparisons**
 
-    .. literalinclude:: ../../core/space.py
+    .. literalinclude:: ../../coopihc/space.py
        :language: python
        :linenos:
        :start-after: [start-stateelement-comp]
@@ -133,7 +133,7 @@ Many useful operations have been defined on StateElements:
 
 + **You can perform the cartesian product of its spaces**
 
-    .. literalinclude:: ../../core/space.py
+    .. literalinclude:: ../../coopihc/space.py
        :language: python
        :linenos:
        :start-after: [start-stateelement-cp]
@@ -141,14 +141,14 @@ Many useful operations have been defined on StateElements:
 
 + **You can cast values of a StateElement, to and from continuous to and from discrete spaces.**
 
-    .. literalinclude:: ../../core/space.py
+    .. literalinclude:: ../../coopihc/space.py
        :language: python
        :linenos:
        :start-after: [start-stateelement-cast]
        :end-before: [end-stateelement-cast]
 
 
-.. autoclass:: core.space.StateElement
+.. autoclass:: coopihc.space.StateElement
     :members:
 
 
@@ -161,7 +161,7 @@ States are the higher level container used in *CoopIHC*, that can contain either
 
 Defining a State is straightforward
 
-.. literalinclude:: ../../core/space.py
+.. literalinclude:: ../../coopihc/space.py
    :language: python
    :linenos:
    :start-after: [start-state-init]
@@ -169,7 +169,7 @@ Defining a State is straightforward
 
 States can be initialized to a random values (or forced, like StateElements)
 
-.. literalinclude:: ../../core/space.py
+.. literalinclude:: ../../coopihc/space.py
    :language: python
    :linenos:
    :start-after: [start-state-reset]
@@ -177,7 +177,7 @@ States can be initialized to a random values (or forced, like StateElements)
 
 States can also be filtered by providing an OrderedDict of items that you would like to retain
 
-.. literalinclude:: ../../core/space.py
+.. literalinclude:: ../../coopihc/space.py
    :language: python
    :linenos:
    :start-after: [start-state-filter]
@@ -185,12 +185,12 @@ States can also be filtered by providing an OrderedDict of items that you would 
 
 States can also be serialized to a a dictionnary
 
-.. literalinclude:: ../../core/space.py
+.. literalinclude:: ../../coopihc/space.py
    :language: python
    :linenos:
    :start-after: [start-state-serialize]
    :end-before: [end-state-serialize]
 
 
-.. autoclass:: core.space.State
+.. autoclass:: coopihc.space.State
     :members:

@@ -1,10 +1,10 @@
 from collections import OrderedDict
 import numpy
 
-from core.space import State, StateElement, Space
-from core.helpers import flatten
+from coopihc.space import State, StateElement, Space
+from coopihc.helpers import flatten
 
-# from core.helpers import flatten
+# from coopihc.helpers import flatten
 import copy
 
 
@@ -144,9 +144,7 @@ class RuleObservationEngine(BaseObservationEngine):
         ) in self.mapping:
             if observation.get(substate) is None:
                 observation[substate] = State()
-            _obs = copy.copy(
-                game_state[substate][subsubstate]["values"][_slice]
-            )
+            _obs = copy.copy(game_state[substate][subsubstate]["values"][_slice])
             if _func:
                 if _args:
                     _obs = _func(_obs, game_state, *_args)
@@ -198,9 +196,7 @@ class RuleObservationEngine(BaseObservationEngine):
                         g, b = w
                     else:
                         g, b = None, None
-                    mapping.append(
-                        (substate, key, slice(0, len(value), 1), f, a, g, b)
-                    )
+                    mapping.append((substate, key, slice(0, len(value), 1), f, a, g, b))
             elif subsubstate is None:
                 pass
             else:
@@ -221,9 +217,7 @@ class RuleObservationEngine(BaseObservationEngine):
                         (
                             substate,
                             subsubstate,
-                            slice(
-                                0, len(game_state[substate][subsubstate]), 1
-                            ),
+                            slice(0, len(game_state[substate][subsubstate]), 1),
                             f,
                             a,
                             g,
@@ -241,7 +235,7 @@ class RuleObservationEngine(BaseObservationEngine):
 #     value = (function, args)
 #     Be careful: args has to be a tuple, so for a single argument arg, do (arg,)
 # An exemple
-# obs_matrix = {('task_state', 'x'): (core.observation.f_obs_matrix, (C,))}
+# obs_matrix = {('task_state', 'x'): (coopihc.observation.f_obs_matrix, (C,))}
 # extradeterministicrules = {}
 # extradeterministicrules.update(obs_matrix)
 
@@ -261,13 +255,9 @@ def additive_gaussian_noise(_obs, gamestate, D, *args):
         mu, sigma = args
     except ValueError:
         mu, sigma = numpy.zeros(_obs.shape), numpy.eye(max(_obs.shape))
-    return _obs + D @ numpy.random.multivariate_normal(
-        mu, sigma, size=1
-    ).reshape(-1, 1), D @ numpy.random.multivariate_normal(
-        mu, sigma, size=1
-    ).reshape(
+    return _obs + D @ numpy.random.multivariate_normal(mu, sigma, size=1).reshape(
         -1, 1
-    )
+    ), D @ numpy.random.multivariate_normal(mu, sigma, size=1).reshape(-1, 1)
 
 
 class CascadedObservationEngine(BaseObservationEngine):
@@ -327,9 +317,7 @@ class WrapAsObservationEngine(BaseObservationEngine):
         # return observation, rewards
 
     def __str__(self):
-        return "{} <[ {} ]>".format(
-            self.__class__.__name__, self.bundle.__str__()
-        )
+        return "{} <[ {} ]>".format(self.__class__.__name__, self.bundle.__str__())
 
     def __repr__(self):
         return self.__str__()
@@ -357,9 +345,7 @@ if __name__ == "__main__":
     )
 
     # Discrete substate. Provide Space([range]). Value is optional
-    y = StateElement(
-        values=2, spaces=Space([numpy.array([1, 2, 3], dtype=numpy.int)])
-    )
+    y = StateElement(values=2, spaces=Space([numpy.array([1, 2, 3], dtype=numpy.int)]))
 
     # Define a State, composed of two substates previously defined
     s1 = State(substate_x=x, substate_y=y)

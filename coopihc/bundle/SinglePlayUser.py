@@ -1,11 +1,11 @@
-from core.bundle import _Bundle
+from coopihc.bundle import _Bundle
 
 
 class SinglePlayUser(_Bundle):
     """A bundle without assistant. This is used e.g. to model psychophysical tasks such as perception, where there is no real interaction loop with a computing device.
 
-    :param task: (core.interactiontask.InteractionTask) A task, which is a subclass of InteractionTask
-    :param user: (core.agents.BaseAgent) an user, which is a subclass of BaseAgent
+    :param task: (coopihc.interactiontask.InteractionTask) A task, which is a subclass of InteractionTask
+    :param user: (coopihc.agents.BaseAgent) an user, which is a subclass of BaseAgent
 
     :meta public:
     """

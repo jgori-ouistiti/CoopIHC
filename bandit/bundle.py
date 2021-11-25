@@ -1,7 +1,7 @@
 from envs import MultiBanditTask
 from agents import RandomPlayer, WSLS, RW
 
-from core.bundle import Bundle
+from coopihc.bundle import Bundle
 
 
 N = 2

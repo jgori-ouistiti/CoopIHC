@@ -13,8 +13,8 @@ We first define the ``__init__`` method, where we define the size of the gridwor
 
 .. code-block:: python
 
-    from core.interactiontask import InteractionTask
-    from core.space import StateElement
+    from coopihc.interactiontask import InteractionTask
+    from coopihc.space import StateElement
     import gym
     import numpy
 
@@ -114,7 +114,7 @@ We can now instantiate our task, and observe its state
 
     >>> task = ExampleTask(gridsize = 15, number_of_targets = 3)
     >>> print(task.state)
-    State 0x140517994199512 of type <class 'core.space.State'>
+    State 0x140517994199512 of type <class 'coopihc.space.State'>
     Position:
     value:	[None]
     spaces:	[Discrete(15)]
@@ -132,7 +132,7 @@ We see that the Position substate has not been attributed a value yet, but can t
 
     >>> task.reset()
     >>> print(task.state)
-    State 0x140517994199512 of type <class 'core.space.State'>
+    State 0x140517994199512 of type <class 'coopihc.space.State'>
     Position:
     value:	[11]
     spaces:	[Discrete(15)]
@@ -147,7 +147,7 @@ Targets and cursor position have been set. To verify that the task behaves as in
 
 .. code-block:: python
 
-    >>> from core.bundle import _DevelopTask
+    >>> from coopihc.bundle import _DevelopTask
     >>> bundle = _DevelopTask(task)
     >>> bundle.render("text")
     Task Render
@@ -202,8 +202,8 @@ This problem is very common, since usually agent will have to adapt to the task.
 
 .. code-block:: python
 
-    from core.agents import BaseAgent
-    from core.space import State, StateElement
+    from coopihc.agents import BaseAgent
+    from coopihc.space import State, StateElement
     import gym
 
 
@@ -350,7 +350,7 @@ Now that all components of the task are ready, we can bundle them together. The 
     from pointing.operators import CarefulPointer
     from pointing.assistants import ConstantCDGain
 
-    from core.bundle import PlayNone
+    from coopihc.bundle import PlayNone
 
     task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
     binary_operator = CarefulPointer()

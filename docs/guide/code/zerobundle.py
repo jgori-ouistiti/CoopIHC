@@ -2,9 +2,10 @@ from pointing.envs import SimplePointingTask
 from pointing.users import CarefulPointer
 from pointing.assistants import ConstantCDGain, BIGGain
 
-from core.bundle import PlayNone, PlayAssistant
+from coopihc.bundle import PlayNone, PlayAssistant
 
 import matplotlib.pyplot as plt
+
 # ===================== First example =====================
 
 # task = SimplePointingTask(gridsize = 31, number_of_targets = 8)
@@ -58,7 +59,7 @@ import matplotlib.pyplot as plt
 
 # ================= Third example ======================
 
-task = SimplePointingTask(gridsize = 31, number_of_targets = 10, mode = 'position')
+task = SimplePointingTask(gridsize=31, number_of_targets=10, mode="position")
 binary_user = CarefulPointer()
 
 BIGpointer = BIGGain()
@@ -66,12 +67,12 @@ BIGpointer = BIGGain()
 bundle = PlayNone(task, binary_user, BIGpointer)
 
 game_state = bundle.reset()
-bundle.render('plotext')
+bundle.render("plotext")
 plt.tight_layout()
 
 while True:
     sum_rewards, is_done, rewards = bundle.step()
-    bundle.render('plotext')
+    bundle.render("plotext")
 
     if is_done:
         break

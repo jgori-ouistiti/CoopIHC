@@ -2,10 +2,10 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 import numpy
 
-from core.helpers import flatten
+from coopihc.helpers import flatten
 import scipy.linalg
-from core.space import State, StateElement, Space
-import core.space
+from coopihc.space import State, StateElement, Space
+import coopihc.space
 
 import copy
 import sys

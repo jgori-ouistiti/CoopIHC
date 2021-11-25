@@ -1,28 +1,20 @@
-import core
-from core.agents import BaseAgent
-from core.policy import BasePolicy
+import coopihc
+from coopihc.agents import BaseAgent
+from coopihc.policy import BasePolicy
 
 import numpy
-from core.space import Space, StateElement, State
+from coopihc.space import Space, StateElement, State
 
 gamestate = State()
 gamestate["task_state"] = State()
 gamestate["user_state"] = State()
 gamestate["task_state"]["x"] = StateElement(
     values=numpy.array([0]),
-    spaces=[
-        Space(
-            [numpy.array([-4, -3, -2, -1, 0, 1, 2, 3, 4], dtype=numpy.int16)]
-        )
-    ],
+    spaces=[Space([numpy.array([-4, -3, -2, -1, 0, 1, 2, 3, 4], dtype=numpy.int16)])],
 )
 gamestate["user_state"]["goal"] = StateElement(
     values=numpy.array([4]),
-    spaces=[
-        Space(
-            [numpy.array([-4, -3, -2, -1, 0, 1, 2, 3, 4], dtype=numpy.int16)]
-        )
-    ],
+    spaces=[Space([numpy.array([-4, -3, -2, -1, 0, 1, 2, 3, 4], dtype=numpy.int16)])],
 )
 
 
@@ -65,13 +57,7 @@ class ExampleUser(BaseAgent):
         state["goal"] = StateElement(
             values=numpy.array([4]),
             spaces=[
-                Space(
-                    [
-                        numpy.array(
-                            [-4, -3, -2, -1, 0, 1, 2, 3, 4], dtype=numpy.int16
-                        )
-                    ]
-                )
+                Space([numpy.array([-4, -3, -2, -1, 0, 1, 2, 3, 4], dtype=numpy.int16)])
             ],
         )
 
@@ -109,7 +95,7 @@ class ExampleTaskWithoutAssistant(ExampleTask):
         return self.state, 0, False, {}
 
 
-from core.bundle import Bundle
+from coopihc.bundle import Bundle
 
 example_task = ExampleTaskWithoutAssistant()
 example_user = ExampleUser()

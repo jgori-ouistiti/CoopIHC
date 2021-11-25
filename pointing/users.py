@@ -1,10 +1,10 @@
-import core
-from core.agents import BaseAgent, IHCT_LQGController
-from core.observation import RuleObservationEngine, base_user_engine_specification
-from core.bundle import SinglePlayUserAuto
-from core.space import State, StateElement, Space
-from core.policy import ELLDiscretePolicy, WrapAsPolicy, BadlyDefinedLikelihoodError
-from core.interactiontask import ClassicControlTask
+import coopihc
+from coopihc.agents import BaseAgent, IHCT_LQGController
+from coopihc.observation import RuleObservationEngine, base_user_engine_specification
+from coopihc.bundle import SinglePlayUserAuto
+from coopihc.space import State, StateElement, Space
+from coopihc.policy import ELLDiscretePolicy, WrapAsPolicy, BadlyDefinedLikelihoodError
+from coopihc.interactiontask import ClassicControlTask
 import gym
 import numpy
 import copy
@@ -34,7 +34,7 @@ class TwoDCarefulPointer(BaseAgent):
             # 4 = right
 
             agent_policy = ELLDiscretePolicy(
-                action_space=[core.space.Discrete(5)],
+                action_space=[coopihc.space.Discrete(5)],
                 action_set=[[[0, 0], [0, 1], [-1, 0], [0, -1], [1, 0]]],
                 clipping_mode="clip",
             )
@@ -426,7 +426,7 @@ class LQGPointer(BaseAgent):
                 value = possible_values.index(int(numpy.round(delta["values"][0])))
                 action = StateElement(
                     values=value,
-                    spaces=core.space.Discrete(61),
+                    spaces=coopihc.space.Discrete(61),
                     possible_values=[possible_values],
                 )
 
@@ -457,7 +457,7 @@ class LQGPointer(BaseAgent):
 
         self.state["goal"] = StateElement(
             values=[None],
-            spaces=[core.space.Discrete(self.bundle.task.gridsize)],
+            spaces=[coopihc.space.Discrete(self.bundle.task.gridsize)],
             possible_values=[[None]],
         )
 

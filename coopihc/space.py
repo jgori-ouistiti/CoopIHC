@@ -7,7 +7,7 @@ import sys
 numpy.set_printoptions(precision=3, suppress=True)
 
 
-from core.helpers import flatten, hard_flatten
+from coopihc.helpers import flatten, hard_flatten
 import itertools
 from tabulate import tabulate
 
@@ -18,7 +18,7 @@ def remove_prefix(text, prefix):
     return text[text.startswith(prefix) and len(prefix) :]
 
 
-from core.helpers import isdefined
+from coopihc.helpers import isdefined
 
 
 class Space:

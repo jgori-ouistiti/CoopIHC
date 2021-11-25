@@ -1,5 +1,5 @@
 from copy import copy
-from core.inference import BaseInferenceEngine
+from coopihc.inference import BaseInferenceEngine
 
 
 class RWInference(BaseInferenceEngine):

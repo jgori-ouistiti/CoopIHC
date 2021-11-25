@@ -59,7 +59,7 @@ In the code below, we define a new kind of interaction task--in this case a risk
     from envs import MultiBanditTask
     from agents import WSLS
 
-    from core.bundle import ModelChecks
+    from coopihc.bundle import ModelChecks
 
     # Task parameters definition
     N = 2
@@ -191,7 +191,7 @@ In the code below, we use the same interaction task as above--again a risky choi
     from envs import MultiBanditTask
     from users import WSLS, RW, RandomPlayer
 
-    from core.bundle import ModelChecks
+    from coopihc.bundle import ModelChecks
 
     # Task parameters definition
     N = 2
@@ -283,7 +283,7 @@ This parameter has a theoretical range from ``0.0`` to ``1.0``. We will try to i
     from envs import MultiBanditTask
     from users import WSLS, RW, RandomPlayer
 
-    from core.bundle import ModelChecks
+    from coopihc.bundle import ModelChecks
 
     # Task parameters definition
     N = 2

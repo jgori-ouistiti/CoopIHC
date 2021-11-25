@@ -1,13 +1,13 @@
-from core.bundle import _Bundle
-from core.space import StateElement
+from coopihc.bundle import _Bundle
+from coopihc.space import StateElement
 
 
 class PlayBoth(_Bundle):
     """A bundle which samples both actions directly from the user and assistant.
 
-    :param task: (core.interactiontask.InteractionTask) A task, which is a subclass of InteractionTask
-    :param user: (core.agents.BaseAgent) an user, which is a subclass of BaseAgent
-    :param assistant: (core.agents.BaseAgent) an assistant, which is a subclass of BaseAgent
+    :param task: (coopihc.interactiontask.InteractionTask) A task, which is a subclass of InteractionTask
+    :param user: (coopihc.agents.BaseAgent) an user, which is a subclass of BaseAgent
+    :param assistant: (coopihc.agents.BaseAgent) an assistant, which is a subclass of BaseAgent
 
     :meta public:
     """

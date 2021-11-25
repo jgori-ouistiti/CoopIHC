@@ -1,8 +1,8 @@
 # Core libraries
 from typing import Dict, List, Tuple
-from core.agents import BaseAgent
-from core.bundle import Bundle
-from core.helpers import (
+from coopihc.agents import BaseAgent
+from coopihc.bundle import Bundle
+from coopihc.helpers import (
     order_class_parameters_by_signature,
     bic,
     aic,
@@ -35,8 +35,8 @@ class ModelChecks(Bundle):
     """A bundle without an assistant. It can be used when developing users and
     includes methods for modeling checks (e.g. parameter or model recovery).
 
-    :param task: (core.interactiontask.InteractionTask) A task, which is a subclass of InteractionTask
-    :param user: (core.agents.BaseAgent) An user, which is a subclass of BaseAgent
+    :param task: (coopihc.interactiontask.InteractionTask) A task, which is a subclass of InteractionTask
+    :param user: (coopihc.agents.BaseAgent) An user, which is a subclass of BaseAgent
     :param kwargs: Additional controls to account for some specific subcases, see Doc for a full list
     """
 
@@ -44,7 +44,7 @@ class ModelChecks(Bundle):
         """Returns whether the specified user's policy has a method called "compute_likelihood".
 
         :param user: An user, which is a subclass of BaseAgent
-        :type user: core.agents.BaseAgent
+        :type user: coopihc.agents.BaseAgent
         """
         # Method name
         COMPUTE_LIKELIHOOD = "compute_likelihood"
@@ -494,7 +494,7 @@ class ModelChecks(Bundle):
         using the parameter_fit_bounds and random_number_generator).
 
         :param user_class: The class to create the random agent from
-        :type user_class: core.BaseAgent
+        :type user_class: coopihc.BaseAgent
         :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
             the random parameter values for simulation (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
         :type parameter_fit_bounds: dict
@@ -505,7 +505,7 @@ class ModelChecks(Bundle):
         :type random_number_generator: numpy.random.Generator, optional
         :return: An instance of the specified user_class with random parameters (either specified or generated
             using the parameter_fit_bounds and random_number_generator)
-        :rtype: core.BaseAgent
+        :rtype: coopihc.BaseAgent
         """
         # Get attributes from self.user for initialization
         attributes_from_self_user = {
@@ -893,7 +893,7 @@ class ModelChecks(Bundle):
 
         :param user: The user to use for the simulation (if None is specified, will use the user
             of the bundle (i.e. self.user)), defaults to None
-        :type user: core.agents.BaseAgent, optional
+        :type user: coopihc.agents.BaseAgent, optional
         :param random_number_generator: The random number generator which controls how the 'true' parameter values are
             generated, defaults to numpy.random.default_rng()
         :type random_number_generator: numpy.random.Generator, optional
@@ -956,9 +956,9 @@ class ModelChecks(Bundle):
         """Returns a list of the parameters with their best-fit values based on the supplied data.
 
         :param task: The interaction task to be performed
-        :type task: core.interactiontask.InteractionTask
+        :type task: coopihc.interactiontask.InteractionTask
         :param user_class: The user class to find best-fit parameters for
-        :type user_class: core.agents.BaseAgent
+        :type user_class: coopihc.agents.BaseAgent
         :param parameter_fit_bounds: A dictionary of the parameter names, their minimum and maximum values that will be used to generate
             the random parameter values for simulation (example: `{"alpha": (0., 1.), "beta": (0., 20.)}`)
         :type parameter_fit_bounds: dict
@@ -1024,9 +1024,9 @@ class ModelChecks(Bundle):
         """Returns the log-likelihood of the specified parameter values given the provided data.
 
         :param task: The interaction task to be performed
-        :type task: core.interactiontask.InteractionTask
+        :type task: coopihc.interactiontask.InteractionTask
         :param user_class: The user class to compute the log-likelihood for
-        :type user_class: core.agents.BaseAgent
+        :type user_class: coopihc.agents.BaseAgent
         :param parameter_values: A list of the parameter values to compute the log-likelihood for
         :type parameter_values: list
         :param data: The behavioral data to compute the log-likelihood for
@@ -1083,9 +1083,9 @@ class ModelChecks(Bundle):
         :param parameter_values: A list of the parameter values to compute the log-likelihood for
         :type parameter_values: list
         :param task: The interaction task to be performed
-        :type task: core.interactiontask.InteractionTask
+        :type task: coopihc.interactiontask.InteractionTask
         :param user_class: The user class to calculate the negative log-likelihood for
-        :type user_class: core.agents.BaseAgent
+        :type user_class: coopihc.agents.BaseAgent
         :param data: The behavioral data to compute the log-likelihood for
         :type data: pandas.DataFrame
         :return: The negative log-likelihood of the specified parameter values given the provided data
@@ -1492,7 +1492,7 @@ class ModelChecks(Bundle):
         a list of dictionaries containing the BIC-score for all competing models.
 
         :param task: The interaction task to be performed
-        :type task: core.interactiontask.InteractionTask
+        :type task: coopihc.interactiontask.InteractionTask
         :param all_user_classes: The user models that are competing and can be
         recovered (example: `[{"model": UserClass, "parameter_fit_bounds": {"alpha": (0., 1.), ...}}, ...]`)
         :type all_user_classes: list(dict)

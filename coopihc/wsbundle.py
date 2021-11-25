@@ -3,8 +3,8 @@ import asyncio, websockets, json, sys
 import time
 from multiprocessing import Process, Pipe
 
-from core.interactiontask import PipeTaskWrapper
-from core.bundle.wrappers import PipedTaskBundleWrapper
+from coopihc.interactiontask import PipeTaskWrapper
+from coopihc.bundle.wrappers import PipedTaskBundleWrapper
 
 
 # like functools.partial, but with arguments added from the back

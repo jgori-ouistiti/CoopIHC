@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import numpy
 
-from core.helpers import sort_two_lists
+from coopihc.helpers import sort_two_lists
 
 
 class DiscreteUserModelMax(ABC):

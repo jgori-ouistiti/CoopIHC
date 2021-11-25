@@ -1,7 +1,7 @@
 import gym
 import numpy
 
-from core.bundle import (
+from coopihc.bundle import (
     Bundle,
     PlayUser,
     Train,
@@ -16,17 +16,17 @@ from pointing.users import CarefulPointer, LQGPointer
 from pointing.assistants import ConstantCDGain, BIGGain
 from eye.envs import ChenEyePointingTask
 from eye.users import ChenEye
-import core
+import coopihc
 from collections import OrderedDict
-from core.models import LinearEstimatedFeedback
+from coopihc.models import LinearEstimatedFeedback
 
-from core.agents import (
+from coopihc.agents import (
     BaseAgent,
     FHDT_LQRController,
     IHDT_LQRController,
     IHCT_LQGController,
 )
-from core.observation import (
+from coopihc.observation import (
     base_task_engine_specification,
     base_user_engine_specification,
     RuleObservationEngine,
@@ -34,16 +34,16 @@ from core.observation import (
     CascadedObservationEngine,
     WrapAsObservationEngine,
 )
-from core.interactiontask import ClassicControlTask, InteractionTask, TaskWrapper
-from core.policy import (
+from coopihc.interactiontask import ClassicControlTask, InteractionTask, TaskWrapper
+from coopihc.policy import (
     ELLDiscretePolicy,
     BasePolicy,
     BIGDiscretePolicy,
     RLPolicy,
     WrapAsPolicy,
 )
-from core.space import State, StateElement, Space
-from core.wsbundle import Server
+from coopihc.space import State, StateElement, Space
+from coopihc.wsbundle import Server
 import matplotlib.pyplot as plt
 import copy
 import asyncio
@@ -153,7 +153,7 @@ if _str == "basic-TrainUser" or _str == "all":
     unitcdgain = ConstantCDGain(1)
 
     policy = BasePolicy(
-        action_space=[core.space.Discrete(10)],
+        action_space=[coopihc.space.Discrete(10)],
         action_set=[[-5 + i for i in range(5)] + [i + 1 for i in range(5)]],
         action_values=None,
     )
@@ -200,7 +200,7 @@ if _str == "basic-TrainUser" or _str == "all":
             unitcdgain = ConstantCDGain(1)
 
             policy = BasePolicy(
-                action_space=[core.space.Discrete(10)],
+                action_space=[coopihc.space.Discrete(10)],
                 action_set=[[-5 + i for i in range(5)] + [i + 1 for i in range(5)]],
                 action_values=None,
             )
@@ -262,7 +262,7 @@ if _str == "loadNNpolicy" or _str == "all":
     unitcdgain = ConstantCDGain(1)
 
     policy = BasePolicy(
-        action_space=[core.space.Discrete(10)],
+        action_space=[coopihc.space.Discrete(10)],
         action_set=[[-5 + i for i in range(5)] + [i + 1 for i in range(5)]],
         action_values=None,
     )
@@ -707,7 +707,7 @@ if _str == "LQGpointer":
             value = possible_values.index(int(numpy.round(delta["values"][0])))
             action = StateElement(
                 values=value,
-                spaces=core.space.Discrete(61),
+                spaces=coopihc.space.Discrete(61),
                 possible_values=[possible_values],
             )
             logger.info(
@@ -895,7 +895,7 @@ if _str == "js-ws":
     task = SimplePointingTask(gridsize=20, number_of_targets=5)
 
     policy = ELLDiscretePolicy(
-        action_space=[core.space.Discrete(3)], action_set=[[-1, 0, 1]]
+        action_space=[coopihc.space.Discrete(3)], action_set=[[-1, 0, 1]]
     )
     # Actions are in human values, i.e. they are not necessarily in range(0,N)
     def compute_likelihood(self, action, observation):

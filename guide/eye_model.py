@@ -1,23 +1,23 @@
 from eye.envs import ChenEyePointingTask
 from eye.users import ChenEye
-from core.bundle import SinglePlayUserAuto
+from coopihc.bundle import SinglePlayUserAuto
 
 
 from loguru import logger
 
 # log = ['terminal', 'file']
-log = ['file']
+log = ["file"]
 # log = []
-if 'terminal' not in log:
+if "terminal" not in log:
     logger.remove()
-if 'file' in log:
+if "file" in log:
     try:
         import os
-        os.remove('logs/chen_eye_2d.log')
+
+        os.remove("logs/chen_eye_2d.log")
     except FileNotFoundError:
         pass
-    logger.add('logs/chen_eye_2d.log', format = "{time} {level} {message}")
-
+    logger.add("logs/chen_eye_2d.log", format="{time} {level} {message}")
 
 
 fitts_W = 4e-2
@@ -28,9 +28,9 @@ task = ChenEyePointingTask(fitts_W, fitts_D)
 user = ChenEye(perceptualnoise, oculomotornoise)
 bundle = SinglePlayUserAuto(task, user)
 bundle.reset()
-bundle.render('plotext')
+bundle.render("plotext")
 while True:
     obs, reward, is_done, _ = bundle.step()
-    bundle.render('plotext')
+    bundle.render("plotext")
     if is_done:
         break

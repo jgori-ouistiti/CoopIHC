@@ -10,7 +10,7 @@ from bandit.envs import MultiBanditTask
 from bandit.agents import WSLS
 
 # Import development helper bundle
-from core.bundle import ModelChecks
+from coopihc.bundle import ModelChecks
 
 # Seed for reproduceability of the 'true' parameters
 RANDOM_SEED = 12345

@@ -1,4 +1,4 @@
-from core.agents import BaseAgent
+from coopihc.agents import BaseAgent
 
 class MyNewAgent(BaseAgent):
     """ Use this class as template to build your new agent.

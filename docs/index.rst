@@ -100,13 +100,13 @@ List of Modules in *CoopIHC*
     :maxdepth: 2
     :caption: Core module of CoopIHC. Any new module should build heavily on existing classes, by subclassing them.
 
-    modules/core/space
-    modules/core/baseagents
-    modules/core/interactiontask
-    modules/core/bundle
-    modules/core/inference
-    modules/core/models
-    modules/core/observation
+    modules/coopihc/space
+    modules/coopihc/baseagents
+    modules/coopihc/interactiontask
+    modules/coopihc/bundle
+    modules/coopihc/inference
+    modules/coopihc/models
+    modules/coopihc/observation
 
 .. toctree::
     :maxdepth: 2
@@ -129,7 +129,7 @@ TODO list:
 ==============
 
 * have a task possess an observation engine for cleaner separability between modules
-* Make agents and tasks inherit from core. Have core deal with handbooks in the simplest way possible. Add properties to the base classes for useful attributes
+* Make agents and tasks inherit from coopihc. Have coopihc deal with handbooks in the simplest way possible. Add properties to the base classes for useful attributes
 * think about standardized logging capabilities
 * provide test code to ensure the engines are working properly
 * possibly define own spaces rather than rely on gym spaces
