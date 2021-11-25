@@ -20,17 +20,6 @@ HERE = pathlib.Path(__file__).parent
 # The text of the README file
 README = (HERE / "README.md").read_text()
 
-gym = "*"
-matplotlib = "*"
-tabulate = "*"
-scipy = "*"
-websockets = "*"
-pyyaml = "*"
-pandas = "*"
-tqdm = "*"
-seaborn = "*"
-statsmodels = "*"
-
 # This call to setup() does all the work
 setup(
     name="coopihc",
