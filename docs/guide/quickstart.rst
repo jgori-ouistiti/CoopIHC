@@ -7,7 +7,7 @@ Quick Start
 Installation
 ---------------
 
-Copy the files somewhere and run (-e for editable, optional)
+You can install the package using pip with the following command:
 
 .. code-block:: python
 

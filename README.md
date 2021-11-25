@@ -17,7 +17,7 @@ CoopIHC is known to work with Python 3.6.9 and above.
 
 ## Installing
 
-Copy the files into your current project and run (-e for editable, optional):
+You can install the package using pip with the following command:
 
 ```Shell
 
