@@ -101,12 +101,16 @@ List of Modules in *CoopIHC*
     :caption: Core module of CoopIHC. Any new module should build heavily on existing classes, by subclassing them.
 
     modules/core/space
-    modules/core/baseagents
-    modules/core/interactiontask
-    modules/core/bundle
-    modules/core/inference
-    modules/core/models
     modules/core/observation
+    modules/core/inference
+    modules/core/policy
+    modules/core/agents
+    modules/core/interactiontask
+    modules/core/wsbundle
+
+
+
+    
 
 .. toctree::
     :maxdepth: 2
