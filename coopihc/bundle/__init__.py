@@ -1,6 +1,5 @@
 from ._Bundle import _Bundle
 from .Bundle import Bundle
-from .ModelChecks import ModelChecks
 from .PlayAssistant import PlayAssistant
 from .PlayBoth import PlayBoth
 from .PlayNone import PlayNone
