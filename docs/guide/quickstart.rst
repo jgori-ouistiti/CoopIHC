@@ -122,7 +122,7 @@ Policies
 ------------
 Defining a policy is done by subclassing the ``BasePolicy`` class and redefining the ``sample()`` method. Below, we show how ``ExamplePolicy`` used in the example before is defined.
 
-.. literalinclude:: ../../coopihc/policy.py
+.. literalinclude:: ../../coopihc/policy/__init__.py
     :linenos:
     :pyobject: ExamplePolicy
 
