@@ -9,6 +9,9 @@ from .SinglePlayUser import SinglePlayUser
 from .SinglePlayUserAuto import SinglePlayUserAuto
 from .Train import Train
 
+# Import wrappers for convenience
+from .wrappers import BundleWrapper, PipedTaskBundleWrapper
+
 from coopihc.space import State, StateElement, Space
 from coopihc.agents import BaseAgent, ExampleUser
 from coopihc.policy import BasePolicy

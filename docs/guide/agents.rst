@@ -33,7 +33,7 @@ When instantiating a BaseAgent, or any other agent for that matter, the modeler 
 
 Below is an example of instantiating a user with a BaseAgent.
 
-.. literalinclude:: ../../coopihc/agents.py
+.. literalinclude:: ../../coopihc/agents/__init__.py
    :language: python
    :linenos:
    :start-after: [start-baseagent-init]
