@@ -1,4 +1,4 @@
-from coopihc.agents import LQRController
+from .LQRController import LQRController
 import scipy.linalg
 
 

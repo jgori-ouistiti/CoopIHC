@@ -1,6 +1,6 @@
 from .BaseAgent import BaseAgent
 from .GoalDrivenDiscreteUser import GoalDrivenDiscreteUser
-from .LQRController import (
+from .lqrcontrollers import (
     LQRController,
     FHDT_LQRController,
     IHDT_LQRController,
