@@ -101,7 +101,7 @@ Agents are defined by four components:
 
 Defining a new agent is done by subclassing the ``BaseAgent`` class:
 
-.. literalinclude:: ../../coopihc/agents.py
+.. literalinclude:: ../../coopihc/agents/__init__.py
     :linenos:
     :pyobject: ExampleUser
 
