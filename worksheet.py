@@ -49,9 +49,6 @@ import copy
 import asyncio
 
 
-def function(a,b):
-
-
 import sys
 
 _str = sys.argv[1]
