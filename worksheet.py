@@ -18,7 +18,6 @@ from eye.envs import ChenEyePointingTask
 from eye.users import ChenEye
 import coopihc
 from collections import OrderedDict
-from coopihc.models import LinearEstimatedFeedback
 
 from coopihc.agents import (
     BaseAgent,
