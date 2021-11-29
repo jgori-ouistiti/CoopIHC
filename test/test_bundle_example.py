@@ -15,26 +15,24 @@ def test_bundle_example():
         values=None,
         spaces=[Space([numpy.array([-1, 0, 1], dtype=numpy.int16)])],
     )
+    user_policy = BasePolicy(user_action_state)
+    user = BaseAgent("user", agent_policy=user_policy)
 
     assistant_action_state = State()
     assistant_action_state["action"] = StateElement(
         values=None,
         spaces=[Space([numpy.array([-1, 0, 1], dtype=numpy.int16)])],
     )
+    assistant_policy = BasePolicy(assistant_action_state)
+    assistant = BaseAgent("assistant", agent_policy=assistant_policy)
 
     # Bundle a task together with two BaseAgents
-    bundle = Bundle(
-        task=ExampleTask(),
-        user=BaseAgent("user", override_agent_policy=BasePolicy(user_action_state)),
-        assistant=BaseAgent(
-            "assistant",
-            override_agent_policy=BasePolicy(assistant_action_state),
-        ),
-    )
+    bundle = Bundle(task=ExampleTask(), user=user, assistant=assistant)
 
     # Reset the task, plot the state.
     bundle.reset(turn=1)
     # print(bundle.game_state)
+    # return user, assistant, user_policy, assistant_policy, bundle
     bundle.step(numpy.array([1]), numpy.array([1]))
     # print(bundle.game_state)
 
@@ -86,6 +84,8 @@ def test_bundle_example():
         if is_done:
             break
     # [end-highlevel-code]
+
+    print("passed all")
 
 
 if __name__ == "__main__":

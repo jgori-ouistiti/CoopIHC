@@ -37,7 +37,7 @@ States
 ------------
 The interaction model heavily uses the concept of states, for which *CoopIHC* introduces the ``Space`` ``StateElement`` and ``State`` objects. In the example below, a super-state is defined by a state, which itself is defined by two substates.
 
-.. literalinclude:: ../../coopihc/space.py
+.. literalinclude:: ../../coopihc/space/__init__.py
    :language: python
    :linenos:
    :start-after: [start-state-example]
@@ -57,7 +57,7 @@ Tasks represent whatever the user is interacting with. They are essentially char
 
 As an example, let's define a simple task where the goal of the user is to drive the substate 'x' to a value of 4. Both the user and the assistant can provide three actions: -1, +0 and +1. As in most cases you will find, we define a task by inheriting from ``InteractionTask`` and redefining a few methods.
 
-.. literalinclude:: ../../coopihc/interactiontask.py
+.. literalinclude:: ../../coopihc/interactiontask/__init__.py
     :pyobject: ExampleTask
     :linenos:
 
@@ -122,7 +122,7 @@ Policies
 ------------
 Defining a policy is done by subclassing the ``BasePolicy`` class and redefining the ``sample()`` method. Below, we show how ``ExamplePolicy`` used in the example before is defined.
 
-.. literalinclude:: ../../coopihc/policy.py
+.. literalinclude:: ../../coopihc/policy/__init__.py
     :linenos:
     :pyobject: ExamplePolicy
 
@@ -144,7 +144,7 @@ Observation Engines
 ---------------------
 Defining an observation engine is done by subclassing the ``BaseObservationEngine`` class and redefining the ``observe()`` method. Below, we show a basic example where an instance is defined that only looks at a particular substate (the code for the default observation engine is a little too verbose to be put here).
 
-.. literalinclude:: ../../coopihc/observation.py
+.. literalinclude:: ../../coopihc/observation/__init__.py
     :linenos:
     :pyobject: ExampleObservationEngine
 
@@ -180,7 +180,7 @@ Inference Engines:
 Defining an Inference Engine is done by subclassing the ``BaseInferenceEngine`` class, and redefining the ``infer()`` method, as in previous components. Below, we define a new inference engine which has the exact same behavior as the ``BaseInferenceEngine``, for sake of illustration, and simply returns the agent's state without any modifications.
 
 
-.. literalinclude:: ../../coopihc/inference.py
+.. literalinclude:: ../../coopihc/inference/__init__.py
     :linenos:
     :pyobject: ExampleInferenceEngine
 
