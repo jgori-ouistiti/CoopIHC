@@ -45,10 +45,5 @@ setup(
         "scipy",
         "tabulate",
         "websockets",
-        # The following are only required because of ModelChecks
-        "pandas",
-        "tqdm",
-        "seaborn",
-        "statsmodels",
     ],
 )
