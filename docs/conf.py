@@ -37,8 +37,14 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinxcontrib.tikz",
     "sphinx_rtd_theme",
-    "sphinx.ext.githubpages"
-]
+    "sphinx.ext.githubpages",
+    "sphinx.ext.autosummary", 
+    "sphinx.ext.viewcode", 
+    ]
+
+autosummary_generate = True  # Turn on sphinx.ext.autosummary
+autodoc_inherit_docstrings = True  # If no docstring, inherit from base class
+add_module_names = False  # Remove namespaces from class/method signatures
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
