@@ -68,13 +68,15 @@ Learn how to use *CoopIHC*:
 
     guide/interaction_model
     guide/spaces
-    guide/agents
-    guide/tasks
-    guide/bundles
-    guide/wrappers
+    guide/policy
     guide/observation_engine
     guide/inference_engine
-    guide/user_modeling
+    guide/tasks
+    guide/agents
+    guide/bundles
+	guide/wrappers
+	
+
 
 
 
