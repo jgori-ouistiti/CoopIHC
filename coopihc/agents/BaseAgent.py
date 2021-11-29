@@ -48,7 +48,6 @@ class BaseAgent(ABC):
         component_dic, remaining_kwargs = self._allow_override(
             **kwargs
         )  # This line can probably be removed
-
         # Bundles stuff
         self.bundle = None
         self.ax = None
@@ -62,6 +61,7 @@ class BaseAgent(ABC):
             self.role = role
 
         # Define policy
+
         self.attach_policy(component_dic["policy"], **kwargs.pop("policy_kwargs", {}))
         # self._attach_policy(policy, **policy_kwargs)
 

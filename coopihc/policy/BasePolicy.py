@@ -69,3 +69,9 @@ class BasePolicy:
     def sample(self):
         self.action.reset()
         return self.action, 0
+
+    def __repr__(self):
+        try:
+            return self.action_state.__str__()
+        except AttributeError:
+            return "Policy--unreadable"
