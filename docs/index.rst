@@ -90,26 +90,7 @@ Learn how to use *CoopIHC*:
     roadmap
 
 
-.. _modules-label:
-
-List of Modules in *CoopIHC*
-============================================
-
-
-.. toctree::
-    :maxdepth: 2
-    :caption: Core module of CoopIHC. Any new module should build heavily on existing classes, by subclassing them.
-
-
-    modules/coopihc/space
-    modules/coopihc/observation
-    modules/coopihc/inference
-    modules/coopihc/policy
-    modules/coopihc/agents
-    modules/coopihc/interactiontask
-    modules/coopihc/wsbundle
-
-    
+   
 .. toctree::
 	:hidden:	
 
