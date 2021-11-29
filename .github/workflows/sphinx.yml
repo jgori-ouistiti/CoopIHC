@@ -58,6 +58,7 @@ jobs:
         run: |
           cd docs
           make html
+          # sed -i 's/url_root="#"/url_root=""/' _build/html/index.html || true
           cd ..
       #     # This fixes broken copy button icons, as explained in
       #     #   https://github.com/coderefinery/sphinx-lesson/issues/50
@@ -66,7 +67,6 @@ jobs:
       #     # fixes also need to propagate to other themes):
       #     #   https://github.com/sphinx-doc/sphinx/pull/8524
       #     #   https://github.com/readthedocs/sphinx_rtd_theme/pull/1025
-          sed -i 's/url_root="#"/url_root=""/' _build/html/index.html || true
       # The following supports building all branches and combining on
       # gh-pages
 
