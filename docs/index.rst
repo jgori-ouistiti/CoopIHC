@@ -109,36 +109,24 @@ List of Modules in *CoopIHC*
     modules/coopihc/interactiontask
     modules/coopihc/wsbundle
 
+    
 .. toctree::
-    :maxdepth: 2
-    :caption: Pointing Module. This module is used to model pointing tasks.
+	:hidden:	
 
-    modules/pointing/users
-    modules/pointing/envs
-    modules/pointing/assistants
-
-.. toctree::
-    :maxdepth: 2
-    :caption: Eye Module. This module is used to model eye movements of human observers.
-
-    modules/eye/users
-    modules/eye/envs
-    modules/eye/noise
+	Home page <self>
+	API reference <_autosummary/coopihc>
 
 
 TODO list:
 ==============
 
 * have a task possess an observation engine for cleaner separability between modules
-* Make agents and tasks inherit from coopihc. Have coopihc deal with handbooks in the simplest way possible. Add properties to the base classes for useful attributes
 * think about standardized logging capabilities
 * provide test code to ensure the engines are working properly
-* possibly define own spaces rather than rely on gym spaces
-* Have a template for each main component (possibly using metaclasses)
 * verify full arithmetic operations for StateElement
 * make a mapping object for RuleObservationEngine, smoothen the ruleObservationEngine specification
 * profile CoopIHC to see whether there are any bottlenecks (deepcopies are one)
-* make sure attach_policy and such can be called whenever and not just on init
+
 
 
 Indices
