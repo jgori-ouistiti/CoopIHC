@@ -92,7 +92,7 @@ jobs:
           # _gh-pages/branch-* paths, and not including
           # _gh-pages itself.
           find _gh-pages/ -mindepth 1 ! -path '_gh-pages/branch*' -delete
-          # rsync -a _build/dirhtml/ _gh-pages/
+          # rsync -a _build/html/ _gh-pages/
           # try this out below
           rsync -a docs/_build/html/ _gh-pages/
 
@@ -109,7 +109,7 @@ jobs:
           brname="${brname##refs/heads/}"
           brdir=${brname//\//--}   # replace '/' with '--'
           rm -rf   _gh-pages/branch/${brdir}
-          rsync -a docs/_build/dirhtml/ _gh-pages/branch/${brdir}
+          rsync -a docs/_build/html/ _gh-pages/branch/${brdir}
       # Go through each branch in _gh-pages/branch/, if it's not a
       # ref, then delete it.
       - name: Delete old feature branches
