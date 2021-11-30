@@ -1,7 +1,7 @@
-from coopihc.space import State
 import copy
 
-from .BasePolicy import BasePolicy
+from coopihc.space.State import State
+from coopihc.policy.BasePolicy import BasePolicy
 
 # ======================= RL Policy
 

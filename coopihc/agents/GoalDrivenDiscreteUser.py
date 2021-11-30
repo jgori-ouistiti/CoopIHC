@@ -1,5 +1,5 @@
-from coopihc.agents import BaseAgent
-from coopihc.space import StateElement
+from coopihc.agents.BaseAgent import BaseAgent
+from coopihc.space.StateElement import StateElement
 import copy
 
 

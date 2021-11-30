@@ -1,10 +1,10 @@
-from coopihc.space import State
-from coopihc.helpers import sort_two_lists
 import copy
 import math
 import copy
 
-from .BasePolicy import BasePolicy
+from coopihc.space.State import State
+from coopihc.helpers import sort_two_lists
+from coopihc.policy.BasePolicy import BasePolicy
 
 # ============= Discrete Policies =================
 

@@ -3,9 +3,10 @@ import numpy
 import json
 import sys
 import itertools
+
 from coopihc.helpers import flatten
-from .Space import Space
-from .utils import SpaceLengthError, StateNotContainedError
+from coopihc.space.Space import Space
+from coopihc.space.utils import SpaceLengthError, StateNotContainedError
 
 
 class StateElement:

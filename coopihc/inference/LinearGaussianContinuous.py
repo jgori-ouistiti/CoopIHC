@@ -1,8 +1,8 @@
 import numpy
-from coopihc.inference import BaseInferenceEngine
 from matplotlib.patches import Ellipse
 import matplotlib.transforms as transforms
 
+from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 
 class LinearGaussianContinuous(BaseInferenceEngine):
     """An Inference Engine that handles a Gaussian Belief. It assumes a Gaussian prior and a Gaussian likelihood. ---- Currently the covariance matrix for the likelihood is assumed to be contained by the host as self.Sigma. Maybe change this ----

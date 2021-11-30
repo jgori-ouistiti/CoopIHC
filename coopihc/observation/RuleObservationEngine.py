@@ -1,6 +1,6 @@
-from coopihc.space import State
-from .BaseObservationEngine import BaseObservationEngine
-from .utils import base_task_engine_specification
+from coopihc.space.State import State
+from coopihc.observation.BaseObservationEngine import BaseObservationEngine
+from coopihc.observation.utils import base_task_engine_specification 
 import copy
 
 

@@ -1,6 +1,10 @@
-from coopihc.space import State, StateElement, Space
 import numpy
 import copy
+
+from coopihc.space.State import State
+from coopihc.space.StateElement import StateElement
+from coopihc.space.Space import Space
+
 
 
 # ============== General Policies ===============

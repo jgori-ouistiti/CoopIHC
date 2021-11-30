@@ -17,7 +17,7 @@ def partialback(func, *extra_args):
     return wrapper
 
 
-class Server:
+class WsServer:
     def __init__(self, bundle, taskwrapper, address="localhost", port=4000):
         self.start_server = websockets.serve(
             partialback(self.bundlehandler, bundle, taskwrapper), address, port

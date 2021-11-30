@@ -1,12 +1,15 @@
 import numpy
-from coopihc.agents import BaseAgent
-from coopihc.space import State, StateElement
-from coopihc.policy import LinearFeedback
-from coopihc.observation import (
-    RuleObservationEngine,
-    base_task_engine_specification,
-)
 import gym.spaces
+
+
+
+from coopihc.agents.BaseAgent import BaseAgent
+from coopihc.space.State import State
+from coopihc.space.StateElement import StateElement
+from coopihc.policy.LinearFeedback import LinearFeedback
+from coopihc.observation.RuleObservationEngine import RuleObservationEngine
+from coopihc.observation.utils import base_task_engine_specification
+
 
 
 class LQRController(BaseAgent):
