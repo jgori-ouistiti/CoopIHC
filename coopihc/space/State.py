@@ -2,8 +2,9 @@ from collections import OrderedDict
 import copy
 import json
 from tabulate import tabulate
+
 from coopihc.helpers import flatten
-from .StateElement import StateElement
+from coopihc.space.StateElement import StateElement
 
 
 class State(OrderedDict):

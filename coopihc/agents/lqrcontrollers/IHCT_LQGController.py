@@ -1,11 +1,16 @@
 import numpy
-from coopihc.agents import BaseAgent
-import coopihc.observation
-from coopihc.space import State, StateElement
-from coopihc.policy import LinearFeedback
-from coopihc.inference import ContinuousKalmanUpdate
 import copy
 import gym.spaces
+
+from coopihc.agents.BaseAgent import BaseAgent
+from coopihc.observation.RuleObservationEngine import RuleObservationEngine
+from coopihc.observation.utils import observation_linear_combination 
+from coopihc.observation.utils import additive_gaussian_noise
+from coopihc.space.State import State
+from coopihc.space.StateElement import StateElement
+from coopihc.policy.LinearFeedback import LinearFeedback
+from coopihc.inference.ContinuousKalmanUpdate import ContinuousKalmanUpdate
+
 
 
 # Infinite Horizon Continuous Time LQG controller, based on Phillis 1985
@@ -88,7 +93,7 @@ class IHCT_LQGController(BaseAgent):
 
         observation_engine = kwargs.get("observation_engine")
 
-        class RuleObswithLQreward(coopihc.observation.RuleObservationEngine):
+        class RuleObswithLQreward(RuleObservationEngine):
             def __init__(self, Q, *args, **kwargs):
                 super().__init__(*args, **kwargs)
                 self.Q = Q
@@ -111,7 +116,7 @@ class IHCT_LQGController(BaseAgent):
 
             obs_matrix = {
                 ("task_state", "x"): (
-                    coopihc.observation.observation_linear_combination,
+                    observation_linear_combination,
                     (C,),
                 )
             }
@@ -121,7 +126,7 @@ class IHCT_LQGController(BaseAgent):
             # extraprobabilisticrule
             agn_rule = {
                 ("task_state", "x"): (
-                    coopihc.observation.additive_gaussian_noise,
+                    additive_gaussian_noise,
                     (
                         D,
                         numpy.zeros((C.shape[0], 1)).reshape(

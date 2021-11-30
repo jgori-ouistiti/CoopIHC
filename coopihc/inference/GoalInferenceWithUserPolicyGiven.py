@@ -1,8 +1,9 @@
 import numpy
-from coopihc.space import State
-from coopihc.helpers import hard_flatten
-from coopihc.inference import BaseInferenceEngine
 import copy
+
+from coopihc.space.State import State
+from coopihc.helpers import hard_flatten
+from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 
 
 # The usermodel is not updated with this assistant

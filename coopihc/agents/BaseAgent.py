@@ -1,12 +1,12 @@
 from abc import ABC
-from coopihc.space import State, StateElement
-from coopihc.policy import BasePolicy
-from coopihc.observation import (
-    RuleObservationEngine,
-    base_user_engine_specification,
-    base_assistant_engine_specification,
-)
-from coopihc.inference import BaseInferenceEngine
+
+from coopihc.space.State import State
+from coopihc.space.StateElement import StateElement
+from coopihc.policy.BasePolicy import BasePolicy
+from coopihc.observation.RuleObservationEngine import RuleObservationEngine
+from coopihc.observation.utils import base_user_engine_specification
+from coopihc.observation.utils import base_assistant_engine_specification
+from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 
 
 class BaseAgent(ABC):

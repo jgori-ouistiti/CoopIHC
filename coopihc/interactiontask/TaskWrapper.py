@@ -1,4 +1,4 @@
-from coopihc.interactiontask import InteractionTask
+from coopihc.interactiontask.InteractionTask import InteractionTask
 
 
 class TaskWrapper(InteractionTask):

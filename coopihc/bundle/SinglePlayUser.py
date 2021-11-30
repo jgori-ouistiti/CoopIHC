@@ -1,4 +1,4 @@
-from coopihc.bundle import _Bundle
+from coopihc.bundle._Bundle import _Bundle
 
 
 class SinglePlayUser(_Bundle):

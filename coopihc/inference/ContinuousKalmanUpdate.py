@@ -1,5 +1,5 @@
 import numpy
-from coopihc.inference import BaseInferenceEngine
+from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 
 
 class ContinuousKalmanUpdate(BaseInferenceEngine):

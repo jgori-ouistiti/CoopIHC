@@ -2,8 +2,10 @@ import numpy
 import copy
 
 from coopihc.helpers import flatten
-from coopihc.space import State, StateElement, Space
-from coopihc.interactiontask import InteractionTask
+from coopihc.space.State import State
+from coopihc.space.StateElement import StateElement
+from coopihc.space.Space import Space
+from coopihc.interactiontask.InteractionTask import InteractionTask
 
 
 class ClassicControlTask(InteractionTask):

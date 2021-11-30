@@ -41,3 +41,4 @@ sphinxcontrib-tikz==0.4.15
 tabulate==0.8.9
 tomli==1.2.2
 urllib3==1.26.7
+websockets==10.1

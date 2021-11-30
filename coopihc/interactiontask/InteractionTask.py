@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from coopihc.space import State, StateElement
-
+from coopihc.space.State import State
+from coopihc.space.StateElement import StateElement
 
 class InteractionTask(ABC):
     """The class that defines an Interaction Task. Subclass this to define any new task. When doing so, make sure to call ``super()`` in ``__init__()``.

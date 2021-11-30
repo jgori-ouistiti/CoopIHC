@@ -1,4 +1,4 @@
-from .BaseObservationEngine import BaseObservationEngine
+from coopihc.observation.BaseObservationEngine import BaseObservationEngine
 
 
 class WrapAsObservationEngine(BaseObservationEngine):

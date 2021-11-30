@@ -1,4 +1,4 @@
-from .BasePolicy import BasePolicy
+from coopihc.policy.BasePolicy import BasePolicy
 
 # ============== General Policies ===============
 

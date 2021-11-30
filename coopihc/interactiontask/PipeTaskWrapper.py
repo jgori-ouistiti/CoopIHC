@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from coopihc.interactiontask import InteractionTask
+from coopihc.interactiontask.InteractionTask import InteractionTask
 
 
 class PipeTaskWrapper(InteractionTask, ABC):
