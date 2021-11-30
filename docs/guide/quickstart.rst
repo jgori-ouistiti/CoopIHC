@@ -24,16 +24,16 @@ Interaction Model
 High-level view of CoopIHC code
 --------------------------------
 
-At a high level, CoopIHC code will usually look like this
+At a high level, your CoopIHC code will usually look like this
 
-.. literalinclude:: ../../coopihc/bundle/__init__.py
+.. literalinclude:: ../../coopihc/examples/simple_examples/bundle_examples.py
    :language: python
    :linenos:
    :start-after: [start-highlevel-code]
    :end-before: [end-highlevel-code]
 
 
-It consists in defining tasks, users, assistants, bundling them together, and playing several rounds of interaction until the game ends.
+You will usually define a task, a user, an assistant, and bundle them together. You can then play several rounds of interaction until the game ends, and based on the collected data, you can do something.
 
 States
 ------------

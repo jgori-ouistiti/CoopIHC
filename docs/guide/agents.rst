@@ -33,7 +33,7 @@ When instantiating a BaseAgent, or any other agent for that matter, the modeler 
 
 Below is an example of instantiating a user with a BaseAgent.
 
-.. literalinclude:: ../../coopihc/agents/__init__.py
+.. literalinclude:: ../../coopihc/examples/simple_examples/agents_examples.py
    :language: python
    :linenos:
    :start-after: [start-baseagent-init]
@@ -43,23 +43,6 @@ Below is an example of instantiating a user with a BaseAgent.
 Usually, it makes sense to define an entirely new agent, by subclassing the BaseAgent class, as in the :ref:`Quickstart example<quickstart-define-user-label>`.
 
 
-.. _base-agent-class-label:
-
-.. autoclass:: coopihc.agents.BaseAgent
-    :members:
-
 
 Agents Zoo
-------------------------
-
-This list is ongoing
-
-.. autoclass:: coopihc.agents.GoalDrivenDiscreteUser
-
-.. autoclass:: coopihc.agents.LQRController
-
-.. autoclass:: coopihc.agents.FHDT_LQRController
-
-.. autoclass:: coopihc.agents.IHDT_LQRController
-
-.. autoclass:: coopihc.agents.IHCT_LQGController
+----------------

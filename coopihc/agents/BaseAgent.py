@@ -12,10 +12,17 @@ from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 class BaseAgent(ABC):
     """Instantiate or subclass this class to define an agent that can be used in a Bundle.
 
+
+
+
     By default, this class will be initialized with an empty internal state, a BasePolicy with a single 'None' action, a RuleObservationEngine with a BaseUser of BaseAssistant profile, and a BaseInference engine.
 
-    You can override some components, e.g. to override the existing policy of an agent, do:
+    You can override some components, e.g. to override the existing policy of an agent, do the following
+
+    .. code-block:: python
+
         changed_policy_user = MyNewUser(agent_policy = some_other_policy)
+
     In that case, MyNewUser class which had been defined with some specific policy, has had its policy overriden by 'some_other_policy'; all other components remain equal.
 
 
@@ -26,8 +33,8 @@ class BaseAgent(ABC):
         + render
 
 
-    :param str role: 'user' or 'assistant'
-    :param type **kwargs: keyword values ( each agent_X key expects a valid X object, and X_kwargs expects a valid dictionnary of keyword arguments for X)
+    :param str role: "user" or "assistant"
+    :param type \*\*kwargs: keyword values ( each agent_X key expects a valid X object, and X_kwargs expects a valid dictionnary of keyword arguments for X)
 
         + agent_policy
         + agent_inference_engine

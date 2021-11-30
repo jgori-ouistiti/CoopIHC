@@ -47,6 +47,15 @@ Some examples require matplotlib, which itself requires a graphical backend to d
 
 Documentation uses [Sphinx](https://www.sphinx-doc.org/en/master/). Make sure it is installed on your side. 
 
+Some tips/tricks:
+
+```shell 
+$ make whtml
+``` 
+
+is equivalent to make html with sphinxoptions -W (warning treated as error)
+
+
 # Editor settings
 
 Constraints for formatting code include 

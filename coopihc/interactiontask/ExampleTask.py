@@ -45,7 +45,3 @@ class ExampleTask(InteractionTask):
             print("\n")
         else:
             raise NotImplementedError
-
-
-if __name__ == "__main__":
-    et = ExampleTask()

@@ -24,7 +24,3 @@ class ExamplePolicy(BasePolicy):
 
         new_action = self.new_action["values"] = numpy.array(_action_value)
         return new_action, 0
-
-
-if __name__ == "__main__":
-    ep = ExamplePolicy()

@@ -171,14 +171,12 @@ List of existing bundles
 ===========================  =====================================================
            Bundle                 Step call
 ===========================  =====================================================
-PlayNone                        bundle.step()
+PlayNone                    bundle.step()
 PlayUser                    bundle.step(user_action)
-PlayAssistant                   bundle.step(assistant_action)
-PlayBoth                        bundle.step([user_action, assistant_action])
+PlayAssistant               bundle.step(assistant_action)
+PlayBoth                    bundle.step([user_action, assistant_action])
 SinglePlayUser              bundle.step(user_action)
 SinglePlayUserAuto          bundle.step()
 ===========================  =====================================================
 
-.. note::
 
-    bundles expect actions to be lists, i.e. ints, floats should be wrapped in a list.
