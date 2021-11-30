@@ -7,16 +7,18 @@ Quick Start
 Installation
 ---------------
 
-You can install the package using pip with the following command:
+*CoopIHC* is currently available on `TestPyPI <https://test.pypi.org/project/coopihc/>`_ You can install the package using pip with the following command:
 
 .. code-block:: python
 
-    pip install coopihc
+    python3 -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ coopihc
+
+This will allow you to install coopihc from TestPyPI and the dependencies from PyPI.
 
 Interaction Model
 -------------------
 
-*CoopIHC* builds on a sequential two agent decision-making model that is described :doc:`here<./interaction_model>`.
+*CoopIHC* builds on a :doc:`sequential two agent decision-making model<./interaction_model>`. You should read through the model to get a grasp of what each component does.
 
 
 High-level view of CoopIHC code
