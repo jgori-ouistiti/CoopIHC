@@ -37,7 +37,7 @@ You will usually define a task, a user, an assistant, and bundle them together. 
 
 States
 ------------
-The interaction model heavily uses the concept of states, for which *CoopIHC* introduces the ``Space`` ``StateElement`` and ``State`` objects. In the example below, a super-state is defined by a state, which itself is defined by two substates.
+The interaction model uses the concept of states, for which *CoopIHC* introduces the ``Space`` ``StateElement`` and ``State`` objects. In the example below, a super-state is defined by a state, which itself is defined by two substates.
 
 .. literalinclude:: ../../coopihc/space/__init__.py
    :language: python

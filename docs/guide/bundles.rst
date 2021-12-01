@@ -168,15 +168,15 @@ List of existing bundles
 * ``SinglePlayUser`` [link]. A bundle without assistant. This is used e.g. to model psychophysical tasks such as perception, where there is no real interaction loop with a computing device.
 * ``SinglePlayUserAuto`` [link]. Same as SinglePlayUser, but this time the user action is obtained by sampling the user policy.
 
-===========================  =====================================================
+=========================== =====================================================
            Bundle                 Step call
-===========================  =====================================================
-PlayNone                    bundle.step()
-PlayUser                    bundle.step(user_action)
-PlayAssistant               bundle.step(assistant_action)
-PlayBoth                    bundle.step([user_action, assistant_action])
-SinglePlayUser              bundle.step(user_action)
-SinglePlayUserAuto          bundle.step()
-===========================  =====================================================
+=========================== =====================================================
+PlayNone                     bundle.step()
+PlayUser                     bundle.step(user_action)
+PlayAssistant                bundle.step(assistant_action)
+PlayBoth                     bundle.step([user_action, assistant_action])
+SinglePlayUser               bundle.step(user_action)
+SinglePlayUserAuto           bundle.step()
+=========================== =====================================================
 
 

@@ -85,7 +85,6 @@ The resulting architecture of the library that integrates the interaction model 
 * All these components may issue rewards, which are collected.
 
 
-.. _interaction_model_fig_label:
 
 .. figure::  images/lib_architecture.png
     :width: 100%

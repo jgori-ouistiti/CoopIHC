@@ -12,7 +12,7 @@ a problem that can be solved (via other methods).
 """
 
 import pathlib
-from setuptools import setup
+from setuptools import setup, find_packages
 
 # The directory containing this file
 HERE = pathlib.Path(__file__).parent
@@ -23,7 +23,7 @@ README = (HERE / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="coopihc",
-    version="0.0.1",
+    version="0.0.3",
     description="Two-agent component-based interaction environments for computational HCI with Python",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -36,7 +36,7 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
     ],
-    packages=["coopihc"],
+    packages=find_packages(exclude=("test", "guide", "build", "docs", "dist")),
     include_package_data=True,
     install_requires=[
         "gym",
