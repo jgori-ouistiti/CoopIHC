@@ -35,7 +35,7 @@ The eye-movement model is explained in the :doc:`User Modeling Failitation <user
 The task that is solved by this bundle is to position the eye (fixation) on top of the target. The user is in charge of choosing the next fixation, based on noisy information it gets from the target location. We will consider that the target is the cursor, while the initial eye fixation is the last position of the cursor. We will then let the bundle play out in time, finding the cursor in a given number of steps.
 
 
-This bundle, like any other, can be reset to a given state via a reset dictionary (see :doc:`Bundles<../modules/coopihc/bundle>`), for example
+This bundle, like any other, can be reset to a given state via a reset dictionary (see :py:mod:`Bundle <coopihc.bundle>`), for example
 
 
 .. code-block:: python
@@ -111,7 +111,7 @@ To simulate tracking the cursor, we can reset the bundle by passing the new curs
 Our custom observation Engine
 --------------------------------
 
-We can now wrap our bundle for the eye-movement model into an observation engine. First we must notice that the states are not compatible: the eye-movement model is expressed in a [-1,1] Box, while the pointing model is in a {0,1,2,...,29,30} grid. The :doc:`StateElement<../modules/coopihc/space>` object has a ``cast`` method that allows one to cast states from one space to another, see e.g. below
+We can now wrap our bundle for the eye-movement model into an observation engine. First we must notice that the states are not compatible: the eye-movement model is expressed in a [-1,1] Box, while the pointing model is in a {0,1,2,...,29,30} grid. The :py:mod:`StateElement <coopihc.space.StateElement.StateElement>` object has a ``cast`` method that allows one to cast states from one space to another, see e.g. below
 
 .. code-block:: python
 
@@ -132,7 +132,7 @@ We can now wrap our bundle for the eye-movement model into an observation engine
     possible values:	[None]
 
 
-Casting can be done in place or not, and works from several spaces to several other spaces, see :doc:`StateElement<states>` for more information.
+Casting can be done in place or not, and works from several spaces to several other spaces, see :py:mod:`StateElement <coopihc.space.StateElement.StateElement>` for more information.
 
 
 

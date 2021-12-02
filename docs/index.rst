@@ -54,29 +54,29 @@ and **bundling** them back together using so-called ``Bundles``, depending on th
     guide/quickstart
     guide/more_complex_example
     guide/modularity
-    guide/training
-    guide/external_components
 
 .. toctree::
     :maxdepth: 1
     :caption: Examples
 
-    guide/users
 
 
 .. toctree::
     :maxdepth: 1
     :caption: User Guide
 
+    guide/terminology
     guide/interaction_model
-    guide/spaces
+    guide/space
     guide/policy
     guide/observation_engine
     guide/inference_engine
     guide/tasks
     guide/agents
     guide/bundles
-	guide/wrappers
+    guide/user_modeling
+    guide/wrappers
+
 	
 
 

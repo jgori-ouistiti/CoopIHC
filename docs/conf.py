@@ -40,7 +40,6 @@ extensions = [
     "sphinx.ext.githubpages",
     "sphinx.ext.autosummary",
     "sphinx.ext.viewcode",
-    "sphinx.ext.autosectionlabel",
 ]
 
 autosummary_generate = True  # Turn on sphinx.ext.autosummary

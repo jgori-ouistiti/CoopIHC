@@ -95,7 +95,7 @@ When using the library, you will need to specify states as well as observation e
 
 Decision-Theoretic Models
 --------------------------
-The model of user assistance can be formulated as a Partially Observable Stochastic Game (POSG). POSGs are one of the most general models of decision making and represent sequential decision making for *multiple agents* in a *stochastic* environment with *imperfect observability*. POSGs admit many special cases (see Table 1), including the well-known MDP. The interaction context can be expressed as each one of these using an appropriate :doc:`bundle`.
+The model of user assistance can be formulated as a Partially Observable Stochastic Game (POSG). POSGs are one of the most general models of decision making and represent sequential decision making for *multiple agents* in a *stochastic* environment with *imperfect observability*. POSGs admit many special cases (see Table 1), including the well-known MDP. The interaction context can be expressed as each one of these using an appropriate :py:mod:`Bundle <coopihc.bundle>`.
 
 
 

@@ -126,7 +126,7 @@ We can now instantiate our task, and observe its state
     possible values:	[[None], [None], [None]]
 
 
-We see that the Position substate has not been attributed a value yet, but can take any value from 0 to 14 (Discrete(15)). The field possible values is unused here (it is in case a mapping is needed from [0,N] to another range, see :doc:`states` for more information). Similarly, we see that the Targets substate has a length 3 vector of Nones, indicating that it expects three values to be filled, each contained in Discrete(15). Calling reset will attribute value to the states:
+We see that the Position substate has not been attributed a value yet, but can take any value from 0 to 14 (Discrete(15)). The field possible values is unused here (it is in case a mapping is needed from [0,N] to another range, see :py:mod:`State <coopihc.space.State.State>` for more information). Similarly, we see that the Targets substate has a length 3 vector of Nones, indicating that it expects three values to be filled, each contained in Discrete(15). Calling reset will attribute value to the states:
 
 .. code-block:: python
 
@@ -309,9 +309,7 @@ All elements having been defined, we can now instantiate our first agent. We fir
                 observation_engine = observation_engine
                 )
 
-The full definition of this operator can be found by looking at the ``CarefulPointer`` class :download:`here <../../pointing/operators.py>`.
-
-
+The full definition of this operator can be found by looking at the ``CarefulPointer`` class in the CoopIHC-Zoo_. 
 Assistant
 ^^^^^^^^^^
 We are going to couple this operator with a so-called constant CD gain (a constant action is used for the modulation, whatever the operator input).
@@ -412,8 +410,9 @@ Now, you could explore other policies, or better, use an optimization process to
     Add here an example where the policy of the user is obtained by RL
 
 
-A more complex example
+More complex example
 -------------------------
+
 We will use the previous user model and combine it with a more complex assistant, namely a Bayesian Information Gain (:download:`BIG <https://hal.inria.fr/hal-01677122/document>`) Assistant. The idea of a BIG is that the assistant extracts as much information as possible from the user at each step. Roughly speaking, it will position the cursor somewhat in between the most probable targets.
 
 To do so, it maintains a model of the user, to associate a probability with each target being the goal. These probabilities will be stored in the assistant's state, and updated by a specific inference engine.
@@ -518,7 +517,7 @@ Representing only the policy part, we have:
             self.policy.attach_transition_function(transition_function)
 
 
-The full code for this assistant, (obtained by merging the two segments above, as well as a call to the inference engines render method) can be found :download:`here  <../../pointing/assistants.py>`
+The full code for this assistant, (obtained by merging the two segments above, as well as a call to the inference engines render method) can be found in the CoopIHC-Zoo_
 
 Bundles
 ^^^^^^^^^
@@ -581,4 +580,7 @@ The BIGGain assistant, while giving good performance, does not minimize the numb
     check_env(env)
 
 The ``check_env`` method makes sure the environment is compatible with open AI's gym API.
+
+
+.. _CoopIHC-Zoo: <https://jgori-ouistiti.github.io/CoopIHC-zoo/_modules/coopihczoo/pointing/users.html#CarefulPointer>
 

@@ -39,7 +39,7 @@ States
 ------------
 The interaction model uses the concept of states, for which *CoopIHC* introduces the ``Space`` ``StateElement`` and ``State`` objects. In the example below, a super-state is defined by a state, which itself is defined by two substates.
 
-.. literalinclude:: ../../coopihc/space/__init__.py
+.. literalinclude:: ../../coopihc/examples/simple_examples/state_examples.py
    :language: python
    :linenos:
    :start-after: [start-state-example]
@@ -59,7 +59,7 @@ Tasks represent whatever the user is interacting with. They are essentially char
 
 As an example, let's define a simple task where the goal of the user is to drive the substate 'x' to a value of 4. Both the user and the assistant can provide three actions: -1, +0 and +1. As in most cases you will find, we define a task by inheriting from ``InteractionTask`` and redefining a few methods.
 
-.. literalinclude:: ../../coopihc/interactiontask/__init__.py
+.. literalinclude:: ../../coopihc/interactiontask/ExampleTask.py
     :pyobject: ExampleTask
     :linenos:
 
@@ -84,7 +84,7 @@ Finally, the render method is a way to display information to the screen. Here w
 
 You can verify that the task works as intended by bundling it with two ``BaseAgents`` (the simplest version of agents). Make sur that the actions spaces make sense, by specifying the policy for the two baseagents.
 
-.. literalinclude:: ../../coopihc/bundle/__init__.py
+.. literalinclude:: ../../coopihc/examples/simple_examples/interactiontask_examples.py
    :language: python
    :linenos:
    :start-after: [start-check-task]
@@ -103,7 +103,7 @@ Agents are defined by four components:
 
 Defining a new agent is done by subclassing the ``BaseAgent`` class:
 
-.. literalinclude:: ../../coopihc/agents/__init__.py
+.. literalinclude:: ../../coopihc/agents/ExampleUser.py
     :linenos:
     :pyobject: ExampleUser
 
@@ -114,7 +114,7 @@ Defining a new agent is done by subclassing the ``BaseAgent`` class:
 
 You can check that the user model works as intended by bundling it with the task. Below, we try it out without an assistant, so we modify the task very simply by redefining its ``assistant_step()`` method.
 
-.. literalinclude:: ../../coopihc/bundle/__init__.py
+.. literalinclude:: ../../coopihc/examples/simple_examples/bundle_examples.py
     :language: python
     :linenos:
     :start-after: [start-check-taskuser]
@@ -124,7 +124,7 @@ Policies
 ------------
 Defining a policy is done by subclassing the ``BasePolicy`` class and redefining the ``sample()`` method. Below, we show how ``ExamplePolicy`` used in the example before is defined.
 
-.. literalinclude:: ../../coopihc/policy/__init__.py
+.. literalinclude:: ../../coopihc/policy/ExamplePolicy.py
     :linenos:
     :pyobject: ExamplePolicy
 
@@ -146,7 +146,7 @@ Observation Engines
 ---------------------
 Defining an observation engine is done by subclassing the ``BaseObservationEngine`` class and redefining the ``observe()`` method. Below, we show a basic example where an instance is defined that only looks at a particular substate (the code for the default observation engine is a little too verbose to be put here).
 
-.. literalinclude:: ../../coopihc/observation/__init__.py
+.. literalinclude:: ../../coopihc/observation/ExampleObservationEngine.py
     :linenos:
     :pyobject: ExampleObservationEngine
 
@@ -182,7 +182,7 @@ Inference Engines:
 Defining an Inference Engine is done by subclassing the ``BaseInferenceEngine`` class, and redefining the ``infer()`` method, as in previous components. Below, we define a new inference engine which has the exact same behavior as the ``BaseInferenceEngine``, for sake of illustration, and simply returns the agent's state without any modifications.
 
 
-.. literalinclude:: ../../coopihc/inference/__init__.py
+.. literalinclude:: ../../coopihc/inference/ExampleInferenceEngine.py
     :linenos:
     :pyobject: ExampleInferenceEngine
 
