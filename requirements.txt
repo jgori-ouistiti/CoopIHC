@@ -1,44 +1,59 @@
-alabaster==0.7.12
-Babel==2.9.1
-certifi==2021.10.8
-charset-normalizer==2.0.8
-cloudpickle==2.0.0
-cycler==0.11.0
-docutils==0.17.1
-fonttools==4.28.2
-gym==0.21.0
-idna==3.3
-imagesize==1.3.0
-Jinja2==3.0.3
-kiwisolver==1.3.2
-MarkupSafe==2.0.1
-matplotlib==3.5.0
-numpy==1.21.4
-packaging==21.3
-Pillow==8.4.0
-Pygments==2.10.0
-pyparsing==3.0.6
-PyQt5==5.15.6
-PyQt5-Qt5==5.15.2
-PyQt5-sip==12.9.0
-python-dateutil==2.8.2
-pytz==2021.3
-PyYAML==6.0
-requests==2.26.0
-scipy==1.7.3
-setuptools-scm==6.3.2
-six==1.16.0
-snowballstemmer==2.2.0
-Sphinx==4.3.1
-sphinx-rtd-theme==1.0.0
-sphinxcontrib-applehelp==1.0.2
-sphinxcontrib-devhelp==1.0.2
-sphinxcontrib-htmlhelp==2.0.0
-sphinxcontrib-jsmath==1.0.1
-sphinxcontrib-qthelp==1.0.3
-sphinxcontrib-serializinghtml==1.1.5
+--extra-index-url https://test.pypi.org/simple
+
+alabaster==0.7.12; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.6"
+babel==2.9.1; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.6"
+bleach==4.1.0; python_version >= "3.6"
+certifi==2021.10.8; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.6.0" and python_version >= "3.6"
+cffi==1.15.0; sys_platform == "linux" and python_version >= "3.6"
+charset-normalizer==2.0.8; python_full_version >= "3.6.0" and python_version >= "3.6"
+colorama==0.4.4; python_version >= "3.6" and python_full_version < "3.0.0" and sys_platform == "win32" and (python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.6") and platform_system == "Windows" or sys_platform == "win32" and python_version >= "3.6" and python_full_version >= "3.5.0" and (python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.6") and platform_system == "Windows"
+coopihczoo==0.0.3; python_version >= "3.8" and python_version < "3.11"
+cryptography==36.0.0; sys_platform == "linux" and python_version >= "3.6"
+cycler==0.11.0; python_version >= "3.7"
+docutils==0.17.1; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version >= "3.6"
+fonttools==4.28.3; python_version >= "3.7"
+idna==3.3; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.6.0" and python_version >= "3.6"
+imagesize==1.3.0; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.6"
+importlib-metadata==4.8.2; python_version >= "3.6"
+jeepney==0.7.1; sys_platform == "linux" and python_version >= "3.6"
+jinja2==3.0.3; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.6"
+keyring==23.4.0; python_version >= "3.6"
+kiwisolver==1.3.2; python_version >= "3.7"
+markupsafe==2.0.1; python_version >= "3.6"
+matplotlib==3.5.0; python_version >= "3.7"
+numpy==1.21.4; python_version >= "3.7" and python_version < "3.11"
+packaging==21.3; python_version >= "3.7" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.7"
+pillow==8.4.0; python_version >= "3.7"
+pkginfo==1.8.2; python_version >= "3.6"
+pycparser==2.21; python_version >= "3.6" and python_full_version < "3.0.0" and sys_platform == "linux" or sys_platform == "linux" and python_version >= "3.6" and python_full_version >= "3.4.0"
+pygments==2.10.0; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.6"
+pyparsing==3.0.6; python_version >= "3.7"
+python-dateutil==2.8.2; python_version >= "3.7" and python_full_version < "3.0.0" or python_full_version >= "3.3.0" and python_version >= "3.7"
+pytz==2021.3; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.6"
+pywin32-ctypes==0.2.0; sys_platform == "win32" and python_version >= "3.6"
+readme-renderer==30.0; python_version >= "3.6"
+requests-toolbelt==0.9.1; python_version >= "3.6"
+requests==2.26.0; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.6.0" and python_version >= "3.6"
+rfc3986==1.5.0; python_version >= "3.6"
+scipy==1.6.1; python_version >= "3.7"
+secretstorage==3.3.1; sys_platform == "linux" and python_version >= "3.6"
+setuptools-scm==6.3.2; python_version >= "3.7"
+six==1.16.0; python_version >= "3.7" and python_full_version < "3.0.0" or python_full_version >= "3.3.0" and python_version >= "3.7"
+snowballstemmer==2.2.0; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.6"
+sphinx-rtd-theme==1.0.0; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.4.0")
+sphinx==4.3.1; python_version >= "3.6"
+sphinxcontrib-applehelp==1.0.2; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.6"
+sphinxcontrib-devhelp==1.0.2; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.6"
+sphinxcontrib-htmlhelp==2.0.0; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.6"
+sphinxcontrib-jsmath==1.0.1; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.6"
+sphinxcontrib-qthelp==1.0.3; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.6"
+sphinxcontrib-serializinghtml==1.1.5; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.6"
 sphinxcontrib-tikz==0.4.15
 tabulate==0.8.9
-tomli==1.2.2
-urllib3==1.26.7
-websockets==10.1
+tomli==1.2.2; python_version >= "3.7"
+tqdm==4.62.3; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.6"
+twine==3.7.0; python_version >= "3.6"
+urllib3==1.26.7; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.6.0" and python_version < "4" and python_version >= "3.6"
+webencodings==0.5.1; python_version >= "3.6"
+websockets==10.1; python_version >= "3.8" and python_version < "3.11"
+zipp==3.6.0; python_version >= "3.6"

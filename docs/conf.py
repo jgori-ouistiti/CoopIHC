@@ -38,9 +38,9 @@ extensions = [
     "sphinxcontrib.tikz",
     "sphinx_rtd_theme",
     "sphinx.ext.githubpages",
-    "sphinx.ext.autosummary", 
-    "sphinx.ext.viewcode", 
-    ]
+    "sphinx.ext.autosummary",
+    "sphinx.ext.viewcode",
+]
 
 autosummary_generate = True  # Turn on sphinx.ext.autosummary
 autodoc_inherit_docstrings = True  # If no docstring, inherit from base class

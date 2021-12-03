@@ -10,8 +10,8 @@ from coopihc.space.StateElement import StateElement
 class State(OrderedDict):
     """The container that defines states.
 
-    :param *args: Same as collections.OrderedDict
-    :param **kwargs: Same as collections.OrderedDict
+    :param \*args: Same as collections.OrderedDict
+    :param \*\*kwargs: Same as collections.OrderedDict
     :return: A state Object
     :rtype: State
 
@@ -46,9 +46,12 @@ class State(OrderedDict):
 
         An example for filterdict's structure is as follows:
 
-        ordereddict = OrderedDict(
-        {"substate1": OrderedDict({"substate_x": 0, "substate_w": 0})}
+        .. code-block:: python
+
+            ordereddict = OrderedDict(
+            {"substate1": OrderedDict({"substate_x": 0, "substate_w": 0})}
             )
+
         will filter out every component but the first component (index 0) for substates x and w contained in substate_1.
 
         :param str mode: Wheter the filtering operates on the 'values' or on the 'spaces'

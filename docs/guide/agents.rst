@@ -20,20 +20,20 @@ An agent is a combination of 4 components:
 
 BaseAgent
 -----------------
-All agents are derived from the :ref:`BaseAgent <base-agent-class-label>` class to ensure the compatibility with the :doc:`Bundle class<bundles>`.
+All agents are derived from the :py:class:`BaseAgent <coopihc.agents.BaseAgent.BaseAgent>` class to ensure the compatibility with the :py:mod:`Bundle <coopihc.bundle>` Module.
 
 
-When instantiating a BaseAgent, or any other agent for that matter, the modeler should provide
+When instantiating a :py:class:`BaseAgent <coopihc.agents.BaseAgent.BaseAgent>`, or any other agent for that matter, the modeler should provide
 
     * The role of the agent, ('user' or 'assistant')
-    * The state of the agent (defaults to an empty state)
-    * The policy of the agent (defaults to a :ref:`BasePolicy<base-policy-label>`)
-    * An observation engine (defaults to a :ref:`RuleObservationEngine<rule-observation-engine-label>` if not provided)
-    * An inference engine (defaults to an :ref:`BaseInferenceEngine<base-inference-engine-label>` if not provided)
+    * The :py:class:`State <coopihc.spaces.State.State>` of the agent (defaults to an empty state)
+    * The :py:mod:`Policy <coopihc.policy>` of the agent (defaults to a :py:class:`BasePolicy<coopihc.policy.BasePolicy.BasePolicy>`)
+    * An :py:mod:`Observation Engine <coopihc.observation>` (defaults to a :py:class:`RuleObservationEngine<coopihc.policy.RuleObservationEngine.RuleObservationEngine>` if not provided)
+    * An :py:mod:`Inference Engine <coopihc.inference>` (defaults to an :py:class:`BaseInferenceEngine<coopihc.inference.BaseInferenceEngine.BaseInferenceEngine>` if not provided)
 
-Below is an example of instantiating a user with a BaseAgent.
+Below is an example of instantiating a user with a py:class:`BaseAgent <coopihc.agents.BaseAgent.BaseAgent>`.
 
-.. literalinclude:: ../../coopihc/agents/__init__.py
+.. literalinclude:: ../../coopihc/examples/simple_examples/agents_examples.py
    :language: python
    :linenos:
    :start-after: [start-baseagent-init]
@@ -43,23 +43,6 @@ Below is an example of instantiating a user with a BaseAgent.
 Usually, it makes sense to define an entirely new agent, by subclassing the BaseAgent class, as in the :ref:`Quickstart example<quickstart-define-user-label>`.
 
 
-.. _base-agent-class-label:
-
-.. autoclass:: coopihc.agents.BaseAgent
-    :members:
-
 
 Agents Zoo
-------------------------
-
-This list is ongoing
-
-.. autoclass:: coopihc.agents.GoalDrivenDiscreteUser
-
-.. autoclass:: coopihc.agents.LQRController
-
-.. autoclass:: coopihc.agents.FHDT_LQRController
-
-.. autoclass:: coopihc.agents.IHDT_LQRController
-
-.. autoclass:: coopihc.agents.IHCT_LQGController
+----------------

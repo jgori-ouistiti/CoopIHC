@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "coopihc"
+version = "0.0.4"
+description = "Two-agent component-based interaction environments for computational HCI with Python"
+authors = ["Julien Gori"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.11"
+tabulate = '*'
+numpy = '^1'
+coopihczoo = '*'
+matplotlib ='^3'
+scipy = '^1'
+
+
+[[tool.poetry.source]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+secondary = true
+
+
+[tool.poetry.dev-dependencies]
+Sphinx = '^4.3'
+sphinx-rtd-theme= '^1'
+sphinxcontrib-tikz = "^0.4.15"
+twine = "^3.7.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

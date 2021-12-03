@@ -2,39 +2,39 @@
 
 The Interaction Model
 ======================
-This library was written with the idea that the successful interaction between a human and a computer is essentially a problem of **cooperation**.
+This library builds on the idea that the successful interaction between a human and a computer is in many cases a problem of **cooperation**.
 
 Commitments and Assumptions
 -----------------------------
 
-We make the following theoretical commitments:
+In designing the library, we made the following theoretical commitments:
 
-* Users go through states (e.g. preferences, mental fatigue)
+* Users go through states, which represent a given user context (e.g. a set of preferences or abilities that may evolve over time);
 
-* User observations are incomplete
+* User observations can be incomplete, noisy;
 
-* Communication between users and computers benefits interaction
+* Users are (imperfectly) rational, meaning they are assumed to be maximizing a utility functions under certain constraints. In particular, user behavior is driven by scalar reward maximization;
 
-* Users are (imperfectly) rational
 
-* Users maintain internal models of their environment
+* Users may maintain internal models of their environment;
 
-* Systems may also, and will usually benefit from maintaining internal models of the user
+* Systems may also, and will usually benefit from maintaining internal models of the user;
 
-* Users and systems adapt to each other
-
-* User behavior is driven by scalar rewards
+* Users and systems may adapt to each other;
 
 * Efficient system behavior can be attained by maximizing scalar rewards
 
-* At a high level, the user model and systems are symmetric and characterized by an ability to make observations, make inferences and produce actions.
+The result is a symmetric, stateful characterization of models of both users and artificial systems which have the ability to make observations, perform inferences and produce actions as a result.
 
 
-At a high level, *CoopIHC* builds on a model of user assistance (See Fig. 1), where a user and an assistant work together to drive the task toward a goal state:
+User Assistance Model
+-----------------------
 
-* There is a task which can be represented by a state :math:`s_T`,
-* An user wants to drive the task to a goal state,
-* An assistant is here to help (assist) the user achieve this.
+At a high level, *CoopIHC* builds on a model of user assistance (`See Figure <interaction_model_fig_label_>`_), where a user and an assistant work together to drive the task toward a goal state:
+
+* A task is represented by a state :math:`s_T`. Accomplishing that task usually means driving the task state to a goal state.
+* An user, who wants to drive the task to a goal state, and can issue some actions.
+* An assistant, who is here to help (assist) the user drive the task state to a goal state, and can issue actions as well
 
 The model further assumes that the user and assistant act sequentially (one after the other).
 
@@ -53,10 +53,10 @@ The model further assumes that the user and assistant act sequentially (one afte
 
 Both the user and assistant (generically referred to as **agents**) are fundamentally described by their ability to produce observations, make inferences and take actions:
 
-1. They have an internal state (:math:`s_U` and :math:`s_A` for respectively the user and the assistant), which stores e.g. goals, preferences, model parameters.
-2. They observe (perfectly or partially) the various states of the  interaction model. When making an observation (:math:`o_U` and :math:`o_A`), the agents receive a reward e.g. because that observation may take some time to be created (negative reward), or satisfies a curiosity (positive reward).
-3. Based on these observations, they make inferences that change their internal states. The agents again receive a reward, since there can be a cost to inferring (e.g. mental effort, computational resources) or a benefit (e.g. satisfaction).
-4. Based on their internal states and their observations, they take actions (:math:`a_O` and :math:`a_A`) via a policy. Those actions may have an effect on the other states (e.g. the task state) of the interaction model.
+1. They have an internal state (:math:`s_U` and :math:`s_A` for respectively the user and the assistant), which may be used to store e.g. goals, preferences, model parameters.
+2. They observe (perfectly or partially) the various states of the  interaction model. When making an observation, the agents may receive a reward to model some positive or negative effects of observation e.g. observations may take some time to be created (negative reward), or may satisfy a curiosity (positive reward).
+3. Based on these observations, agents make inferences that change their internal states. The agents again may receive a reward, to account for situations where there is a cost to inferring (e.g. mental effort, computational resources) or a benefit (e.g. satisfaction).
+4. Based on their internal states and their observations, agents take actions as dictated by a policy. Those actions may have an effect on the other states (e.g. the task state) of the interaction model.
 
 
 
@@ -69,40 +69,50 @@ Both the user and assistant (generically referred to as **agents**) are fundamen
 
 .. note::
 
-    The sequential nature of actions is not a strong assumption: simultaneous play can always be achieved by delaying the effect of the one's action to the other's turn. Furthermore, it can be argued that no real simultaneous play is ever possible.
+    The sequential nature of actions is not a strong assumption: simultaneous play can always be achieved by delaying the effect of one's action to the other's turn. It can also be argued that no real simultaneous play is ever possible.
 
 
 Library Architecture
 ------------------------
 
-The resulting architecture of the library that integrates the interaction model is displayed below.
+The model presented before rests on the ideas of agents with states, with abilities to make observations, perform inferences and take actions. The library integrates these ideas by giving and providing a simple and normalized way of expressing each of those components. The result is that various components can be used interchangeably.
+The resulting architecture of the library is displayed below.
 
-* All states of the model are joined into a single **game state**.
-* Observations are produced by **observation engines** from the game state.
-* Inferences are made by **inference engines**, using the current agent's internal state and observation as input.
-* Actions are taken by **policies**, using the current agent's internal state and observation as input.
-* User and assistant actions make the task transition from one state to another.
-* All these components may issue rewards, which are collected.
-
-
-.. _interaction_model_fig_label:
 
 .. figure::  images/lib_architecture.png
     :width: 100%
 
-    The general architecture of an interaction context as described in *CoopIHC*
+    The general architecture of an interaction context in *CoopIHC*
+
+Key components of the library are the following:
+
+* All states of the model, as well as the last actions produced by both agents are joined into a single **game state**;
+
+* Observations are produced by **observation engines**, applying some transformation to the entire game state.
+
+* Inferences are performed by **inference engines**, using the current agent's internal state and observations as input.
+
+* Actions are taken by **policies**, using the current agent's internal state and observation as input.
+
+* User and assistant actions make the task state transition to a new state. If the goal state is reached, the task finishes.
+
+* All these components may issue rewards, which are collected by both agents.
+
 
 When using the library, you will need to specify states as well as observation engines, inference engines and policies. You can reuse existing components if available or implement your own.
 
 Decision-Theoretic Models
 --------------------------
-The model of user assistance can be formulated as a Partially Observable Stochastic Game (POSG). POSGs are one of the most general models of decision making and represent sequential decision making for *multiple agents* in a *stochastic* environment with *imperfect observability*. POSGs admit many special cases (see Table 1), including the well-known MDP. The interaction context can be expressed as each one of these using an appropriate :doc:`bundle`.
+The model of user assistance presented above can be formulated as a Partially Observable Stochastic Game (POSG). The POSG ia a very general model of decision making. It describes sequential decision making for *multiple agents* in a *stochastic* environment with *imperfect observability*. POSG simplify to many special cases (see Table 1 for some examples), including the well-known MDP. 
+This means that problems of interaction can be converted to generic decision making models, by using an appropriate :py:mod:`Bundle <coopihc.bundle>`, for which generic off-the-shelf solutions may already exist.
+
 
 
 
 .. list-table:: POSG and subclasses of POSG
     :widths: auto
     :header-rows: 1
+    :align: center
 
     * - Observation
       - Single-Agent
