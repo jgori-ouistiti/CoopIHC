@@ -6,10 +6,10 @@ authors = ["Julien Gori"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = ">=3.8,<3.11"
 tabulate = '*'
 numpy = '^1'
-coopihc-zoo = '*'
+coopihczoo = '*'
 matplotlib ='^3'
 scipy = '^1'
 
