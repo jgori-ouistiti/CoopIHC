@@ -1,12 +1,9 @@
--i https://testpypi.python.org/pypi
 absl-py==1.0.0
 alabaster==0.7.12
 Babel==2.9.1
 certifi==2021.10.8
 charset-normalizer==2.0.8
 cloudpickle==2.0.0
-coopihc==0.0.2
-coopihc-zoo==0.0.2
 cycler==0.11.0
 fonttools==4.28.2
 gym==0.21.0
@@ -58,3 +55,5 @@ tqdm==4.62.3
 typing_extensions==4.0.1
 urllib3==1.26.7
 websockets==10.1
+-i https://testpypi.python.org/pypi
+coopihc-zoo==0.0.2
