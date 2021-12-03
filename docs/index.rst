@@ -16,8 +16,8 @@ Welcome to CoopIHC's documentation!
 
 *CoopIHC*, pronounced 'kopik', is a Python module that provides a common basis for describing **computational Human Computer Interaction (HCI)** contexts, mostly targeted at expressing models of users and intelligent assistants.
 
-1. It provides a common conceptual and practical reference, which facilitates reusing and extending other researcher's work. Some examples that use *CoopIHC* can be found in the `CoopIHC-Zoo <https://jgori-ouistiti.github.io/CoopIHC-zoo/>`_. These full examples, or parts thereof, can be re-used seemlessly by any user of *CoopIHC*.
-2. It can help design intelligent assistants by translating an interactive context into a problem that can be solved (via other methods). For example, you can wrap a CoopIHC ``Bundle`` into an environment that is compatible with `gym <https://gym.openai.com/>`_ and use off-the-shelf Deep Reinforcement Learning algorithms to train a policy for an intelligent assistant.
+1. It provides a common conceptual and practical reference, which facilitates reusing and helps extending other researcher's work. Some examples that use *CoopIHC* can be found in the `CoopIHC-Zoo <https://jgori-ouistiti.github.io/CoopIHC-zoo/>`_. These full examples, or parts thereof, can be re-used easily by a *CoopIHC* user.
+2. It can help design intelligent assistants. For example, you can wrap a CoopIHC :py:mod:`Bundle <../coopihc.bundle>` into an environment that is compatible with `gym <https://gym.openai.com/>`_ and use off-the-shelf Deep Reinforcement Learning algorithms to train a policy for an intelligent assistant.
 
 
 
@@ -27,7 +27,7 @@ The philosophy of *CoopIHC* is to separate interactive systems into three compon
 2. A **user**, which is either a real user *or* a synthetic user model,
 3. An **assistant** agent which helps the user accomplish its task.
 
-and **bundling** them back together using so-called ``Bundles``, depending on the needs of the end-user of CoopIHC:
+and **bundling** them back together using so-called :py:mod:`Bundle <../coopihc.bundle>`. Different bundles exist for many different cases:
 
 * Evaluate user (synthetic or real) coupled with an intelligent assistant,
 * Train a user model to obtain a realistic synthetic user model,
