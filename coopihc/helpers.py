@@ -1,12 +1,14 @@
 import inspect
 import numpy
 import collections
-import gym
+
+from coopihc.space.Space import Space
 
 
+# not verified
 def hard_flatten(l):
     out = []
-    if isinstance(l, (gym.spaces.Dict, gym.spaces.Tuple)):
+    if isinstance(l, (Space)):
         l = l.spaces
     if isinstance(l, (collections.OrderedDict, dict)):
         l = list(l.values())
@@ -18,7 +20,7 @@ def hard_flatten(l):
                 out.extend(hard_flatten(item.tolist()))
             elif isinstance(item, collections.OrderedDict):
                 out.extend(hard_flatten(list(item.values())))
-            elif isinstance(item, (gym.spaces.Dict, gym.spaces.Tuple)):
+            elif isinstance(item, (Space)):
                 out.extend(hard_flatten(item.spaces))
             else:
                 out.append(item)

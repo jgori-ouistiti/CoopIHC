@@ -12,6 +12,8 @@ numpy = '^1'
 coopihczoo = '*'
 matplotlib ='^3'
 scipy = '^1'
+gym = "^0.21.0"
+PyYAML = "^6.0"
 
 
 [[tool.poetry.source]]
