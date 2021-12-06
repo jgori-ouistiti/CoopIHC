@@ -5,17 +5,43 @@ import scipy.linalg
 # Finite Horizon Discrete Time Controller
 # Outdated
 class FHDT_LQRController(LQRController):
+    """Finite Horizon Discrete Time LQR
+
+    A Finite Horizon (i.e. planning for N steps) Discrete Time implementation of the LQR controller.
+
+    :param N: Horizon (steps)
+    :type N: int
+    :param role: "user" or "assistant"
+    :type role: string
+    :param Q: see :py:class:`LQRController <coopihc.agents.lqrcontrollers.LQRController.LQRController>`
+    :type Q: numpy.ndarray
+    :param R: see :py:class:`LQRController <coopihc.agents.lqrcontrollers.LQRController.LQRController>`
+    :type R: numpy.ndarray
+    :param Gamma: see :py:class:`LQRController <coopihc.agents.lqrcontrollers.LQRController.LQRController>`
+    :type Gamma: float
+    """
+
     def __init__(self, N, role, Q, R, Gamma):
         self.N = N
         self.i = 0
         super().__init__(role, Q, R, gamma=Gamma)
         self.timespace = "discrete"
 
-    def reset(self, dic=None):
+    # untested, old version below
+    def reset(self):
+        """reset"""
         self.i = 0
-        super().reset(dic)
+
+    # def reset(self, dic=None):
+    #
+    #     self.i = 0
+    #     super().reset(dic)
 
     def finit(self):
+        """finit
+
+        Compute feedback gain from A, B, Q, R matrices.
+        """
         self.K = []
         task = self.bundle.task
         A, B = task.A, task.B

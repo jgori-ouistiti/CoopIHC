@@ -11,7 +11,13 @@ from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 
 
 class ExampleUser(BaseAgent):
-    """An agent that handles the ExamplePolicy."""
+    """An Example of a User.
+
+    An agent that handles the ExamplePolicy, has a single 1d state, and has the default observation and inference engines.
+    See the documentation of the :py:mod:`BaseAgent <coopihc.agents.BaseAgent.BaseAgent>` class for more details.
+
+    :meta public:
+    """
 
     def __init__(self, *args, **kwargs):
 
@@ -45,6 +51,11 @@ class ExampleUser(BaseAgent):
             **kwargs
         )
 
-    # Override default behaviour of BaseAgent which would randomly sample new goal values on each reset. Here for purpose of demonstration we impose a goal = 4
     def reset(self, dic=None):
+        """reset
+
+        Override default behaviour of BaseAgent which would randomly sample new goal values on each reset. Here for purpose of demonstration we impose a goal = 4
+
+        :meta public:
+        """
         self.state["goal"]["values"] = 4

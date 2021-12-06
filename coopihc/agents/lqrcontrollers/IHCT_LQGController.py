@@ -4,7 +4,7 @@ import gym.spaces
 
 from coopihc.agents.BaseAgent import BaseAgent
 from coopihc.observation.RuleObservationEngine import RuleObservationEngine
-from coopihc.observation.utils import observation_linear_combination 
+from coopihc.observation.utils import observation_linear_combination
 from coopihc.observation.utils import additive_gaussian_noise
 from coopihc.space.State import State
 from coopihc.space.StateElement import StateElement
@@ -12,14 +12,54 @@ from coopihc.policy.LinearFeedback import LinearFeedback
 from coopihc.inference.ContinuousKalmanUpdate import ContinuousKalmanUpdate
 
 
-
 # Infinite Horizon Continuous Time LQG controller, based on Phillis 1985
 class IHCT_LQGController(BaseAgent):
-    """An Infinite Horizon (Steady-state) LQG controller, based on Phillis 1985, using notations from Qian 2013."""
+    """Infinite Horizon Continuous Time LQ Gaussian Controller.
+
+    An Infinite Horizon (Steady-state) LQG controller, based on Phillis 1985 [Phillis1985]_, using notations from Qian 2013 [Qian2013]_.
+
+    .. math::
+
+        \\begin{align*}
+        dx & = (Ax + Bu)dt + Fxd \\beta + Yud \\gamma + \\Gamma d\omega \\\\
+        dy & = Cxdt + Dd\\xi \\\\
+        d\\hat{x} & = (A \\hat{x} + Bu) dt + K (dy - C\\hat{x}dt) \\\\
+        u & = -L\\hat{x} \\\\
+        \\tilde{x} & = x - \\hat{x} \\\\
+        J & \simeq \\mathbb{E} [\\tilde{x}^T U \\tilde{x} + x^TQx + u^TRu]
+        \\end{align*}
+
+    .. [Phillis1985] Phillis, Y. "Controller design of systems with multiplicative noise." IEEE Transactions on Automatic Control 30.10 (1985): 1017-1019. `Doc here<https://ieeexplore.ieee.org/abstract/document/1103828>`
+    .. [Qian2013] Qian, Ning, et al. "Movement duration, Fitts's law, and an infinite-horizon optimal feedback control model for biological motor systems." Neural computation 25.3 (2013): 697-724. `Doc here<https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.296.4312&rep=rep1&type=pdf>`
+
+    .. warning:: 
+
+        watch out for :math:`\\gamma` and :math:`\\Gamma`
+
+    :param role: "user" or "assistant"
+    :type role: string
+    :param timestep: duration of timestep
+    :type timestep: float
+    :param Q: State cost
+    :type Q: numpy.ndarray
+    :param R: Control cost
+    :type R: numpy.ndarray
+    :param U: Estimation error cost
+    :type U: numpy.ndarray
+    :param C: Observation matrix
+    :type C: numpy.ndarray
+    :param Gamma: Additive independent Noise weight
+    :type Gamma: numpy.ndarray
+    :param D: Observation noise matrix
+    :type D: numpy.ndarray
+    :param noise: whether or not to have, defaults to "on"
+    :type noise: str, optional
+    """
 
     def __init__(
         self, role, timestep, Q, R, U, C, Gamma, D, *args, noise="on", **kwargs
     ):
+
         self.C = C
         self.Gamma = numpy.array(Gamma)
         self.Q = Q
@@ -165,6 +205,13 @@ class IHCT_LQGController(BaseAgent):
         )
 
     def finit(self):
+        """finit
+
+        1. Create an :math:`\\hat{x}` state;
+        2. attach the model dynamics to the inference engine
+        3. compute K and L;
+        4. set K and L in inference engine and policy
+        """
         task = self.bundle.task
         # ---- init xhat state
         self.state["xhat"] = copy.deepcopy(self.bundle.task.state["x"])
@@ -189,15 +236,22 @@ class IHCT_LQGController(BaseAgent):
         self.inference_engine.set_K(self.K)
         self.policy.set_feedback_gain(self.L)
 
-    def reset(self, dic=None):
-        if dic is None:
-            super().reset()
+    # untested
+    def reset(self):
+        pass
 
-        if dic is not None:
-            super().reset(dic=dic)
+    # def reset(self, dic=None):
+    #     if dic is None:
+    #         super().reset()
+
+    #     if dic is not None:
+    #         super().reset(dic=dic)
 
     class _MContainer:
-        """The purpose of this container is to facilitate common manipulations of the matrices of the LQG problem, as well as potentially storing their evolution. (not implemented yet)"""
+        """Matrix container
+
+        The purpose of this container is to facilitate common manipulations of the matrices of the LQG problem, as well as potentially storing their evolution. (not implemented yet)
+        """
 
         def __init__(self, A, B, C, D, G, Gamma, Q, R, U):
             self.A = A
@@ -229,6 +283,17 @@ class IHCT_LQGController(BaseAgent):
             )
 
     def _compute_Kalman_matrices(self, matrices, N=20):
+        """Compute K and L
+
+        K and L are computed according to the algorithm described in [Qian2013]_ with some minor tweaks. K and L are obtained recursively, where more and more precise estimates are obtained. At first N iterations are performed, if that fails to converge, N is grown as :math:`N^{1.3}` and K and L are recomputed.
+
+        :param matrices: (A, B, C, D, G, Gamma, Q, R, U)
+        :type matrices: tuple(numpy.ndarray)
+        :param N: max iterations of the algorithm on first try, defaults to 20
+        :type N: int, optional
+        :return: (K, L)
+        :rtype: tuple(numpy.ndarray, numpy.ndarray)
+        """
         A, B, C, D, G, Gamma, Q, R, U = matrices
         Y = B @ numpy.array(Gamma).reshape(1, -1)
         Lnorm = []
@@ -269,7 +334,27 @@ class IHCT_LQGController(BaseAgent):
         return K, L
 
     def _LinRicatti(self, A, B, C):
-        """Returns norm of an equation of the form AX + XA.T + BXB.T + C = 0"""
+        """_LinRicatti [summary]
+
+        Returns norm of an equation of the form
+
+        .. math ::
+
+            \\begin{align}
+            AX + XA.T + BXB.T + C = 0
+            \\end{align}
+
+
+
+        :param A: See Equation above
+        :type A: numpy.ndarray
+        :param B: See Equation above
+        :type B: numpy.ndarray
+        :param C: See Equation above
+        :type C: numpy.ndarray
+        :return: X, residue
+        :rtype: tuple(numpy.ndarray, float)
+        """
         #
         n, m = A.shape
         nc, mc = C.shape
@@ -291,6 +376,14 @@ class IHCT_LQGController(BaseAgent):
     # Counting decorator
 
     def counted_decorator(f):
+        """counted_decorator
+
+        Decorator that counts the number of times function f has been called
+
+        :param f: decorated function
+        :type f: function
+        """
+
         def wrapped(*args, **kwargs):
             wrapped.calls += 1
             return f(*args, **kwargs)
@@ -300,6 +393,23 @@ class IHCT_LQGController(BaseAgent):
 
     @counted_decorator
     def _check_KL(self, Knorm, Lnorm, K, L, matrices):
+        """Check K and L convergence
+
+        Checks whether K and L have converged, by looking at the variations over the last 5 iterations.
+
+        :param Knorm: list of the norms of K on each iteration
+        :type Knorm: list(numpy.array)
+        :param Lnorm: list of the norms of L on each iteration
+        :type Lnorm: list(numpy.array)
+        :param K: See Equation in class docstring
+        :type K: numpy.array
+        :param L: See Equation in class docstring
+        :type L: numpy.array
+        :param matrices: Matrix container
+        :type matrices: _MContainer
+        :return: K and L
+        :rtype: tuple(numpy.ndarray, numpy.ndarray)
+        """
         average_delta = numpy.convolve(
             numpy.diff(Lnorm) + numpy.diff(Knorm),
             numpy.ones(5) / 5,

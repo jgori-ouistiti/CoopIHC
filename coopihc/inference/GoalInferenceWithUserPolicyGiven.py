@@ -8,11 +8,13 @@ from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 
 # The usermodel is not updated with this assistant
 class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
-    """An Inference Engine used by an assistant to infer the goal of an user.
+    """GoalInferenceWithUserPolicyGiven
 
-    The inference is based on an user_model which has to be provided to this engine.
+    An inference Engine used by an assistant to infer the 'goal' of a user.
+    The inference is based on a model of the user policy, which has to be provided to this engine.
 
-    :meta public:
+    :param \*args: policy model
+    :type \*args: :py:mod`Policy<coopihc.policy`
     """
 
     def __init__(self, *args):
@@ -25,6 +27,13 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
         self.render_tag = ["plot", "text"]
 
     def attach_policy(self, policy):
+        """attach_policy
+
+        Attach a policy to the engine from which it can sample.
+
+        :param policy: a policy
+        :type policy: :py:mod`Policy<coopihc.policy`
+        """
         if not policy.explicit_likelihood:
             print(
                 "Warning: This inference engine requires a policy defined by an explicit likelihood"
@@ -33,6 +42,13 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
         self.user_policy_model = policy
 
     def attach_set_theta(self, set_theta):
+        """attach_set_theta
+
+        The set of possible 'goal's.
+
+        :param set_theta: dictionnary
+        :type set_theta: dictionnary
+        """
         self.set_theta = set_theta
 
     def render(self, *args, **kwargs):
@@ -130,10 +146,12 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
             print("beliefs", beliefs)
 
     def infer(self):
-        """Update the substate 'beliefs' from the internal state. Generate candidate observations for each potential target, evaluate its likelihood and update the prior to form the posterior. Normalize the posterior and return the new state.
+        """infer
 
-        :return: new internal state (OrderedDict), reward associated with inferring (float)
+        Update the substate 'beliefs' from the internal state. Generate candidate observations for each potential target, evaluate its likelihood and update the prior to form the posterior. Normalize the posterior and return the new state.
 
+        :return: (new internal state, reward)
+        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float)
         """
 
         if self.user_policy_model is None:

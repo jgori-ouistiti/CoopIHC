@@ -6,18 +6,22 @@ import matplotlib.pyplot as plt
 
 
 class _Bundle:
+    """Main class for bundles.
 
-    """A bundle combines a task with an user and an assistant. All bundles are obtained by subclassing this main _Bundle class.
+    Main class for bundles. This class is subclassed by Bundle, which defines the interface with which to interact.
 
-    A bundle will create the ``game_state`` by combining three states of the task, the user and the assistant as well as the turn index. It also takes care of adding the assistant action substate to the user state and vice-versa.
-    It also takes care of rendering each of the three component in a single place.
+    A bundle combines a task with a user and an assistant. The bundle creates the ``game_state`` by combining the task, user and assistant states with the turn index and both agent's actions.
 
-    Bundle subclasses should only have to redefine the step() and reset() methods.
+    The bundle takes care of all the messaging between classes, making sure the gamestate and all individual states are synchronized at all times.
+
+    The bundle implements a forced reset mechanism, where each state of the bundle can be forced to a particular state via a dictionnary mechanism (see :py:func:reset)
+
+    The bundle also takes care of rendering each of the three component in a single place.
 
 
-    :param task: (coopihc.interactiontask.InteractionTask) A task, which is a subclass of InteractionTask
-    :param user: (coopihc.agents.BaseAgent) an user, which is a subclass of BaseAgent
-    :param assistant: (coopihc.agents.BaseAgent) an assistant, which is a subclass of BaseAgent
+    :param task: (:py:class:`coopihc.interactiontask.InteractionTask.InteractionTask`) A task that inherits from ``InteractionTask``
+    :param user: (:py:class:`coopihc.agents.BaseAgent.BaseAgent`) a user which inherits from ``BaseAgent``
+    :param assistant: (:py:class:`coopihc.agents.BaseAgent.BaseAgent`) an assistant which inherits from ``BaseAgent``
 
     :meta public:
     """
@@ -69,11 +73,25 @@ class _Bundle:
         self.playspeed = 0.1
 
     def __repr__(self):
+        """__repr__
+
+        Pretty representation for Bundles.
+
+        :return: pretty bundle print
+        :rtype: string
+        """
         return "{}\n".format(self.__class__.__name__) + yaml.safe_dump(
             self.__content__()
         )
 
     def __content__(self):
+        """__content__
+
+        Custom class representation
+
+        :return: class repr
+        :rtype: dictionnary
+        """
         return {
             "Task": self.task.__content__(),
             "User": self.user.__content__(),
@@ -82,6 +100,13 @@ class _Bundle:
 
     @property
     def turn_number(self):
+        """turn_number
+
+        The turn number in the game (0 to 3)
+
+        :return: turn number
+        :rtype: numpy.ndarray
+        """
         return self.game_state["turn_index"]["values"][0]
 
     @turn_number.setter
@@ -90,16 +115,45 @@ class _Bundle:
         self.game_state["turn_index"]["values"] = numpy.array(value)
 
     def reset(self, turn=0, task=True, user=True, assistant=True, dic={}):
-        """Reset the bundle.
+        """Reset bundle.
 
-        When subclassing Bundle, make sure to call super().reset() in the new reset method.
+        1. Reset the game and start at a specific turn number.
+        2. select which components to reset
+        3. forced reset mechanism using dictionnaries
 
-        :param dic: (dictionnary) Reset the bundle with a game_state
 
-        :return: (list) Flattened game_state
+        Example:
 
-        :meta private:
+        .. code-block:: python
+
+            new_target_value = self.game_state["task_state"]["targets"]
+            new_fixation_value = self.game_state["task_state"]["fixation"]
+            )
+            reset_dic = {"task_state": {"targets": new_target_value, "fixation": new_fixation_value}}
+            self.reset(dic=reset_dic, turn = 1)
+
+        Will set the substates "targets" and "fixation" of state "task_state" to some value.
+
+
+        .. note ::
+
+            If subclassing _Bundle, make sure to call super().reset() in the new reset method.
+
+
+        :param turn: game turn number, defaults to 0
+        :type turn: int, optional
+        :param task: reset task?, defaults to True
+        :type task: bool, optional
+        :param user: reset user?, defaults to True
+        :type user: bool, optional
+        :param assistant: reset assistant?, defaults to True
+        :type assistant: bool, optional
+        :param dic: reset_dic, defaults to {}
+        :type dic: dict, optional
+        :return: new game state
+        :rtype: :py:class:`State<coopihc.space.State.State>`
         """
+
         if task:
             task_dic = dic.get("task_state")
             task_state = self.task._base_reset(dic=task_dic)
@@ -127,6 +181,18 @@ class _Bundle:
         return self.game_state
 
     def step(self, *args, go_to_turn=None, **kwargs):
+        """Play a round
+
+        Play a round of the game. A round consists in 4 turns. If go_to_turn is not None, the round is only played until that turn.
+        If a user action and assistant action are passed as arguments, then these are used as actions to play the round. Otherwise, these actions are sampled from each agent's policy.
+
+        :param \*args: (user action, assistant action)
+        :type: any
+        :param go_to_turn: turn at which round stops, defaults to None
+        :type go_to_turn: int, optional
+        :return: gamestate, reward, game finished flag
+        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, collections.OrderedDict, boolean)
+        """
         # step() was called
         if not args:
             user_action, assistant_action = None, None
@@ -220,12 +286,16 @@ class _Bundle:
         return self.game_state, rewards, False
 
     def render(self, mode, *args, **kwargs):
-        """Combines all render methods.
+        """render
 
-        :param mode: (str) text or plot
+        Combines all render methods.
+
+        :param mode: "text" or "plot"
+        :param type: string
 
         :meta public:
         """
+
         self.rendered_mode = mode
         if "text" in mode:
             print("Task Render")
@@ -309,20 +379,22 @@ class _Bundle:
             self.assistant.render(None, mode=mode, *args, **kwargs)
 
     def close(self):
-        """Close bundle. Call this after the bundle returns is_done True.
+        """close
 
-        :meta public:
+        Close the bundle once the game is finished.
         """
+
         if self.active_render_figure:
             plt.close(self.fig)
             self.active_render_figure = None
 
     def _user_first_half_step(self):
-        """This is the first half of the user step, where the operaror observes the game state and updates its state via inference.
+        """_user_first_half_step
 
-        :return: user_obs_reward, user_infer_reward (float, float): rewards for the observation and inference process.
+        Turn 1, where the user observes the game state and updates its state via inference.
 
-        :meta public:
+        :return: user observation and inference reward
+        :rtype: tuple(float, float)
         """
 
         if not self.kwargs.get("onreset_deterministic_first_half_step"):
@@ -344,13 +416,15 @@ class _Bundle:
         return user_obs_reward, user_infer_reward
 
     def _user_second_half_step(self, user_action):
-        """This is the second half of the user step. The operaror takes an action, which is applied to the task leading to a new game state.
+        """_user_second_half_step
 
-        :param user_action: (list) user action
+        Turn 2, where the operaror takes an action.
 
-        :return: task_reward, is_done (float, bool): rewards returned by the task and boolean that determines whether the task is finished.
+        :param user_action: user action
+        :param type: Any
 
-        :meta public:
+        :return: task reward, task done?
+        :rtype: tuple(float, boolean)
         """
 
         # Play user's turn in the task
@@ -362,13 +436,13 @@ class _Bundle:
         return task_reward, is_done
 
     def _assistant_first_half_step(self):
-        """This is the first half of the assistant step, where the assistant observes the game state and updates its state via inference.
+        """_assistant_first_half_step
 
-        :return: assistant_obs_reward, assistant_infer_reward (float, float): rewards for the observation and inference process.
+        Turn 3, where the assistant observes the game state and updates its state via inference.
 
-        :meta public:
+        :return: assistant observation and inference reward
+        :rtype: tuple(float, float)
         """
-
         (
             assistant_obs_reward,
             assistant_infer_reward,
@@ -377,13 +451,15 @@ class _Bundle:
         return assistant_obs_reward, assistant_infer_reward
 
     def _assistant_second_half_step(self, assistant_action):
-        """This is the second half of the assistant step. The assistant takes an action, which is applied to the task leading to a new game state.
+        """_assistant_second_half_step
 
-        :param assistant_action: (list) assistant action
+        Turn 4, where the assistant takes an action.
 
-        :return: task_reward, is_done (float, bool): rewards returned by the task and boolean that determines whether the task is finished.
+        :param user_action: assistant action
+        :param type: Any
 
-        :meta public:
+        :return: task reward, task done?
+        :rtype: tuple(float, boolean)
         """
         # update action_state
 
@@ -398,13 +474,12 @@ class _Bundle:
         return task_reward, is_done
 
     def _user_step(self, *args):
-        """Combines the first and second half step of the user.
+        """Turns 1 and 2
 
-        :param args: (None or list) either provide the user action or not. If no action is provided the action is determined by the agent's policy using sample()
-
-        :return: user_obs_reward, user_infer_reward, task_reward, is_done (float, float, float, bool) The returns for the two half steps combined.
-
-        :meta public:
+        :param \*args: either provide the user action or not. If no action is provided the action is determined by the agent's policy using sample()
+        :param type: (None or list)
+        :return: user observation, inference, policy and task rewards, game is done flag
+        :return type: tuple(float, float, float, float, bool)
         """
         user_obs_reward, user_infer_reward = self._user_first_half_step()
         try:
@@ -427,13 +502,12 @@ class _Bundle:
         )
 
     def _assistant_step(self, *args):
-        """Combines the first and second half step of the assistant.
+        """Turns 3 and 4
 
-        :param args: (None or list) either provide the assistant action or not. If no action is provided the action is determined by the agent's policy using sample()
-
-        :return: assistant_obs_reward, assistant_infer_reward, task_reward, is_done (float, float, float, bool) The returns for the two half steps combined.
-
-        :meta public:
+        :param \*args: either provide the assistant action or not. If no action is provided the action is determined by the agent's policy using sample()
+        :param type: (None or list)
+        :return: assistant observation, inference, policy and task rewards, game is done flag
+        :return type: tuple(float, float, float, float, bool)
         """
         (
             assistant_obs_reward,
@@ -462,10 +536,30 @@ class _Bundle:
         )
 
     def broadcast_state(self, role, state_key, state):
+        """broadcast state
+
+        Broadcast a state value to the gamestate and update the agent's observation.
+
+        :param role: "user" or "assistant"
+        :type role: string
+        :param state_key: state key in gamestate
+        :type state_key: string
+        :param state: new state value
+        :type state: :py:class:`State<coopihc.space.State.State>`
+        """
         self.game_state[state_key] = state
         getattr(self, role).observation[state_key] = state
 
     def broadcast_action(self, role, action):
+        """broadcast action
+
+        Broadcast an action to the gamestate and update the agent's policy.
+
+        :param role: "user" or "assistant"
+        :type role: string
+        :param action: action
+        :type action: Any
+        """
         # update game state and observations
         if isinstance(action, StateElement):
             getattr(self, role).policy.action_state["action"] = action

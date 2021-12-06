@@ -3,8 +3,15 @@ from collections import OrderedDict
 
 # Base Inference Engine: does nothing but return the same state. Any new inference method can subclass InferenceEngine to have a buffer and add_observation method (required by the bundle)
 class BaseInferenceEngine:
-    """Does nothing but return the same state. Any new inference method can subclass
-    InferenceEngine to have a buffer and add_observation method (required by the bundle)"""
+    """BaseInferenceEngine
+
+    The base Inference Engine from which other engines can be defined. This engine does nothing but return the same state. Any new inference method can subclass ``InferenceEngine`` to have a buffer and ``add_observation`` method (required by the bundle)
+
+    :param buffer_depth: number of observations that are stored, defaults to 1
+    :type buffer_depth: int, optional
+    """
+
+    """"""
 
     def __init__(self, buffer_depth=1):
         self.buffer = None
@@ -13,18 +20,46 @@ class BaseInferenceEngine:
         self.ax = None
 
     def __content__(self):
+        """__content__
+
+        Custom class representation
+
+        :return: representation
+        :rtype: string
+        """
         return self.__class__.__name__
 
     @property
     def observation(self):
+        """observation
+
+        The last observation.
+
+        :return: last observation
+        :rtype: :py:class:`State<coopihc.space.State.State>`
+        """
         return self.buffer[-1]
 
     @property
     def state(self):
+        """state
+
+        The current agent state
+
+        :return: agent state
+        :rtype: :py:class:`State<coopihc.space.State.State>`
+        """
         return self.buffer[-1]["{}_state".format(self.host.role)]
 
     @property
     def action(self):
+        """action
+
+        The agent's last action
+
+        :return: agent action
+        :rtype: :py:class:`State<coopihc.space.State.State>`
+        """
         return self.host.policy.action_state["action"]
 
     @property
@@ -32,9 +67,12 @@ class BaseInferenceEngine:
         return self
 
     def add_observation(self, observation):
-        """add an observation  to a naive buffer.
+        """add observation
 
-        :param observation: verify type.
+        Add an observation to a buffer. If the buffer does not exist, create a naive buffer. The buffer has a size given by buffer length
+
+        :param observation: observation produced by an engine
+        :type observation: :py:class:`State<coopihc.space.State.State>`
         """
 
         if self.buffer is None:
@@ -46,6 +84,17 @@ class BaseInferenceEngine:
 
     # https://stackoverflow.com/questions/1015307/python-bind-an-unbound-method
     def bind(self, func, as_name=None):
+        """bind
+
+        Bind function to the engine with a given name. If as_name is None, then the func name is used.
+
+        :param func: function to bind
+        :type func: function
+        :param as_name: name of resulting method, defaults to None
+        :type as_name: string, optional
+        :return: bound method
+        :rtype: method
+        """
         # print("\n")
         # print(func, as_name)
         if as_name is None:
@@ -55,11 +104,13 @@ class BaseInferenceEngine:
         return bound_method
 
     def infer(self):
-        """The main method of this class.
+        """infer
 
-        Return the new value of the internal state of the agent, as well as the reward associated with inferring the . By default, this inference engine does nothing, and just returns the state.
+        The main method of this class. Return the new value of the internal state of the agent, as well as the reward associated with inferring the state. By default, this inference engine does nothing, and just returns the state with a null reward.
 
-        :return: new_internal_state (OrderedDict), reward (float)
+
+        :return: (new internal state, reward)
+        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float)
         """
         # do something with information inside buffer
 
@@ -75,9 +126,17 @@ class BaseInferenceEngine:
                 return OrderedDict({}), 0
 
     def reset(self):
+        """reset
+
+        Reset the engine (clear buffer)
+        """
         self.buffer = None
 
     def render(self, *args, **kwargs):
+        """render
+
+        Render the engine.
+        """
         mode = kwargs.get("mode")
 
         render_flag = False
