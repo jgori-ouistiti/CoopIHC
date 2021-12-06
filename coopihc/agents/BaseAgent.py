@@ -15,22 +15,27 @@ class BaseAgent(ABC):
 
 
 
-    By default, this class will be initialized with an empty internal state, a BasePolicy with a single 'None' action, a RuleObservationEngine with a BaseUser of BaseAssistant profile, and a BaseInference engine.
+    By default, this class will be initialized with an empty internal ``State``, a ``BasePolicy`` with a single 'None' action, a ``RuleObservationEngine`` with a ``BaseUser`` or ``BaseAssistant`` profile, and a ``BaseInference`` engine.
 
-    You can override some components, e.g. to override the existing policy of an agent, do the following
+    Some things to know:
+
+    * You can override some components, e.g. to override the existing policy of an agent named ``MyNewUser``, you can do the following
 
     .. code-block:: python
 
         changed_policy_user = MyNewUser(agent_policy = some_other_policy)
 
-    In that case, MyNewUser class which had been defined with some specific policy, has had its policy overriden by 'some_other_policy'; all other components remain equal.
+    * You can access observations and actions of that agent directly via the built-in properties action and observation. For example, you to access the last observation of the agent ``MyNewUser``, you can just do
 
+    . code-block:: python
 
-    The main API methods that users of this class should redefine are:
+        last_obs = MyNewUser.observation
 
-        + finit
-        + reset
-        + render
+    The API methods that users of this class can redefine are:
+
+        + finit (a second round of initialization once the bundle has been formed)
+        + reset (to specify how to initialize the state of the agent at the end of each game)
+        + render (specify display)
 
 
     :param str role: "user" or "assistant"
@@ -46,7 +51,7 @@ class BaseAgent(ABC):
         + state_kwargs
 
 
-    :return: A Bundle-compatible agent
+    :return: A :py:class:`../bundle`-compatible agent
     :rtype: BaseAgent
 
     """
@@ -192,7 +197,7 @@ class BaseAgent(ABC):
             return
 
         # self.reset(dic=dic)   # Check but this should not be needed
-        self.reset()
+        self.reset() # Reset all states before, just in case the reset dic does not specify a reset value for each substate.
         for key in list(self.state.keys()):
             value = dic.get(key)
             if isinstance(value, StateElement):
