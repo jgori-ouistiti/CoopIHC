@@ -49,6 +49,10 @@ Documentation uses [Sphinx](https://www.sphinx-doc.org/en/master/). Make sure it
 
 Some tips/tricks:
 
+* When you create a new branch, a new branch-specific documentation is also available. For example, https://jgori-ouistiti.github.io/CoopIHC/branch/doc-latex-fix/index.html is the branch specific documentation entry point for a branch named doc-latex-fix. (/ in branch names automatically converted to --)
+
+
+* 
 ```shell 
 $ make whtml
 ``` 
