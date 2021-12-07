@@ -35,7 +35,7 @@
       :toctree:
       :template: custom-class-template.rst
       :nosignatures:
-   {% for item in classes %}
+   {% for item in all_classes %}
       {{ item }}
    {%- endfor %}
    {% endif %}

@@ -22,7 +22,7 @@ class ContinuousKalmanUpdate(BaseInferenceEngine):
         .. math::
 
             \\begin{align*}
-            d\\hat{x} = A\\hat{x}dt + Budt \\
+            d\\hat{x} = A\\hat{x}dt + Budt \\\\
             dy = C \\hat{x} dt
             \\end{align*}
 

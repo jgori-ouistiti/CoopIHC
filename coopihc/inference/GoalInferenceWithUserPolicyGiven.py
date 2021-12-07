@@ -14,7 +14,7 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
     The inference is based on a model of the user policy, which has to be provided to this engine.
 
     :param \*args: policy model
-    :type \*args: :py:mod`Policy<coopihc.policy`
+    :type \*args: :py:mod`Policy<coopihc.policy>`
     """
 
     def __init__(self, *args):
@@ -32,7 +32,7 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
         Attach a policy to the engine from which it can sample.
 
         :param policy: a policy
-        :type policy: :py:mod`Policy<coopihc.policy`
+        :type policy: :py:mod`Policy<coopihc.policy>`
         """
         if not policy.explicit_likelihood:
             print(

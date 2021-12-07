@@ -1,15 +1,76 @@
 from coopihc.space.State import State
 from coopihc.observation.BaseObservationEngine import BaseObservationEngine
-from coopihc.observation.utils import base_task_engine_specification 
+from coopihc.observation.utils import base_task_engine_specification
 import copy
 
 
 class RuleObservationEngine(BaseObservationEngine):
-    """Base Class for Observation Engine.
+    """RuleObservationEngine [summary]
 
-    Does nothing but specify a type for the observation engine and return the full game state.
+    An observation engine that is specified by rules regarding each particular substate, using a so called mapping.
 
-    :meta public:
+    A mapping is any iterable where an item is:
+
+    (substate, subsubstate, _slice, _func, _args, _nfunc, _nargs)
+
+    where     observation = _nfunc(_func(state[substate][subsubstate][_slice], _args), _nargs)
+
+    Example usage:
+
+    .. code-block:: python
+
+        observation_engine = RuleObservationEngine(
+            base_user_engine_specification,
+            extraprobabilisticrules=extraprobabilisticrules,
+        )
+
+    There are several rules:
+
+    1. Deterministic rules, which specify at a high level which states are observable or not, e.g.
+
+    .. code-block :: python
+
+        base_user_engine_specification = [
+                ("turn_index", "all"),
+                ("task_state", "all"),
+                ("user_state", "all"),
+                ("assistant_state", None),
+                ("user_action", "all"),
+                ("assistant_action", "all"),
+            ]
+
+    2. Extra deterministic rules, which add some specific rules
+
+    .. code-block:: python
+
+        obs_matrix = {('task_state', 'x'): (coopihc.observation.f_obs_matrix, (C,))}
+        extradeterministicrules = {}
+        extradeterministicrules.update(obs_matrix)
+
+    3. Extra probabilistic rules, which are used to e.g. add noise
+
+
+    .. code-block :: python
+
+        extraprobabilisticrules = {
+            ("task_state", "targets"): (self._eccentric_noise_gen, ())
+        }
+
+
+
+    .. warning ::
+
+        This observation engine is likely very slow, due to may copies.
+
+
+    :param deterministic_specification: deterministic rules, defaults to base_task_engine_specification
+    :type deterministic_specification: list(tuples), optional
+    :param extradeterministicrules: extra deterministic rules, defaults to {}
+    :type extradeterministicrules: dict, optional
+    :param extraprobabilisticrules: extra probablistic rules, defaults to {}
+    :type extraprobabilisticrules: dict, optional
+    :param mapping: mapping, defaults to None
+    :type mapping: iterable, optional
     """
 
     def __init__(
@@ -19,6 +80,7 @@ class RuleObservationEngine(BaseObservationEngine):
         extraprobabilisticrules={},
         mapping=None,
     ):
+
         super().__init__()
         # self.type = 'rule'
         self.deterministic_specification = deterministic_specification
@@ -27,12 +89,30 @@ class RuleObservationEngine(BaseObservationEngine):
         self.mapping = mapping
 
     def observe(self, game_state):
+        """observe
+
+        Wrapper around apply_mapping for interfacing with bundle.
+
+        :param game_state: game state
+        :type game_state: `State<coopihc.space.State.State`
+        :return: (observation, obs reward)
+        :rtype: tuple(`State<coopihc.space.State.State`, float)
+        """
         if self.mapping is None:
             self.mapping = self.create_mapping(game_state)
         obs = self.apply_mapping(game_state)
         return obs, 0
 
     def apply_mapping(self, game_state):
+        """apply_mapping
+
+        Apply the rule mapping
+
+        :param game_state: game state
+        :type game_state: `State<coopihc.space.State.State`
+        :return: observation
+        :rtype: `State<coopihc.space.State.State`
+        """
         observation = State()
         for (
             substate,
@@ -70,6 +150,15 @@ class RuleObservationEngine(BaseObservationEngine):
         return observation
 
     def create_mapping(self, game_state):
+        """create_mapping
+
+        Create mapping from the high level rules specified in the Rule Engine.
+
+        :param game_state: game state
+        :type game_state: `State<coopihc.space.State.State>`
+        :return: Mapping
+        :rtype: iterable
+        """
         (
             observation_engine_specification,
             extradeterministicrules,

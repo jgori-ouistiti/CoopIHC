@@ -3,6 +3,20 @@ from coopihc.interactiontask.InteractionTask import InteractionTask
 
 
 class PipeTaskWrapper(InteractionTask, ABC):
+    """PipeTaskWrapper
+
+    A Wrapper for tasks so that messages are passed through a pipe. Subclass this task to use tasks defined externally (e.g. that pass messages via websockets to a server which forwards the message to a task via a pipe)
+
+    .. note::
+
+        Need to explain interface here
+
+    :param task: task to wrap
+    :type task: :py:class:`InteractionTask<coopihc.interactiontask.InteractionTask.InteractionTask`
+    :param pipe: pipe
+    :type pipe: subprocess.Pipe
+    """
+
     def __init__(self, task, pipe):
         self.__dict__ = task.__dict__
         self.task = task
@@ -34,7 +48,13 @@ class PipeTaskWrapper(InteractionTask, ABC):
             setattr(self.__dict__["task"], name, value)
 
     def update_state(self, state):
-        print("updating state")
+        """update_state
+
+        Remove the 'type' entry from the state dictionnary
+
+        :param state: state received via pipe
+        :type state: dictionnary
+        """
         if state["type"] == "task_state":
             del state["type"]
             self.update_task_state(state)
@@ -44,13 +64,38 @@ class PipeTaskWrapper(InteractionTask, ABC):
 
     @abstractmethod
     def update_task_state(self, state):
+        """update_task_state
+
+        Redefine this. Example  `here <https://jgori-ouistiti.github.io/CoopIHC-zoo/_modules/coopihczoo/pointing/envs.html#DiscretePointingTaskPipeWrapper>`_
+
+        :param state: state received via pipe
+        :type state: dictionnary
+        """
         pass
 
     @abstractmethod
     def update_user_state(self, state):
+        """update_user_state
+
+        See update_task_state
+
+        :param state: state received via pipe
+        :type state: dictionnary
+        """
         pass
 
     def user_step(self, *args, **kwargs):
+        """user_step
+
+
+        1. Transform user action into dictionnary with appropriate interface
+        2. Send message over pipe
+        3. Wait for pipe message
+        4. Update state and return
+
+        :return: (task state, task reward, is_done flag, {})
+        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float, boolean, dictionnary)
+        """
         super().user_step(*args, **kwargs)
         user_action_msg = {
             "type": "user_action",
@@ -64,6 +109,13 @@ class PipeTaskWrapper(InteractionTask, ABC):
         return self.state, received_dic["reward"], received_dic["is_done"], {}
 
     def assistant_step(self, *args, **kwargs):
+        """assistant_step
+
+        Same as user_step
+
+        :return: (task state, task reward, is_done flag, {})
+        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float, boolean, dictionnary)
+        """
         super().assistant_step(*args, **kwargs)
         assistant_action_msg = {
             "type": "assistant_action",
@@ -77,6 +129,22 @@ class PipeTaskWrapper(InteractionTask, ABC):
         return self.state, received_dic["reward"], received_dic["is_done"], {}
 
     def reset(self, dic=None):
+        """reset
+
+
+        1. Send reset dic over pipe
+        2. Wait for pipe message
+        3. Update state and return
+
+        .. note ::
+
+            verify the dic=None signature
+
+        :param dic: reset dic, defaults to None
+        :type dic: dictionnary, optional
+        :return: Task state
+        :rtype: :py:class:`State<coopihc.space.State.State>`
+        """
         super().reset(dic=dic)
         reset_msg = {"type": "reset", "reset_dic": dic}
         self.pipe.send(reset_msg)

@@ -35,26 +35,26 @@ class LinearGaussianContinuous(BaseInferenceEngine):
 
         .. math::
 
-            \begin{align}
-            p(y|x) \sim \mathcal{N}(x, \Sigma_0)
-            \end{align}
+            \\begin{align}
+            p(y|x) \\sim \\mathcal{N}(x, \\Sigma_0)
+            \\end{align}
 
         and with a Gaussian prior
 
         .. math::
 
-        \begin{align}
-        p(x(t-1)) \sim \mathcal{N}(\mu(t-1), \Sigma(t-1))
-        \end{align}
+            \\begin{align}
+            p(x(t-1)) \\sim \mathcal{N}(\\mu(t-1), \\Sigma(t-1))
+            \\end{align}
 
         we have that 
 
         .. math::
 
-        \begin{align}
-        p(x(t) | y, x(t-1)) \sim \mathcal{N}(\Sigma(t) \left[ \Sigma_0^{-1}y + \Sigma(t-1) \mu(t-1) \right], \Sigma(t)) \\
-        \Sigma(t) = (\Sigma_0^{-1} + \Sigma(t-1)^{-1})^{-1}
-        \end{align}
+            \\begin{align}
+            p(x(t) | y, x(t-1)) \\sim \\mathcal{N}(\\Sigma(t) \\left[ \\Sigma_0^{-1}y + \\Sigma(t-1) \\mu(t-1) \\right], \\Sigma(t)) \\\\
+            \\Sigma(t) = (\\Sigma_0^{-1} + \\Sigma(t-1)^{-1})^{-1}
+            \\end{align}
 
         :return: (new internal state, reward)
         :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float)

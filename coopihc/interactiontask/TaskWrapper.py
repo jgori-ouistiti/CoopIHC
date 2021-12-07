@@ -2,6 +2,12 @@ from coopihc.interactiontask.InteractionTask import InteractionTask
 
 
 class TaskWrapper(InteractionTask):
+    """TaskWrapper
+
+    Unused ?
+
+    """
+
     def __init__(self, task, *args, **kwargs):
         self.task = task
         self.__dict__.update(task.__dict__)
