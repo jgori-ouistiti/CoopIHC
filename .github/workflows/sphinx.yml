@@ -18,10 +18,10 @@ jobs:
           lfs: true
     
     # get latex for tikz in documentation with pgf support for tikz
-      - name: Install LaTex
+      - name: Install LaTex and ghostscript
         run: | 
-          sudo apt-get install texlive-pictures 
-
+          sudo apt-get install texlive-latex-extra
+          sudo apt-get install ghostscript pdf2svg pnmtopng 
      
 
       # https://github.com/marketplace/actions/setup-python
