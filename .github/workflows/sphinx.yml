@@ -21,7 +21,7 @@ jobs:
       - name: Install LaTex and ghostscript
         run: | 
           sudo apt-get install texlive-latex-extra
-          sudo apt-get install ghostscript pdf2svg pdftoppm pnmtopng convert
+          sudo apt-get install ghostscript pdf2svg pnmtopng 
      
 
       # https://github.com/marketplace/actions/setup-python
