@@ -2,8 +2,16 @@ from coopihc.observation.BaseObservationEngine import BaseObservationEngine
 
 
 class WrapAsObservationEngine(BaseObservationEngine):
+    """WrapAsObservationEngine
+
+    Wrap a bundle as an Observation Engine
+
+    :param obs_bundle: bundle that simulates an observation process
+    :type obs_bundle: `Bundle :py:mod:<coopihc.bundle>`
+    """
+
     def __init__(self, obs_bundle):
-        # self.type = "process"
+
         self.bundle = obs_bundle
         self.bundle.reset()
 

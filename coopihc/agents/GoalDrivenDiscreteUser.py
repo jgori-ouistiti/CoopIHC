@@ -5,10 +5,16 @@ import copy
 
 ### Goal could be defined as a target state of the task, in a more general description.
 class GoalDrivenDiscreteUser(BaseAgent):
-    """A User that is driven by a Goal and uses Discrete actions. It expects to be used with a task that has a substate named targets. Its internal state includes a 'goal' substate, whose value is either one of the task's targets."""
+    """Discrete actionspace, state includes a 'goal' state and expects a task with a 'targets' state.
+
+    A user whose behavior (policy) is driven by the value of a 'goal' state. The policy uses discrete actions. It expects to be used with a task that has a substate named 'targets'. The goal state's value may be either one of the task's 'targets'.
+
+    """
 
     def finit(self):
-        """Appends a Goal substate to the agent's internal state (with dummy values).
+        """finit.
+
+        Appends a 'goal' substate to the agent's internal state, whose values are either one of the task's 'targets'.
 
         :meta public:
         """
@@ -18,7 +24,9 @@ class GoalDrivenDiscreteUser(BaseAgent):
         return
 
     def render(self, *args, **kwargs):
-        """Similar to BaseAgent's render, but prints the "Goal" state in addition.
+        """render.
+
+        Similar to BaseAgent's render, but displays the "goal" state in addition.
 
         :param args: (list) list of axes used in the bundle render, in order: axtask, axuser, axassistant
         :param mode: (str) currently supports either 'plot' or 'text'. Both modes can be combined by having both modes in the same string e.g. 'plottext' or 'plotext'.

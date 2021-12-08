@@ -19,15 +19,15 @@ class BaseAgent(ABC):
 
     Some things to know:
 
-    * You can override some components, e.g. to override the existing policy of an agent named ``MyNewUser``, you can do the following
+    * You can override some components, e.g. to override the existing policy of an agent named ``MyNewUser`` with some other policy, you can do the following
 
     .. code-block:: python
 
         changed_policy_user = MyNewUser(agent_policy = some_other_policy)
 
-    * You can access observations and actions of that agent directly via the built-in properties action and observation. For example, you to access the last observation of the agent ``MyNewUser``, you can just do
+    * You can access observations and actions of an agent directly via the built-in properties action and observation. For example, you access the last observation of the agent ``MyNewUser`` with
 
-    . code-block:: python
+    .. code-block:: python
 
         last_obs = MyNewUser.observation
 
@@ -51,7 +51,7 @@ class BaseAgent(ABC):
         + state_kwargs
 
 
-    :return: A :py:class:`../bundle`-compatible agent
+    :return: A :py:class:`Bundle<coopihc.bundle>`-compatible agent
     :rtype: BaseAgent
 
     """
@@ -130,6 +130,15 @@ class BaseAgent(ABC):
         }, kwargs
 
     def _content__(self):
+        """Custom class representation.
+
+        A custom representation of the class.
+
+        :return: Dictionnary with content for all components.
+        :rtype: dict
+
+        :meta private:
+        """
         return {
             "Name": self.__class__.__name__,
             "State": self.state._content__(),
@@ -140,7 +149,16 @@ class BaseAgent(ABC):
 
     @property
     def observation(self):
-        """Returns the latest observation"""
+        """observation (property)
+
+        Returns the last observation.
+
+
+        :return: Last observation
+        :rtype: coopihc.space.State.State
+
+        :meta private:
+        """
         return (
             self.inference_engine.buffer[-1]
             if self.inference_engine.buffer is not None
@@ -149,10 +167,28 @@ class BaseAgent(ABC):
 
     @property
     def action(self):
-        """Returns the latest selected action"""
+        """action (property)
+
+        Returns the last action.
+
+
+        :return: Last action
+        :rtype: coopihc.space.State.State
+
+        :meta private:
+        """
         return self.policy.action_state["action"]
 
     def attach_policy(self, policy, **kwargs):
+        """Attach a policy
+
+        Helper function to attach a policy.
+
+        :param policy: a CoopIHC policy
+        :type policy: :doc:mod:`Policy<coopihc/policy>`
+
+        :meta private:
+        """
         if policy is None:
             self.policy = BasePolicy()
         else:
@@ -160,6 +196,16 @@ class BaseAgent(ABC):
         self.policy.host = self
 
     def attach_observation_engine(self, observation_engine, **kwargs):
+        """Attach an observation engine
+
+        Helper function to attach an observation engine.
+
+        :param observation_engine: a CoopIHC observation engine
+        :type observation_engine: :doc:mod:`Observation Engine<coopihc/observation>`
+
+        :meta private:
+        """
+
         if observation_engine is None:
             if self.role == "user":
                 self.observation_engine = RuleObservationEngine(
@@ -176,6 +222,15 @@ class BaseAgent(ABC):
         self.observation_engine.host = self
 
     def attach_inference_engine(self, inference_engine, **kwargs):
+        """Attach an inference engine
+
+        Helper function to attach an inference engine.
+
+        :param inference: a CoopIHC inference engine
+        :type inference: :doc:mod:`Inference Engine<coopihc/inference>`
+
+        :meta private:
+        """
         if inference_engine is None:
             self.inference_engine = BaseInferenceEngine()
         else:
@@ -183,6 +238,19 @@ class BaseAgent(ABC):
         self.inference_engine.host = self
 
     def _base_reset(self, all=True, dic=None):
+        """Reset function called by the Bundle.
+
+        This method is called by the bundle to reset the agent. It defines a bunch of actions that should be performed upon each reset. It namely calls the reset method that can be modified by the end-user of the library.
+
+
+
+        :param all: which components to reset, defaults to True
+        :type all: bool, optional
+        :param dic: reset dictionnary, defaults to None.
+        :type dic: [type], optional
+
+        :meta private:
+        """
 
         if all:
             self.policy.reset()
@@ -197,7 +265,7 @@ class BaseAgent(ABC):
             return
 
         # self.reset(dic=dic)   # Check but this should not be needed
-        self.reset() # Reset all states before, just in case the reset dic does not specify a reset value for each substate.
+        self.reset()  # Reset all states before, just in case the reset dic does not specify a reset value for each substate.
         for key in list(self.state.keys()):
             value = dic.get(key)
             if isinstance(value, StateElement):
@@ -206,24 +274,52 @@ class BaseAgent(ABC):
                 self.state[key]["values"] = value
 
     def reset(self):
-        """What should happen when initializing the agent.
+        """Initialize the agent before each new game.
 
-        Bundles will reset all engines, states and policies and handles forced resets (by the reset dictionnary mechanism), so you don't need to take care of that here.
+        Specify how the components of the agent will be reset. By default, the agent will call the reset method of all 4 components (policy, inference engine, observation engine, state). You can specify some added behavior here e.g. if you want to have a fixed value for the state at the beggining of each game (default behavior is random), you can speficy that here:
 
+        .. code-block:: python
+
+            # Sets the value of state 'x' to 0
+            self.state["x"]["values"] = [
+                numpy.array([0])
+            ]
+
+        :meta public:
         """
         pass
 
     def finit(self):
-        """finit is called by bundle during its initialization. This gives the possibility to finish initializing (finit) the agent when information from another component is required e.g. an assistant which requires the list of possible targets from the task."""
+        """Finish initializing.
+
+        Method that specifies what happens when initializing the agent for the very first time (similar to __init__), but after the bundle has been initialized already. This allows to finish initializing (finit) the agent when information from another component is required to do so e.g. an assistant which requires the list of possible targets from the task.
+
+        :meta public:
+        """
+
         pass
 
     def _take_action(self):
+        """Take action.
+
+        What the agent should do when the Bundle expects it to take an action.
+
+        :return: return action and reward
+        :rtype: tuple(coopihc.space.State.State, float)
+
+        :meta private:
+        """
         return self.policy.sample()
 
     def _agent_step(self, infer=True):
-        """Play one agent's turn: Observe the game state via the observation engine, update the internal state via the inference engine, collect rewards for both processes and pass them to the caller (usually the bundle).
+        """Play an agent's turn.
 
-        :return: agent_obs_reward; agent_infer_reward: agent_obs_reward (float) reward associated with observing. agent_infer_reward (float) reward associated with inferring
+        Observe the game state via the observation engine, update the internal state via the inference engine, collect rewards for both processes and return them to the caller (the bundle).
+
+        :param infer: whether inference should be performed, defaults to True
+        :type infer: bool, optional
+        :return: observation and inference rewards
+        :rtype: tuple(float, float)
 
         :meta private:
         """
@@ -253,11 +349,24 @@ class BaseAgent(ABC):
         return agent_obs_reward, agent_infer_reward
 
     def _observe(self, game_state):
+        """Observe gamestate.
+
+        Observe the gamestate by calling to the observation engine.
+
+        :param game_state: current game state
+        :type game_state: coopihc.space.State.State
+        :return: return observation and associated reward
+        :rtype: tuple(coopihc.space.State.State, float)
+
+        :meta private:
+        """
         observation, reward = self.observation_engine.observe(game_state)
         return observation, reward
 
     def render(self, *args, **kwargs):
-        """Renders the agent part of the bundle. Render can be redefined but should keep the same signature. Currently supports text and plot modes.
+        """Renders the agent.
+
+        Render can be redefined but should keep the same signature. Currently supports text and plot modes.
 
         :param args: (list) list of axes used in the bundle render, in order: axtask, axuser, axassistant
         :param mode: (str) currently supports either 'plot' or 'text'. Both modes can be combined by having both modes in the same string e.g. 'plottext' or 'plotext'.

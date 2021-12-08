@@ -4,17 +4,21 @@ import numpy
 
 
 class Train(gym.Env):
-    """Use this class to wrap a Bundle up, so that it is compatible with the gym API and can be trained with off-the-shelf RL algorithms.
+    """Train
+
+    Use this class to wrap a Bundle up, so that it is compatible with the gym API and can be trained with off-the-shelf RL algorithms.
+
+    .. warning::
+
+        outdated
 
 
-    The observation size can be reduced by using the squeeze_output function, removing irrelevant substates of the game state.
-
-    :param bundle: (coopihc.bundle.Bundle) A bundle.
-
-    :meta public:
+    :param bundle: bundle to wrap
+    :type bundle: :py:class:`Bundle<coopihc.bundle.Bundle.Bundle>`
     """
 
     def __init__(self, bundle, *args, **kwargs):
+
         self.bundle = bundle
         self.action_space = gym.spaces.Tuple(bundle.action_space)
 

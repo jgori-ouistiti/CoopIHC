@@ -2,7 +2,6 @@ import numpy
 import gym.spaces
 
 
-
 from coopihc.agents.BaseAgent import BaseAgent
 from coopihc.space.State import State
 from coopihc.space.StateElement import StateElement
@@ -11,24 +10,44 @@ from coopihc.observation.RuleObservationEngine import RuleObservationEngine
 from coopihc.observation.utils import base_task_engine_specification
 
 
-
 class LQRController(BaseAgent):
-    """
+    """A Linear Quadratic Regulator.
+
+    Tested only on 1d output. This agent will read a state named 'x' from the task, and produce actions according to:
+
     .. math::
 
-        action =  -K X + \Gamma  \mathcal{N}(\overline{\mu}, \Sigma)
+        action =  -K x + \Gamma  \mathcal{N}(\overline{\mu}, \Sigma)
 
+    where K is the so-called feedback gain, which has to be specified externally. For an example, see the :py:class:`coopihc.agents.lqrcontrollers.FHDT_LQRController.FHDT_LQRController` source code.
+
+    .. note::
+
+        This class is meant to be subclassed
+
+    :param role: "user" or "assistant"
+    :type role: string
+    :param Q: State cost
+    :type Q: numpy.ndarray
+    :param R: Control cost
+    :type R: numpy.ndarray
+    :param Gamma: Noise weight, defaults to None
+    :type Gamma: float, optional
+    :param Mu: Noise mean, defaults to None
+    :type Mu: float, optional
+    :param sigma: Noise variance, defaults to None
+    :type sigma: float, optional
     """
 
-    def __init__(self, role, Q, R, *args, **kwargs):
+    def __init__(self, role, Q, R, *args, Gamma=None, Mu=None, sigma=None, **kwargs):
 
         self.R = R
         self.Q = Q
         self.role = role
 
-        self.gamma = kwargs.get("Gamma")
-        self.mu = kwargs.get("Mu")
-        self.sigma = kwargs.get("Sigma")
+        self.gamma = Gamma
+        self.mu = Mu
+        self.sigma = Sigma
 
         agent_policy = kwargs.get("agent_policy")
         if agent_policy is None:
@@ -79,15 +98,21 @@ class LQRController(BaseAgent):
         )
 
     def reset(self, dic=None):
-        if dic is None:
-            super().reset()
+        # Below commented out without actually checking, but should be accounted for by the new base_reset mechanism.
+        # if dic is None:
+        #     super().reset()
 
-        # Nothing to reset
+        # # Nothing to reset
 
-        if dic is not None:
-            super().reset(dic=dic)
+        # if dic is not None:
+        #     super().reset(dic=dic)
+        pass
 
     def render(self, *args, **kwargs):
+        """render
+
+        Displays actions selected by the LQR agent.
+        """
         mode = kwargs.get("mode")
         if mode is None:
             mode = "text"

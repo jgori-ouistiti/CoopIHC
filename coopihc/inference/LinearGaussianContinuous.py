@@ -4,16 +4,20 @@ import matplotlib.transforms as transforms
 
 from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 
+
 class LinearGaussianContinuous(BaseInferenceEngine):
-    """An Inference Engine that handles a Gaussian Belief. It assumes a Gaussian prior and a Gaussian likelihood. ---- Currently the covariance matrix for the likelihood is assumed to be contained by the host as self.Sigma. Maybe change this ----
+    """LinearGaussianContinuous
+
+    An Inference Engine that handles a continuous Gaussian Belief. It assumes a Gaussian prior and a Gaussian likelihood. ---- Currently the covariance matrix for the likelihood is assumed to be contained by the host as self.Sigma. Maybe change this ----
 
     The mean and covariance matrices of Belief are stored in the substates 'MuBelief' and 'SigmaBelief'.
 
-
-    :meta public:
+    :param likelihood_binding: function which computes the likelihood of each future observation
+    :type likelihood_binding: function
     """
 
     def __init__(self, likelihood_binding):
+
         super().__init__()
         self.render_tag = ["text", "plot"]
 
@@ -25,11 +29,35 @@ class LinearGaussianContinuous(BaseInferenceEngine):
         )
 
     def infer(self):
-        """Update the Gaussian beliefs, see XX for more information.
+        """infer
 
-        :return: (OrderedDict) state, (float) 0
+        Update the Gaussian beliefs: assuming a Gaussian noisy observation model:
 
-        :meta public:
+        .. math::
+
+            \\begin{align}
+            p(y|x) \\sim \\mathcal{N}(x, \\Sigma_0)
+            \\end{align}
+
+        and with a Gaussian prior
+
+        .. math::
+
+            \\begin{align}
+            p(x(t-1)) \\sim \mathcal{N}(\\mu(t-1), \\Sigma(t-1))
+            \\end{align}
+
+        we have that 
+
+        .. math::
+
+            \\begin{align}
+            p(x(t) | y, x(t-1)) \\sim \\mathcal{N}(\\Sigma(t) \\left[ \\Sigma_0^{-1}y + \\Sigma(t-1) \\mu(t-1) \\right], \\Sigma(t)) \\\\
+            \\Sigma(t) = (\\Sigma_0^{-1} + \\Sigma(t-1)^{-1})^{-1}
+            \\end{align}
+
+        :return: (new internal state, reward)
+        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float)
         """
         observation = self.buffer[-1]
         if self.host.role == "user":
@@ -53,6 +81,10 @@ class LinearGaussianContinuous(BaseInferenceEngine):
         return state, 0
 
     def render(self, *args, **kwargs):
+        """render
+
+        Draws the beliefs (mean value and ellipsis or confidence intervals according to dimension).
+        """
         mode = kwargs.get("mode")
         render_flag = False
         for r in self.render_tag:
@@ -84,6 +116,15 @@ class LinearGaussianContinuous(BaseInferenceEngine):
             print(self.host.state["belief"]["values"])
 
     def draw_beliefs(self, ax, dim):
+        """draw_beliefs
+
+        Draw beliefs of dimension 'dim' on axis 'ax'.
+
+        :param ax: axis
+        :type ax: matplotlib object
+        :param dim: dimension of data
+        :type dim: int
+        """
         mu, cov = self.host.state["belief"]["values"]
         print(mu, cov)
         if dim == 2:
@@ -92,6 +133,21 @@ class LinearGaussianContinuous(BaseInferenceEngine):
             self.patch = self.confidence_interval(mu, cov, ax)
 
     def confidence_interval(self, mu, cov, ax, n_std=2.0, color="b", **kwargs):
+        """confidence_interval
+
+        Compute confidence interval. For the Gaussian case like here, this is straightforward
+
+        :param mu: mean matrix
+        :type mu: numpy.ndarray
+        :param cov: covariance matrix
+        :type cov: numpy.ndarray
+        :param ax: axis
+        :type ax: matplotlib object
+        :param n_std: size of the confidence interval in std, defaults to 2.0
+        :type n_std: float, optional
+        :param color: color of the CI, defaults to "b"
+        :type color: str, optional
+        """
         vec = [
             (mu - 2 * numpy.sqrt(cov))
             .reshape(
@@ -128,11 +184,26 @@ class LinearGaussianContinuous(BaseInferenceEngine):
         edgecolor="b",
         **kwargs
     ):
+        """confidence_ellipse
+
+        Draw confidence ellipsis. See `Matplotlib documentation <https://matplotlib.org/devdocs/gallery/statistics/confidence_ellipse.html>`_ for source. Computing eigenvalues directly should lead to code that is more readily understandable.
+
+        :param mu: mean matrix
+        :type mu: numpy.ndarray
+        :param cov: covariance matrix
+        :type cov: numpy.ndarray
+        :param ax: axis
+        :type ax: matplotlib object
+        :param n_std: size of the confidence interval in std, defaults to 2.0
+        :type n_std: float, optional
+        :param facecolor: fill color, defaults to "#d1dcf0"
+        :type facecolor: str, optional
+        :param edgecolor: frontier color, defaults to "b"
+        :type edgecolor: str, optional
         """
-        :meta private:
-        """
+
         mu = mu.squeeze()
-        ## See https://matplotlib.org/devdocs/gallery/statistics/confidence_ellipse.html for source. Computing eigenvalues directly should lead to code that is more readily understandable
+
         rho = numpy.sqrt(covariance[0, 1] ** 2 / covariance[0, 0] / covariance[1, 1])
         ellipse_radius_x = numpy.sqrt(1 + rho)
         ellipse_radius_y = numpy.sqrt(1 - rho)

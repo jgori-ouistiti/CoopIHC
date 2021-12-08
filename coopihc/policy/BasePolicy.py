@@ -6,14 +6,17 @@ from coopihc.space.StateElement import StateElement
 from coopihc.space.Space import Space
 
 
-
 # ============== General Policies ===============
 
 
 class BasePolicy:
-    """Policy to subclass. Provide either an action state used for initialization, or specify action_spaces and action_sets"""
+    """BasePolicy
+
+    Base Policy class. Randomly samples from the action state. You have can provide an action state as an argument (args[0]). If no action state is provided, the policy is initialized with an action state with a single 'None' action.
+    """
 
     def __init__(self, *args, **kwargs):
+
         # If a state is provided, use it; else create one (important not to lose the reference w/r the game_state)
         if args:
             self.action_state = args[0]
@@ -53,14 +56,35 @@ class BasePolicy:
 
     @property
     def observation(self):
+        """observation
+
+        Return the last observation.
+
+        :return: last observation
+        :rtype: `State<coopihc.space.State.State>`
+        """
         return self.host.inference_engine.buffer[-1]
 
     @property
     def action(self):
+        """action
+
+        Return the last action.
+
+        :return: last action
+        :rtype: `State<coopihc.space.StateElement.StateElement>`
+        """
         return self.action_state["action"]
 
     @property
     def new_action(self):
+        """new action (copy)
+
+        Return a copy of the last action.
+
+        :return: last action
+        :rtype: `StateElement<coopihc.space.StateElement.StateElement>`
+        """
         return copy.copy(self.action_state["action"])
 
     @property
@@ -68,9 +92,20 @@ class BasePolicy:
         return self
 
     def reset(self):
+        """reset
+
+        Reset the policy
+        """
         pass
 
     def sample(self):
+        """sample
+
+        (Randomly) Sample from the policy
+
+        :return: (action, action reward)
+        :rtype: (StateElement<coopihc.space.StateElement.StateElement>, float)
+        """
         self.action.reset()
         return self.action, 0
 

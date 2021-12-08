@@ -9,7 +9,49 @@ from coopihc.interactiontask.InteractionTask import InteractionTask
 
 
 class ClassicControlTask(InteractionTask):
-    """verify F and G conversions."""
+    """ClassicControlTask 
+
+    A task used for the classic control setting
+
+    .. math ::
+
+        \\begin{align}
+            x(+) = Ax() + Bu() + Fx().\\beta + G.\\omega \\\\
+        \\end{align}
+
+    where :math:`\\beta, \\omega \\sim \\mathcal{N}(0, \\sqrt{dt})` are Wiener processes.
+
+    A and B may represent continuous or discrete dynamics. A conversion is implictly made following the value of discrete_dynamics keyword:
+
+    .. math ::
+
+        \\begin{align}
+            A_c = \\frac{1}{dt} (A - I) \\\\
+            B_c = B \\frac{1}{dt}
+        \\end{align}
+
+    .. math ::
+
+        \\begin{align}
+            A_d = I + dt \cdot{} A
+            B_d = dt \cdot{} B
+        \\end{align}
+
+    :param timestep: dt
+    :type timestep: float
+    :param A: Passive dynamics
+    :type A: numpy.ndarray
+    :param B: Response to control
+    :type B: numpy.ndarray
+    :param F: signal dependent noise, defaults to None
+    :type F: numpy.ndarray, optional
+    :param G: independent noise, defaults to None
+    :type G: numpy.ndarray, optional
+    :param discrete_dynamics: whether A and B are continuous or discrete, defaults to True
+    :type discrete_dynamics: bool, optional
+    :param noise: whether to include noise, defaults to "on"
+    :type noise: str, optional
+    """
 
     def __init__(
         self,
@@ -21,6 +63,7 @@ class ClassicControlTask(InteractionTask):
         discrete_dynamics=True,
         noise="on",
     ):
+        
         super().__init__()
 
         self.dim = max(A.shape)
@@ -62,6 +105,10 @@ class ClassicControlTask(InteractionTask):
         self.noise = noise
 
     def finit(self):
+        """finit 
+
+        Define whether to use continuous or discrete representation.
+        """
         if self.bundle.user.timespace == "continuous":
             self.A = self.A_c
             self.B = self.B_c
@@ -70,6 +117,19 @@ class ClassicControlTask(InteractionTask):
             self.B = self.B_d
 
     def reset(self, dic=None):
+        """reset 
+
+        rorce all substates except the first to be null. Store the last state as an attribute (useful for rendering).
+
+        .. warning::
+        
+            dic mechanism likely outdated.
+
+
+
+        :param dic: [description], defaults to None
+        :type dic: [type], optional
+        """
         super().reset()
         # Force zero velocity
         self.state["x"]["values"][0][1:] = 0
@@ -80,6 +140,19 @@ class ClassicControlTask(InteractionTask):
         self.state_last_x = copy.copy(self.state["x"]["values"])
 
     def user_step(self, user_action):
+        """user step 
+
+        Apply equations defined in the class docstring.
+
+        .. warning ::
+
+            call to super likely deprecated, check signature.
+
+        :param user_action: user action
+        :type user_action: `State<coopihc.space.State.State>`
+        :return: (task state, task reward, is_done flag, {})
+        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float, boolean, dictionnary)
+        """
         # print(user_action, type(user_action))
         is_done = False
         # Call super for counters
@@ -113,10 +186,25 @@ class ClassicControlTask(InteractionTask):
         return self.state, 0, is_done, {}
 
     def assistant_step(self, assistant_action):
+        """assistant_step 
+
+        Nothing.
+
+        :param assistant_action: assistant action 
+        :type assistant_action: `State<coopihc.space.State.State>`
+        :return: (task state, task reward, is_done flag, {})
+        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float, boolean, dictionnary)
+        """
         # return super().assistant_step(assistant_action)
         return self.state, 0, False, {}
 
     def render(self, *args, **kwargs):
+        """render 
+
+        Text mode: print task state
+
+        plot mode: Dynamically update axes with state trajectories.
+        """
         mode = kwargs.get("mode")
         if mode is None:
             mode = "text"

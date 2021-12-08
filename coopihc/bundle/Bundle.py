@@ -3,8 +3,28 @@ from coopihc.agents import BaseAgent
 
 
 class Bundle(_Bundle):
-    def __init__(self, *args, task=None, user=None, assistant=None, **kwargs):
+    """Bundle
 
+    Modifies the interface of the _Bundle class.
+
+    A bundle combines a task with a user and an assistant. The bundle creates the ``game_state`` by combining the task, user and assistant states with the turn index and both agent's actions.
+
+    The bundle takes care of all the messaging between classes, making sure the gamestate and all individual states are synchronized at all times.
+
+    The bundle implements a forced reset mechanism, where each state of the bundle can be forced to a particular state via a dictionnary mechanism (see :py:func:reset)
+
+    The bundle also takes care of rendering each of the three component in a single place.
+
+
+    :param task: A task that inherits from ``InteractionTask``, defaults to None
+    :type task: :py:class:`coopihc.interactiontask.InteractionTask.InteractionTask`, optional
+    :param user: a user which inherits from ``BaseAgent``, defaults to None
+    :type user: :py:class:`coopihc.agents.BaseAgent.BaseAgent`, optional
+    :param assistant: an assistant which inherits from ``BaseAgent``, defaults to None
+    :type assistant: :py:class:`coopihc.agents.BaseAgent.BaseAgent`, optional
+    """
+
+    def __init__(self, *args, task=None, user=None, assistant=None, **kwargs):
         if task is None:
             task_bit = "0"
             raise NotImplementedError

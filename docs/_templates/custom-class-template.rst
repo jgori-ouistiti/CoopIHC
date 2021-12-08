@@ -15,7 +15,7 @@
    .. autosummary::
       :nosignatures:
    {% for item in methods %}
-      {%- if not item.startswith('_') %}
+      {%- if not item.startswith('_') or item.startswith('_Bundle') %}
       ~{{ name }}.{{ item }}
       {%- endif -%}
    {%- endfor %}

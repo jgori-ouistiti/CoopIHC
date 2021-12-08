@@ -11,12 +11,12 @@ from .agents.lqrcontrollers.LQRController import LQRController
 
 from .bundle._Bundle import _Bundle
 from .bundle.Bundle import Bundle
-from .bundle.PlayAssistant import PlayAssistant
-from .bundle.PlayBoth import PlayBoth
-from .bundle.PlayNone import PlayNone
-from .bundle.PlayUser import PlayUser
-from .bundle.SinglePlayUser import SinglePlayUser
-from .bundle.SinglePlayUserAuto import SinglePlayUserAuto
+from .bundle._PlayAssistant import PlayAssistant
+from .bundle._PlayBoth import PlayBoth
+from .bundle._PlayNone import PlayNone
+from .bundle._PlayUser import PlayUser
+from .bundle._SinglePlayUser import SinglePlayUser
+from .bundle._SinglePlayUserAuto import SinglePlayUserAuto
 from .bundle.Train import Train
 from .bundle.WsServer import WsServer
 from .bundle.wrappers import BundleWrapper, PipedTaskBundleWrapper
