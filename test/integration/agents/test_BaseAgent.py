@@ -7,6 +7,7 @@ from coopihc.space.State import State
 from coopihc.space.StateElement import StateElement
 from coopihc.space.Space import Space
 from coopihc.policy.BasePolicy import BasePolicy
+from coopihc.observation.BaseObservationEngine import BaseObservationEngine
 from coopihc.observation.RuleObservationEngine import RuleObservationEngine
 from coopihc.observation.utils import base_user_engine_specification
 from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
@@ -114,13 +115,72 @@ def test_init_args():
     assert new_state == observed_gamestate["user_state"]
 
 
-# def test_init_kwargs():
-#     state = State()
-#     state["goalstate"] = StateElement(
-#         values=numpy.array([4]),
-#         spaces=[
-#             Space([numpy.array([-4, -3, -2, -1, 0, 1, 2, 3, 4], dtype=numpy.int16)])
-#         ],
-#     )
-#     new_agent = BaseAgent("user", agent_state=state)
-#     assert new_agent
+def test_init_agent_state():
+    se = StateElement(
+        values=numpy.array([4]),
+        spaces=[
+            Space([numpy.array([-4, -3, -2, -1, 0, 1, 2, 3, 4], dtype=numpy.int16)])
+        ],
+    )
+    state = State()
+    state["goalstate"] = se
+    new_agent = BaseAgent("user", agent_state=state)
+    assert new_agent.state is state
+    other_new_agent = BaseAgent("user", state_kwargs = {'goalstate': copy.copy(se)})
+    assert other_new_agent.state == state
+
+def test_init_agent_policy():
+    action_state = State()
+    action_state['action'] = StateElement(
+        values=None,
+        spaces=[
+            Space([numpy.array([1, 2, 3], dtype=numpy.int16)]),
+        ],
+    )
+    policy = BasePolicy(action_state)
+    new_agent = BaseAgent('user', agent_policy = policy)
+    assert policy.host is new_agent
+    assert new_agent.policy.action_state is action_state
+
+def test_init_agent_inference_engine():
+    inference_engine = BaseInferenceEngine(buffer_depth = 10)
+    new_agent = BaseAgent('user', agent_inference_engine = inference_engine)
+    assert inference_engine.host is new_agent
+    assert new_agent.inference_engine is inference_engine
+    assert new_agent.inference_engine.buffer_depth == 10
+
+def test_init_observation_engine():
+    observation_engine = BaseObservationEngine()
+    new_agent = BaseAgent('user', agent_observation_engine = observation_engine)
+    assert observation_engine.host is new_agent
+    assert new_agent.observation_engine is observation_engine
+
+    se = StateElement(
+        values=None,
+        spaces=[
+            Space(
+                [
+                    numpy.array([-1], dtype=numpy.float32),
+                    numpy.array([1], dtype=numpy.float32),
+                ]
+            ),
+            Space([numpy.array([1, 2, 3], dtype=numpy.int16)]),
+            Space([numpy.array([-6, -5, -4, -3, -2, -1], dtype=numpy.int16)]),
+        ],
+    )
+    gamestate = State(
+        **{
+            "task_state": State(**{"xx": se}),
+            "user_state": State(**{"ux": copy.copy(se)}),
+            "assistant_state": State(),
+            "user_action": State(),
+            "assistant_action": State(),
+        }
+    )
+
+    obs, reward = new_agent._observe(gamestate)
+    assert reward == 0
+    assert obs == gamestate
+
+
+
