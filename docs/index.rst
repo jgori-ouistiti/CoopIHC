@@ -78,16 +78,6 @@ and **bundling** them back together using so-called :py:mod:`Bundle <../coopihc.
 	
 
 
-
-
-
-.. toctree::
-    :maxdepth: 1
-    :caption: What's next?
-
-    roadmap
-
-
    
 .. toctree::
 	:hidden:	
