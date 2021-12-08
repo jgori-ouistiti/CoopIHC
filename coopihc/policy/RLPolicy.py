@@ -7,7 +7,36 @@ from coopihc.policy.BasePolicy import BasePolicy
 
 
 class RLPolicy(BasePolicy):
-    """Code works as proof of concept, but should be tested and augmented to deal with arbitrary wrappers. Possibly the wrapper class should be augmented with a reverse method, or something like that."""
+    """RLPolicy [summary]
+
+    A policy object compatible with CoopIHC that wraps a policy trained via Reinforcement learning.
+
+
+    arguments to pass:
+
+        * role
+
+    kw arguments to pass:
+
+        * model_path
+        * learning_algorithm
+        * library
+        * training env
+        * wrappers
+
+
+
+    .. note ::
+
+        Currently only supports policies obtained via stable baselines 3.
+
+     .. note ::
+
+        Code works as proof of concept, but should be tested and augmented to deal with arbitrary wrappers. Possibly the wrapper class should be augmented with a reverse method, or something like that.
+
+    :param BasePolicy: [description]
+    :type BasePolicy: [type]
+    """
 
     def __init__(self, *args, **kwargs):
         self.role = args[0]
@@ -41,7 +70,13 @@ class RLPolicy(BasePolicy):
         super().__init__(action_state, *args, **kwargs)
 
     def sample(self):
-        # observation = self.host.inference_engine.buffer[-1]
+        """sample
+
+        Get action by using model.predict(), and apply actionwrappers.
+
+        :return: action, reward
+        :rtype: tuple(`StateElement<coopihc.space.StateElement.StateElement>`, float)
+        """
         observation = self.observation
         nn_obs = self.training_env.unwrapped.convert_observation(observation)
         _action = self.model.predict(nn_obs)[0]

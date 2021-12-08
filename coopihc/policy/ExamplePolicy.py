@@ -3,12 +3,24 @@ from coopihc.policy.BasePolicy import BasePolicy
 
 
 class ExamplePolicy(BasePolicy):
-    """A simple policy which assumes that the agent using it has a goal state nd that the task has an 'x' state. x is compared to the goal and appropriate ction is taken to make sure x reaches the goal."""
+    """ExamplePolicy
+
+    A simple policy which assumes that the agent using it has a 'goal' state nd that the task has an 'x' state. x is compared to the goal and appropriate ction is taken to make sure x reaches the goal.
+
+
+    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def sample(self):
+        """sample
+
+        Compares 'x' to goal and issues +-1 accordingly.
+
+        :return: action, reward
+        :rtype: tuple(`StateElement<coopihc.space.StateElement.StateElement>`, float)
+        """
         if (
             self.observation["task_state"]["x"]
             < self.observation["{}_state".format(self.host.role)]["goal"]

@@ -12,8 +12,34 @@ from coopihc.policy.BasePolicy import BasePolicy
 
 
 class BIGDiscretePolicy(BasePolicy):
-    def __init__(self, assistant_action_state, user_policy_model):
+    """BIGDiscretePolicy [summary]
 
+    Bayesian Information Gain Policy, adapted from [1]_.
+
+    The main ideas/assumptions are:
+
+        * A user wants the task to go to some goal state :math:`\\Theta`
+        * The assistant can put the task in a number of states (X)
+        * The user can perform a given set of action Y
+        * A model :math:`p(Y=y|X=X, \\Theta = \\theta)` exists for user behavior
+
+    Make sure to call:
+
+        * attach_set_theta, to specify the potential goal states
+        * attach_transition_function, to specify how the task state evolves after an assistant action
+
+
+
+
+    .. [1] Liu, Wanyu, et al. "Bignav: Bayesian information gain for guiding multiscale navigation." Proceedings of the 2017 CHI Conference on Human Factors in Computing Systems. 2017.
+
+    :param assistant_action_state: action state of the assistant
+    :type assistant_action_state: `State<coopihc.space.State.State>`
+    :param user_policy_model: user policy model. This may be the real policy of the user, but realistically has to be a model of the user policy. This policy must currently be an `ELLDiscretePolicy<coopihc.policy.ELLDiscretePolicy.ELLDiscretePolicy>`.
+    :type user_policy_model: ELLDiscretePolicy<coopihc.policy.ELLDiscretePolicy.ELLDiscretePolicy>`
+    """
+
+    def __init__(self, assistant_action_state, user_policy_model):
         super().__init__(assistant_action_state)
 
         self.assistant_action_set = self.action_state["action"].cartesian_product()
@@ -39,16 +65,21 @@ class BIGDiscretePolicy(BasePolicy):
     #     return observation
 
     def PYy_Xx(self, user_action, assistant_action, potential_states, beliefs):
-        r"""Compute the conditional probability :math:`P(Y=y|X=x)`
+        """:math:`P(Y=y|X=x)`
 
-        :param user_action: given user action y for which the condition is computed
-        :param position: the future position
-        :param targets: (list) possible targets
-        :param beliefs: (list) priors for each target
+        Computes the conditional probability :math:`P(Y=y|X=x)`, where X is the assistant outcome and Y the user's response.
+
+        :param user_action: user action y for which the condition is computed
+        :type user_action: `StateElement<coopihc.space.StateElement.StateElement>`
+        :param assistant_action: assistant action to be evaluated
+        :type assistant_action: `StateElement<coopihc.space.StateElement.StateElement>`
+        :param potential_states: collection of potential goal states
+        :type potential_states: iterable
+        :param beliefs: (list) beliefs for each target
+        :type beliefs: (list) beliefs for each target
 
         :return: the conditional :math:`P(Y=y|X=x)`
-
-        :meta public:
+        :rtype: list
         """
         pYy__Xx = 0
         for potential_state, belief in zip(potential_states, beliefs):
@@ -59,15 +90,21 @@ class BIGDiscretePolicy(BasePolicy):
         return pYy__Xx
 
     def HY__Xx(self, potential_states, assistant_action, beliefs):
-        r"""Computes the conditional entropy :math:`H(Y |X=x) = -\mathbb{E}[\log(p(Y|X=x))]`.
+        """:math:`H(Y |X=x)`
 
-        :param position: the future position
-        :param targets: (list) possible targets
-        :param beliefs: (list) priors for each target
+        Computes the conditional entropy :math:`H(Y |X=x) = -\mathbb{E}[\log(p(Y|X=x))]`.
 
-        :return: The conditional entropy :math:`H(Y |X=x)`
 
-        :meta public:
+
+
+        :param assistant_action: assistant action to be evaluated
+        :type assistant_action: `StateElement<coopihc.space.StateElement.StateElement>`
+        :param potential_states: collection of potential goal states
+        :type potential_states: iterable
+        :param beliefs: (list) beliefs for each target
+        :type beliefs: (list) beliefs for each target
+        :return: :math:`H(Y |X=x)`
+        :rtype: float
         """
         H = 0
         for user_action in self.user_action_set:
@@ -78,16 +115,17 @@ class BIGDiscretePolicy(BasePolicy):
                 H += -pYy_Xx * math.log(pYy_Xx, 2)
         return H
 
-    def HY__OoXx(self, potential_states, assistant_action, beliefs):
-        r"""Computes the conditional entropy :math:`H(Y |\Theta = \theta, X=x) = -\mathbb{E}[\log(p(Y|\Theta = \theta, X=x))]`.
+    def HY__OoXx(self, potential_states, beliefs):
+        """:math:`H(Y |\Theta = \theta, X=x)`
 
-        :param position: the future position
-        :param targets: (list) possible targets
-        :param beliefs: (list) priors for each target
+        Computes the conditional entropy :math:`H(Y |\Theta = \theta, X=x) = -\mathbb{E}[\log(p(Y|\Theta = \theta, X=x))]`.
 
-        :return: The conditional entropy :math:`H(Y |\Theta = \theta, X=x)`
-
-        :meta public:
+        :param potential_states: collection of potential goal states
+        :type potential_states: iterable
+        :param beliefs: (list) beliefs for each target
+        :type beliefs: (list) beliefs for each target
+        :return: :math:`H(Y |\Theta = \theta, X=x)`
+        :rtype: float
         """
         H = 0
         for user_action in self.user_action_set:
@@ -103,15 +141,18 @@ class BIGDiscretePolicy(BasePolicy):
         return H
 
     def IG(self, assistant_action, observation, beliefs):
-        r"""Computes the expected information gain :math:`\mathrm{IG}(X=x) = H(Y |X=x) - H(Y |\Theta = \theta, X=x)` for a future position.
+        """Information Gain :math:`\mathrm{IG}(X=x)`
 
-        :param position: the future position
-        :param targets: (list) possible targets
-        :param beliefs: (list) priors for each target
+        Computes the expected information gain :math:`\mathrm{IG}(X=x) = H(Y |X=x) - H(Y |\Theta = \theta, X=x)` for a potential assistant action x.
 
-        :return: the information gain  :math:`\mathrm{IG}(X=x)`
-
-        :meta public:
+        :param assistant_action: assistant action to be evaluated
+        :type assistant_action: `StateElement<coopihc.space.StateElement.StateElement>`
+        :param observation: current assistant observation
+        :type observation: `State<coopihc.space.State.State>`
+        :param beliefs: (list) beliefs for each target
+        :type beliefs: (list) beliefs for each target
+        :return: [description]
+        :rtype: [type]
         """
 
         observation = self.transition_function(assistant_action, observation)
@@ -134,12 +175,16 @@ class BIGDiscretePolicy(BasePolicy):
         )
 
     def find_best_action(self):
-        """Finds expected information gain associated with each possible future cursor position and ranks them in order from the most to  less informative.
+        """find_best_action
 
-        :return: pos, IG. Future cursor position and associated expected information gain.
+        Finds expected information gain associated with each possible future cursor position and ranks them in order from the most to less informative.
 
-        :meta public:
+
+
+        :return: (assistant actions, associated information gain)
+        :rtype: tuple(list, list)
         """
+
         beliefs = self.host.state["beliefs"]["values"][0].squeeze().tolist()
         # hp, hp_target = max(beliefs), targets[beliefs.index(max(beliefs))]
         # if hp > self.threshold:
@@ -159,6 +204,13 @@ class BIGDiscretePolicy(BasePolicy):
         return action, _IG
 
     def sample(self):
+        """sample
+
+        Choose action (select the action with highest expected information gain)
+
+        :return: (assistant action, associated reward)
+        :rtype: tuple(`StateElement<coopihc.space.StateElement.StateElement>`, float)
+        """
         self._actions, self._IG = self.find_best_action()
         # logger.info('Actions and associated expected information gain:\n{}'.format(tabulate(list(zip(self._actions['values'], self._IG)), headers = ['action', 'Expected Information Gain']) ))
         return self._actions[0], 0
