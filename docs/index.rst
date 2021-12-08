@@ -42,8 +42,6 @@ and **bundling** them back together using so-called :py:mod:`Bundle <../coopihc.
 
 
 
-*CoopIHC* User Guide
-===============================================
 
 
 
