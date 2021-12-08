@@ -12,7 +12,6 @@ class BaseObservationEngine:
 
     def __init__(self):
         pass
-        # self.type = "base"
 
     def __content__(self):
         """__content__
