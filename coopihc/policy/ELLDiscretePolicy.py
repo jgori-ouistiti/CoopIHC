@@ -2,16 +2,17 @@ import numpy
 from coopihc.policy.BasePolicy import BasePolicy
 
 
-# ============= Discrete Policies =================
-
-# ----------- Explicit Likelihood Discrete Policy
-
-
 class BadlyDefinedLikelihoodError(Exception):
     pass
 
 
 class ELLDiscretePolicy(BasePolicy):
+    """ELLDiscretePolicy
+
+    Explicitly defined Likelihood Policy. A policy which is described by an explicit probabilistic model.
+
+    """
+
     def __init__(self, *args, **kwargs):
         action_state = kwargs.pop("action_state")
         super().__init__(action_state, *args, **kwargs)
@@ -20,13 +21,22 @@ class ELLDiscretePolicy(BasePolicy):
 
     @classmethod
     def attach_likelihood_function(cls, _function):
+        """attach_likelihood_function
+
+        Attach the probabilistic model (likelihood function) to the class
+
+        :param _function: likelihood function
+        :type _function: function
+        """
         cls.compute_likelihood = _function
 
     def sample(self):
-        """Select the most likely action.
+        """sample
 
-        :param observation: (OrderedDict)
-        :return: action. most likely action.
+        Select the action according to its probability
+
+        :return: action, reward
+        :rtype: tuple(`StateElement<coopihc.space.StateElement.StateElement>`, float)
         """
 
         observation = self.host.inference_engine.buffer[-1]
@@ -36,13 +46,14 @@ class ELLDiscretePolicy(BasePolicy):
         return action, 0
 
     def forward_summary(self, observation):
-        """Compute the likelihood of each action, given the current observation
+        """forward_summary
 
-        :param observation: (OrderedDict) user observation
+        Compute the likelihood of each action, given the current observation
 
-        :return: actions, likelihood. list of actions and associated likelihoods
-
-        :meta public:
+        :param observation: current agent observation
+        :type observation: `State<coopihc.space.State.State>`
+        :return: [description]
+        :rtype: [type]
         """
         llh, actions = [], []
         action_stateelement = self.action_state["action"]

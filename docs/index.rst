@@ -11,7 +11,7 @@ Welcome to CoopIHC's documentation!
 
 .. warning:: 
 
-    This is a version that is not ready for realease yet. Documentation  is likely outdated. Please contact me if you have any questions.
+    This is a version that is not ready for realease yet. Documentation  may be outdated in some places. Please contact me directly or raise an issue if appropriate.
 
 
 *CoopIHC*, pronounced 'kopik', is a Python module that provides a common basis for describing **computational Human Computer Interaction (HCI)** contexts, mostly targeted at expressing models of users and intelligent assistants.
