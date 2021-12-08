@@ -20,6 +20,9 @@ class State(OrderedDict):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+    def __bool__(self):
+        return bool(self.items())
+
     def reset(self, dic={}):
         """Initialize the state. See StateElement"""
         for key, value in self.items():

@@ -42,8 +42,6 @@ and **bundling** them back together using so-called :py:mod:`Bundle <../coopihc.
 
 
 
-*CoopIHC* User Guide
-===============================================
 
 
 
@@ -78,16 +76,6 @@ and **bundling** them back together using so-called :py:mod:`Bundle <../coopihc.
     guide/wrappers
 
 	
-
-
-
-
-
-.. toctree::
-    :maxdepth: 1
-    :caption: What's next?
-
-    roadmap
 
 
    
