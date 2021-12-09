@@ -18,9 +18,9 @@ class Space:
     :param \*\*kwargs: For future use `\*\*kwargs`.
     """
 
-    def __init__(self, array_list, *args, **kwargs):
+    def __init__(self, array_list, *args, seed=None, **kwargs):
         self._cflag = None
-        self.rng = numpy.random.default_rng()
+        self.rng = numpy.random.default_rng(seed)
 
         # Deal with variable format input
         if isinstance(array_list, numpy.ndarray):
@@ -61,6 +61,19 @@ class Space:
             return numpy.all(item >= self.low) and numpy.all(item <= self.high)
         else:
             return numpy.array([item[n] in r for n, r in enumerate(self.range)]).all()
+
+    def __eq__(self, other):
+        if self.dtype != other.dtype:
+            return False
+        for _sr, _or in zip(self.range, other.range):
+            condition = _sr != _or
+            try:
+                if condition:
+                    return False
+            except ValueError:
+                if condition.any():
+                    return False
+        return True
 
     def __iter__(self):
         self.n = 0
@@ -143,7 +156,7 @@ class Space:
 
     @property
     def N(self):
-        """Returns the number of elements in the range. Only useful for 1d discrete spaces.
+        """Returns the cardinality of the set (space) --- Only useful for 1d discrete spaces.
 
         :return: Description of returned object.
         :rtype: type
