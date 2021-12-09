@@ -17,13 +17,10 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
     :type \*args: :py:mod`Policy<coopihc.policy>`
     """
 
-    def __init__(self, *args):
-        super().__init__()
-        try:
-            self.attach_policy(args[0])
-        except IndexError:
-            self.user_policy_model = None
+    def __init__(self, *args, user_policy_model=None, **kwargs):
+        super().__init__(*args, **kwargs)
 
+        self.attach_policy(user_policy_model)
         self.render_tag = ["plot", "text"]
 
     def attach_policy(self, policy):
@@ -34,6 +31,9 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
         :param policy: a policy
         :type policy: :py:mod`Policy<coopihc.policy>`
         """
+        if policy is None:
+            self.user_policy_model = None
+            return
         if not policy.explicit_likelihood:
             print(
                 "Warning: This inference engine requires a policy defined by an explicit likelihood"
