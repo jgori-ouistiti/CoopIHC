@@ -69,7 +69,7 @@ class RLPolicy(BasePolicy):
 
         super().__init__(action_state, *args, **kwargs)
 
-    def sample(self):
+    def sample(self, observation=None):
         """sample
 
         Get action by using model.predict(), and apply actionwrappers.
@@ -77,7 +77,9 @@ class RLPolicy(BasePolicy):
         :return: action, reward
         :rtype: tuple(`StateElement<coopihc.space.StateElement.StateElement>`, float)
         """
-        observation = self.observation
+        if observation is None:
+            observation = self.observation
+
         nn_obs = self.training_env.unwrapped.convert_observation(observation)
         _action = self.model.predict(nn_obs)[0]
         for wrappers_name, (_cls, _args) in reversed(

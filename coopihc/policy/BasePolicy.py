@@ -98,7 +98,7 @@ class BasePolicy:
         """
         pass
 
-    def sample(self):
+    def sample(self, observation=None):
         """sample
 
         (Randomly) Sample from the policy
