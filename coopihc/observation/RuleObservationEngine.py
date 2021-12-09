@@ -84,7 +84,6 @@ class RuleObservationEngine(BaseObservationEngine):
     ):
 
         super().__init__(*args, **kwargs)
-        # self.type = 'rule'
         self.deterministic_specification = deterministic_specification
         self.extradeterministicrules = extradeterministicrules
         self.extraprobabilisticrules = extraprobabilisticrules

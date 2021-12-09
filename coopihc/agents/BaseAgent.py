@@ -176,15 +176,14 @@ class BaseAgent(ABC):
 
         :meta private:
         """
-
         if observation_engine is None:
             if self.role == "user":
                 self.observation_engine = RuleObservationEngine(
-                    base_user_engine_specification
+                    deterministic_specification=base_user_engine_specification
                 )
             elif self.role == "assistant":
                 self.observation_engine = RuleObservationEngine(
-                    base_assistant_engine_specification
+                    deterministic_specification=base_assistant_engine_specification
                 )
             else:
                 raise NotImplementedError

@@ -26,7 +26,7 @@ action_state["action"] = StateElement(
     values=None,
     spaces=[Space([numpy.array([-1, 0, 1], dtype=numpy.int16)])],
 )
-agent_policy = BasePolicy(action_state)
+agent_policy = BasePolicy(action_state=action_state)
 
 # Explicitly use default observation and inference engines (default behavior is triggered when keyword argument is not provided or keyword value is None)
 observation_engine = RuleObservationEngine(
@@ -97,7 +97,11 @@ def test_init_args():
         }
     )
     observed_gamestate, reward = obseng.observe(gamestate)
-
+    print(obseng.mapping)
+    print(obseng.deterministic_specification)
+    print(obseng.extradeterministicrules)
+    print(gamestate)
+    print(observed_gamestate)
     assert reward == 0
     assert observed_gamestate == State(
         **{
@@ -126,32 +130,35 @@ def test_init_agent_state():
     state["goalstate"] = se
     new_agent = BaseAgent("user", agent_state=state)
     assert new_agent.state is state
-    other_new_agent = BaseAgent("user", state_kwargs = {'goalstate': copy.copy(se)})
+    other_new_agent = BaseAgent("user", state_kwargs={"goalstate": copy.copy(se)})
     assert other_new_agent.state == state
+
 
 def test_init_agent_policy():
     action_state = State()
-    action_state['action'] = StateElement(
+    action_state["action"] = StateElement(
         values=None,
         spaces=[
             Space([numpy.array([1, 2, 3], dtype=numpy.int16)]),
         ],
     )
-    policy = BasePolicy(action_state)
-    new_agent = BaseAgent('user', agent_policy = policy)
+    policy = BasePolicy(action_state=action_state)
+    new_agent = BaseAgent("user", agent_policy=policy)
     assert policy.host is new_agent
     assert new_agent.policy.action_state is action_state
 
+
 def test_init_agent_inference_engine():
-    inference_engine = BaseInferenceEngine(buffer_depth = 10)
-    new_agent = BaseAgent('user', agent_inference_engine = inference_engine)
+    inference_engine = BaseInferenceEngine(buffer_depth=10)
+    new_agent = BaseAgent("user", agent_inference_engine=inference_engine)
     assert inference_engine.host is new_agent
     assert new_agent.inference_engine is inference_engine
     assert new_agent.inference_engine.buffer_depth == 10
 
+
 def test_init_observation_engine():
     observation_engine = BaseObservationEngine()
-    new_agent = BaseAgent('user', agent_observation_engine = observation_engine)
+    new_agent = BaseAgent("user", agent_observation_engine=observation_engine)
     assert observation_engine.host is new_agent
     assert new_agent.observation_engine is observation_engine
 
@@ -181,6 +188,3 @@ def test_init_observation_engine():
     obs, reward = new_agent._observe(gamestate)
     assert reward == 0
     assert obs == gamestate
-
-
-
