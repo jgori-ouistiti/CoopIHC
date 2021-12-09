@@ -8,7 +8,7 @@ class ExampleInferenceEngine(BaseInferenceEngine):
 
     """
 
-    def infer(self):
+    def infer(self, *args, **kwargs):
         """infer
 
         Do nothing. Same behavior as parent ``BaseInferenceEngine``

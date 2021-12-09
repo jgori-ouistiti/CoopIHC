@@ -13,8 +13,8 @@ class ELLDiscretePolicy(BasePolicy):
 
     """
 
-    def __init__(self, action_state, seed=None, *args, **kwargs):
-        super().__init__(action_state, *args, **kwargs)
+    def __init__(self, action_state, *args, seed=None, **kwargs):
+        super().__init__(*args, action_state=action_state, **kwargs)
         self.explicit_likelihood = True
         self.rng = numpy.random.default_rng(seed)
 

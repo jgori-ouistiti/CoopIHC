@@ -29,10 +29,12 @@ class StateElement:
 
     def __init__(
         self,
+        *args,
         values=None,
         spaces=None,
         clipping_mode="warning",
         typing_priority="space",
+        **kwargs
     ):
         self.clipping_mode = clipping_mode
         self.typing_priority = typing_priority

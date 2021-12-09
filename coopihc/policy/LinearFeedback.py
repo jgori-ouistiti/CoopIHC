@@ -22,13 +22,13 @@ class LinearFeedback(BasePolicy):
     def __init__(
         self,
         state_indicator,
-        slice,
         action_state,
         *args,
         feedback_gain="identity",
+        slice=None,
         **kwargs
     ):
-        super().__init__(action_state, *args, **kwargs)
+        super().__init__(*args, action_state=action_state, **kwargs)
         self.state_indicator = state_indicator
         self.slice = slice
         self.noise_function = kwargs.get("noise_function")
@@ -66,7 +66,8 @@ class LinearFeedback(BasePolicy):
         substate = observation
         for key in self.state_indicator:
             substate = substate[key]
-        substate = substate[self.slice]
+        if self.slice is not None:
+            substate = substate[self.slice]
 
         if isinstance(self.feedback_gain, str):
             if self.feedback_gain == "identity":

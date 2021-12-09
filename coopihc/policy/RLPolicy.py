@@ -67,7 +67,7 @@ class RLPolicy(BasePolicy):
             )["action"]
         )
 
-        super().__init__(action_state, *args, **kwargs)
+        super().__init__(*args, action_state=action_state, **kwargs)
 
     def sample(self, observation=None):
         """sample

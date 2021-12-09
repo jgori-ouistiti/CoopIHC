@@ -39,8 +39,8 @@ class BIGDiscretePolicy(BasePolicy):
     :type user_policy_model: ELLDiscretePolicy<coopihc.policy.ELLDiscretePolicy.ELLDiscretePolicy>`
     """
 
-    def __init__(self, assistant_action_state, user_policy_model):
-        super().__init__(assistant_action_state)
+    def __init__(self, assistant_action_state, user_policy_model, *args, **kwargs):
+        super().__init__(*args, action_state=assistant_action_state, **kwargs)
 
         self.assistant_action_set = self.action_state["action"].cartesian_product()
         self.user_policy_model = user_policy_model

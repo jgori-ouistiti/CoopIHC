@@ -75,13 +75,15 @@ class RuleObservationEngine(BaseObservationEngine):
 
     def __init__(
         self,
+        *args,
         deterministic_specification=base_task_engine_specification,
         extradeterministicrules={},
         extraprobabilisticrules={},
         mapping=None,
+        **kwargs
     ):
 
-        super().__init__()
+        super().__init__(*args, **kwargs)
         # self.type = 'rule'
         self.deterministic_specification = deterministic_specification
         self.extradeterministicrules = extradeterministicrules

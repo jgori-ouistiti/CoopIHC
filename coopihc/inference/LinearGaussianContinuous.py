@@ -16,7 +16,7 @@ class LinearGaussianContinuous(BaseInferenceEngine):
     :type likelihood_binding: function
     """
 
-    def __init__(self, likelihood_binding):
+    def __init__(self, likelihood_binding, *args, **kwargs):
 
         super().__init__()
         self.render_tag = ["text", "plot"]

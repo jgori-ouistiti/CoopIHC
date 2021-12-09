@@ -15,7 +15,7 @@ class WrapAsPolicy(BasePolicy):
     """
 
     def __init__(self, action_bundle, action_state, *args, **kwargs):
-        super().__init__(action_state, *args, **kwargs)
+        super().__init__(*args, action_state=action_state, **kwargs)
         self.bundle = action_bundle
 
     def __content__(self):
