@@ -15,7 +15,7 @@ class WrapAsPolicy(BasePolicy):
     """
 
     def __init__(self, action_bundle, action_state, *args, **kwargs):
-        super().__init__(action_state, *args, **kwargs)
+        super().__init__(*args, action_state=action_state, **kwargs)
         self.bundle = action_bundle
 
     def __content__(self):
@@ -38,7 +38,7 @@ class WrapAsPolicy(BasePolicy):
     def step(self, *args, **kwargs):
         return self.bundle.step(*args, **kwargs)
 
-    def sample(self):
+    def sample(self, observation=None):
         pass
         # Do something
         # return action, rewards

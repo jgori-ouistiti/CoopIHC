@@ -8,7 +8,7 @@ class TaskWrapper(InteractionTask):
 
     """
 
-    def __init__(self, task, *args, **kwargs):
+    def __init__(self, task):
         self.task = task
         self.__dict__.update(task.__dict__)
 

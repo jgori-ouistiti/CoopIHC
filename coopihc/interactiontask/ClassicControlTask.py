@@ -62,9 +62,11 @@ class ClassicControlTask(InteractionTask):
         G=None,
         discrete_dynamics=True,
         noise="on",
+        *args,
+        **kwargs
     ):
-        
-        super().__init__()
+
+        super().__init__(*args, **kwargs)
 
         self.dim = max(A.shape)
         self.state = State()
@@ -105,7 +107,7 @@ class ClassicControlTask(InteractionTask):
         self.noise = noise
 
     def finit(self):
-        """finit 
+        """finit
 
         Define whether to use continuous or discrete representation.
         """
@@ -117,12 +119,12 @@ class ClassicControlTask(InteractionTask):
             self.B = self.B_d
 
     def reset(self, dic=None):
-        """reset 
+        """reset
 
         rorce all substates except the first to be null. Store the last state as an attribute (useful for rendering).
 
         .. warning::
-        
+
             dic mechanism likely outdated.
 
 
@@ -140,7 +142,7 @@ class ClassicControlTask(InteractionTask):
         self.state_last_x = copy.copy(self.state["x"]["values"])
 
     def user_step(self, user_action):
-        """user step 
+        """user step
 
         Apply equations defined in the class docstring.
 
@@ -186,11 +188,11 @@ class ClassicControlTask(InteractionTask):
         return self.state, 0, is_done, {}
 
     def assistant_step(self, assistant_action):
-        """assistant_step 
+        """assistant_step
 
         Nothing.
 
-        :param assistant_action: assistant action 
+        :param assistant_action: assistant action
         :type assistant_action: `State<coopihc.space.State.State>`
         :return: (task state, task reward, is_done flag, {})
         :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float, boolean, dictionnary)
@@ -199,7 +201,7 @@ class ClassicControlTask(InteractionTask):
         return self.state, 0, False, {}
 
     def render(self, *args, **kwargs):
-        """render 
+        """render
 
         Text mode: print task state
 

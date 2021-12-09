@@ -13,7 +13,7 @@ class ExamplePolicy(BasePolicy):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def sample(self):
+    def sample(self, observation=None):
         """sample
 
         Compares 'x' to goal and issues +-1 accordingly.
@@ -21,14 +21,18 @@ class ExamplePolicy(BasePolicy):
         :return: action, reward
         :rtype: tuple(`StateElement<coopihc.space.StateElement.StateElement>`, float)
         """
+
+        if observation is None:
+            observation = self.observation
+
         if (
-            self.observation["task_state"]["x"]
-            < self.observation["{}_state".format(self.host.role)]["goal"]
+            observation["task_state"]["x"]
+            < observation["{}_state".format(self.host.role)]["goal"]
         ):
             _action_value = 1
         elif (
-            self.observation["task_state"]["x"]
-            > self.observation["{}_state".format(self.host.role)]["goal"]
+            observation["task_state"]["x"]
+            > observation["{}_state".format(self.host.role)]["goal"]
         ):
             _action_value = -1
         else:

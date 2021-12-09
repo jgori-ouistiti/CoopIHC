@@ -13,23 +13,27 @@ class ELLDiscretePolicy(BasePolicy):
 
     """
 
-    def __init__(self, action_state, seed = None, *args, **kwargs):
-        super().__init__(action_state, *args, **kwargs)
+    def __init__(self, action_state, *args, seed=None, **kwargs):
+        super().__init__(*args, action_state=action_state, **kwargs)
         self.explicit_likelihood = True
         self.rng = numpy.random.default_rng(seed)
 
-    @classmethod
-    def attach_likelihood_function(cls, _function):
-        """attach_likelihood_function
+    # @classmethod
+    # def attach_likelihood_function(cls, _function):
+    #     """attach_likelihood_function
 
-        Attach the probabilistic model (likelihood function) to the class
+    #     Attach the probabilistic model (likelihood function) to the class
 
-        :param _function: likelihood function
-        :type _function: function
-        """
-        cls.compute_likelihood = _function
+    #     :param _function: likelihood function
+    #     :type _function: function
+    #     """
 
-    def sample(self):
+    #     cls.compute_likelihood = _function
+
+    def attach_likelihood_function(self, _function):
+        self._bind(_function, "compute_likelihood")
+
+    def sample(self, observation=None):
         """sample
 
         Select the action according to its probability
@@ -37,8 +41,8 @@ class ELLDiscretePolicy(BasePolicy):
         :return: action, reward
         :rtype: tuple(`StateElement<coopihc.space.StateElement.StateElement>`, float)
         """
-
-        observation = self.host.inference_engine.buffer[-1]
+        if observation is None:
+            observation = self.host.inference_engine.buffer[-1]
         actions, llh = self.forward_summary(observation)
         action = actions[self.rng.choice(len(llh), p=llh)]
         self.action_state["action"] = action

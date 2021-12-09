@@ -14,8 +14,8 @@ class CascadedObservationEngine(BaseObservationEngine):
     :type engine_list: list(:py:mod:`Observation Engine<coopihc.observation>`)
     """
 
-    def __init__(self, engine_list):
-        super().__init__()
+    def __init__(self, engine_list, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.engine_list = engine_list
         # self.type = "multi"
 
