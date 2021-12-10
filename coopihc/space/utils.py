@@ -4,21 +4,19 @@ def remove_prefix(text, prefix):
     return text[text.startswith(prefix) and len(prefix) :]
 
 
+class StateNotContainedWarning(Warning):
+    """Warning raised when the value is not contained in the space."""
+
+    __module__ = Warning.__module__
+
+
 class SpaceLengthError(Exception):
-    """Error raised when the space length does not match the value length.
-
-    :meta private:
-
-    """
+    """Error raised when the space length does not match the value length."""
 
     __module__ = Exception.__module__
 
 
 class StateNotContainedError(Exception):
-    """Error raised when the value is not contained in the space.
-
-    :meta private:
-
-    """
+    """Error raised when the value is not contained in the space."""
 
     __module__ = Exception.__module__

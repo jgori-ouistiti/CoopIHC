@@ -3,10 +3,15 @@ import numpy
 import json
 import sys
 import itertools
+import warnings
 
 from coopihc.helpers import flatten
 from coopihc.space.Space import Space
-from coopihc.space.utils import SpaceLengthError, StateNotContainedError
+from coopihc.space.utils import (
+    SpaceLengthError,
+    StateNotContainedError,
+    StateNotContainedWarning,
+)
 
 
 class StateElement:
@@ -20,7 +25,7 @@ class StateElement:
     :param list(numpy.array) values: Value of the substate. Some processing is applied to values if the input does not match the space and correct syntax.
     :param list(Space) spaces: Space (domain) in which value lives. Some processing is applied to spaces if the input does not match the correct syntax.
     :param str clipping_mode: What to do when the value is not in the space. If 'error', raise a StateNotContainedError. If 'warning', print a warning on stdout. If 'clip', automatically clip the value so that it is contained. Defaults to 'warning'.
-    :param str typing_priority: What to do when the type of the space does not match the type of the value. If 'space', convert the value to the dtype of the space, if 'value' the converse. Default to space.
+    :param str typing_priority: What to do when the type of the space does not match the type of the value. If 'space', convert the value to the dtype of the space, if 'value' the converse. Defaults to space.
 
     """
 
@@ -454,9 +459,11 @@ class StateElement:
                         )
                     )
                 elif self.clipping_mode == "warning":
-                    print(
-                        "Warning: Instantiated Value {}({}) is not contained in corresponding space {} (low = {}, high = {})".format(
-                            str(v), type(v), str(s), str(s.low), str(s.high)
+                    warnings.warn(
+                        StateNotContainedWarning(
+                            "Warning: Instantiated Value {}({}) is not contained in corresponding space {} (low = {}, high = {})".format(
+                                str(v), type(v), str(s), str(s.low), str(s.high)
+                            )
                         )
                     )
                 elif self.clipping_mode == "clip":
