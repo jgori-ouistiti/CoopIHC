@@ -1,8 +1,7 @@
 from coopihc.space.Space import Space
 from coopihc.helpers import flatten
 import numpy
-
-import sys
+import copy
 
 
 def test_init():
@@ -167,119 +166,179 @@ def test_init():
             [numpy.array([i for i in range(gridsize[1])], dtype=numpy.int16)]
         )
 
-    # number_of_targets = 1
+    # ========= multi int 2D
+    number_of_targets = 3
+    s = Space(
+        flatten(
+            [
+                [
+                    numpy.array([i for i in range(gridsize[0])], dtype=numpy.int16),
+                    numpy.array([i for i in range(gridsize[1])], dtype=numpy.int16),
+                ]
+                for j in range(number_of_targets)
+            ]
+        )
+    )
+
+    # prop and attributes
+    assert s.dtype == numpy.int16
+    assert s.continuous == False
+    assert s.shape == (6, 1)
+    assert s.N == None
+    assert s.high == [30, 30, 30, 30, 30, 30]
+    assert s.low == [0, 0, 0, 0, 0, 0]
+    for i in range(s.shape[0]):
+        assert (s.range[i] == numpy.array([[i for i in range(31)]])).all()
+
+    # __ methods
+    # __len__
+    assert len(s) == 6
+    # __contains__
+    assert numpy.array([1, 2, 4, 5, 3, 2]) in s
+    assert numpy.array([-2, 5, 1, 1, 1, 1]) not in s
+    assert numpy.array([1, 35, 1, 1, 1, 1]) not in s
+    assert numpy.array([1, 35, 1, 1]) not in s
+
+    # __eq__
+
+    ss = Space(
+        [numpy.array([i for i in range(31)], dtype=numpy.int16) for j in range(6)]
+    )
+    assert ss == s
+
+    sss = Space(
+        [
+            numpy.array([i for i in range(gridsize[0])], dtype=numpy.int16),
+            numpy.array([i for i in range(gridsize[1])], dtype=numpy.int16),
+        ]
+    )
+    assert sss != s
+    ssss = Space(
+        flatten(
+            [
+                [
+                    numpy.array([i for i in range(31)], dtype=numpy.int16)
+                    for j in range(5)
+                ],
+                [numpy.array([i for i in range(5)], dtype=numpy.int16)],
+            ]
+        )
+    )
+    assert ssss != s
+
+    q = Space(
+        [numpy.array([i - j for i in range(31)], dtype=numpy.int16) for j in range(6)]
+    )
+    r = Space(
+        [numpy.array([i + j for i in range(31)], dtype=numpy.int16) for j in range(6)]
+    )
+    assert q != s
+    assert r != s
+
+    # __iter__
+    for n, _s in enumerate(s):
+        assert _s == Space(
+            [numpy.array([i for i in range(gridsize[1])], dtype=numpy.int16)]
+        )
+    assert n == 5
+
+    # =========== None single space
+
+    s = Space([numpy.array([None], dtype=numpy.object)])
+    # prop and attributes
+    assert s.dtype == numpy.object
+    assert s.continuous == False
+    assert s.shape == (1, 1)
+    assert s.range == [None]
+    assert s.high == [None]
+    assert s.low == [None]
+    assert s.N == None
+
+    # __ methods
+    # __len__
+    assert len(s) == 1
 
 
-#     h = Space(
-#         flatten(
-#             [
-#                 [
-#                     numpy.array([i for i in range(gridsize[0])], dtype=numpy.int16),
-#                     numpy.array([i for i in range(gridsize[1])], dtype=numpy.int16),
-#                 ]
-#                 for j in range(number_of_targets)
-#             ]
-#         )
-#     )
+def test_sample():
+    # ================== Discrete
+    number_of_targets = 3
+    gridsize = [5, 5]
+    s = Space(
+        flatten(
+            [
+                [
+                    numpy.array([i for i in range(gridsize[0])], dtype=numpy.int16),
+                    numpy.array([i for i in range(gridsize[1])], dtype=numpy.int16),
+                ]
+                for j in range(number_of_targets)
+            ]
+        ),
+        seed=123,
+    )
 
+    # -------- Check if samples are valid
+    for i in range(100):
+        assert s.sample() in s
+    # --------- Check two samples are different
+    assert (s.sample() != s.sample()).any()
+    # --------- Check that seeding works
+    ss = copy.deepcopy(s)
+    assert (ss.sample() == s.sample()).all()
+    sss = Space(
+        flatten(
+            [
+                [
+                    numpy.array([i for i in range(gridsize[0])], dtype=numpy.int16),
+                    numpy.array([i for i in range(gridsize[1])], dtype=numpy.int16),
+                ]
+                for j in range(number_of_targets)
+            ]
+        ),
+        seed=123,
+    )
+    ssss = Space(
+        flatten(
+            [
+                [
+                    numpy.array([i for i in range(gridsize[0])], dtype=numpy.int16),
+                    numpy.array([i for i in range(gridsize[1])], dtype=numpy.int16),
+                ]
+                for j in range(number_of_targets)
+            ]
+        ),
+        seed=123,
+    )
 
-# if _str == "action-space":
-#     h = Space(
-#         flatten(
-#             [
-#                 [
-#                     numpy.array([i for i in range(4)], dtype=numpy.int16),
-#                     numpy.array([i for i in range(4)], dtype=numpy.int16),
-#                 ]
-#                 for j in range(3)
-#             ]
-#         )
-#     )
-#     s = Space([numpy.array([1, 2, 3], dtype=numpy.int16)])
-#     a = Space([numpy.array([None], dtype=numpy.object)])
+    sfive = Space(
+        flatten(
+            [
+                [
+                    numpy.array([i for i in range(gridsize[0])], dtype=numpy.int16),
+                    numpy.array([i for i in range(gridsize[1])], dtype=numpy.int16),
+                ]
+                for j in range(number_of_targets)
+            ]
+        ),
+        seed=13,
+    )
 
-# if _str == "contains" or _str == "all":
-#     space = Space([numpy.array([1, 2, 3], dtype=numpy.int16)])
-#     x = numpy.array([2], dtype=numpy.int16)
-#     y = numpy.array([2], dtype=numpy.float32)
-#     yy = numpy.array([2])
-#     z = numpy.array([5])
-#     assert x in space
-#     assert y not in space
-#     assert yy in space
-#     assert z not in space
-
-#     space = Space(
-#         [-numpy.ones((2, 2), dtype=numpy.float32), numpy.ones((2, 2), numpy.float32)]
-#     )
-#     x = numpy.array([[1, 1], [1, 1]], dtype=numpy.int16)
-#     y = numpy.array([[1, 1], [1, 1]], dtype=numpy.float32)
-#     yy = numpy.array([[1, 1], [1, 1]])
-#     yyy = numpy.array([[1.0, 1.0], [1.0, 1.0]])
-#     z = numpy.array([[5, 1], [1, 1]], dtype=numpy.float32)
-#     assert x in space
-#     assert y in space
-#     assert yy in space
-#     assert yyy in space
-#     assert z not in space
-
-#     gridsize = (31, 31)
-#     g = Space(
-#         [
-#             numpy.array([i for i in range(gridsize[0])], dtype=numpy.int16),
-#             numpy.array([i for i in range(gridsize[1])], dtype=numpy.int16),
-#         ]
-#     )
-
-#     x = numpy.array([2, 3])
-#     xx = numpy.array([2, 3, 1])
-#     xxx = numpy.array([2.0, 3.0])
-#     xxxx = numpy.array([150, 21])
-
-#     assert x in g
-#     assert xx not in g
-#     assert xxx not in g
-#     assert xxxx not in g
-
-# if _str == "sample" or _str == "all":
-#     gridsize = (31, 31)
-#     f = Space(
-#         [
-#             numpy.array([[-2, -2], [-1, -1]], dtype=numpy.float32),
-#             numpy.ones((2, 2), numpy.float32),
-#         ]
-#     )
-#     g = Space(
-#         [
-#             numpy.array([i for i in range(gridsize[0])], dtype=numpy.int16),
-#             numpy.array([i for i in range(gridsize[1])], dtype=numpy.int16),
-#         ]
-#     )
-#     h = Space([numpy.array([i for i in range(10)], dtype=numpy.int16)])
-
-#     f.sample()
-#     g.sample()
-#     h.sample()
-
-# if _str == "iter" or _str == "all":
-#     gridsize = (31, 31)
-#     g = Space(
-#         [
-#             numpy.array([i for i in range(gridsize[0])], dtype=numpy.int16),
-#             numpy.array([i for i in range(gridsize[1])], dtype=numpy.int16),
-#         ]
-#     )
-#     for _i in g:
-#         print(_i)
-
-#     h = Space(
-#         [
-#             -numpy.ones((3, 4), dtype=numpy.float32),
-#             numpy.ones((3, 4), dtype=numpy.float32),
-#         ]
-#     )
-
-#     for _h in h:
-#         print(_h)
-#         for __h in _h:
-#             print(__h)
+    a1 = sss.sample()
+    a2 = ssss.sample()
+    a3 = sfive.sample()
+    assert (a1 == a2).all()
+    assert (a1 != a3).any()
+    # =============== Continuous
+    s = Space(
+        [
+            -numpy.ones((2, 2), dtype=numpy.float32),
+            numpy.ones((2, 2), dtype=numpy.float32),
+        ]
+    )
+    # -------- Check if samples are valid
+    for i in range(100):
+        assert s.sample() in s
+    # --------- Check two samples are different
+    assert (s.sample() != s.sample()).any()
+    # --------- Check that seeding works
+    ss = copy.deepcopy(s)
+    assert (ss.sample() == s.sample()).all()
