@@ -13,7 +13,7 @@ class BaseInferenceEngine:
 
     """"""
 
-    def __init__(self, buffer_depth=1):
+    def __init__(self, *args, buffer_depth=1, **kwargs):
         self.buffer = None
         self.buffer_depth = buffer_depth
         self.render_flag = None

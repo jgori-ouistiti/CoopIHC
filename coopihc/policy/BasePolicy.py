@@ -15,32 +15,18 @@ class BasePolicy:
     Base Policy class. Randomly samples from the action state. You have can provide an action state as an argument (args[0]). If no action state is provided, the policy is initialized with an action state with a single 'None' action.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, action_state=None, **kwargs):
 
         # If a state is provided, use it; else create one (important not to lose the reference w/r the game_state)
-        if args:
-            self.action_state = args[0]
-        else:
+
+        if action_state is None:
             action_state = State()
             action_state["action"] = StateElement(
                 values=None,
                 spaces=Space([numpy.array([None], dtype=numpy.object)]),
             )
-            self.action_state = action_state
-        # if kwargs:
-        #     spaces = kwargs.get('action_space')
-        #     if spaces is not None:
-        #         self.action_state['action']['spaces'] = spaces
-        #     set = kwargs.get('action_set')
-        #     if set is not None:
-        #         self.action_state['action']['possible_values'] = set
-        #     values = kwargs.get('action_values')
-        #     if values is not None:
-        #         self.action_state['action']['values'] = values
-        #     clipping_mode = kwargs.get('clipping_mode')
-        #     if clipping_mode is not None:
-        #         self.action_state['action']['clipping_mode'] = clipping_mode
 
+        self.action_state = action_state
         self.host = None
 
     # https://stackoverflow.com/questions/1015307/python-bind-an-unbound-method
@@ -98,7 +84,7 @@ class BasePolicy:
         """
         pass
 
-    def sample(self):
+    def sample(self, observation=None):
         """sample
 
         (Randomly) Sample from the policy

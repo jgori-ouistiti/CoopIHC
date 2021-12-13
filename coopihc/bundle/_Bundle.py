@@ -26,7 +26,7 @@ class _Bundle:
     :meta public:
     """
 
-    def __init__(self, task, user, assistant, **kwargs):
+    def __init__(self, task, user, assistant, *args, **kwargs):
         self.kwargs = kwargs
         self.task = task
         self.task.bundle = self

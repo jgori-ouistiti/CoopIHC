@@ -18,9 +18,9 @@ class Space:
     :param \*\*kwargs: For future use `\*\*kwargs`.
     """
 
-    def __init__(self, array_list, *args, **kwargs):
+    def __init__(self, array_list, *args, seed=None, **kwargs):
         self._cflag = None
-        self.rng = numpy.random.default_rng()
+        self.rng = numpy.random.default_rng(seed)
 
         # Deal with variable format input
         if isinstance(array_list, numpy.ndarray):
@@ -61,6 +61,21 @@ class Space:
             return numpy.all(item >= self.low) and numpy.all(item <= self.high)
         else:
             return numpy.array([item[n] in r for n, r in enumerate(self.range)]).all()
+
+    def __eq__(self, other):
+        if self.dtype != other.dtype:
+            return False
+        if self.shape != other.shape:
+            return False
+        for _sr, _or in zip(self.range, other.range):
+            condition = _sr != _or
+            try:
+                if condition:
+                    return False
+            except ValueError:
+                if condition.any():
+                    return False
+        return True
 
     def __iter__(self):
         self.n = 0
@@ -124,7 +139,13 @@ class Space:
         if self.continuous:
             low = self.range[0]
         else:
-            low = [min(r.squeeze()) for r in self.range]
+            low = []
+            for r in self.range:
+                r = r.squeeze()
+                try:
+                    low.append(min(r))
+                except TypeError:
+                    low.append(r)
         return low
 
     @property
@@ -138,12 +159,19 @@ class Space:
         if self.continuous:
             high = self.range[1]
         else:
-            high = [max(r.squeeze()) for r in self.range]
+
+            high = []
+            for r in self.range:
+                r = r.squeeze()
+                try:
+                    high.append(max(r))
+                except TypeError:
+                    high.append(r)
         return high
 
     @property
     def N(self):
-        """Returns the number of elements in the range. Only useful for 1d discrete spaces.
+        """Returns the cardinality of the set (space) --- Only useful for 1d discrete spaces.
 
         :return: Description of returned object.
         :rtype: type
@@ -151,9 +179,12 @@ class Space:
         """
         if self.continuous:
             return None
+        elif self.dtype == numpy.object:
+            return None
         else:
             if len(self) > 1:
                 return None
+
             else:
                 return len(self.range[0].squeeze())
 
@@ -195,6 +226,7 @@ class Space:
         :rtype: boolean
 
         """
+
         if self._cflag is None:
             self._cflag = numpy.issubdtype(self.dtype, numpy.inexact)
         return self._cflag
@@ -213,12 +245,14 @@ class Space:
             ) + self.low
         else:
             # The conditional check for __iter__ is here to deal with single value spaces. Will not work if that value happens to be a string, but that is okay.
-            return [
-                self.rng.choice(r.squeeze(), replace=True).astype(self.dtype)
-                if hasattr(r.squeeze().tolist(), "__iter__")
-                else r
-                for r in self.range
-            ]
+            return numpy.array(
+                [
+                    self.rng.choice(r.squeeze(), replace=True).astype(self.dtype)
+                    if hasattr(r.squeeze().tolist(), "__iter__")
+                    else r
+                    for r in self.range
+                ]
+            ).reshape(self.shape)
 
     def serialize(self):
         """Call this to generate a dict representation of Space.
@@ -226,17 +260,5 @@ class Space:
         :return: dictionary representation of a Space object
         :rtype: dict
         """
+
         return {"array_list": self._array}
-
-    def from_dict(data):
-        """Call this to generate a Space from a representation as a dictionary.
-
-        :param data: dictionary representation of a Space
-        :type data: dict
-        :return: Space with the supplied information
-        :rtype: Space
-        """
-        # Do not create new instance, if type is already Space
-        if type(data) is Space:
-            return data
-        return Space(**data)

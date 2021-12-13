@@ -44,6 +44,7 @@ class ExampleUser(BaseAgent):
 
         super().__init__(
             "user",
+            *args,
             agent_policy=agent_policy,
             agent_observation_engine=observation_engine,
             agent_inference_engine=inference_engine,

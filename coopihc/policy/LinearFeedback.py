@@ -22,13 +22,13 @@ class LinearFeedback(BasePolicy):
     def __init__(
         self,
         state_indicator,
-        slice,
         action_state,
         *args,
         feedback_gain="identity",
+        slice=None,
         **kwargs
     ):
-        super().__init__(action_state, *args, **kwargs)
+        super().__init__(*args, action_state=action_state, **kwargs)
         self.state_indicator = state_indicator
         self.slice = slice
         self.noise_function = kwargs.get("noise_function")
@@ -49,7 +49,7 @@ class LinearFeedback(BasePolicy):
         """
         self.feedback_gain = gain
 
-    def sample(self):
+    def sample(self, observation=None):
         """sample
 
         Applies the gain.
@@ -57,21 +57,24 @@ class LinearFeedback(BasePolicy):
         :return: action, reward
         :rtype: tuple(`StateElement<coopihc.space.StateElement.StateElement>`, float)
         """
+        if observation is None:
+            observation = self.observation
+
         if isinstance(self.slice, list):
             raise NotImplementedError
-        substate = self.observation
+
+        substate = observation
         for key in self.state_indicator:
             substate = substate[key]
-        substate = substate[self.slice]
+        if self.slice is not None:
+            substate = substate[self.slice]
 
         if isinstance(self.feedback_gain, str):
             if self.feedback_gain == "identity":
                 self.feedback_gain = -numpy.eye(max(substate["values"][0].shape))
 
         noiseless_feedback = -self.feedback_gain @ substate.reshape((-1, 1))
-        noise = self.noise_function(
-            noiseless_feedback, self.observation, *self.noise_args
-        )
+        noise = self.noise_function(noiseless_feedback, observation, *self.noise_args)
         action = self.action
         action["values"] = noiseless_feedback + noise.reshape((-1, 1))
         # if not hasattr(noise, '__iter__'):

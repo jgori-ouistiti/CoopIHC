@@ -10,9 +10,8 @@ class BaseObservationEngine:
 
     """
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         pass
-        # self.type = "base"
 
     def __content__(self):
         """__content__

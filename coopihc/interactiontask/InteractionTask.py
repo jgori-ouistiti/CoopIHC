@@ -28,7 +28,7 @@ class InteractionTask(ABC):
 
     """
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
 
         self._state = State()
         self.bundle = None
