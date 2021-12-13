@@ -1,3 +1,7 @@
+"""This module provides tests for the InteractionTask class of the
+coopihc package."""
+
+
 from coopihc import InteractionTask
 
 
