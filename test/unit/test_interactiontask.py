@@ -8,20 +8,16 @@ def test_imports():
     from coopihc.interactiontask.InteractionTask import InteractionTask
 
 
-def test_empty_init():
-    """Tries to initialize an InteractionTask without arguments."""
-    InteractionTask()
-
-
-def test_init():
-    """Tests the initializer of the InteractionTask class."""
-    test_empty_init()
+def test_example():
+    """Tries to import and create the example task."""
+    from coopihc import ExampleTask
+    ExampleTask()
 
 
 def test_interactiontask():
     """Tests the methods provided by the InteractionTask class."""
     test_imports()
-    test_init()
+    test_example()
 
 
 # +----------------------+
