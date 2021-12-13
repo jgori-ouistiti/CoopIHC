@@ -11,6 +11,7 @@ from coopihc.space.utils import (
     SpaceLengthError,
     StateNotContainedError,
     StateNotContainedWarning,
+    SpacesNotIdenticalError,
 )
 
 
@@ -108,11 +109,14 @@ class StateElement:
 
     # Itemization
     def __setitem__(self, key, item):
-        if key == "values":
-            setattr(self, key, self._preprocess_values(item))
-        elif key == "spaces":
-            setattr(self, key, self._preprocess_spaces(item))
-        elif key == "clipping_mode":
+        # if key == "values":
+        #     # setattr(self, key, self._preprocess_values(item))
+        #     setattr(self, key, item)
+        # elif key == "spaces":
+        #     setattr(self, key, self._preprocess_spaces(item))
+        # elif key == "clipping_mode":
+        #     setattr(self, key, item)
+        if key in ["values", "spaces", "clipping_mode"]:
             setattr(self, key, item)
         else:
             raise ValueError(
@@ -133,20 +137,22 @@ class StateElement:
                 'Indexing only works with keys ("values", "spaces", "clipping_mode") or integers'
             )
 
-    def __getattr__(self, key):
-        _np = sys.modules["numpy"]
-        if hasattr(_np, key):
-            # adapted from https://stackoverflow.com/questions/13776504/how-are-arguments-passed-to-a-function-through-getattr
-            def wrapper(*args, **kwargs):
-                return getattr(_np, key)(self.values, *args, **kwargs)
+    # Numpy switch, Not working, see Issue 42
+    # def __getattr__(self, key):
+    #     _np = sys.modules["numpy"]
+    #     print(_np, key, getattr(_np, key))
+    #     if hasattr(_np, key):
+    #         # adapted from https://stackoverflow.com/questions/13776504/how-are-arguments-passed-to-a-function-through-getattr
+    #         def wrapper(*args, **kwargs):
+    #             return getattr(_np, key)(self.values, *args, **kwargs)
 
-            return wrapper
+    #         return wrapper
 
-        raise AttributeError(
-            "StateElement does not have attribute {}. Tried to fall back to numpy but it also did not have this attribute".format(
-                key
-            )
-        )
+    #     raise AttributeError(
+    #         "StateElement does not have attribute {}. Tried to fall back to numpy but it also did not have this attribute".format(
+    #             key
+    #         )
+    #     )
 
     # Comparison
     def _comp_preface(self, other):
@@ -157,9 +163,17 @@ class StateElement:
         return self, other
 
     def __eq__(self, other):
+        if self.spaces != other.spaces:
+            return False
         self, other = self._comp_preface(other)
         return numpy.array(
             [numpy.equal(s, o) for s, o in zip(self["values"], other)]
+        ).all()
+
+    def equal(self, other, *args, **kwargs):
+        self, other = self._comp_preface(other)
+        return numpy.array(
+            [numpy.equal(s, o, *args, **kwargs) for s, o in zip(self["values"], other)]
         ).all()
 
     def __lt__(self, other):
@@ -374,7 +388,6 @@ class StateElement:
         """
         lists = []
         for value, space in zip(self.values, self.spaces):
-            # print(value, space)
             if not space.continuous:
                 for r in space.range:
                     lists.append(r.squeeze().tolist())

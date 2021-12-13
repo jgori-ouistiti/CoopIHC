@@ -342,3 +342,25 @@ def test_sample():
     # --------- Check that seeding works
     ss = copy.deepcopy(s)
     assert (ss.sample() == s.sample()).all()
+
+def test_eq():
+    s = Space(
+        [
+            -numpy.ones((2, 2), dtype=numpy.float32),
+            numpy.ones((2, 2), dtype=numpy.float32),
+        ]
+    )
+    v = Space(
+        [
+            -numpy.ones((2, 2), dtype=numpy.float32),
+            numpy.ones((2, 2), dtype=numpy.float32),
+        ]
+    )
+    w = Space(
+        [
+            -numpy.ones((2, 2), dtype=numpy.float64),
+            numpy.ones((2, 2), dtype=numpy.float64),
+        ]
+    )
+    assert s == v
+    assert s != w

@@ -195,60 +195,283 @@ def test_init_more_complex():
     x.typing_priority = "space"
     x["values"] = [0, 2.0, -3.0]
     assert x["values"][0].dtype == numpy.float32
-    assert x["values"][0].dtype == numpy.int16
-    assert x["values"][0].dtype == numpy.int16
+    assert x["values"][1].dtype == numpy.int16
+    assert x["values"][2].dtype == numpy.int16
     x.typing_priority = "value"
     x["values"] = [0, 2.0, -3.0]
-    assert x["values"][0].dtype == numpy.int16
-    assert x["values"][0].dtype == numpy.float32
-    assert x["values"][0].dtype == numpy.float32
+    assert x["values"][0].dtype == numpy.int64
+    assert x["values"][1].dtype == numpy.float64
+    assert x["values"][2].dtype == numpy.float64
 
 
-# ===========================================================
-#     gridsize = (11, 11)
-#     number_of_targets = 3
-#     y = StateElement(
-#         values=None,
-#         spaces=[
-#             Space(
-#                 [
-#                     numpy.array([i for i in range(gridsize[0])], dtype=numpy.int16),
-#                     numpy.array([i for i in range(gridsize[1])], dtype=numpy.int16),
-#                 ]
-#             )
-#             for j in range(number_of_targets)
-#         ],
-#         clipping_mode="error",
-#     )
+x = StateElement(
+        values=1.0,
+        spaces=Space(
+            [
+                numpy.array([-1], dtype=numpy.float32),
+                numpy.array([1], dtype=numpy.float32),
+            ]
+        ),
+    )
+y = StateElement(
+        values=[0,2,-4],
+        spaces=[
+            Space(
+                [
+                    numpy.array([-1], dtype=numpy.float32),
+                    numpy.array([1], dtype=numpy.float32),
+                ]
+            ),
+            Space([numpy.array([1, 2, 3], dtype=numpy.int16)]),
+            Space([numpy.array([-6, -5, -4, -3, -2, -1], dtype=numpy.int16)]),
+        ],
+    )
+
+####### COmparisons
+
+######    __eq__
+######    __lt__
+######    __gt__
+######    __le__
+######    __ge__
 
 
-# x = StateElement(
-#     values=None,
-#     spaces=[
-#         coopihc.space.Space(
-#             [
-#                 numpy.array([-1], dtype=numpy.float32),
-#                 numpy.array([1], dtype=numpy.float32),
-#             ]
-#         ),
-#         coopihc.space.Space([numpy.array([1, 2, 3], dtype=numpy.int16)]),
-#         coopihc.space.Space([numpy.array([-6, -5, -4, -3, -2, -1], dtype=numpy.int16)]),
-#     ],
-# )
+
+def test_compare_eq():
+    x = StateElement(
+        values=1.0,
+        spaces=Space(
+            [
+                numpy.array([-1], dtype=numpy.float32),
+                numpy.array([1], dtype=numpy.float32),
+            ]
+        ),
+    )
+    y = StateElement(
+            values=[0,2,-4],
+            spaces=[
+                Space(
+                    [
+                        numpy.array([-1], dtype=numpy.float32),
+                        numpy.array([1], dtype=numpy.float32),
+                    ]
+                ),
+                Space([numpy.array([1, 2, 3], dtype=numpy.int16)]),
+                Space([numpy.array([-6, -5, -4, -3, -2, -1], dtype=numpy.int16)]),
+            ],
+        )
 
 
-# gridsize = (11, 11)
-# number_of_targets = 3
-# y = StateElement(
-#     values=None,
-#     spaces=[
-#         Space(
-#             [
-#                 numpy.array([i for i in range(gridsize[0])], dtype=numpy.int16),
-#                 numpy.array([i for i in range(gridsize[1])], dtype=numpy.int16),
-#             ]
-#         )
-#         for j in range(number_of_targets)
-#     ],
-#     clipping_mode="error",
-# )
+
+    assert x == StateElement(
+        values=1.0,
+        spaces=Space(
+            [
+                numpy.array([-1], dtype=numpy.float32),
+                numpy.array([1], dtype=numpy.float32),
+            ]
+        ),
+    )
+    assert x != StateElement(
+        values=0.5,
+        spaces=Space(
+            [
+                numpy.array([-1], dtype=numpy.float32),
+                numpy.array([1], dtype=numpy.float32),
+            ]
+        ),
+    )
+    assert x != StateElement(
+        values=1.0,
+        spaces=Space(
+            [
+                numpy.array([-1], dtype=numpy.float64),
+                numpy.array([1], dtype=numpy.float64),
+            ]
+        ),
+    )
+    assert x == StateElement(
+        values=numpy.array([1.0], dtype = numpy.float32),
+        spaces=Space(
+            [
+                numpy.array([-1], dtype=numpy.float64),
+                numpy.array([1], dtype=numpy.float64),
+            ]
+        ),
+        typing_priority = 'value'
+    )
+
+    assert y == StateElement(
+        values=[0,2,-4],
+        spaces=[
+            Space(
+                [
+                    numpy.array([-1], dtype=numpy.float32),
+                    numpy.array([1], dtype=numpy.float32),
+                ]
+            ),
+            Space([numpy.array([1, 2, 3], dtype=numpy.int16)]),
+            Space([numpy.array([-6, -5, -4, -3, -2, -1], dtype=numpy.int16)]),
+        ],
+    )
+    assert y != StateElement(
+        values=[0,3,-4],
+        spaces=[
+            Space(
+                [
+                    numpy.array([-1], dtype=numpy.float32),
+                    numpy.array([1], dtype=numpy.float32),
+                ]
+            ),
+            Space([numpy.array([1, 2, 3], dtype=numpy.int16)]),
+            Space([numpy.array([-6, -5, -4, -3, -2, -1], dtype=numpy.int16)]),
+        ],
+    )
+def test_compare_lt():
+    pass
+def test_compare_gt():
+    pass
+def test_compare_le():
+    pass
+def test_compare_ge():
+    pass
+
+####### Arithmetic
+
+######    __neg__
+######    __add__
+######    __radd__
+######    __sub__
+######    __rsub__
+######    __mul__
+######    __rmul__
+######    __pow__
+######    __matmul__
+######    __rmatmul__
+
+    
+x = StateElement(
+        values=0.2,
+        spaces=Space(
+            [
+                numpy.array([-1], dtype=numpy.float32),
+                numpy.array([1], dtype=numpy.float32),
+            ]
+        ),
+    )
+y = StateElement(
+        values=0.2,
+        spaces=Space(
+            [
+                numpy.array([-1], dtype=numpy.float32),
+                numpy.array([1], dtype=numpy.float32),
+            ]
+        ),
+    )
+
+def test_neg():
+    y['values'] = -0.2
+    assert -x == y
+    assert x == -y
+    assert -(-x) == x
+def test_add_radd():
+    y['values'] = .2
+    assert x + y == StateElement(
+        values=0.4,
+        spaces=Space(
+            [
+                numpy.array([-1], dtype=numpy.float32),
+                numpy.array([1], dtype=numpy.float32),
+            ]
+        ),
+    )
+    assert y + x == StateElement(
+        values=0.4,
+        spaces=Space(
+            [
+                numpy.array([-1], dtype=numpy.float32),
+                numpy.array([1], dtype=numpy.float32),
+            ]
+        ),
+    )
+    a = .5
+    assert x + a == StateElement(
+        values=.7,
+        spaces=Space(
+            [
+                numpy.array([-1], dtype=numpy.float32),
+                numpy.array([1], dtype=numpy.float32),
+            ]
+        ),
+    )
+    assert a + x == StateElement(
+        values=.7,
+        spaces=Space(
+            [
+                numpy.array([-1], dtype=numpy.float32),
+                numpy.array([1], dtype=numpy.float32),
+            ]
+        ),
+    )
+
+def test_sub_rsub():
+    assert x - y == StateElement(
+        values=0,
+        spaces=Space(
+            [
+                numpy.array([-1], dtype=numpy.float32),
+                numpy.array([1], dtype=numpy.float32),
+            ]
+        ),
+    )
+    assert y - x == StateElement(
+        values=0,
+        spaces=Space(
+            [
+                numpy.array([-1], dtype=numpy.float32),
+                numpy.array([1], dtype=numpy.float32),
+            ]
+        ),
+    )
+    b = 0.2
+    assert b - x == StateElement(
+        values=0,
+        spaces=Space(
+            [
+                numpy.array([-1], dtype=numpy.float32),
+                numpy.array([1], dtype=numpy.float32),
+            ]
+        ),
+    )
+    assert x - b == StateElement(
+        values=0,
+        spaces=Space(
+            [
+                numpy.array([-1], dtype=numpy.float32),
+                numpy.array([1], dtype=numpy.float32),
+            ]
+        ),
+    )
+
+def test_mul():
+    pass
+def test_rmul():
+    pass
+def test_pow():
+    pass
+def test_matmul():
+    pass
+def test_rmatmul():
+    pass
+
+def test_arithmetic():
+    test_neg()
+    test_add_radd()
+    test_sub_rsub()   
+
+    test_mul()
+    test_rmul()
+    test_pow()
+    test_matmul()
+    test_rmatmul()
+

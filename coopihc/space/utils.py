@@ -20,3 +20,8 @@ class StateNotContainedError(Exception):
     """Error raised when the value is not contained in the space."""
 
     __module__ = Exception.__module__
+
+class SpacesNotIdenticalError(Exception):
+    """Error raised when the value is not contained in the space."""
+
+    __module__ = Exception.__module__
