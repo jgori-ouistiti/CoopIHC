@@ -30,7 +30,7 @@ install_requires = \
 
 setup_kwargs = {
     'name': 'coopihc',
-    'version': '0.0.5',
+    'version': '0.0.6',
     'description': 'Two-agent component-based interaction environments for computational HCI with Python',
     'long_description': None,
     'author': 'Julien Gori',

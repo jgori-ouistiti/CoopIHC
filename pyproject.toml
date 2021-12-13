@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "coopihc"
-version = "0.0.5"
+version = "0.0.6"
 description = "Two-agent component-based interaction environments for computational HCI with Python"
 authors = ["Julien Gori"]
 license = "MIT"
