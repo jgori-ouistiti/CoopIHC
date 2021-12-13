@@ -25,12 +25,12 @@ install_requires = \
  'gym>=0.21.0,<0.22.0',
  'matplotlib>=3,<4',
  'numpy>=1,<2',
- 'scipy>=1,<2',
+ 'scipy>=1.7.3,<2.0.0',
  'tabulate']
 
 setup_kwargs = {
     'name': 'coopihc',
-    'version': '0.0.4',
+    'version': '0.0.5',
     'description': 'Two-agent component-based interaction environments for computational HCI with Python',
     'long_description': None,
     'author': 'Julien Gori',
