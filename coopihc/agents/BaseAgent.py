@@ -100,7 +100,47 @@ class BaseAgent(ABC):
         # Define inference engine
         self.attach_inference_engine(agent_inference_engine, **inference_engine_kwargs)
 
-    def _content__(self):
+        self._override_components(kwargs)
+
+    def _override_components(self, init_kwargs):
+        """_override_components
+
+        Allows the end-user to override any component for any agent via a kwarg
+
+        kwargs are as follows:
+
+            * 'override_policy' = (policy, policy_kwargs)
+            * 'override_state' = state
+            * 'override_observation_engine' = (observation engine, observation engine_kwargs)
+            * 'override_inference_engine' = (inference engine, inference engine kwargs)
+
+        :param init_kwargs: kwargs passed from init
+        :type init_kwargs: dictionnary
+        """
+        agent_policy, agent_policy_kwargs = init_kwargs.get(
+            "override_policy", (None, None)
+        )
+        if agent_policy is not None:
+            self.attach_policy(agent_policy, **agent_policy_kwargs)
+
+        agent_state = init_kwargs.get("override_state", None)
+        if agent_state is not None:
+            self.state = agent_state
+
+        agent_obseng, agent_obseng_kwargs = init_kwargs.get(
+            "override_observation_engine", (None, None)
+        )
+        if agent_obseng is not None:
+            self.attach_observation_engine(agent_obseng, **agent_obseng_kwargs)
+
+        agent_infeng, agent_infeng_kwargs = init_kwargs.get(
+            "override_inference_engine", (None, None)
+        )
+        if agent_infeng is not None:
+            self.attach_inference_engine(agent_infeng, **agent_infeng_kwargs)
+        return
+
+    def __content__(self):
         """Custom class representation.
 
         A custom representation of the class.
@@ -112,10 +152,10 @@ class BaseAgent(ABC):
         """
         return {
             "Name": self.__class__.__name__,
-            "State": self.state._content__(),
-            "Observation Engine": self.observation_engine._content__(),
-            "Inference Engine": self.inference_engine._content__(),
-            "Policy": self.policy._content__(),
+            "State": self.state.__content__(),
+            "Observation Engine": self.observation_engine.__content__(),
+            "Inference Engine": self.inference_engine.__content__(),
+            "Policy": self.policy.__content__(),
         }
 
     @property
