@@ -18,7 +18,7 @@ class ExampleTask(InteractionTask):
         self.state["x"] = StateElement(
             values=0,
             spaces=Space(
-                [numpy.array([-4, -3, -2, -1, 0, 1, 2, 3, 4], dtype=numpy.nt16)]
+                [numpy.array([-4, -3, -2, -1, 0, 1, 2, 3, 4], dtype=numpy.int16)]
             ),
             clipping_mode="clip",
         )

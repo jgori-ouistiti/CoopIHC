@@ -1,12 +1,11 @@
-import inspect
 import numpy
 import collections
 
-from coopihc.space.Space import Space
-
-
 # not verified
 def hard_flatten(l):
+    # hack for circular import
+    from coopihc.space.Space import Space
+
     out = []
     if isinstance(l, (Space)):
         l = l.spaces

@@ -1,4 +1,5 @@
 import numpy
+import gym
 
 
 class Space:
@@ -31,7 +32,7 @@ class Space:
                     raise AttributeError(
                         "Input argument array_list must be or must inherit from numpy.ndarray instance."
                     )
-        self._array = array_list
+        self._array = [numpy.atleast_2d(_a) for _a in array_list]
 
         self._range = None
         self._shape = None
@@ -108,6 +109,18 @@ class Space:
         else:
             raise StopIteration
 
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            if self.continuous:
+                return self
+            else:
+                return Space([self._array[key]])
+        elif isinstance(key, slice):
+            raise NotImplementedError
+        else:
+            raise TypeError("Index must be int, not {}".format(type(key).__name__))
+
+    # might be able to delete that one
     @property
     def range(self):
         """If the space is continuous, returns low and high arrays, after having checked that they have the same shape. If the space is discrete, returns the list of possible values. The output is reshaped to 2d arrays.
@@ -125,7 +138,7 @@ class Space:
                             self._array[0], self._array[1]
                         )
                     )
-            self._range = [numpy.atleast_2d(_a) for _a in self._array]
+            self._range = self._array
         return self._range
 
     @property
@@ -262,3 +275,14 @@ class Space:
         """
 
         return {"array_list": self._array}
+
+    # def convert_to_gym(self):
+
+    #     # == If continuous
+    #     if numpy.issubdtype(self.dtype, numpy.inexact):
+    #         return [gym.spaces.Box(self.low, self.high)]
+    #     else:
+    #         ret_space = []
+    #         for sp in self:
+    #             ret_space.append(gym.spaces.Discrete(sp.N))
+    #     return ret_space

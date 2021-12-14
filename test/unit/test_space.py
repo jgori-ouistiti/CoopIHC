@@ -1,4 +1,5 @@
 from coopihc.space.Space import Space
+from coopihc.space.utils import discrete_space, continuous_space, multidiscrete_space
 from coopihc.helpers import flatten
 import numpy
 import copy
@@ -343,6 +344,7 @@ def test_sample():
     ss = copy.deepcopy(s)
     assert (ss.sample() == s.sample()).all()
 
+
 def test_eq():
     s = Space(
         [
@@ -364,3 +366,45 @@ def test_eq():
     )
     assert s == v
     assert s != w
+
+
+def test_getitem():
+    # discrete
+    s = Space(
+        [
+            numpy.array([1, 2, 3], dtype=numpy.int16),
+        ]
+    )
+    assert s[0] == s
+    # continuous
+    print("\n================\n")
+    s = Space(
+        [
+            -numpy.ones((2, 2), dtype=numpy.float32),
+            numpy.ones((2, 2), dtype=numpy.float32),
+        ]
+    )
+    assert s[0] == s
+    # multidiscrete
+    s = Space(
+        [
+            numpy.array([3, 4, 5], dtype=numpy.int16),
+            numpy.array([1, 2, 3], dtype=numpy.int16),
+        ]
+    )
+    assert s[0] == Space(
+        [
+            numpy.array([3, 4, 5], dtype=numpy.int16),
+        ]
+    )
+    assert s[1] == Space(
+        [
+            numpy.array([1, 2, 3], dtype=numpy.int16),
+        ]
+    )
+
+
+def test_shortcuts():
+    space = discrete_space([1, 2, 3])
+    space = continuous_space(-numpy.eye(2, 2), numpy.eye(2, 2))
+    space = multidiscrete_space([1, 2, 3], [4, 5, 6])
