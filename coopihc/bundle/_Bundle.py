@@ -1,4 +1,7 @@
-from coopihc.space import State, StateElement, Space
+from coopihc.space.Space import Space
+from coopihc.space.State import State
+from coopihc.space.StateElement import StateElement
+
 import numpy
 import yaml
 from collections import OrderedDict
