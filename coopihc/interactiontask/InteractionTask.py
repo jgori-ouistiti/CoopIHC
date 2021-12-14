@@ -1,3 +1,6 @@
+"""This module provides access to the InteractionTask class."""
+
+
 from abc import ABC, abstractmethod
 from coopihc.space.State import State
 from coopihc.space.StateElement import StateElement
