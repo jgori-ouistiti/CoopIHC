@@ -2,7 +2,8 @@
 coopihc package."""
 
 
-from coopihc import InteractionTask
+import numpy
+from coopihc import InteractionTask, StateElement, Space
 
 
 class MinimalTask(InteractionTask):
@@ -14,8 +15,20 @@ class MinimalTask(InteractionTask):
     def assistant_step(self):
         pass
 
-    def reset(self):
+    def reset(self, dic=None):
         pass
+
+
+class MinimalTaskWithState(MinimalTask):
+    """Non-functional minimal subclass including a state to use
+    in tests."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.state["x"] = StateElement(
+            values=0, spaces=Space([numpy.array([-1, 0, 1])])
+        )
 
 
 def test_imports():
@@ -150,11 +163,51 @@ def empty_init_fails():
         return True
 
 
+def test_double_base_reset_without_dic():
+    """Creates a minimal task and calls base reset on it twice."""
+    task = MinimalTaskWithState()
+    task._base_reset()
+    task._base_reset()
+
+
+def test_base_reset_randomness():
+    """Tests that state value is set to random value within space when
+    no dic is supplied."""
+    task = MinimalTaskWithState()
+    # Reset task state (should be random)
+    possible_values = [-1, 0, 1]
+    counter = {value: 0 for value in possible_values}
+
+    for _ in range(1000):
+        task._base_reset()
+        value = task.state["x"].values[0][0][0]
+        counter[value] += 1
+
+    for value in possible_values:
+        assert counter[value] > 0
+
+
+def test_base_reset_without_dic():
+    """Tests the reset method when no dic is provided."""
+    test_double_base_reset_without_dic()
+    test_base_reset_randomness()
+
+
+def test_base_reset():
+    """Tests the forced reset mechanism provided by the _base_reset method
+    of InteractionTask that is called by _Bundle.reset()."""
+    # Check reset without dic
+    test_base_reset_without_dic()
+
+    """The first thing that comes to mind that is missing is to verify the forced-reset mechanism. When you reset a bundle, you can pass it a reset_dictionnary {'task_state': task_reset_dic, 'user_state': user_reset_dic, etc.}. The value associated with the task_state key is passed to _base_reset as dic. A couple things to check here are that without dic provided, the state is randomly reset (maybe check by fixing the seed of the stateElements), with dic provided the reset is correctly achieved to the forced state in input, and in between (if the reset_dic specifies a value for x_1 but not x_2, x_2 should be reset randomly)"""
+
+
 def test_interactiontask():
     """Tests the methods provided by the InteractionTask class."""
     test_imports()
     test_example()
     test_init()
+    test_base_reset()
 
 
 # +----------------------+
