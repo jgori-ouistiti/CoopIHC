@@ -8,6 +8,36 @@ import numpy
 
 
 class Train:
+    """Generic Wrapper to make bundles compatibles with gym.Env
+
+    This is a generic Wrapper to make bundles compatibles with gym.Env. It is mainly here to be subclassed by other wrappers
+
+    :param bundle: bundle to wrap
+    :type bundle: `Bundle<coopihc.bundle.Bundle.Bundle`
+    :param train_user: whether to train the user, defaults to True
+    :type train_user: bool, optional
+    :param train_assistant: whether to train the assistant, defaults to True
+    :type train_assistant: bool, optional
+    :param convertor: lib to which the bundle will be made compatible for, defaults to "gym"
+    :type convertor: str, optional
+    :param observation_dict: to filter out observations, you can apply a dictionnary, defaults to None. e.g.:
+
+    ..code-block:: python
+
+        filterdict = OrderedDict(
+        {
+            "user_state": OrderedDict({"goal": 0}),
+            "task_state": OrderedDict({"x": 0}),
+        }
+    )
+
+    :type observation_dict: collections.OrderedDict, optional
+    :param reset_dic: During training, the bundle will be repeatedly reset. Pass the reset_dic here (see bundle reset mechanism), defaults to {}
+    :type reset_dic: dict, optional
+    :param reset_turn: During training, the bundle will be repeatedly reset. Pass the reset_turn here (see bundle reset_turn mechanism), defaults to 0
+    :type reset_turn: int, optional
+    """
+
     def __init__(
         self,
         bundle,
@@ -78,30 +108,7 @@ class Train:
             :2
         ]  # no wrapper flags returned
 
-    # def convert_observation(self, observation):
-    #     if self.observation_mode is None:
-    #         return observation
-    #     elif self.observation_mode == "tuple":
-    #         return self.convert_observation_tuple(observation)
-    #     elif self.observation_mode == "multidiscrete":
-    #         return self.convert_observation_multidiscrete(observation)
-    #     elif self.observation_mode == "dict":
-    #         return self.convert_observation_dict(observation)
-    #     else:
-    #         raise NotImplementedError
-
-    # def convert_observation_tuple(self, observation):
-    #     return tuple(hard_flatten(observation.filter("values", self.observation_dict)))
-
-    # def convert_observation_multidiscrete(self, observation):
-    #     return numpy.array(
-    #         hard_flatten(observation.filter("values", self.observation_dict))
-    #     )
-
-    # def convert_observation_dict(self, observation):
-    #     return observation.filter("values", self.observation_dict)
-
-    def convert_observation(self, observation):
+    def _convert_observation(self, observation):
         if isinstance(self.observation_space, gym.spaces.Discrete):
             return int(
                 hard_flatten(observation.filter("values", self.observation_dict))[0]
@@ -113,13 +120,32 @@ class Train:
 
 
 class TrainGym(Train, gym.Env):
-    """Train
+    """Generic Wrapper to make bundles compatibles with gym.Env
 
-    Use this class to wrap a Bundle, making it compatible with the gym API. From there, it can be trained with off-the-shelf RL algorithms.
-
+    This is a generic Wrapper to make bundles compatibles with gym.Env. It is mainly here to be subclassed by other wrappers
 
     :param bundle: bundle to wrap
-    :type bundle: :py:class:`Bundle<coopihc.bundle.Bundle.Bundle>`
+    :type bundle: `Bundle<coopihc.bundle.Bundle.Bundle`
+    :param train_user: whether to train the user, defaults to True
+    :type train_user: bool, optional
+    :param train_assistant: whether to train the assistant, defaults to True
+    :type train_assistant: bool, optional
+    :param observation_dict: to filter out observations, you can apply a dictionnary, defaults to None. e.g.:
+
+    ..code-block:: python
+
+        filterdict = OrderedDict(
+        {
+            "user_state": OrderedDict({"goal": 0}),
+            "task_state": OrderedDict({"x": 0}),
+        }
+    )
+
+    :type observation_dict: collections.OrderedDict, optional
+    :param reset_dic: During training, the bundle will be repeatedly reset. Pass the reset_dic here (see bundle reset mechanism), defaults to {}
+    :type reset_dic: dict, optional
+    :param reset_turn: During training, the bundle will be repeatedly reset. Pass the reset_turn here (see bundle reset_turn mechanism), defaults to 0
+    :type reset_turn: int, optional
     """
 
     def __init__(
@@ -148,12 +174,11 @@ class TrainGym(Train, gym.Env):
     def reset(self):
         """Reset the environment.
 
-        :return: observation (numpy.ndarray) observation of the flattened game_state
+        :return: observation (numpy.ndarray) observation of the flattened game_state --> see gym API. rewards is a dictionnary which gives all elementary rewards for this step.
 
-        :meta public:
         """
         obs = self.bundle.reset(turn=self.reset_turn, dic=self.reset_dic)
-        return self.convert_observation(obs)
+        return self._convert_observation(obs)
 
     def step(self, action):
         """Perform a step of the environment.
@@ -170,21 +195,21 @@ class TrainGym(Train, gym.Env):
         obs, rewards, is_done = self.bundle.step(user_action, assistant_action)
 
         return (
-            self.convert_observation(obs),
+            self._convert_observation(obs),
             float(sum(rewards.values())),
             is_done,
             rewards,
         )
 
     def render(self, mode):
-        """See Bundle
+        """See Bundle and gym API
 
         :meta public:
         """
         self.bundle.render(mode)
 
     def close(self):
-        """See Bundle
+        """See Bundle and gym API
 
         :meta public:
         """

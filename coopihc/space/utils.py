@@ -118,6 +118,14 @@ def partialclass(cls, *args):
 
 
 class _ChangeLayoutAction(gym.ActionWrapper):
+    """_ChangeLayoutAction
+
+    Class prototype
+
+    :param gym: [description]
+    :type gym: [type]
+    """
+
     def __init__(self, spaces, wrapperflag, env):
         super().__init__(env)
 
@@ -126,6 +134,14 @@ class _ChangeLayoutAction(gym.ActionWrapper):
 
 
 class _ChangeLayoutObservation(gym.ObservationWrapper):
+    """_ChangeLayoutObservation
+
+    Class prototype
+
+    :param gym: [description]
+    :type gym: [type]
+    """
+
     def __init__(self, spaces, wrapperflag, env):
         super().__init__(env)
 
@@ -134,6 +150,14 @@ class _ChangeLayoutObservation(gym.ObservationWrapper):
 
 
 class RLConvertor:
+    """Help convert Bundle to RL Envs
+
+    Helper class to convert Bundles to Reinforcement Learning environments
+
+    :param interface: name of the API to which bundles is converted to, defaults to "gym"
+    :type interface: str, optional
+    """
+
     def __init__(self, interface="gym", **kwargs):
         self.interface = interface
         if self.interface != "gym":
@@ -144,7 +168,19 @@ class RLConvertor:
                 raise NotImplementedError
 
     def get_spaces_and_wrappers(self, spaces, mode):
+        """get_spaces_and_wrappers
 
+        Main method to call.
+
+        Return converted spaces, a potential wrapper and wrapper flags (True if space needs wrapper component). Currently, the only space that needs a wrapper potentially is DIscrete Space (when the start action is not 0 and actions not equally unit-spaced)
+
+        :param spaces: bundle spaces
+        :type spaces: list(Spaces`coopihc.spaces.Space.Space`)
+        :param mode: 'action' or 'observation'
+        :type mode: string
+        :return: spaces, wrapper, wrapperflag
+        :rtype: tuple([gym.spaces], [gym.env wrapper], [bool])
+        """
         spaces, wrapperflag = self._convert(spaces)
         if mode == "action":
             wrapper = self._get_action_wrapper(spaces, wrapperflag)
@@ -153,6 +189,14 @@ class RLConvertor:
         return spaces, wrapper, wrapperflag
 
     def _get_info(self, spaces):
+        """_get_info
+
+        gather intel on bundle spaces
+
+        :param spaces: bundle spaces
+        :type spaces: list(Spaces`coopihc.spaces.Space.Space`)
+
+        """
         # Check what mix spaces is
 
         discrete = False
@@ -209,6 +253,14 @@ class RLConvertor:
 
 
 class GymConvertor(RLConvertor):
+    """Help convert Bundle to RL Gym Envs
+
+    Helper class to convert Bundles to Gym Reinforcement Learning environments, with a certain library in mind. (Not all libraries may support all action and observation spaces.)
+
+    :param style: lib name
+    :type interface: str, optional
+    """
+
     def __init__(self, style="SB3"):
         super().__init__(interface="gym", style=style)
 
