@@ -45,11 +45,7 @@ class ExampleTask(InteractionTask):
         :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float, boolean, dictionnary)
         """
         is_done = False
-        print("\n==================user_step")
-        print(self.state["x"], type(self.state["x"]))
         self.state["x"] += self.user_action
-        print(self.state["x"], type(self.state["x"]))
-        print(self.state["x"]["values"])
 
         if int(self.state["x"]["values"][0]) == 4:
             is_done = True
@@ -64,8 +60,7 @@ class ExampleTask(InteractionTask):
         :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float, boolean, dictionnary)
         """
         is_done = False
-        # print("\n==================")
-        # print(self.state)
+
         self.state["x"] += self.assistant_action
         if int(self.state["x"]["values"][0]) == 4:
             is_done = True

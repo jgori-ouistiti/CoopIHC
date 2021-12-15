@@ -430,8 +430,7 @@ class StateElement:
 
     def _preprocess_values(self, values):
         values = flatten([values])
-        print("\n=============stateelement")
-        print(values)
+
         # Allow a single None syntax
         try:
             if values == [None]:

@@ -108,5 +108,13 @@ def test_sb3():
     check_env(env, warn=True, skip_render_check=True)
 
 
+# incomplete test --- should check that the conversion works as intended.
+def test_wrapper():
+    env = TrainGym(bundle)
+    action_wrappers = env.action_wrappers
+    env = env.action_wrappers(env)
+    env.step(env.action_space.sample())
+
+
 if __name__ == "__main__":
     test_ExampleBundle()
