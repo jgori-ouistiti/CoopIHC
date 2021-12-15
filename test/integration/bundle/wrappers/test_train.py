@@ -13,18 +13,27 @@ from coopihc.bundle.wrappers.Train import TrainGym
 
 import gym
 from collections import OrderedDict
+import numpy
 
-task = ExampleTask(gridsize=31, number_of_targets=8)
-assistant = ExampleUser()  # action_space = [-1,0,1]
-user = ExampleUser()  # action_space = [-1,0,1]
-bundle = Bundle(task=task, user=user, assistant=assistant)
+
+def test_ExampleBundle():
+    task = ExampleTask(gridsize=31, number_of_targets=8)
+    assistant = ExampleUser()  # action_space = [-1,0,1]
+    user = ExampleUser()  # action_space = [-1,0,1]
+    global bundle
+    bundle = Bundle(task=task, user=user, assistant=assistant)
+
+    test_init()
+    test_action_space()
+    test_observation_space()
+    test_reset()
+    test_step()
+    test_sb3()
 
 
 def test_init():
     env = TrainGym(bundle)
     assert isinstance(env, gym.Env)
-    test_action_space()
-    test_observation_space()
 
 
 def test_action_space():
@@ -38,6 +47,7 @@ def test_observation_space():
     assert env.observation_space == gym.spaces.MultiDiscrete([4, 9, 9, 9, 3, 3])
     assert isinstance(env.observation_wrappers(env), gym.ObservationWrapper)
 
+    global filterdict
     filterdict = OrderedDict(
         {
             "user_state": OrderedDict({"goal": 0}),
@@ -52,7 +62,7 @@ def test_observation_space():
 def test_reset():
     env = TrainGym(bundle)
     obs = env.reset()
-    assert obs[:4] == [0, 0, 4, 4]
+    assert (obs[:4] == numpy.array([0, 0, 4, 4])).all()
     assert obs[4] in [-1, 0, 1]
     assert obs[5] in [-1, 0, 1]
 
@@ -64,9 +74,39 @@ def test_reset():
     )
     env = TrainGym(bundle, observation_dict=filterdict)
     obs = env.reset()
-    assert obs == [4, 0]
+    assert (obs == numpy.array([4, 0])).all()
+
+
+def test_step():
+    env = TrainGym(bundle)
+    obs = env.reset()
+
+    action = env.action_space.sample()
+    obs, rewards, is_done, _dic = env.step(action)
+    assert isinstance(is_done, bool)
+    assert isinstance(rewards, float)
+    assert isinstance(obs, numpy.ndarray)
+    assert isinstance(_dic, dict)
+    assert obs in env.observation_space
+
+    env = TrainGym(bundle, observation_dict=filterdict)
+    obs = env.reset()
+
+    action = env.action_space.sample()
+    obs, rewards, is_done, _dic = env.step(action)
+    assert isinstance(is_done, bool)
+    assert isinstance(rewards, float)
+    assert isinstance(obs, numpy.ndarray)
+    assert isinstance(_dic, dict)
+    assert obs in env.observation_space
+
+
+def test_sb3():
+    from stable_baselines3.common.env_checker import check_env
+
+    env = TrainGym(bundle, observation_dict=filterdict)
+    check_env(env, warn=True, skip_render_check=True)
 
 
 if __name__ == "__main__":
-    test_init()
-    test_reset()
+    test_ExampleBundle()

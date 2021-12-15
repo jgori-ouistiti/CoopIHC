@@ -71,6 +71,9 @@ class Train:
         else:
             assistant_action_space = None
 
+        self.bundle_user_action_space = user_action_space
+        self.bundle_assistant_action_space = assistant_action_space
+
         return gc.get_spaces_and_wrappers(action_spaces, "action")[
             :2
         ]  # no wrapper flags returned
@@ -99,50 +102,14 @@ class Train:
     #     return observation.filter("values", self.observation_dict)
 
     def convert_observation(self, observation):
-        return hard_flatten(observation.filter("values", self.observation_dict))
-
-    def reset(self):
-        """Reset the environment.
-
-        :return: observation (numpy.ndarray) observation of the flattened game_state
-
-        :meta public:
-        """
-        obs = self.bundle.reset(turn=self.reset_turn, dic=self.reset_dic)
-        return self.convert_observation(obs)
-
-    def step(self, action):
-        """Perform a step of the environment.
-
-        :param action: (list, numpy.ndarray) Action (or joint action for PlayBoth)
-
-        :return: observation, reward, is_done, rewards --> see gym API. rewards is a dictionnary which gives all elementary rewards for this step.
-
-        :meta public:
-        """
-
-        obs, sum_reward, is_done, rewards = self.bundle.step(action)
-
-        return (
-            self.convert_observation(obs),
-            sum_reward,
-            is_done,
-            {"rewards": rewards},
-        )
-
-    def render(self, mode):
-        """See Bundle
-
-        :meta public:
-        """
-        self.bundle.render(mode)
-
-    def close(self):
-        """See Bundle
-
-        :meta public:
-        """
-        self.bundle.close()
+        if isinstance(self.observation_space, gym.spaces.Discrete):
+            return int(
+                hard_flatten(observation.filter("values", self.observation_dict))[0]
+            )
+        else:
+            return numpy.array(
+                hard_flatten(observation.filter("values", self.observation_dict))
+            )
 
 
 class TrainGym(Train, gym.Env):
@@ -177,3 +144,48 @@ class TrainGym(Train, gym.Env):
             reset_turn=reset_turn,
             **kwargs
         )
+
+    def reset(self):
+        """Reset the environment.
+
+        :return: observation (numpy.ndarray) observation of the flattened game_state
+
+        :meta public:
+        """
+        obs = self.bundle.reset(turn=self.reset_turn, dic=self.reset_dic)
+        return self.convert_observation(obs)
+
+    def step(self, action):
+        """Perform a step of the environment.
+
+        :param action: (list, numpy.ndarray) Action (or joint action for PlayBoth)
+
+        :return: observation, reward, is_done, rewards --> see gym API. rewards is a dictionnary which gives all elementary rewards for this step.
+
+        :meta public:
+        """
+
+        user_action = action[: len(self.bundle_user_action_space)]
+        assistant_action = action[len(self.bundle_user_action_space) :]
+        obs, rewards, is_done = self.bundle.step(user_action, assistant_action)
+
+        return (
+            self.convert_observation(obs),
+            float(sum(rewards.values())),
+            is_done,
+            rewards,
+        )
+
+    def render(self, mode):
+        """See Bundle
+
+        :meta public:
+        """
+        self.bundle.render(mode)
+
+    def close(self):
+        """See Bundle
+
+        :meta public:
+        """
+        self.bundle.close()
