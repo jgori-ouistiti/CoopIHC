@@ -57,11 +57,10 @@ class State(OrderedDict):
 
         will filter out every component but the first component (index 0) for substates x and w contained in substate_1.
 
-        :param str mode: Wheter the filtering operates on the 'values' or on the 'spaces'
+        :param str mode: 'values' or 'spaces'
         :param collections.OrderedDict filterdict: The OrderedDict which specifies which substates to keep and which to leave out.
         :return: The filtered state
-        :rtype: State
-
+        :rtype: collections.OrderedDict
         """
 
         new_state = OrderedDict()

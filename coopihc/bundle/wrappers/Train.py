@@ -7,47 +7,53 @@ import gym
 import numpy
 
 
-class Train(gym.Env):
-    """Train
-
-    Use this class to wrap a Bundle, making it compatible with the gym API. From there, it can be trained with off-the-shelf RL algorithms.
-
-
-    :param bundle: bundle to wrap
-    :type bundle: :py:class:`Bundle<coopihc.bundle.Bundle.Bundle>`
-    """
-
-    def __init__(self, bundle, *args, train_user=True, train_assistant=True, **kwargs):
+class Train:
+    def __init__(
+        self,
+        bundle,
+        *args,
+        train_user=True,
+        train_assistant=True,
+        convertor="gym",
+        observation_dict=None,
+        reset_dic={},
+        reset_turn=0,
+        **kwargs
+    ):
 
         self.bundle = bundle
         self.train_user = train_user
         self.train_assistant = train_assistant
-        self.action_space, self.action_wrappers = self._get_action_spaces_and_wrappers()
+        self.observation_dict = observation_dict
+        self.reset_dic = reset_dic
+        self.reset_turn = reset_turn
 
-        # obs = bundle.reset()
+        if convertor == "gym":
+            self.convertor = GymConvertor()
+        else:
+            raise NotImplementedError
 
-        # self.observation_mode = kwargs.get("observation_mode")
-        # self.observation_dict = kwargs.get("observation_dict")
+        (
+            self.action_space,
+            self.action_wrappers,
+        ) = self._get_action_spaces_and_wrappers()
 
-        # if self.observation_mode is None:
-        #     self.observation_space = obs.filter("spaces", obs)
-        # elif self.observation_mode == "tuple":
-        #     self.observation_space = gym.spaces.Tuple(
-        #         hard_flatten(obs.filter("spaces", self.observation_dict))
-        #     )
-        # elif self.observation_mode == "multidiscrete":
-        #     self.observation_space = gym.spaces.MultiDiscrete(
-        #         [i.n for i in hard_flatten(obs.filter("spaces", self.observation_dict))]
-        #     )
-        # elif self.observation_mode == "dict":
-        #     self.observation_space = obs.filter("spaces", self.observation_dict)
-        # else:
-        #     raise NotImplementedError
+        (
+            self.observation_space,
+            self.observation_wrappers,
+        ) = self._get_observation_spaces_and_wrappers()
+
+    def _get_observation_spaces_and_wrappers(self):
+        obs = self.bundle.reset()
+        if self.observation_dict is None:
+            filter = obs
+        else:
+            filter = self.observation_dict
+        spaces = hard_flatten(obs.filter("spaces", filter))
+        return self.convertor.get_spaces_and_wrappers(spaces, "observation")[:2]
 
     def _get_action_spaces_and_wrappers(self):
-        gc = GymConvertor()
-
-        self.bundle.reset()
+        gc = self.convertor
         action_spaces = []
         if self.train_user:
             user_action_space = self.bundle.game_state["user_action"]["action"][
@@ -65,95 +71,44 @@ class Train(gym.Env):
         else:
             assistant_action_space = None
 
-        return gc.get_spaces_and_wrappers(action_spaces)[
+        return gc.get_spaces_and_wrappers(action_spaces, "action")[
             :2
         ]  # no wrapper flags returned
 
-    # def _convert_action_space(self, action_space):
-    #     # spaces = []
-    #     discrete = False
-    #     continuous = False
-    #     for asp in action_space:
-    #         if asp.continuous:
-    #             continuous = True
-    #         else:
-    #             discrete = True
-    #         if not isinstance(asp, Space):
-    #             raise NotASpaceError
-    #         # else:
-    #         #     spaces.append(asp.convert_to_gym())
-
-    #     # continuous and discrete are flags that indicate if at least one C or D space is to be converted.
-    #     if continuous and discrete:
-    #         raise NotImplementedError
-    #     if discrete:
-    #         for sp in action_space:
-    #             if not (
-    #                 numpy.mean(numpy.diff(sp.range)) == 1.0
-    #                 and numpy.std(numpy.diff(sp.range)) == 0.0
-    #             ):
-    #                 raise NotImplementedError(
-    #                     "Only works currently for action_spaces which increment by 1, but you have {} (mu = {}, std = {})".format(
-    #                         sp.range,
-    #                         numpy.mean(numpy.diff(sp.range)),
-    #                         numpy.std(numpy.diff(sp.range)),
-    #                     )
-    #                 )
-
-    #         if len(action_space) == 1:
-    #             if gym.__version__ < "0.21":
-    #                 if action_space[0].low[0] != 0:
-    #                     raise NotImplementedError
-    #                 else:
-    #                     return gym.spaces.Discrete(action_space[0].N)
-    #             else:
-    #                 return gym.spaces.Discrete(
-    #                     action_space[0].N, start=action_space[0].low[0]
-    #                 )
-    #         else:
-    #             return gym.spaces.MultiDiscrete([s.N for s in action_space])
+    # def convert_observation(self, observation):
+    #     if self.observation_mode is None:
+    #         return observation
+    #     elif self.observation_mode == "tuple":
+    #         return self.convert_observation_tuple(observation)
+    #     elif self.observation_mode == "multidiscrete":
+    #         return self.convert_observation_multidiscrete(observation)
+    #     elif self.observation_mode == "dict":
+    #         return self.convert_observation_dict(observation)
     #     else:
-    #         if len(action_space) != 1:
-    #             raise NotImplementedError
-    #         else:
-    #             return gym.spaces.Box(
-    #                 action_space[0].low,
-    #                 action_space[0].high,
-    #                 dtype=action_space[0].dtype,
-    #                 seed=action_space[0].seed,
-    #             )
+    #         raise NotImplementedError
+
+    # def convert_observation_tuple(self, observation):
+    #     return tuple(hard_flatten(observation.filter("values", self.observation_dict)))
+
+    # def convert_observation_multidiscrete(self, observation):
+    #     return numpy.array(
+    #         hard_flatten(observation.filter("values", self.observation_dict))
+    #     )
+
+    # def convert_observation_dict(self, observation):
+    #     return observation.filter("values", self.observation_dict)
 
     def convert_observation(self, observation):
-        if self.observation_mode is None:
-            return observation
-        elif self.observation_mode == "tuple":
-            return self.convert_observation_tuple(observation)
-        elif self.observation_mode == "multidiscrete":
-            return self.convert_observation_multidiscrete(observation)
-        elif self.observation_mode == "dict":
-            return self.convert_observation_dict(observation)
-        else:
-            raise NotImplementedError
+        return hard_flatten(observation.filter("values", self.observation_dict))
 
-    def convert_observation_tuple(self, observation):
-        return tuple(hard_flatten(observation.filter("values", self.observation_dict)))
-
-    def convert_observation_multidiscrete(self, observation):
-        return numpy.array(
-            hard_flatten(observation.filter("values", self.observation_dict))
-        )
-
-    def convert_observation_dict(self, observation):
-        return observation.filter("values", self.observation_dict)
-
-    def reset(self, dic={}, **kwargs):
+    def reset(self):
         """Reset the environment.
 
         :return: observation (numpy.ndarray) observation of the flattened game_state
 
         :meta public:
         """
-        obs = self.bundle.reset(dic=dic, **kwargs)
+        obs = self.bundle.reset(turn=self.reset_turn, dic=self.reset_dic)
         return self.convert_observation(obs)
 
     def step(self, action):
@@ -188,3 +143,37 @@ class Train(gym.Env):
         :meta public:
         """
         self.bundle.close()
+
+
+class TrainGym(Train, gym.Env):
+    """Train
+
+    Use this class to wrap a Bundle, making it compatible with the gym API. From there, it can be trained with off-the-shelf RL algorithms.
+
+
+    :param bundle: bundle to wrap
+    :type bundle: :py:class:`Bundle<coopihc.bundle.Bundle.Bundle>`
+    """
+
+    def __init__(
+        self,
+        bundle,
+        *args,
+        train_user=True,
+        train_assistant=True,
+        observation_dict=None,
+        reset_dic={},
+        reset_turn=0,
+        **kwargs
+    ):
+        super().__init__(
+            bundle,
+            *args,
+            train_user=train_user,
+            train_assistant=train_assistant,
+            convertor="gym",
+            observation_dict=observation_dict,
+            reset_dic=reset_dic,
+            reset_turn=reset_turn,
+            **kwargs
+        )

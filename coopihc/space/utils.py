@@ -125,6 +125,14 @@ class _ChangeLayoutAction(gym.ActionWrapper):
         return action
 
 
+class _ChangeLayoutObservation(gym.ObservationWrapper):
+    def __init__(self, spaces, wrapperflag, env):
+        super().__init__(env)
+
+    def observation(self, observation):
+        return observation
+
+
 class RLConvertor:
     def __init__(self, interface="gym", **kwargs):
         self.interface = interface
@@ -135,9 +143,13 @@ class RLConvertor:
             if style != "SB3":
                 raise NotImplementedError
 
-    def get_spaces_and_wrappers(self, spaces):
+    def get_spaces_and_wrappers(self, spaces, mode):
+
         spaces, wrapperflag = self._convert(spaces)
-        wrapper = self._get_action_wrapper(spaces, wrapperflag)
+        if mode == "action":
+            wrapper = self._get_action_wrapper(spaces, wrapperflag)
+        elif mode == "observation":
+            wrapper = self._get_observation_wrapper(spaces, wrapperflag)
         return spaces, wrapper, wrapperflag
 
     def _get_info(self, spaces):
@@ -241,3 +253,9 @@ class GymConvertor(RLConvertor):
             return None
         else:
             return partialclass(_ChangeLayoutAction, spaces, wrapperflag)
+
+    def _get_observation_wrapper(self, spaces, wrapperflag):
+        if True not in wrapperflag:
+            return None
+        else:
+            return partialclass(_ChangeLayoutObservation, spaces, wrapperflag)

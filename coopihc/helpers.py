@@ -7,8 +7,8 @@ def hard_flatten(l):
     from coopihc.space.Space import Space
 
     out = []
-    if isinstance(l, (Space)):
-        l = l.spaces
+    # if isinstance(l, (Space)):
+    #     l = l.spaces
     if isinstance(l, (collections.OrderedDict, dict)):
         l = list(l.values())
     for item in l:
@@ -19,8 +19,8 @@ def hard_flatten(l):
                 out.extend(hard_flatten(item.tolist()))
             elif isinstance(item, collections.OrderedDict):
                 out.extend(hard_flatten(list(item.values())))
-            elif isinstance(item, (Space)):
-                out.extend(hard_flatten(item.spaces))
+            # elif isinstance(item, (Space)):
+            #     out.extend(hard_flatten(item.spaces))
             else:
                 out.append(item)
     return out
