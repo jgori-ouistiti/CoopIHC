@@ -21,6 +21,7 @@ class Space:
 
     def __init__(self, array_list, *args, seed=None, **kwargs):
         self._cflag = None
+        self.seed = seed
         self.rng = numpy.random.default_rng(seed)
 
         # Deal with variable format input
@@ -286,3 +287,9 @@ class Space:
     #         for sp in self:
     #             ret_space.append(gym.spaces.Discrete(sp.N))
     #     return ret_space
+
+
+
+
+
+

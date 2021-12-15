@@ -1,7 +1,7 @@
 from coopihc.helpers import hard_flatten
 
 from coopihc.space.Space import Space
-from coopihc.space.utils import NotASpaceError
+from coopihc.space.utils import NotASpaceError, GymConvertor
 
 import gym
 import numpy
@@ -22,11 +22,7 @@ class Train(gym.Env):
         self.bundle = bundle
         self.train_user = train_user
         self.train_assistant = train_assistant
-        self.user_action_space, self.assistant_action_space = self._get_action_spaces()
-        #  = self._convert_action_space(
-        #     action_spaces
-        # )
-        # self.action_space = gym.spaces.Tuple(bundle.action_space)
+        self.action_space, self.action_wrappers = self._get_action_spaces_and_wrappers()
 
         # obs = bundle.reset()
 
@@ -48,13 +44,16 @@ class Train(gym.Env):
         # else:
         #     raise NotImplementedError
 
-    def _get_action_spaces(self):
+    def _get_action_spaces_and_wrappers(self):
+        gc = GymConvertor()
 
         self.bundle.reset()
+        action_spaces = []
         if self.train_user:
             user_action_space = self.bundle.game_state["user_action"]["action"][
                 "spaces"
             ]
+            action_spaces.extend(user_action_space)
         else:
             user_action_space = None
 
@@ -62,66 +61,67 @@ class Train(gym.Env):
             assistant_action_space = self.bundle.game_state["assistant_action"][
                 "action"
             ]["spaces"]
+            action_spaces.extend(assistant_action_space)
         else:
             assistant_action_space = None
 
-        return self._convert_action_space(
-            user_action_space
-        ), self._convert_action_space(assistant_action_space)
+        return gc.get_spaces_and_wrappers(action_spaces)[
+            :2
+        ]  # no wrapper flags returned
 
-    def _convert_action_space(self, action_space):
-        # spaces = []
-        discrete = False
-        continuous = False
-        for asp in action_space:
-            if asp.continuous:
-                continuous = True
-            else:
-                discrete = True
-            if not isinstance(asp, Space):
-                raise NotASpaceError
-            # else:
-            #     spaces.append(asp.convert_to_gym())
+    # def _convert_action_space(self, action_space):
+    #     # spaces = []
+    #     discrete = False
+    #     continuous = False
+    #     for asp in action_space:
+    #         if asp.continuous:
+    #             continuous = True
+    #         else:
+    #             discrete = True
+    #         if not isinstance(asp, Space):
+    #             raise NotASpaceError
+    #         # else:
+    #         #     spaces.append(asp.convert_to_gym())
 
-        # continuous and discrete are flags that indicate if at least one C or D space is to be converted.
-        if continuous and discrete:
-            raise NotImplementedError
-        if discrete:
-            for sp in action_space:
-                if not (
-                    numpy.mean(numpy.diff(sp.range)) == 1.0
-                    and numpy.std(numpy.diff(sp.range)) == 0.0
-                ):
-                    raise NotImplementedError(
-                        "Only works currently for action_spaces which increment by 1, but you have {} (mu = {}, std = {})".format(
-                            sp.range,
-                            numpy.mean(numpy.diff(sp.range)),
-                            numpy.std(numpy.diff(sp.range)),
-                        )
-                    )
+    #     # continuous and discrete are flags that indicate if at least one C or D space is to be converted.
+    #     if continuous and discrete:
+    #         raise NotImplementedError
+    #     if discrete:
+    #         for sp in action_space:
+    #             if not (
+    #                 numpy.mean(numpy.diff(sp.range)) == 1.0
+    #                 and numpy.std(numpy.diff(sp.range)) == 0.0
+    #             ):
+    #                 raise NotImplementedError(
+    #                     "Only works currently for action_spaces which increment by 1, but you have {} (mu = {}, std = {})".format(
+    #                         sp.range,
+    #                         numpy.mean(numpy.diff(sp.range)),
+    #                         numpy.std(numpy.diff(sp.range)),
+    #                     )
+    #                 )
 
-            if len(action_space) == 1:
-                if gym.__version__ < "0.21":
-                    if action_space[0].low[0] != 0:
-                        raise NotImplementedError
-                    else:
-                        return gym.spaces.Discrete(action_space[0].N)
-                else:
-                    return gym.spaces.Discrete(
-                        action_space[0].N, start=action_space[0].low[0]
-                    )
-            else:
-                return gym.spaces.MultiDiscrete([s.N for s in action_space])
-        else:
-            if len(action_space) != 1:
-                raise NotImplementedError
-            else:
-                return gym.spaces.Box(
-                    action_space[0].low,
-                    action_space[0].high,
-                    dtype=action_space[0].dtype,
-                    seed=action_space[0].seed,
-                )
+    #         if len(action_space) == 1:
+    #             if gym.__version__ < "0.21":
+    #                 if action_space[0].low[0] != 0:
+    #                     raise NotImplementedError
+    #                 else:
+    #                     return gym.spaces.Discrete(action_space[0].N)
+    #             else:
+    #                 return gym.spaces.Discrete(
+    #                     action_space[0].N, start=action_space[0].low[0]
+    #                 )
+    #         else:
+    #             return gym.spaces.MultiDiscrete([s.N for s in action_space])
+    #     else:
+    #         if len(action_space) != 1:
+    #             raise NotImplementedError
+    #         else:
+    #             return gym.spaces.Box(
+    #                 action_space[0].low,
+    #                 action_space[0].high,
+    #                 dtype=action_space[0].dtype,
+    #                 seed=action_space[0].seed,
+    #             )
 
     def convert_observation(self, observation):
         if self.observation_mode is None:
