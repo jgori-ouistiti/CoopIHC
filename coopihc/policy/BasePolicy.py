@@ -78,11 +78,7 @@ class BasePolicy:
         return self
 
     def reset(self):
-        """reset
-
-        Reset the policy
-        """
-        pass
+        self.action.reset()
 
     def sample(self, observation=None):
         """sample

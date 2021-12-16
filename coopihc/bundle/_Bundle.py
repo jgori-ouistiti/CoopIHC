@@ -183,13 +183,15 @@ class _Bundle:
 
         return self.game_state
 
-    def step(self, *args, go_to_turn=None, **kwargs):
+    def step(self, user_action=None, assistant_action=None, go_to_turn=None, **kwargs):
         """Play a round
 
         Play a round of the game. A round consists in 4 turns. If go_to_turn is not None, the round is only played until that turn.
         If a user action and assistant action are passed as arguments, then these are used as actions to play the round. Otherwise, these actions are sampled from each agent's policy.
 
-        :param \*args: (user action, assistant action)
+        :param user action: user action
+        :type: any
+        :param assistant action: assistant action
         :type: any
         :param go_to_turn: turn at which round stops, defaults to None
         :type go_to_turn: int, optional
@@ -197,26 +199,26 @@ class _Bundle:
         :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, collections.OrderedDict, boolean)
         """
         # step() was called
-        if not args:
-            user_action, assistant_action = None, None
-        elif len(args) == 1:
-            if self.kwargs.get("name") == "no-assistant":
-                user_action, assistant_action = args[0], None
-            elif self.kwargs.get("name") == "no-user":
-                user_action, assistant_action = None, args[0]
-            else:
-                raise AttributeError(
-                    "Passing a single action is only allowed when the game is played with a single agent."
-                )
+        # if not args:
+        #     user_action, assistant_action = None, None
+        # elif len(args) == 1:
+        #     if self.kwargs.get("name") == "no-assistant":
+        #         user_action, assistant_action = args[0], None
+        #     elif self.kwargs.get("name") == "no-user":
+        #         user_action, assistant_action = None, args[0]
+        #     else:
+        #         raise AttributeError(
+        #             "Passing a single action is only allowed when the game is played with a single agent."
+        #         )
         # step(user_action, None) or step(None, assistant_action) or step(user_action, assistant_action) was called
-        else:
-            user_action, assistant_action = args
+        # else:
+        #     user_action, assistant_action = args
 
         if go_to_turn is None:
             go_to_turn = self.turn_number
 
         _started = False
-        rewards = OrderedDict()
+        rewards = {}
         rewards["user_observation_reward"] = 0
         rewards["user_inference_reward"] = 0
         rewards["first_task_reward"] = 0

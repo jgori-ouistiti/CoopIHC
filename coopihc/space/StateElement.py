@@ -404,6 +404,7 @@ class StateElement:
 
     def _preprocess_values(self, values):
         values = flatten([values])
+
         # Allow a single None syntax
         try:
             if values == [None]:
@@ -458,7 +459,16 @@ class StateElement:
                     # v = self._clip_1d(v, s)
                 else:
                     pass
+            # should not be needed, but hack for now. The problem was triggered when running stable_baselines' check_env on the env created by GymTrain. I believe the problem comes when creating vectorized envs, but could not point to it. Here we force the shape of the values, which seems to work for now, but at the cost of extra operations.
+            # ===================
+            if isinstance(v, numpy.ndarray):
+                v = numpy.atleast_2d(v.squeeze())
+            # =====================
             values[ni] = v
+            # should not be needed, but hack for now, see above
+            # ===================
+            values = flatten(values)
+            # =====================
         return values
 
     def _flat(self):

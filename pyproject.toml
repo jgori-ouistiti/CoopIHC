@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "coopihc"
-version = "0.0.4"
+version = "0.0.7"
 description = "Two-agent component-based interaction environments for computational HCI with Python"
 authors = ["Julien Gori"]
 license = "MIT"
@@ -9,11 +9,13 @@ license = "MIT"
 python = ">=3.8,<3.11"
 tabulate = '*'
 numpy = '^1'
-coopihczoo = '*'
 matplotlib ='^3'
 scipy = '^1.7.3'
-gym = "^0.21.0"
+gym = "^0.17"
 PyYAML = "^6.0"
+websockets = "^10.1"
+stable-baselines3 = "^1.3.0"
+
 
 
 [[tool.poetry.source]]
@@ -30,5 +32,5 @@ twine = "^3.7.0"
 pytest = "^6.2.5"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=1.0.0", "setuptools>=45", "wheel", "setuptools_scm>=6.2"]
 build-backend = "poetry.core.masonry.api"
