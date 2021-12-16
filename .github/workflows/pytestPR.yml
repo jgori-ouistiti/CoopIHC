@@ -15,27 +15,21 @@ jobs:
         with:
           python-version: 3.8
 
-      - name: Install Poetry
-        uses: dschep/install-poetry-action@v1.2
-
-      - name: Cache Poetry virtualenv
-        uses: actions/cache@v1
-        id: cache
+      - name: Cache pip
+        uses: actions/cache@v2
         with:
-          path: ~/.virtualenvs
-          key: poetry-$
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
           restore-keys: |
-            poetry-$
-
-      # - name: Config Github URL to download Private Repo
-      #   env:
-      #     GITHUB_TOKEN: $
-      #   run: git config --global url."https://$GITHUB_TOKEN@github.com/".insteadOf "https://github.com/"
-
-      - name: Install Dependencies using Poetry
-        run: poetry install
-        if: steps.cache.outputs.cache-hit != 'true'
-
+            ${{ runner.os }}-pip-
+            ${{ runner.os }}-
+      # https://docs.github.com/en/actions/guides/building-and-testing-python#installing-dependencies
+      # ^-- This gives info on installing dependencies with pip
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
       - name: Run pytest
         run: poetry run python -m pytest -vv test/*
 
