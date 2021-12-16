@@ -39,7 +39,7 @@ class BaseAgent(ABC):
 
 
     :param str role: "user" or "assistant"
-    :param type \*\*kwargs: keyword values ( each agent_X key expects a valid X object, and X_kwargs expects a valid dictionnary of keyword arguments for X)
+    :param type \*\*kwargs: keyword values ( each agent_X key expects a valid X object, and X_kwargs expects a valid dictionary of keyword arguments for X)
 
         + agent_policy
         + agent_inference_engine
@@ -115,7 +115,7 @@ class BaseAgent(ABC):
             * 'override_inference_engine' = (inference engine, inference engine kwargs)
 
         :param init_kwargs: kwargs passed from init
-        :type init_kwargs: dictionnary
+        :type init_kwargs: dictionary
         """
         agent_policy, agent_policy_kwargs = init_kwargs.get(
             "override_policy", (None, None)
@@ -145,7 +145,7 @@ class BaseAgent(ABC):
 
         A custom representation of the class.
 
-        :return: Dictionnary with content for all components.
+        :return: dictionary with content for all components.
         :rtype: dict
 
         :meta private:
@@ -256,7 +256,7 @@ class BaseAgent(ABC):
 
         :param all: which components to reset, defaults to True
         :type all: bool, optional
-        :param dic: reset dictionnary, defaults to None.
+        :param dic: reset dictionary, defaults to None.
         :type dic: [type], optional
 
         :meta private:
