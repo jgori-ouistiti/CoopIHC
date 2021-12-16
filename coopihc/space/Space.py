@@ -179,7 +179,7 @@ class Space:
         """
         if self.continuous:
             return None
-        elif self.dtype == numpy.object:
+        elif self.dtype == object:
             return None
         else:
             if len(self) > 1:

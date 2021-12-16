@@ -244,9 +244,9 @@ def test_init():
 
     # =========== None single space
 
-    s = Space([numpy.array([None], dtype=numpy.object)])
+    s = Space([numpy.array([None], dtype=object)])
     # prop and attributes
-    assert s.dtype == numpy.object
+    assert s.dtype == object
     assert s.continuous == False
     assert s.shape == (1, 1)
     assert s.range == [None]
@@ -342,6 +342,7 @@ def test_sample():
     # --------- Check that seeding works
     ss = copy.deepcopy(s)
     assert (ss.sample() == s.sample()).all()
+
 
 def test_eq():
     s = Space(
