@@ -14,8 +14,8 @@ class Space:
     If data is discrete it is stored as a column (N,1) array.
 
     :param [numpy.array] array_list: A list of NumPy arrays that specifies the ranges of the Space.
-    :param \*args: For future use.
-    :param \*\*kwargs: For future use `\*\*kwargs`.
+    :param *args: For future use.
+    :param **kwargs: For future use `**kwargs`.
     """
 
     def __init__(self, array_list, *args, seed=None, **kwargs):
