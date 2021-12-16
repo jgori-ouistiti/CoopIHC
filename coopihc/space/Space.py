@@ -63,19 +63,22 @@ class Space:
             return numpy.array([item[n] in r for n, r in enumerate(self.range)]).all()
 
     def __eq__(self, other):
+        # Compare dtype
         if self.dtype != other.dtype:
             return False
+        # Compare shape
         if self.shape != other.shape:
             return False
-        for _sr, _or in zip(self.range, other.range):
-            condition = _sr != _or
-            try:
-                if condition:
-                    return False
-            except ValueError:
-                if condition.any():
-                    return False
-        return True
+        # Compare ranges
+        ranges_are_equal = numpy.array(
+            [
+                numpy.array_equal(self_range_element, other_range_element)
+                for (self_range_element, other_range_element) in zip(
+                    self.range, other.range
+                )
+            ]
+        )
+        return ranges_are_equal.all()
 
     def __iter__(self):
         self.n = 0
@@ -113,18 +116,17 @@ class Space:
         """If the space is continuous, returns low and high arrays, after having checked that they have the same shape. If the space is discrete, returns the list of possible values. The output is reshaped to 2d arrays.
 
         :return: the 2d-reshaped ranges
-        :rtype: list
+        :rtype: numpy.ndarray
 
         """
 
         if self._range is None:
-            if self.continuous:
-                if not self._array[0].shape == self._array[1].shape:
-                    return AttributeError(
-                        "The low {} and high {} ranges don't have matching shapes".format(
-                            self._array[0], self._array[1]
-                        )
+            if self.continuous and (not self._array[0].shape == self._array[1].shape):
+                return AttributeError(
+                    "The low {} and high {} ranges don't have matching shapes".format(
+                        self._array[0], self._array[1]
                     )
+                )
             self._range = [numpy.atleast_2d(_a) for _a in self._array]
         return self._range
 
