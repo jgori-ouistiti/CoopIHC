@@ -186,7 +186,7 @@ def test_override_policy():
     assert isinstance(agent.policy, BasePolicy)
     assert agent.action == StateElement(
         values=None,
-        spaces=Space([numpy.array([None], dtype=numpy.object)]),
+        spaces=Space([numpy.array([None], dtype=object)]),
     )
 
 
