@@ -31,7 +31,7 @@ jobs:
           pip install -r requirements.txt
       
       - name: Run pytest
-        run: poetry run python -m pytest -vv test/*
+        run: python -m pytest -vv test/*
 
       # - name: Run Coverage
       #   run: PYTHONPATH=src/ poetry run python -m coverage report -m;
