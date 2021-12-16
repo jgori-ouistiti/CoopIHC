@@ -365,3 +365,12 @@ def test_eq():
     )
     assert s == v
     assert s != w
+
+
+# +----------------------+
+# +        MAIN          +
+# +----------------------+
+if __name__ == "__main__":
+    test_init()
+    test_sample()
+    test_eq()
