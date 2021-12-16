@@ -37,7 +37,7 @@ if __name__ == "__main__":
         )
     )
 
-    none_space = Space([numpy.array([None], dtype=numpy.object)])
+    none_space = Space([numpy.array([None], dtype=object)])
     # [end-space-complex-def]
 
     # [start-space-contains]

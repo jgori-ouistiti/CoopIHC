@@ -23,7 +23,7 @@ class BasePolicy:
             action_state = State()
             action_state["action"] = StateElement(
                 values=None,
-                spaces=Space([numpy.array([None], dtype=numpy.object)]),
+                spaces=Space([numpy.array([None], dtype=object)]),
             )
 
         self.action_state = action_state

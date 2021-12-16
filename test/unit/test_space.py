@@ -244,9 +244,9 @@ def test_init():
 
     # =========== None single space
 
-    s = Space([numpy.array([None], dtype=numpy.object)])
+    s = Space([numpy.array([None], dtype=object)])
     # prop and attributes
-    assert s.dtype == numpy.object
+    assert s.dtype == object
     assert s.continuous == False
     assert s.shape == (1, 1)
     assert s.range == [None]
@@ -343,6 +343,7 @@ def test_sample():
     ss = copy.deepcopy(s)
     assert (ss.sample() == s.sample()).all()
 
+
 def test_eq():
     s = Space(
         [
@@ -364,3 +365,12 @@ def test_eq():
     )
     assert s == v
     assert s != w
+
+
+# +----------------------+
+# +        MAIN          +
+# +----------------------+
+if __name__ == "__main__":
+    test_init()
+    test_sample()
+    test_eq()

@@ -77,9 +77,7 @@ y = StateElement(
 
 
 if _str == "action-state":
-    a = StateElement(
-        values=None, spaces=Space([numpy.array([None], dtype=numpy.object)])
-    )
+    a = StateElement(values=None, spaces=Space([numpy.array([None], dtype=object)]))
 
 
 # -------------- accessing values

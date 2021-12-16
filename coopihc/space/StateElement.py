@@ -1,7 +1,6 @@
 import copy
 import numpy
 import json
-import sys
 import itertools
 import warnings
 
@@ -11,7 +10,6 @@ from coopihc.space.utils import (
     SpaceLengthError,
     StateNotContainedError,
     StateNotContainedWarning,
-    SpacesNotIdenticalError,
 )
 
 
@@ -109,13 +107,6 @@ class StateElement:
 
     # Itemization
     def __setitem__(self, key, item):
-        # if key == "values":
-        #     # setattr(self, key, self._preprocess_values(item))
-        #     setattr(self, key, item)
-        # elif key == "spaces":
-        #     setattr(self, key, self._preprocess_spaces(item))
-        # elif key == "clipping_mode":
-        #     setattr(self, key, item)
         if key in ["values", "spaces", "clipping_mode"]:
             setattr(self, key, item)
         else:
@@ -136,23 +127,6 @@ class StateElement:
             raise NotImplementedError(
                 'Indexing only works with keys ("values", "spaces", "clipping_mode") or integers'
             )
-
-    # Numpy switch, Not working, see Issue 42
-    # def __getattr__(self, key):
-    #     _np = sys.modules["numpy"]
-    #     print(_np, key, getattr(_np, key))
-    #     if hasattr(_np, key):
-    #         # adapted from https://stackoverflow.com/questions/13776504/how-are-arguments-passed-to-a-function-through-getattr
-    #         def wrapper(*args, **kwargs):
-    #             return getattr(_np, key)(self.values, *args, **kwargs)
-
-    #         return wrapper
-
-    #     raise AttributeError(
-    #         "StateElement does not have attribute {}. Tried to fall back to numpy but it also did not have this attribute".format(
-    #             key
-    #         )
-    #     )
 
     # Comparison
     def _comp_preface(self, other):

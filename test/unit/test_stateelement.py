@@ -1,19 +1,16 @@
 from coopihc.space.Space import Space
 from coopihc.space.StateElement import StateElement
 from coopihc.space.utils import (
-    SpaceLengthError,
     StateNotContainedError,
     StateNotContainedWarning,
 )
 
-from coopihc.helpers import flatten
 import numpy
-import copy
 import pytest
 
 
-def test_init_simple():
-    # ============================= check if lists are applied if inputs not in list form
+def test_lists_applied_if_inputs_not_in_list_form():
+    """Tests if lists are applied if inputs are not in list form."""
     x = StateElement(
         values=None,
         spaces=Space(
@@ -33,8 +30,9 @@ def test_init_simple():
         )
     ]
 
-    # ========================= clipping mode (assumes typing priority set to default (= space))
-    # ---------------- error
+
+def test_clipping_mode_error():
+    """Tests that appropriate error is raised by clipping mode."""
     with pytest.raises(StateNotContainedError):
         x = StateElement(
             values=3.0,
@@ -46,7 +44,10 @@ def test_init_simple():
             ),
             clipping_mode="error",
         )
-    # --------------- warning
+
+
+def test_clipping_mode_warning():
+    """Tests that appropriate error is raised by clipping mode."""
     with pytest.warns(StateNotContainedWarning):
         x = StateElement(
             values=3.0,
@@ -71,7 +72,10 @@ def test_init_simple():
         )
     assert x["values"] == numpy.array([[3]], dtype=numpy.float32)
     assert y["values"] == numpy.array([[-3]], dtype=numpy.float32)
-    # --------------- clip
+
+
+def test_clipping():
+    """Tests that clipping works."""
     x = StateElement(
         values=3.0,
         spaces=Space(
@@ -95,7 +99,18 @@ def test_init_simple():
     assert x["values"] == numpy.array([[1]], dtype=numpy.float32)
     assert y["values"] == numpy.array([[-1]], dtype=numpy.float32)
 
-    # ====================== Typing priority
+
+def test_clipping_mode():
+    """Tests clipping mode (assumes typing priority set to
+    default (= space))."""
+    test_clipping_mode_error()
+    test_clipping_mode_warning()
+    test_clipping()
+
+
+def test_typing_priority():
+    """Tests clipping mode (assumes typing priority set to
+    default (= space))."""
     x = StateElement(
         values=3,
         spaces=Space(
@@ -118,6 +133,12 @@ def test_init_simple():
         typing_priority="value",
     )
     assert x["values"][0].dtype == numpy.int16
+
+
+def test_init_simple():
+    test_lists_applied_if_inputs_not_in_list_form()
+    test_clipping_mode()
+    test_typing_priority()
 
 
 def test_init_more_complex():
@@ -204,37 +225,19 @@ def test_init_more_complex():
     assert x["values"][2].dtype == numpy.float64
 
 
-x = StateElement(
-        values=1.0,
-        spaces=Space(
-            [
-                numpy.array([-1], dtype=numpy.float32),
-                numpy.array([1], dtype=numpy.float32),
-            ]
-        ),
-    )
-y = StateElement(
-        values=[0,2,-4],
-        spaces=[
-            Space(
-                [
-                    numpy.array([-1], dtype=numpy.float32),
-                    numpy.array([1], dtype=numpy.float32),
-                ]
-            ),
-            Space([numpy.array([1, 2, 3], dtype=numpy.int16)]),
-            Space([numpy.array([-6, -5, -4, -3, -2, -1], dtype=numpy.int16)]),
-        ],
-    )
+def test_init():
+    """Tests the initializer functions."""
+    test_init_simple()
+    test_init_more_complex()
 
-####### COmparisons
+
+####### Comparisons
 
 ######    __eq__
 ######    __lt__
 ######    __gt__
 ######    __le__
 ######    __ge__
-
 
 
 def test_compare_eq():
@@ -248,20 +251,18 @@ def test_compare_eq():
         ),
     )
     y = StateElement(
-            values=[0,2,-4],
-            spaces=[
-                Space(
-                    [
-                        numpy.array([-1], dtype=numpy.float32),
-                        numpy.array([1], dtype=numpy.float32),
-                    ]
-                ),
-                Space([numpy.array([1, 2, 3], dtype=numpy.int16)]),
-                Space([numpy.array([-6, -5, -4, -3, -2, -1], dtype=numpy.int16)]),
-            ],
-        )
-
-
+        values=[0, 2, -4],
+        spaces=[
+            Space(
+                [
+                    numpy.array([-1], dtype=numpy.float32),
+                    numpy.array([1], dtype=numpy.float32),
+                ]
+            ),
+            Space([numpy.array([1, 2, 3], dtype=numpy.int16)]),
+            Space([numpy.array([-6, -5, -4, -3, -2, -1], dtype=numpy.int16)]),
+        ],
+    )
 
     assert x == StateElement(
         values=1.0,
@@ -291,18 +292,18 @@ def test_compare_eq():
         ),
     )
     assert x == StateElement(
-        values=numpy.array([1.0], dtype = numpy.float32),
+        values=numpy.array([1.0], dtype=numpy.float32),
         spaces=Space(
             [
                 numpy.array([-1], dtype=numpy.float64),
                 numpy.array([1], dtype=numpy.float64),
             ]
         ),
-        typing_priority = 'value'
+        typing_priority="value",
     )
 
     assert y == StateElement(
-        values=[0,2,-4],
+        values=[0, 2, -4],
         spaces=[
             Space(
                 [
@@ -315,7 +316,7 @@ def test_compare_eq():
         ],
     )
     assert y != StateElement(
-        values=[0,3,-4],
+        values=[0, 3, -4],
         spaces=[
             Space(
                 [
@@ -327,14 +328,32 @@ def test_compare_eq():
             Space([numpy.array([-6, -5, -4, -3, -2, -1], dtype=numpy.int16)]),
         ],
     )
+
+
 def test_compare_lt():
     pass
+
+
 def test_compare_gt():
     pass
+
+
 def test_compare_le():
     pass
+
+
 def test_compare_ge():
     pass
+
+
+def test_comparison():
+    """Tests the comparison methods."""
+    test_compare_eq()
+    test_compare_lt()
+    test_compare_gt()
+    test_compare_le()
+    test_compare_ge()
+
 
 ####### Arithmetic
 
@@ -349,33 +368,36 @@ def test_compare_ge():
 ######    __matmul__
 ######    __rmatmul__
 
-    
+
 x = StateElement(
-        values=0.2,
-        spaces=Space(
-            [
-                numpy.array([-1], dtype=numpy.float32),
-                numpy.array([1], dtype=numpy.float32),
-            ]
-        ),
-    )
+    values=0.2,
+    spaces=Space(
+        [
+            numpy.array([-1], dtype=numpy.float32),
+            numpy.array([1], dtype=numpy.float32),
+        ]
+    ),
+)
 y = StateElement(
-        values=0.2,
-        spaces=Space(
-            [
-                numpy.array([-1], dtype=numpy.float32),
-                numpy.array([1], dtype=numpy.float32),
-            ]
-        ),
-    )
+    values=0.2,
+    spaces=Space(
+        [
+            numpy.array([-1], dtype=numpy.float32),
+            numpy.array([1], dtype=numpy.float32),
+        ]
+    ),
+)
+
 
 def test_neg():
-    y['values'] = -0.2
+    y["values"] = -0.2
     assert -x == y
     assert x == -y
     assert -(-x) == x
+
+
 def test_add_radd():
-    y['values'] = .2
+    y["values"] = 0.2
     assert x + y == StateElement(
         values=0.4,
         spaces=Space(
@@ -394,9 +416,9 @@ def test_add_radd():
             ]
         ),
     )
-    a = .5
+    a = 0.5
     assert x + a == StateElement(
-        values=.7,
+        values=0.7,
         spaces=Space(
             [
                 numpy.array([-1], dtype=numpy.float32),
@@ -405,7 +427,7 @@ def test_add_radd():
         ),
     )
     assert a + x == StateElement(
-        values=.7,
+        values=0.7,
         spaces=Space(
             [
                 numpy.array([-1], dtype=numpy.float32),
@@ -413,6 +435,7 @@ def test_add_radd():
             ]
         ),
     )
+
 
 def test_sub_rsub():
     assert x - y == StateElement(
@@ -453,21 +476,31 @@ def test_sub_rsub():
         ),
     )
 
+
 def test_mul():
     pass
+
+
 def test_rmul():
     pass
+
+
 def test_pow():
     pass
+
+
 def test_matmul():
     pass
+
+
 def test_rmatmul():
     pass
+
 
 def test_arithmetic():
     test_neg()
     test_add_radd()
-    test_sub_rsub()   
+    test_sub_rsub()
 
     test_mul()
     test_rmul()
@@ -475,3 +508,11 @@ def test_arithmetic():
     test_matmul()
     test_rmatmul()
 
+
+# +----------------------+
+# +        MAIN          +
+# +----------------------+
+if __name__ == "__main__":
+    test_init()
+    test_comparison()
+    test_arithmetic()

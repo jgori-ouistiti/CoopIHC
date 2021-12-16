@@ -51,7 +51,7 @@ if _str == "action-space":
         )
     )
     s = Space([numpy.array([1, 2, 3], dtype=numpy.int16)])
-    a = Space([numpy.array([None], dtype=numpy.object)])
+    a = Space([numpy.array([None], dtype=object)])
 
 if _str == "contains" or _str == "all":
     space = Space([numpy.array([1, 2, 3], dtype=numpy.int16)])

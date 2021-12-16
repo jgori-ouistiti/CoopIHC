@@ -4,7 +4,7 @@ from coopihc.space.State import State
 from coopihc.space.StateElement import StateElement
 from coopihc.space.Space import Space
 from coopihc.policy.BasePolicy import BasePolicy
-from coopihc.policy import ExamplePolicy
+from coopihc.policy.ExamplePolicy import ExamplePolicy
 from coopihc.observation.RuleObservationEngine import RuleObservationEngine
 from coopihc.observation.utils import base_user_engine_specification
 from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
