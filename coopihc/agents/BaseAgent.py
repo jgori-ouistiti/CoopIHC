@@ -115,30 +115,33 @@ class BaseAgent(ABC):
             * 'override_inference_engine' = (inference engine, inference engine kwargs)
 
         :param init_kwargs: kwargs passed from init
-        :type init_kwargs: dictionary
+        :type init_kwargs: dict
         """
+        # Override agent policy
         agent_policy, agent_policy_kwargs = init_kwargs.get(
             "override_policy", (None, None)
         )
         if agent_policy is not None:
             self.attach_policy(agent_policy, **agent_policy_kwargs)
 
+        # Override agent state
         agent_state = init_kwargs.get("override_state", None)
         if agent_state is not None:
             self.state = agent_state
 
+        # Override agent observation engine
         agent_obseng, agent_obseng_kwargs = init_kwargs.get(
             "override_observation_engine", (None, None)
         )
         if agent_obseng is not None:
             self.attach_observation_engine(agent_obseng, **agent_obseng_kwargs)
 
+        # Override agent inference engine
         agent_infeng, agent_infeng_kwargs = init_kwargs.get(
             "override_inference_engine", (None, None)
         )
         if agent_infeng is not None:
             self.attach_inference_engine(agent_infeng, **agent_infeng_kwargs)
-        return
 
     def __content__(self):
         """Custom class representation.
