@@ -1,7 +1,6 @@
 import copy
 import numpy
 import json
-import sys
 import itertools
 import warnings
 
@@ -11,7 +10,6 @@ from coopihc.space.utils import (
     SpaceLengthError,
     StateNotContainedError,
     StateNotContainedWarning,
-    SpacesNotIdenticalError,
 )
 
 
