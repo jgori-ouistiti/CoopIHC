@@ -25,7 +25,8 @@ install_requires = \
  'matplotlib>=3,<4',
  'numpy>=1,<2',
  'scipy>=1.7.3,<2.0.0',
- 'tabulate']
+ 'tabulate',
+ 'websockets>=10.1,<11.0']
 
 setup_kwargs = {
     'name': 'coopihc',

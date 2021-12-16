@@ -13,6 +13,7 @@ matplotlib ='^3'
 scipy = '^1.7.3'
 gym = "^0.21.0"
 PyYAML = "^6.0"
+websockets = "^10.1"
 
 
 [[tool.poetry.source]]
