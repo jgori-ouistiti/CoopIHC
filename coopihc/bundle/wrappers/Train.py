@@ -11,7 +11,10 @@ import numpy
 class Train:
     """Generic Wrapper to make bundles compatibles with gym.Env
 
-    This is a generic Wrapper to make bundles compatibles with gym.Env. It is mainly here to be subclassed by other wrappers
+    This is a generic Wrapper to make bundles compatibles with gym.Env. It is mainly here to be subclassed by other wrappers.
+
+    Depending on the spaces you are using, you might need to provide a wrapper to accustom the fact that coopihc spaces can take any values whereas e.g. gym discrete spaces have to be unit-spaced values. This class automatically build wrappers, but it might be faster (computationnally) to hard code your own wrappers.
+
 
     :param bundle: bundle to wrap
     :type bundle: `Bundle<coopihc.bundle.Bundle.Bundle`
@@ -124,7 +127,7 @@ class Train:
 class TrainGym(Train, gym.Env):
     """Generic Wrapper to make bundles compatibles with gym.Env
 
-    This is a generic Wrapper to make bundles compatibles with gym.Env. It is mainly here to be subclassed by other wrappers
+    This is a generic Wrapper to make bundles compatibles with gym.Env. Read more on the Train class.
 
     :param bundle: bundle to wrap
     :type bundle: `Bundle<coopihc.bundle.Bundle.Bundle`
