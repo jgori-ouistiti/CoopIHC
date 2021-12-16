@@ -6,6 +6,13 @@ from coopihc.space.utils import NotASpaceError
 import gym
 import functools
 import numpy
+import warnings
+
+
+class WrongConvertorWarning(Warning):
+    """Warning raised when the value is not contained in the space."""
+
+    __module__ = Warning.__module__
 
 
 class Train:
@@ -13,7 +20,11 @@ class Train:
 
     This is a generic Wrapper to make bundles compatibles with gym.Env. It is mainly here to be subclassed by other wrappers.
 
-    Depending on the spaces you are using, you might need to provide a wrapper to accustom the fact that coopihc spaces can take any values whereas e.g. gym discrete spaces have to be unit-spaced values. This class automatically build wrappers, but it might be faster (computationnally) to hard code your own wrappers.
+    Depending on the spaces you are using, you might need to provide a wrapper to accustom the fact that coopihc spaces can take any values whereas e.g. gym discrete spaces have to be unit-spaced values.
+
+    .. note::
+
+        Experimental: This class automatically build wrappers to account for the transformation between a bundle and an env, but we offer no guarantees that it will work in all cases. It might also likely be faster (computationnally) to hard code your own wrappers.
 
 
     :param bundle: bundle to wrap
@@ -22,7 +33,7 @@ class Train:
     :type train_user: bool, optional
     :param train_assistant: whether to train the assistant, defaults to True
     :type train_assistant: bool, optional
-    :param API: API with which the bundle will be made compatible for, defaults to "gym"
+    :param API: API with which the bundle will be made compatible for, defaults to "gym-force". In gym force, a limited gym compatible environment is created, which casts everything to float32 and boxes.
     :type API: str, optional
     :param observation_dict: to filter out observations, you can apply a dictionnary, defaults to None. e.g.:
 
@@ -48,7 +59,7 @@ class Train:
         *args,
         train_user=True,
         train_assistant=True,
-        API="gym",
+        API="gym-force",
         observation_dict=None,
         reset_dic={},
         reset_turn=0,
@@ -65,6 +76,8 @@ class Train:
 
         if API == "gym":
             self._convertor = GymConvertor
+        elif API == "gym-force":
+            self._convertor = GymForceConvertor
         else:
             raise NotImplementedError
 
@@ -79,6 +92,9 @@ class Train:
         ) = self._get_observation_spaces_and_wrappers()
 
     def _get_observation_spaces_and_wrappers(self):
+        """_get_observation_spaces_and_wrappers
+
+        Get obs spaces and wrappers by querying an observation from the bundle and calling the convertor."""
         obs = self.bundle.reset()
         if self.observation_dict is None:
             filter = obs
@@ -88,6 +104,11 @@ class Train:
         return self.convertor.get_spaces_and_wrappers(spaces, "observation")[:2]
 
     def _get_action_spaces_and_wrappers(self):
+        """_get_action_spaces_and_wrappers [summary]
+
+        Get action spaces and wrappers. Checks who should be trained, and calls the convertor
+
+        """
         action_spaces = []
         if self.train_user:
             user_action_space = self.bundle.game_state["user_action"]["action"][
@@ -114,6 +135,12 @@ class Train:
         ]  # no wrapper flags returned
 
     def _convert_observation(self, observation):
+        """_convert_observation
+
+        Hard flattens the bundle observation and casts to int or array
+
+
+        """
         if isinstance(self.observation_space, gym.spaces.Discrete):
             return int(
                 hard_flatten(observation.filter("values", self.observation_dict))[0]
@@ -162,14 +189,19 @@ class TrainGym(Train, gym.Env):
         observation_dict=None,
         reset_dic={},
         reset_turn=0,
+        force=False,
         **kwargs
     ):
+        if force == True:
+            api = "gym-force"
+        else:
+            api = "gym"
         super().__init__(
             bundle,
             *args,
             train_user=train_user,
             train_assistant=train_assistant,
-            API="gym",
+            API=api,
             observation_dict=observation_dict,
             reset_dic=reset_dic,
             reset_turn=reset_turn,
@@ -222,6 +254,13 @@ class TrainGym(Train, gym.Env):
 
 
 def partialclass(cls, *args):
+    """partialclass
+
+    Initializes a class by pre-passing it some arguments. Same as functools.partial applied to class inits.
+
+
+    """
+
     class ChangeLayoutAction(cls):
         __init__ = functools.partialmethod(
             cls.__init__,
@@ -231,77 +270,6 @@ def partialclass(cls, *args):
     return ChangeLayoutAction
 
 
-######## ================= Below is untested code, and should replace the class below with same name.
-
-# class _ChangeLayoutAction(gym.ActionWrapper):
-#     def __init__(self, env, spaces, wrapperflag):
-#         change_action = []
-#         for sp, wflag in zip(spaces, wrapperflag):
-#             if not wflag:
-#                 change_action.append([None])
-#                 continue
-#             change_action.append([sp.range])
-
-#         self.change_action = change_action
-#         super().__init__(env)
-
-#     def action(self, action):
-#         _action = []
-#         for n, a in enumerate(action):
-#             if change_action[n] == [None]:
-#                 _action.append(a)
-#             else:
-#                 _action.append(change_action[n][a])
-#         return _action
-
-# Only tested for multidiscrete spaces. Should generalize without problem to discrete, maybe continuous.
-class _ChangeLayoutAction(gym.ActionWrapper):
-    """_ChangeLayoutAction
-
-    Class prototype
-
-    :param gym: [description]
-    :type gym: [type]
-    """
-
-    def __init__(self, spaces, wrapperflag, bundle_action_spaces, env):
-        super().__init__(env)
-        change_action = []
-        for bundle_space, wflag in zip(bundle_action_spaces, wrapperflag):
-            if not wflag:
-                change_action.append(None)
-                continue
-            change_action.append(bundle_space.range[0])
-        self.change_action = change_action
-        print(self.change_action)
-
-    def action(self, action):
-        _action = []
-        for n, a in enumerate(action):
-            if not ((self.change_action[n]).any()):
-                _action.append(a)
-            else:
-                _action.append(self.change_action[n].squeeze()[a])
-        return _action
-
-
-# Leacing this at prototype, because in practical cases its useless to have observation wrappers for training.
-class _ChangeLayoutObservation(gym.ObservationWrapper):
-    """_ChangeLayoutObservation
-
-    Class prototype
-
-    :param gym: [description]
-    :type gym: [type]
-    """
-
-    def __init__(self, spaces, wrapperflag, env):
-        super().__init__(env)
-
-    def observation(self, observation):
-        return observation
-
-
 class RLConvertor:
     """Help convert Bundle to RL Envs
 
@@ -309,6 +277,8 @@ class RLConvertor:
 
     :param interface: name of the API to which bundles is converted to, defaults to "gym"
     :type interface: str, optional
+    :param bundle_action_spaces: the bundle action_spaces, defaults to None
+    :type bundle_action_spaces: `State<coopihc.space.State.State>`, optional
     """
 
     def __init__(self, interface="gym", bundle_action_spaces=None, **kwargs):
@@ -335,24 +305,23 @@ class RLConvertor:
         :return: spaces, wrapper, wrapperflag
         :rtype: tuple([gym.spaces], [gym.env wrapper], [bool])
         """
-        spaces, wrapperflag = self._convert(spaces)
+        spaces, *gawargs = self._convert(spaces)
         if mode == "action":
-            wrapper = self._get_action_wrapper(spaces, wrapperflag)
+            wrapper = self._get_action_wrapper(spaces, *gawargs)
         elif mode == "observation":
-            wrapper = self._get_observation_wrapper(spaces, wrapperflag)
-        return spaces, wrapper, wrapperflag
+            wrapper = self._get_observation_wrapper(spaces, *gawargs)
+        return spaces, wrapper, *gawargs
 
     def _get_info(self, spaces):
         """_get_info
 
-        gather intel on bundle spaces
+        gather intel on bundle spaces, mainly whether the spaces are continuous or discrete.
 
         :param spaces: bundle spaces
         :type spaces: list(Spaces`coopihc.spaces.Space.Space`)
 
         """
         # Check what mix spaces is
-
         discrete = False
         continuous = False
         multidiscrete = 0
@@ -368,7 +337,8 @@ class RLConvertor:
                         type(space).__name__
                     )
                 )
-
+        if continuous and discrete:
+            return True, True, None, None
         # Spaces -> collection of Discrete Space
         if discrete:
             # Check which spaces will need an actionwrapper
@@ -409,7 +379,7 @@ class RLConvertor:
 class GymConvertor(RLConvertor):
     """Help convert Bundle to RL Gym Envs
 
-    Helper class to convert Bundles to Gym Reinforcement Learning environments, with a certain library in mind. (Not all libraries may support all action and observation spaces.)
+    Helper class to convert Bundles to Gym Reinforcement Learning environments, with a certain library in mind. (Not all libraries may support all action and observation spaces.) Works only for fully discrete or continuous spaces.
 
     :param style: lib name
     :type interface: str, optional
@@ -418,12 +388,67 @@ class GymConvertor(RLConvertor):
     def __init__(self, style="SB3", **kwargs):
         super().__init__(interface="gym", style=style, **kwargs)
 
+    class _ChangeLayoutAction(gym.ActionWrapper):
+        """_ChangeLayoutAction
+
+        Class prototype
+
+        :param gym: [description]
+        :type gym: [type]
+        """
+
+        def __init__(self, spaces, wrapperflag, bundle_action_spaces, env):
+            super().__init__(env)
+            change_action = []
+            for bundle_space, wflag in zip(bundle_action_spaces, wrapperflag):
+                if not wflag:
+                    change_action.append(None)
+                    continue
+                change_action.append(bundle_space.range[0])
+            self.change_action = change_action
+
+        def action(self, action):
+            _action = []
+            for n, a in enumerate(action):
+                if not ((self.change_action[n]).any()):
+                    _action.append(a)
+                else:
+                    _action.append(self.change_action[n].squeeze()[a])
+            return _action
+
+    # Leacing this at prototype, because in practical cases its useless to have observation wrappers for training.
+    class _ChangeLayoutObservation(gym.ObservationWrapper):
+        """_ChangeLayoutObservation
+
+        Class prototype --> In practice is useless because further observation wrappers will further be applied to normalize the input to the NN.
+
+        :param gym: [description]
+        :type gym: [type]
+        """
+
+        def __init__(self, spaces, wrapperflag, env):
+            super().__init__(env)
+
+        def observation(self, observation):
+            return observation
+
     def _convert(self, spaces):
+        """_convert
+
+        Convert bundle spaces to gym spaces
+
+        :param spaces: [description]
+        :type spaces: [type]
+        :raises NotImplementedError: [description]
+        :raises NotImplementedError: [description]
+        :return: [description]
+        :rtype: [type]
+        """
         discrete, continuous, multidiscrete, spacewrapper_flag = self._get_info(spaces)
         # Spaces -> mix of discrete and continuous Space
         if continuous and discrete:
             raise NotImplementedError(
-                "Mixing continuous and discrete Spaces requires a gym.spaces.Tuple of gym.spaces.Dict conversion, which is not implemeted yet. Consider doing it yourself an opening a PR on the project's github"
+                "This Convertor does not deal with mixed continuous and discrete spaces, because this requires gym.spaces.Tuple or gym.spaces.Dict support, which is currently not the case. Try using GymForceConvertor instead."
             )
         if discrete:
             # Deal with one-unit collections
@@ -455,15 +480,199 @@ class GymConvertor(RLConvertor):
                 ), [False]
 
     def _get_action_wrapper(self, spaces, wrapperflag):
+        """_get_action_wrapper
+
+        Returns wrappers if needed
+
+
+        """
         if True not in wrapperflag:
             return None
         else:
             return partialclass(
-                _ChangeLayoutAction, spaces, wrapperflag, self.bundle_action_spaces
+                self._ChangeLayoutAction, spaces, wrapperflag, self.bundle_action_spaces
             )
 
     def _get_observation_wrapper(self, spaces, wrapperflag):
+        """_get_observation_wrapper [summary]
+
+        Returns wrappers if needed
+
+
+        """
         if True not in wrapperflag:
             return None
         else:
-            return partialclass(_ChangeLayoutObservation, spaces, wrapperflag)
+            return partialclass(self._ChangeLayoutObservation, spaces, wrapperflag)
+
+
+class WrongConvertorError(Exception):
+    """WrongConvertorError
+
+    Raised if the current convertor can't handle the space to convert.
+
+    """
+
+    __module__ = Exception.__module__
+
+
+class GymForceConvertor(RLConvertor):
+    """GymForceConvertor
+
+    Helper class to convert Bundles to Gym Reinforcement Learning environments, with a certain library in mind. Casts all the spaces to Boxes, which forces the compatibility with SB3.
+
+    :param style: RL-library, defaults to "SB3" (stables_baselines3)
+    :type style: str, optional
+    """
+
+    def __init__(self, style="SB3", **kwargs):
+
+        super().__init__(interface="gym", style=style, **kwargs)
+
+    class _ChangeLayoutAction(gym.ActionWrapper):
+        """_ChangeLayoutAction
+
+        Class prototype
+
+        """
+
+        def __init__(
+            self,
+            spaces,
+            slice_list,
+            round_list,
+            wflag,
+            range,
+            bundle_action_spaces,
+            env,
+        ):
+            self.round_list = round_list
+            super().__init__(env)
+
+        def action(self, action):
+            print("\n====AW")
+            print(action)
+            print(self.round_list)
+            _action = []
+            for a, rl in zip(action, self.round_list):
+                if rl is True:
+                    _action.append(numpy.round(a))
+                else:
+                    _action.append(a)
+            print(_action)
+            return _action
+
+    class _ChangeLayoutObservation(gym.ObservationWrapper):
+        """_ChangeLayoutObservation
+
+        Class prototype
+
+        """
+
+        def __init__(
+            self,
+            spaces,
+            slice_list,
+            round_list,
+            continuous,
+            range,
+            bundle_action_spaces,
+            env,
+        ):
+            super().__init__(env)
+
+        def observation(self, observation):
+            return observation
+
+        def action(self, action):
+            _action = []
+            for n, a in enumerate(action):
+                if not ((self.change_action[n]).any()):
+                    _action.append(a)
+                else:
+                    _action.append(self.change_action[n].squeeze()[a])
+            return _action
+
+    def _convert(self, spaces):
+        """_convert
+
+        Convert the bundle spaces to gym spaces and output some needed statistics
+        """
+        discrete, continuous, multidiscrete, spacewrapper_flag = self._get_info(spaces)
+        space_list = None
+        # Spaces -> mix of discrete and continuous Space
+        if not (continuous and discrete):
+            warnings.warn(
+                "This Convertor is meant to deal with mixed continuous and discrete spaces only, because it will cast discrete spaces to boxes. Try using GymConvertor instead, by passing force=False to TrainGym ",
+                WrongConvertorWarning,
+            )
+        lower_bound = []
+        upper_bound = []
+        slice_list = []
+        round_list = []
+        wflag = []
+        _range = []
+        k = 0
+        for space in spaces:
+            # Continuous
+            if space.continuous:
+                lower_bound.append(hard_flatten(space.low))
+                upper_bound.append(hard_flatten(space.high))
+                slice_list.append(slice(k, k + numpy.prod(space.shape)))
+                print(round_list)
+                print([False for i in range(numpy.prod(space.shape))])
+                round_list.extend([False for i in range(numpy.prod(space.shape))])
+
+                k += numpy.prod(space.shape)
+                wflag.append(False)
+                _range.append([])
+            # Multidiscrete
+            elif not space.continuous and len(space) > 1:
+                lower_bound.append([numpy.min(sr) for sr in space.range])
+                upper_bound.append([numpy.max(sr) for sr in space.range])
+                slice_list.append(slice(k, k + len(space)))
+                round_list.extend([True for i in range(len(space))])
+                k += len(space)
+                wflag.append(True)
+                _range.append(space.range)
+            # Discrete
+            elif not space.continuous and len(space) == 1:
+                lower_bound.append(numpy.min(space.range))
+                upper_bound.append(numpy.max(space.range))
+                slice_list.append(slice(k, k + 1))
+                round_list.extend([True])
+                k += 1
+                wflag.append(True)
+                _range.append(space.range)
+        return (
+            gym.spaces.Box(
+                low=numpy.array(hard_flatten(lower_bound)).reshape((-1,)),
+                high=numpy.array(hard_flatten(upper_bound)).reshape((-1,)),
+            ),
+            slice_list,
+            round_list,
+            wflag,
+            _range,
+        )
+
+    def _get_action_wrapper(self, spaces, slice_list, round_list, wflag, range):
+        return partialclass(
+            self._ChangeLayoutAction,
+            spaces,
+            slice_list,
+            round_list,
+            wflag,
+            range,
+            self.bundle_action_spaces,
+        )
+
+    def _get_observation_wrapper(self, spaces, slice_list, round_list, wflag, range):
+        return partialclass(
+            self._ChangeLayoutObservation,
+            spaces,
+            slice_list,
+            round_list,
+            wflag,
+            range,
+            self.bundle_action_spaces,
+        )

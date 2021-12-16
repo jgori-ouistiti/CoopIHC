@@ -11,7 +11,7 @@ class ExampleTask(InteractionTask):
 
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, continuous_assistant=False, scale=1, **kwargs):
         # Call super().__init__() beofre anything else, which initializes ome useful attributes, including a State (self.state) for the task
         super().__init__(*args, **kwargs)
 
