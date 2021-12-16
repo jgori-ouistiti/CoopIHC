@@ -116,7 +116,7 @@ def test_methods():
 
 
 def test_minimalagent():
-    """Tests the methods provided by the Interactionuser class."""
+    """Tests the methods provided by the BaseAgent class."""
     test_imports()
     test_example()
     test_init()
