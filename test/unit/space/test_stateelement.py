@@ -509,10 +509,33 @@ def test_arithmetic():
     test_rmatmul()
 
 
+def test__getattr__switch():
+    x = StateElement(
+        values=0.2,
+        spaces=Space(
+            [
+                numpy.array([-1], dtype=numpy.float32),
+                numpy.array([1], dtype=numpy.float32),
+            ]
+        ),
+    )
+
+
 # +----------------------+
 # +        MAIN          +
 # +----------------------+
 if __name__ == "__main__":
-    test_init()
-    test_comparison()
-    test_arithmetic()
+    # test_init()
+    # test_comparison()
+    # test_arithmetic()
+    x = StateElement(
+        values=0.2,
+        spaces=Space(
+            [
+                numpy.array([-1], dtype=numpy.float32),
+                numpy.array([1], dtype=numpy.float32),
+            ]
+        ),
+    )
+    x.extract()
+    numpy.squeeze(x)

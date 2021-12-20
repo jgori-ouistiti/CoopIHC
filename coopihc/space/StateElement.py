@@ -12,6 +12,155 @@ from coopihc.space.utils import (
     StateNotContainedWarning,
 )
 
+# https://numpy.org/doc/stable/user/basics.subclassing.html
+class StateElementNumPy(numpy.ndarray):
+
+    __precedence__ = ["error", "warning", "clip", "silent"]
+
+    @staticmethod
+    def _clip(value, space):
+        if value not in space:
+            if space.continuous:
+                return numpy.clip(value, space.low, space.high)
+            else:
+                if value > space.high:
+                    value = numpy.array(space.high)
+                else:
+                    value = numpy.array(space.low)
+                return value
+
+    def __new__(
+        cls,
+        input_array,
+        spaces,
+        out_of_bounds_mode="warning",
+    ):
+
+        obj = cls._process_input_values(
+            numpy.asarray(input_array),
+            spaces,
+            out_of_bounds_mode,
+        ).view(cls)
+        obj.spaces = spaces
+        obj.out_of_bounds_mode = out_of_bounds_mode
+        return obj
+
+    def __array__finalize__(self, obj):
+        if obj is None:
+            return
+        self.spaces = getattr(obj, "spaces")
+
+    def __array_ufunc__(self, ufunc, method, *input_args, out=None, **kwargs):
+        print("\n=================inside __array_ufunc__ {}".format(ufunc.__name__))
+
+        args = []
+
+        PROCESS_INPUT_VALUES = False
+
+        # Input and Output conversion to numpy
+        for n, _input in enumerate(input_args):
+            if isinstance(_input, StateElementNumPy):
+                if n == 0:
+                    PROCESS_INPUT_VALUES = True
+                args.append(_input.view(numpy.ndarray))
+            else:
+                args.append(_input)
+
+        outputs = out
+        if outputs:
+            out_args = []
+            for output in outputs:
+                if isinstance(output, StateElementNumPy):
+                    out_args.append(output.view(numpy.ndarray))
+                else:
+                    out_args.append(output)
+            kwargs["out"] = tuple(out_args)
+        else:
+            outputs = (None,) * ufunc.nout
+
+        # Actually apply the ufunc to numpy array
+        print(ufunc, method, args, kwargs)
+        result = getattr(ufunc, method)(*args, **kwargs)
+        print(result)
+
+        if result is NotImplemented:
+            return NotImplemented
+
+        # Back conversion to StateElementNumpy. Only pass results in this who need to be processed (e.g. exclude booleans)
+        if PROCESS_INPUT_VALUES and isinstance(
+            result, (numpy.ndarray, StateElementNumPy)
+        ):
+            result = StateElementNumPy._process_input_values(
+                result,
+                self.spaces,
+                self.out_of_bounds_mode,
+            )
+
+        # In place
+        if method == "at":
+            if isinstance(input_args[0], StateElementNumPy):
+                input_args[0].spaces = self.spaces
+                input_args[0].out_of_bounds_mode = self.out_of_bounds_mode
+
+        if ufunc.nout == 1:
+            result = (result,)
+
+        result = tuple(
+            (
+                numpy.asarray(_result).view(StateElementNumPy)
+                if output is None
+                else output
+            )
+            for _result, output in zip(result, outputs)
+        )
+        if result and isinstance(result[0], StateElementNumPy):
+            result[0].spaces = self.spaces
+            result[0].out_of_bounds_mode = self.out_of_bounds_mode
+
+        return result[0] if len(result) == 1 else result
+
+    @staticmethod
+    def _process_input_values(numpy_input_array, spaces, out_of_bounds_mode):
+        if out_of_bounds_mode == "silent":
+            return numpy_input_array
+        else:
+            multidiscrete = True
+            # Deal with multidiscrete vs continuous and discrete
+            if len(spaces) == 1:
+                multidiscrete = False
+                numpy_input_array = [numpy_input_array]
+
+            for ni, (v, s) in enumerate(zip(numpy_input_array, spaces)):
+                # Make sure value is same input type (shape + dtype) as space. Space specs take over value specs.
+                if v is not None:
+                    v = numpy.array(v).reshape(s.shape).astype(s.dtype)
+
+                if v not in s:
+                    if out_of_bounds_mode == "error":
+                        raise StateNotContainedError(
+                            "Instantiated Value {}({}) is not contained in corresponding space {} (low = {}, high = {})".format(
+                                str(v), type(v), str(s), str(s.low), str(s.high)
+                            )
+                        )
+                    elif out_of_bounds_mode == "warning":
+                        warnings.warn(
+                            StateNotContainedWarning(
+                                "Warning: Instantiated Value {}({}) is not contained in corresponding space {} (low = {}, high = {})".format(
+                                    str(v), type(v), str(s), str(s.low), str(s.high)
+                                )
+                            )
+                        )
+                    elif out_of_bounds_mode == "clip":
+                        v = StateElementNumPy._clip(v, s)
+                    else:
+                        pass
+                numpy_input_array[ni] = v
+
+        if multidiscrete:
+            return numpy_input_array
+        else:
+            return numpy_input_array[0]
+
 
 class StateElement:
     """The container that defines a substate. StateElements allow:
@@ -29,17 +178,8 @@ class StateElement:
     """
 
     __array_priority__ = 1  # to make __rmatmul__ possible with numpy arrays
-    __precedence__ = ["error", "warning", "clip"]
 
-    def __init__(
-        self,
-        *args,
-        values=None,
-        spaces=None,
-        clipping_mode="warning",
-        typing_priority="space",
-        **kwargs
-    ):
+    def __init__(self, *args, values=None, spaces=None, **kwargs):
         self.clipping_mode = clipping_mode
         self.typing_priority = typing_priority
         self.__values, self.__spaces = None, None
@@ -82,6 +222,21 @@ class StateElement:
         self.__spaces = self._preprocess_spaces(values)
 
     # ============ dunder/magic methods
+
+    def __getattr__(self, key):
+        # If a numpy operation/function is detected, try to apply it to values directly
+        if key in dir(numpy) or "numpy" in key:
+            # try:
+            if "numpy" in key:
+                self.values = [key.__call__(v) for v in self.values]
+            else:
+                print(getattr(numpy, key), [v for v in self.values])
+                numpy_f = getattr(numpy, key)
+                self.values = [numpy_f(v) for v in self.values]
+            # except:
+            #     raise AttributeError
+        else:
+            raise AttributeError
 
     # Iteration
     def __iter__(self):
@@ -302,6 +457,9 @@ class StateElement:
             clipping_mode=self._mix_modes(other),
         )
         return _elem, other
+
+    def extract(self):
+        return [v.squeeze() for v in self.values]
 
     def serialize(self):
         """Call this to generate a json representation of StateElement.
