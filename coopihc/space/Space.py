@@ -281,13 +281,13 @@ class Space:
 
         return {"array_list": self._array}
 
-    # def convert_to_gym(self):
+    def convert_to_gym(self):
 
-    #     # == If continuous
-    #     if numpy.issubdtype(self.dtype, numpy.inexact):
-    #         return [gym.spaces.Box(self.low, self.high)]
-    #     else:
-    #         ret_space = []
-    #         for sp in self:
-    #             ret_space.append(gym.spaces.Discrete(sp.N))
-    #     return ret_space
+        # == If continuous
+        if numpy.issubdtype(self.dtype, numpy.inexact):
+            return [gym.spaces.Box(self.low, self.high)]
+        else:
+            ret_space = []
+            for sp in self:
+                ret_space.append(gym.spaces.Discrete(sp.N))
+        return ret_space

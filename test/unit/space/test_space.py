@@ -407,4 +407,4 @@ def test_getitem():
 def test_shortcuts():
     space = discrete_space([1, 2, 3])
     space = continuous_space(-numpy.eye(2, 2), numpy.eye(2, 2))
-    space = multidiscrete_space([1, 2, 3], [4, 5, 6])
+    space = multidiscrete_space([[1, 2, 3], [4, 5, 6]])
