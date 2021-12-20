@@ -11,9 +11,12 @@ tabulate = '*'
 numpy = '^1'
 matplotlib ='^3'
 scipy = '^1.7.3'
-gym = "^0.21.0"
+gym = "^0.17"
 PyYAML = "^6.0"
 websockets = "^10.1"
+stable-baselines3 = "^1.3.0"
+
+
 
 
 [[tool.poetry.source]]

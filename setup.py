@@ -21,10 +21,11 @@ package_data = \
 
 install_requires = \
 ['PyYAML>=6.0,<7.0',
- 'gym>=0.21.0,<0.22.0',
+ 'gym>=0.17,<0.18',
  'matplotlib>=3,<4',
  'numpy>=1,<2',
  'scipy>=1.7.3,<2.0.0',
+ 'stable-baselines3>=1.3.0,<2.0.0',
  'tabulate',
  'websockets>=10.1,<11.0']
 

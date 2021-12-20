@@ -11,14 +11,14 @@ class ExampleTask(InteractionTask):
 
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, scale=1, **kwargs):
         # Call super().__init__() beofre anything else, which initializes ome useful attributes, including a State (self.state) for the task
         super().__init__(*args, **kwargs)
 
         self.state["x"] = StateElement(
             values=0,
             spaces=Space(
-                [numpy.array([-4, -3, -2, -1, 0, 1, 2, 3, 4], dtype=numpy.nt16)]
+                [numpy.array([-4, -3, -2, -1, 0, 1, 2, 3, 4], dtype=numpy.int16)]
             ),
             clipping_mode="clip",
         )
@@ -46,6 +46,7 @@ class ExampleTask(InteractionTask):
         """
         is_done = False
         self.state["x"] += self.user_action
+
         if int(self.state["x"]["values"][0]) == 4:
             is_done = True
         return self.state, -1, is_done, {}
@@ -59,6 +60,7 @@ class ExampleTask(InteractionTask):
         :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float, boolean, dictionnary)
         """
         is_done = False
+
         self.state["x"] += self.assistant_action
         if int(self.state["x"]["values"][0]) == 4:
             is_done = True
