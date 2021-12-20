@@ -34,9 +34,17 @@ poetry run twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 poetry export --without-hashes --dev -f requirements.txt --output requirements.txt
 ```
 # Installing locally
-If you need to install the package locally using pip install -e, check (poetry's repo)[https://github.com/python-poetry/poetry/issues/34].
+It is now possible to install locally via the toml file. For example, to install coopihc in editable mode in coopihczoo, you could add 
 
-The latest setup.py lives in the repo, extracted from the tarball that poetry builds.
+```shell
+coopihc = { path = "../path/to/coopihc", develop = true }
+```
+ to pyproject.toml.
+
+Otherwise, if you need to install the package locally using pip install -e, check (poetry's repo)[https://github.com/python-poetry/poetry/issues/34] and [https://github.com/python-poetry/poetry/discussions/1135]
+
+To get the latest setup.py file, extract the tarball that poetry builds.
+
 
 
 # Documentation
