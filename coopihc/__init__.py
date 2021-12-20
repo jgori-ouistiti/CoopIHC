@@ -1,5 +1,5 @@
 # Version of the coopihc package
-__version__ = "0.0.1"
+__version__ = "0.0.6"
 
 from .agents.BaseAgent import BaseAgent
 from .agents.GoalDrivenDiscreteUser import GoalDrivenDiscreteUser
