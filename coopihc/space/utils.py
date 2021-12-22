@@ -3,7 +3,7 @@ import numpy
 import functools
 import warnings
 import gym
-from coopihc.helpers import flatten, hard_flatten
+from coopihc.helpers import hard_flatten
 
 
 def remove_prefix(text, prefix):
@@ -49,6 +49,70 @@ class NotASpaceError(Exception):
 
 
 def autospace(*input_array, seed=None, contains="soft", dtype=None):
+    """Wrapper to Space
+
+    A function that makes instantiating Space less cumbersome.
+
+    :param seed: seed for the rng (useful when sampling from the Space)
+    :type seed: int, optional
+    :param contains: "hard" or "soft", defaults to "soft". Changes how the Space checks whether a value belong to the space or not. See `Space<coopihc.space.Space.Space>` documentation for more information.
+    :type contains: str, optional
+    :param dtype: numpy dtype, defaults to None
+    :type dtype: numpy.dtype, optional
+
+    :return: A continuous, discrete, or multidiscrete space
+    :rtype: `Space<coopihc.space.Space.Space>`
+
+    Some examples:
+
+    .. code-block:: python
+
+        # Discrete
+        assert autospace([1, 2, 3]) == Space(numpy.array([1, 2, 3]), "discrete")
+        assert autospace([[1, 2, 3]]) == Space(numpy.array([1, 2, 3]), "discrete")
+        assert autospace(numpy.array([1, 2, 3])) == Space(
+            numpy.array([1, 2, 3]), "discrete"
+        )
+        assert autospace(numpy.array([[1, 2, 3]])) == Space(
+            numpy.array([1, 2, 3]), "discrete"
+        )
+        assert autospace([numpy.array([1, 2, 3])]) == Space(
+            numpy.array([1, 2, 3]), "discrete"
+        )
+        assert autospace([numpy.array([[1, 2, 3]])]) == Space(
+            numpy.array([1, 2, 3]), "discrete"
+        )
+
+
+        # Multidiscrete
+        assert autospace(numpy.array([[1, 2, 3], [4, 5, 6]])) == Space(
+        [numpy.array([1, 2, 3]), numpy.array([4, 5, 6])], "multidiscrete"
+        )
+        assert autospace([1, 2, 3], [1, 2, 3, 4, 5]) == Space(
+            [numpy.array([1, 2, 3]), numpy.array([1, 2, 3, 4, 5])], "multidiscrete"
+        )
+
+        assert autospace([numpy.array([1, 2, 3])], [numpy.array([1, 2, 3, 4, 5])]) == Space(
+            [numpy.array([1, 2, 3]), numpy.array([1, 2, 3, 4, 5])], "multidiscrete"
+        )
+        assert autospace(numpy.array([1, 2, 3]), numpy.array([1, 2, 3, 4, 5])) == Space(
+            [numpy.array([1, 2, 3]), numpy.array([1, 2, 3, 4, 5])], "multidiscrete"
+        )
+        assert autospace([numpy.array([1, 2, 3]), numpy.array([1, 2, 3, 4, 5])]) == Space(
+            [numpy.array([1, 2, 3]), numpy.array([1, 2, 3, 4, 5])], "multidiscrete"
+        )
+        assert autospace(
+            [numpy.array([[1, 2, 3]]), numpy.array([[1, 2, 3, 4, 5]])]
+        ) == Space([numpy.array([1, 2, 3]), numpy.array([1, 2, 3, 4, 5])], "multidiscrete")
+
+
+        # Continuous
+        assert autospace(-numpy.array([[1, 1], [1, 1]]), numpy.array([[1, 1], [1, 1]]))
+        assert autospace([-numpy.array([[1, 1], [1, 1]]), numpy.array([[1, 1], [1, 1]])])
+        assert autospace([[-1, -1], [-1, -1]], [[1, 1], [1, 1]])
+        assert autospace([[[-1, -1], [-1, -1]], [[1, 1], [1, 1]]])
+
+    """
     k = 0
     while k < 5:
         k += 1
@@ -171,8 +235,71 @@ def autospace(*input_array, seed=None, contains="soft", dtype=None):
                     raise NotImplementedError
 
 
-def partialclass(cls, *args):
-    """partialclass
+def discrete(array, **kwargs):
+    """discrete
+
+    Shortcut. If not successful, forwards to autospace
+
+    .. code-block:: python
+
+        discrete(numpy.array([1,2,3]))
+
+    :param array: 1d numpy array
+    :type array: numpy.ndarray
+    :return: discrete Space
+    :rtype: `Space<coopihc.space.Space.Space>`
+    """
+    try:
+        return Space(array, "discrete", **kwargs)
+    except:
+        return autospace(array, **kwargs)
+
+
+def continuous(low, high, **kwargs):
+    """continuous
+
+    Shortcut. If not successful, forwards to autospace
+
+    .. code-block:: python
+
+        continuous(-numpy.ones((2,2)), numpy.ones((2,2)))
+
+    :param low: 2d numpy array
+    :type low: numpy.ndarray
+    :param high: 2d numpy array
+    :type high: numpy.ndarray
+    :return: continuous Space
+    :rtype: `Space<coopihc.space.Space.Space>`
+    """
+    try:
+        return Space([low, high], "continuous", **kwargs)
+    except:
+        return autospace(low, high, **kwargs)
+
+
+def multidiscrete(array_list, **kwargs):
+    """multidiscrete
+
+    Shortcut. If not successful, forwards to autospace
+
+    .. code-block:: python
+
+        multidiscrete([numpy.array([1,2,3]), numpy.array([1,2,3,4,5])])
+
+
+    :param array_list: list of 1d numpy arrays
+    :type array_list: list
+    :return: multidiscrete Space
+    :rtype: `Space<coopihc.space.Space.Space>`
+    """
+    try:
+        return Space(array_list, "multidiscrete", **kwargs)
+    except:
+        return autospace(array_list, **kwargs)
+
+
+def _partialclass(cls, *args):
+    """_partialclass
 
     Initializes a class by pre-passing it some arguments. Same as functools.partial applied to class inits.
 
@@ -413,7 +540,7 @@ class GymConvertor(RLConvertor):
         if True not in wrapperflag:
             return None
         else:
-            return partialclass(
+            return _partialclass(
                 self._ChangeLayoutAction, spaces, wrapperflag, self.bundle_action_spaces
             )
 
@@ -427,7 +554,7 @@ class GymConvertor(RLConvertor):
         if True not in wrapperflag:
             return None
         else:
-            return partialclass(self._ChangeLayoutObservation, spaces, wrapperflag)
+            return _partialclass(self._ChangeLayoutObservation, spaces, wrapperflag)
 
 
 class WrongConvertorError(Exception):
@@ -580,7 +707,7 @@ class GymForceConvertor(RLConvertor):
         )
 
     def _get_action_wrapper(self, spaces, slice_list, round_list, wflag, range):
-        return partialclass(
+        return _partialclass(
             self._ChangeLayoutAction,
             spaces,
             slice_list,
@@ -591,7 +718,7 @@ class GymForceConvertor(RLConvertor):
         )
 
     def _get_observation_wrapper(self, spaces, slice_list, round_list, wflag, range):
-        return partialclass(
+        return _partialclass(
             self._ChangeLayoutObservation,
             spaces,
             slice_list,
