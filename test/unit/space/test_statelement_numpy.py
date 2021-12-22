@@ -6,6 +6,7 @@ from coopihc.space.utils import (
     discrete_space,
     multidiscrete_space,
     continuous_space,
+    NumpyFunctionNotHandledWarning,
 )
 
 import numpy
@@ -20,7 +21,6 @@ def test_array_init():
     global _cont_space, _discr_space, _multidiscr_space
     _cont_space = continuous_space(-numpy.array([1]), numpy.array([1]))
     x = StateElementNumPy([2], spaces=_cont_space, out_of_bounds_mode="silent")
-    print(x, type(x))
     assert hasattr(x, "spaces")
     assert isinstance(x.spaces, Space)
     assert x.shape == (1,)
@@ -138,9 +138,12 @@ def test_array_init_clip():
     assert x == numpy.array([1])
     # Multidiscrete
 
+    print("\n======== Multidiscrete")
     x = StateElementNumPy(
         [1, 0, 8], spaces=_multidiscr_space, out_of_bounds_mode="clip"
     )
+    print(x)
+
     assert (x == numpy.array([1, 0, 8])).all()
     x = StateElementNumPy(
         [0, 0, 8], spaces=_multidiscr_space, out_of_bounds_mode="clip"
@@ -181,23 +184,21 @@ def test_typing_priority():
 def test__array_ufunc__():
     # See https://numpy.org/doc/stable/reference/ufuncs.html#math-operations for many more
 
-    print("inside test_arrayèufunc")
     # Discrete
     _discr_space = discrete_space([1, 2, 3])
     x = StateElementNumPy(2, spaces=_discr_space, out_of_bounds_mode="warning")
-    print("la")
     y = x + numpy.array(1)
-    print(y, x)
     # add, radd, sub, rsub
     assert 1 + x == 3
     assert x + 1 == 3
     assert x - 1 == 1
     assert 1 - x == -1
     # mul, rmul
-    assert x * 3 == 6
-    assert 3 * x == 6
-    # pow
-    assert x ** 2 == 4
+    with pytest.warns(StateNotContainedWarning):
+        assert x * 3 == 6
+        assert 3 * x == 6
+        # pow
+        assert x ** 2 == 4
 
     # Continuous
     cont_space = continuous_space(
@@ -209,11 +210,15 @@ def test__array_ufunc__():
         out_of_bounds_mode="warning",
     )
     # add, radd, sub, rsub
-    assert (1 + x == numpy.array([[3, 4], [6, 6]])).all()
+    print("\n========here")
+    assert (
+        1 + x == numpy.array([[3, 4], [6, 6]])
+    ).all()  # This triggers a warning, I'm not sure why. The 1 is broadcast to a [[1,1],[1,1]] array, which is out of bounds of cont_space, but it should be a numpy array type and not a StateElement. Strangely, when in error or clip mode, nothing happens.
+
     assert (x + 1 == numpy.array([[3, 4], [6, 6]])).all()
     assert (x - 1 == numpy.array([[1, 2], [4, 4]])).all()
-    # with pytest.warns(StateNotContainedWarning):
-    assert (1 - x == numpy.array([[-1, -2], [-4, -4]])).all()
+    with pytest.warns(StateNotContainedWarning):
+        assert (1 - x == numpy.array([[-1, -2], [-4, -4]])).all()
 
 
 def test_comparisons():
@@ -225,11 +230,32 @@ def test_comparisons():
     assert x >= 2
 
 
-# if __name___ == "__main__":
-test_array_init()
-test_array_init_error()
-test_array_init_warning()
-test_array_init_clip()
-test_typing_priority()
-test__array_ufunc__()
-test_comparisons()
+def test_squeeze():
+    cont_space = continuous_space(numpy.array([[4]]), numpy.array([[6]]))
+    x = StateElementNumPy(
+        numpy.array([[5]]),
+        spaces=cont_space,
+        out_of_bounds_mode="warning",
+    )
+
+    ## Without handled function
+    y = numpy.squeeze(x)
+    with pytest.warns(NumpyFunctionNotHandledWarning):
+        y = numpy.squeeze(x)
+    assert isinstance(y, numpy.ndarray)
+    assert not isinstance(y, StateElementNumPy)
+    assert y.shape == ()
+    assert not hasattr(y, "spaces")
+    assert not hasattr(y, "out_of_bounds_mode")
+
+
+if __name__ == "__main__":
+
+    test_array_init()
+    test_array_init_error()
+    test_array_init_warning()
+    test_array_init_clip()
+    test_typing_priority()
+    test__array_ufunc__()
+    test_comparisons()
+    test_squeeze()

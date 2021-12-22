@@ -52,3 +52,14 @@ from .policy.ExamplePolicy import ExamplePolicy
 from .space.Space import Space
 from .space.State import State
 from .space.StateElement import StateElement
+from .space.utils import StateNotContainedWarning
+from .space.utils import NumpyFunctionNotHandledWarning
+from .space.utils import SpaceLengthError
+from .space.utils import StateNotContainedError
+from .space.utils import SpacesNotIdenticalError
+from .space.utils import NotASpaceError
+from .space.utils import autospace
+from .space.utils import WrongConvertorWarning
+from .space.utils import GymConvertor
+from .space.utils import WrongConvertorError
+from .space.utils import GymForceConvertor
