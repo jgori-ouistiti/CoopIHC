@@ -135,7 +135,6 @@ def test_multidiscrete():
 
 
 def test_init_continuous():
-    # Discrete
     s = Space(
         [
             -numpy.ones((2, 2), dtype=numpy.float32),
@@ -198,6 +197,87 @@ def test_continuous():
     test_init_continuous()
     test_contains_soft_continuous()
     test_contains_hard_continuous()
+
+
+def test_dtype_discrete():
+    s = Space(numpy.array([1, 2, 3], dtype=numpy.int16), "discrete")
+    assert s.dtype == numpy.int16
+    s = Space(numpy.array([1, 2, 3], dtype=numpy.int16), "discrete", dtype=numpy.int64)
+    assert s.dtype == numpy.int64
+
+
+def test_dtype_continuous():
+    s = Space(
+        [
+            -numpy.ones((2, 2), dtype=numpy.float32),
+            numpy.ones((2, 2), dtype=numpy.float32),
+        ],
+        "continuous",
+    )
+    assert s.dtype == numpy.float32
+    s = Space(
+        [
+            -numpy.ones((2, 2), dtype=numpy.float64),
+            numpy.ones((2, 2), dtype=numpy.float32),
+        ],
+        "continuous",
+    )
+    assert s.dtype == numpy.float64
+    s = Space(
+        [
+            -numpy.ones((2, 2), dtype=numpy.float32),
+            numpy.ones((2, 2), dtype=numpy.float32),
+        ],
+        "continuous",
+        dtype=numpy.float64,
+    )
+    assert s.dtype == numpy.float64
+    s = Space(
+        [
+            -numpy.ones((2, 2), dtype=numpy.float64),
+            numpy.ones((2, 2), dtype=numpy.float64),
+        ],
+        "continuous",
+        dtype=numpy.int16,
+    )
+    assert s.dtype == numpy.int16
+
+
+def test_dtype_multidiscrete():
+    s = Space(
+        [
+            numpy.array([1, 2, 3], dtype=numpy.int16),
+            numpy.array([1, 2, 3, 4, 5], dtype=numpy.int16),
+        ],
+        "multidiscrete",
+        contains="hard",
+    )
+    assert s.dtype == numpy.int16
+    s = Space(
+        [
+            numpy.array([1, 2, 3], dtype=numpy.int16),
+            numpy.array([1, 2, 3, 4, 5], dtype=numpy.int64),
+        ],
+        "multidiscrete",
+        contains="hard",
+    )
+    assert s.dtype == numpy.int64
+    s = Space(
+        [
+            numpy.array([1, 2, 3], dtype=numpy.int16),
+            numpy.array([1, 2, 3, 4, 5], dtype=numpy.int16),
+        ],
+        "multidiscrete",
+        contains="hard",
+        dtype=numpy.int64,
+    )
+    assert s.dtype == numpy.int64
+
+
+def test_dtype():
+    test_dtype_discrete()
+    test_dtype_continuous()
+    test_dtype_multidiscrete()
 
 
 def test_equal_discrete():
@@ -526,6 +606,7 @@ if __name__ == "__main__":
     test_discrete()
     test_multidiscrete()
     test_continuous()
+    test_dtype()
     test_equal()
     test_iter()
     test_sample()

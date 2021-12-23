@@ -41,6 +41,21 @@ def test_multidiscrete():
         [numpy.array([[1, 2, 3]]), numpy.array([[1, 2, 3, 4, 5]])]
     ) == Space([numpy.array([1, 2, 3]), numpy.array([1, 2, 3, 4, 5])], "multidiscrete")
 
+    assert autospace([1, 2, 3], [1, 2, 3, 4, 5], [1, 8]) == Space(
+        [numpy.array([1, 2, 3]), numpy.array([1, 2, 3, 4, 5]), numpy.array([1, 8])],
+        "multidiscrete",
+    )
+    assert autospace(
+        [
+            numpy.array([[1, 2, 3]]),
+            numpy.array([[1, 2, 3, 4, 5]]),
+            numpy.array([[1, 8]]),
+        ]
+    ) == Space(
+        [numpy.array([1, 2, 3]), numpy.array([1, 2, 3, 4, 5]), numpy.array([1, 8])],
+        "multidiscrete",
+    )
+
 
 def test_continuous():
     assert autospace(-numpy.array([[1, 1], [1, 1]]), numpy.array([[1, 1], [1, 1]]))

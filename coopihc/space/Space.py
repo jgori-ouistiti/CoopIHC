@@ -29,6 +29,9 @@ class Space:
 
     .. code-block:: python
 
+        # Contains 'hard' versus 'soft'
+
+        # ====== Discrete ======
         # Soft
         s = Space(numpy.array([1, 2, 3], dtype=numpy.int16), "discrete", contains="soft")
         assert 1 in s
@@ -40,6 +43,7 @@ class Space:
         assert numpy.array([1.0]) not in s
 
         # Hard
+        s = Space(numpy.array([1, 2, 3], dtype=numpy.int16), "discrete", contains="hard")
         assert 1 not in s
         assert [1] not in s
         assert [[1]] not in s
@@ -48,10 +52,104 @@ class Space:
         assert numpy.array([[1]]) not in s
         assert numpy.array([2.0]) not in s
 
+        # ====== Multidiscrete
+        s = Space(
+            [
+                numpy.array([1, 2, 3], dtype=numpy.int16),
+                numpy.array([1, 2, 3, 4, 5], dtype=numpy.int16),
+            ],
+            "multidiscrete",
+            contains="soft",
+        )
+        # Soft
+        assert [1, 1] in s
+        assert [[1], [1]] in s
+        assert [[1, 1]] in s
+        assert numpy.array([1, 1]) in s
+        assert numpy.array([[1], [1]]) in s
+        assert numpy.array([[1, 1]]) in s
+
+        assert numpy.array([[2], [5]]) in s
+        assert numpy.array([[3], [3]]) in s
+
+        assert numpy.array([[2.0], [5.0]]) not in s
+        assert numpy.array([[2, 5]], dtype=numpy.float32) not in s
+        assert numpy.array([[2], [5.0]]) not in s
+
+        # Hard
+        s = Space(
+            [
+                numpy.array([1, 2, 3], dtype=numpy.int16),
+                numpy.array([1, 2, 3, 4, 5], dtype=numpy.int16),
+            ],
+            "multidiscrete",
+            contains="hard",
+        )
+        assert [1, 1] not in s
+        assert [[1], [1]] not in s
+        assert [[1, 1]] not in s
+        assert numpy.array([1, 1]) not in s
+        assert numpy.array([[1], [1]]) in s
+        assert numpy.array([[1, 1]]) not in s
+
+        assert numpy.array([[2], [5]]) in s
+        assert numpy.array([[3], [3]]) in s
+
+        assert numpy.array([[2.0], [5.0]]) not in s
+        assert numpy.array([[2, 5]], dtype=numpy.float32) not in s
+        assert numpy.array([[2], [5.0]]) not in s
+
+        # ====== Continuous
+        # Soft
+        s = Space(
+            [
+                -numpy.ones((2, 2), dtype=numpy.float32),
+                numpy.ones((2, 2), dtype=numpy.float32),
+            ],
+            "continuous",
+            contains="soft",
+        )
+        assert [0.0, 0.0, 0.0, 0.0] in s
+        assert [[0.0, 0.0], [0.0, 0.0]] in s
+        assert numpy.array([0.0, 0.0, 0.0, 0.0]) in s
+        assert numpy.array([[0.0, 0.0], [0.0, 0.0]]) in s
+
+        assert 1.0 * numpy.ones((2, 2)) in s
+        assert -1.0 * numpy.ones((2, 2)) in s
+
+        assert numpy.ones((2, 2), dtype=numpy.int16) in s
+
+        # Hard
+        s = Space(
+            [
+                -numpy.ones((2, 2), dtype=numpy.float32),
+                numpy.ones((2, 2), dtype=numpy.float32),
+            ],
+            "continuous",
+            contains="hard",
+        )
+        assert [0.0, 0.0, 0.0, 0.0] not in s
+        assert [[0.0, 0.0], [0.0, 0.0]] not in s
+        assert numpy.array([0.0, 0.0, 0.0, 0.0]) not in s
+        assert numpy.array([[0.0, 0.0], [0.0, 0.0]]) in s
+
+        assert 1.0 * numpy.ones((2, 2)) in s
+        assert -1.0 * numpy.ones((2, 2)) in s
+
+        assert numpy.ones((2, 2), dtype=numpy.int16) in s
+
+
     """
 
     def __init__(
-        self, array_bound, space_type, *args, seed=None, contains="soft", **kwargs
+        self,
+        array_bound,
+        space_type,
+        *args,
+        dtype=None,
+        seed=None,
+        contains="soft",
+        **kwargs
     ):
         self.space_type = space_type
         self.seed = seed
@@ -79,8 +177,13 @@ class Space:
                         bound_shape, len(bound.shape), bound.shape
                     )
                 )
-
-        self._array_bound = array_bound
+        if dtype is not None:
+            if space_type == "discrete":
+                self._array_bound = array_bound.astype(dtype)
+            else:
+                self._array_bound = [a.astype(dtype) for a in array_bound]
+        else:
+            self._array_bound = array_bound
         self._shape = None
         self._dtype = None
 

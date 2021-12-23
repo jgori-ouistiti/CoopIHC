@@ -233,16 +233,47 @@ def autospace(*input_array, seed=None, contains="soft", dtype=None):
                     )
                 else:
                     raise NotImplementedError
+        # autospace(X, Y, Z)
+        elif len(input_array) > 2:
+            _arr_sample = input_array[0]
+            if isinstance(_arr_sample, numpy.ndarray):
+                if dtype is None:
+                    dtype = numpy.int16
+                return Space(
+                    [_arr.astype(dtype).squeeze() for _arr in input_array],
+                    "multidiscrete",
+                    seed=seed,
+                    contains=contains,
+                )
+            elif isinstance(_arr_sample, list):
+                if isinstance(_arr_sample[0], (float, int, numpy.number)):
+                    if dtype is None:
+                        dtype = numpy.int16
+                    return Space(
+                        [numpy.array(_arr, dtype=dtype) for _arr in input_array],
+                        "multidiscrete",
+                        seed=seed,
+                        contains=contains,
+                    )
+                elif isinstance(_arr_sample[0], numpy.ndarray):
+                    if dtype is None:
+                        dtype = numpy.int16
+                    return Space(
+                        [_arr.astype(dtype) for _arr in input_array],
+                        "multidiscrete",
+                        seed=seed,
+                        contains=contains,
+                    )
 
 
-def discrete(array, **kwargs):
+def discrete_space(array, dtype=numpy.int16, **kwargs):
     """discrete
 
     Shortcut. If not successful, forwards to autospace
 
     .. code-block:: python
 
-        discrete(numpy.array([1,2,3]))
+        discrete_space(numpy.array([1,2,3]))
 
     :param array: 1d numpy array
     :type array: numpy.ndarray
@@ -250,19 +281,19 @@ def discrete(array, **kwargs):
     :rtype: `Space<coopihc.space.Space.Space>`
     """
     try:
-        return Space(array, "discrete", **kwargs)
+        return Space(array, "discrete", dtype=dtype, **kwargs)
     except:
-        return autospace(array, **kwargs)
+        return autospace(array, dtype=dtype, **kwargs)
 
 
-def continuous(low, high, **kwargs):
+def continuous_space(low, high, dtype=numpy.float32, **kwargs):
     """continuous
 
     Shortcut. If not successful, forwards to autospace
 
     .. code-block:: python
 
-        continuous(-numpy.ones((2,2)), numpy.ones((2,2)))
+        continuous_space(-numpy.ones((2,2)), numpy.ones((2,2)))
 
     :param low: 2d numpy array
     :type low: numpy.ndarray
@@ -272,19 +303,19 @@ def continuous(low, high, **kwargs):
     :rtype: `Space<coopihc.space.Space.Space>`
     """
     try:
-        return Space([low, high], "continuous", **kwargs)
+        return Space([low, high], "continuous", dtype=dtype, **kwargs)
     except:
-        return autospace(low, high, **kwargs)
+        return autospace(low, high, dtype=dtype, **kwargs)
 
 
-def multidiscrete(array_list, **kwargs):
+def multidiscrete_space(array_list, dtype=numpy.int16, **kwargs):
     """multidiscrete
 
     Shortcut. If not successful, forwards to autospace
 
     .. code-block:: python
 
-        multidiscrete([numpy.array([1,2,3]), numpy.array([1,2,3,4,5])])
+        multidiscrete_space([numpy.array([1,2,3]), numpy.array([1,2,3,4,5])])
 
 
     :param array_list: list of 1d numpy arrays
@@ -293,9 +324,9 @@ def multidiscrete(array_list, **kwargs):
     :rtype: `Space<coopihc.space.Space.Space>`
     """
     try:
-        return Space(array_list, "multidiscrete", **kwargs)
+        return Space(array_list, "multidiscrete", dtype=dtype, **kwargs)
     except:
-        return autospace(array_list, **kwargs)
+        return autospace(array_list, dtype=dtype, **kwargs)
 
 
 def _partialclass(cls, *args):
