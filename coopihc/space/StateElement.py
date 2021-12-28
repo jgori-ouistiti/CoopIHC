@@ -207,6 +207,28 @@ class StateElement(numpy.ndarray):
         )
 
     def reset(self, value=None):
+        """reset
+
+        Reset the StateElement to a random value, by sampling the underlying space.
+
+        .. code-block:: python
+
+            x = StateElement(numpy.ones((2, 2)), cont_space, out_of_bounds_mode="error")
+            for i in range(1000):
+                x.reset()
+
+            # Forced reset
+            x.reset(0.59 * numpy.ones((2, 2)))
+            assert (
+                x
+                == StateElement(
+                    0.59 * numpy.ones((2, 2)), cont_space, out_of_bounds_mode="error"
+                )
+            ).all()
+
+        :param value: reset value for forced reset, defaults to None
+        :type value: numpy.ndarray, optional
+        """
         if value is None:
             self[:] = self.spaces.sample()
         else:
@@ -219,7 +241,6 @@ class StateElement(numpy.ndarray):
 
         .. code-block:: python
 
-            global discr_space
             x = StateElement(numpy.array([2]), discr_space)
             assert x.serialize() == {
                 "values": [2],
@@ -244,8 +265,10 @@ class StateElement(numpy.ndarray):
     def equals(self, other, mode="soft"):
         """equals
 
-        In Hard mode, contrary to __eq__ (==), here the spaces and out of bounds mode are also compared.
-        Soft mode is currently equivalent to __eq__.
+        Returns False if other is not equal to self.
+
+        Soft mode is currently equivalent to __eq__ inherited from numpy.ndarray.
+        In Hard mode, contrary to __eq__, the spaces and out of bounds mode are also compared.
 
         .. code-block:: python
 
@@ -262,8 +285,8 @@ class StateElement(numpy.ndarray):
             assert w.equals(x)
             assert not w.equals(x, "hard")
 
-        :param other: [description]
-        :type other: [type]
+        :param other: object to compare to
+        :type other: StateElement, numpy.ndarray
         :param mode: [description], defaults to "soft"
         :type mode: str, optional
         :return: [description]
@@ -272,6 +295,8 @@ class StateElement(numpy.ndarray):
         result = self == other
         if mode == "soft":
             return result
+        if not isinstance(other, StateElement):
+            return False
         if self.spaces != other.spaces:
             return numpy.full(self.shape, False)
         if self.out_of_bounds_mode != other.out_of_bounds_mode:
