@@ -373,7 +373,63 @@ class Space:
         else:
             raise StopIteration
 
-    # Test repr
+    def __getitem__(self, key):
+        if self.space_type == "discrete":
+            raise TypeError(
+                "'{}' object with space_type='{}' is not subscriptable".format(
+                    type(self).__name__, self.space_type
+                )
+            )
+        if isinstance(key, int):
+            if self.space_type == "continuous":
+                return Space(
+                    [
+                        numpy.atleast_2d(self.low.ravel()[key]),
+                        numpy.atleast_2d(self.high.ravel()[key]),
+                    ],
+                    "continuous",
+                    seed=self.seed,
+                    contains=self.contains,
+                )
+            elif self.space_type == "multidiscrete":
+
+                return Space(
+                    self._array_bound[key],
+                    "discrete",
+                    seed=self.seed,
+                    contains=self.contains,
+                )
+            else:
+                raise NotImplementedError
+        elif isinstance(key, (slice, tuple)):
+            if self.space_type == "continuous":
+                return Space(
+                    [
+                        numpy.atleast_2d(self.low[key]),
+                        numpy.atleast_2d(self.high[key]),
+                    ],
+                    "continuous",
+                    seed=self.seed,
+                    contains=self.contains,
+                )
+            elif self.space_type == "multidiscrete":
+                _array = numpy.array(self._array_bound)[key]
+                if len(_array) == 1:
+                    # Does not work for some reason: leads to a nested list as input for Space(, 'discrete')
+                    # return self.__getitem__(key.start)
+                    raise NotImplementedError
+                else:
+                    space_type = "multidiscrete"
+                    _array = _array.tolist()
+                return Space(
+                    _array,
+                    space_type,
+                    seed=self.seed,
+                    contains=self.contains,
+                )
+        else:
+            raise NotImplementedError
+
     def __repr__(self):
         """__repr__"""
         if self.space_type == "continuous":
@@ -388,6 +444,16 @@ class Space:
             return "Space([{}], 'multidiscrete', contains = '{}')".format(
                 ",".join([str(a) for a in self._array_bound]), self.contains
             )
+        else:
+            return super().__repr__()
+
+    def _flat(self):
+        if self.space_type == "continuous":
+            return "Continuous{}".format(self.shape)
+        elif self.space_type == "discrete":
+            return "Discrete({})".format(self.N)
+        elif self.space_type == "multidiscrete":
+            return "MultiDiscrete({})".format(self.N)
         else:
             return super().__repr__()
 

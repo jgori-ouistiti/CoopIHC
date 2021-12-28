@@ -3,7 +3,7 @@ coopihc package."""
 
 
 import numpy
-from coopihc import InteractionTask, StateElement, Space
+from coopihc import InteractionTask, StateElement, Space, discrete_space
 
 
 class MinimalTask(InteractionTask):
@@ -26,9 +26,7 @@ class MinimalTaskWithState(MinimalTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.state["x"] = StateElement(
-            values=0, spaces=Space([numpy.array([-1, 0, 1])])
-        )
+        self.state["x"] = StateElement(0, discrete_space(numpy.array([-1, 0, 1])))
 
 
 def test_imports():

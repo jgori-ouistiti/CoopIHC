@@ -63,3 +63,6 @@ from .space.utils import WrongConvertorWarning
 from .space.utils import GymConvertor
 from .space.utils import WrongConvertorError
 from .space.utils import GymForceConvertor
+from .space.utils import discrete_space
+from .space.utils import continuous_space
+from .space.utils import multidiscrete_space

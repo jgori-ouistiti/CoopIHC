@@ -1,46 +1,31 @@
-from collections import OrderedDict
 import copy
 import json
 from tabulate import tabulate
+import numpy
 
 from coopihc.helpers import flatten
 from coopihc.space.StateElement import StateElement
 
 
-class State(OrderedDict):
-    """The container that defines states.
-
-    :param \*args: Same as collections.OrderedDict
-    :param \*\*kwargs: Same as collections.OrderedDict
-    :return: A state Object
-    :rtype: State
-
-    """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def __bool__(self):
-        return bool(self.items())
+class State(dict):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def reset(self, dic={}):
         """Initialize the state. See StateElement"""
         for key, value in self.items():
             reset_dic = dic.get(key)
-            if reset_dic is None:
-                reset_dic = {}
             value.reset(reset_dic)
 
     def _flat(self):
         values = []
         spaces = []
         labels = []
-        l, k = list(self.values()), list(self.keys())
-        for n, item in enumerate(l):
-            _values, _spaces, _labels = item._flat()
-            values.extend(_values)
-            spaces.extend(_spaces)
-            labels.extend([k[n] + "|" + label for label in _labels])
+
+        for n, (k, v) in enumerate(self.items()):
+            values.append(numpy.ndarray.__repr__(v))
+            spaces.append(v.spaces._flat())
+            labels.extend([k + "|" + str(label) for label in range(len(v.spaces))])
 
         return values, spaces, labels
 
@@ -63,21 +48,22 @@ class State(OrderedDict):
         :rtype: collections.OrderedDict
         """
 
-        new_state = OrderedDict()
+        new_state = {}
         if filterdict is None:
             filterdict = self
         for key, values in filterdict.items():
+            print(key, values)
             if isinstance(self[key], State):
                 new_state[key] = self[key].filter(mode, values)
             elif isinstance(self[key], StateElement):
                 # to make S.filter("values", S) possible.
-                # Warning: Contrary to what one would expect values != self[key]
+                # Warning: values == filterdict[key] != self[key]
                 if isinstance(values, StateElement):
                     values = slice(0, len(values), 1)
                 if mode == "spaces":
-                    new_state[key] = flatten([self[key][mode][values]])
+                    new_state[key] = flatten([self[key].spaces[values]])
                 else:
-                    new_state[key] = self[key][mode][values]
+                    new_state[key] = self[key][values]
             else:
                 new_state[key] = self[key]
 
@@ -130,7 +116,7 @@ class State(OrderedDict):
     def __str__(self):
         """Print out the game_state and the name of each substate with according indices."""
 
-        table_header = ["Index", "Label", "Value", "Space", "Possible Value"]
+        table_header = ["Index", "Label", "Value", "Space"]
         table_rows = []
         for i, (v, s, l) in enumerate(zip(*self._flat())):
             table_rows.append([str(i), l, str(v), str(s)])

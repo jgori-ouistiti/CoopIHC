@@ -130,7 +130,6 @@ class InteractionTask(ABC):
 
         if not dic:
             self.state.reset(dic={})
-            self.reset(dic=dic)
             return
 
         self.reset(dic=dic)
@@ -192,19 +191,11 @@ class InteractionTask(ABC):
         return None
 
     @abstractmethod
-    def reset(self, dic=None):
+    def reset(self):
         """reset
 
         Redefine this to specify how to reinitialize the task before each new game.
 
-        .. warning::
-
-            the method signature is likely outdated and should be reset(self) since the base_reset() method already accounts for the reset dic mechanism
-
-        :param dic: [likely outdated], defaults to None
-        :type dic: [type], optional
-        :return: task state
-        :rtype: :py:class:`State<coopihc.space.State.State>`
         """
         return None
 

@@ -46,6 +46,7 @@ class StateElement(numpy.ndarray):
 
     __precedence__ = {"error": 0, "warning": 1, "clip": 2, "silent": 3, "raw": 4}
     HANDLED_FUNCTIONS = {}
+    SAFE_FUNCTIONS = ["all"]
 
     @staticmethod
     def _clip(value, space):
@@ -161,13 +162,14 @@ class StateElement(numpy.ndarray):
         """
         # Calls default numpy implementations and returns a numpy ndarray
         if func not in self.HANDLED_FUNCTIONS:
-            warnings.warn(
-                NumpyFunctionNotHandledWarning(
-                    "Numpy function with name {} is currently not implemented for this object with type {}, and CoopIHC is returning a numpy.ndarray object. If you want to have a StateElement object returned, consider implementing your own version of this function and using the implements decorator (example in the decorator's documentation) to add it to the StateElement, as well as formulating a PR to have it included in CoopIHC core code.".format(
-                        func.__name__, type(self)
+            if func.__name__ not in self.SAFE_FUNCTIONS:
+                warnings.warn(
+                    NumpyFunctionNotHandledWarning(
+                        "Numpy function with name {} is currently not implemented for this object with type {}, and CoopIHC is returning a numpy.ndarray object. If you want to have a StateElement object returned, consider implementing your own version of this function and using the implements decorator (example in the decorator's documentation) to add it to the StateElement, as well as formulating a PR to have it included in CoopIHC core code.".format(
+                            func.__name__, type(self)
+                        )
                     )
                 )
-            )
             return (super().__array_function__(func, types, args, kwargs)).view(
                 numpy.ndarray
             )
@@ -434,14 +436,119 @@ class StateElement(numpy.ndarray):
     #             typing_priority=self.typing_priority,
     #         )
 
-    def _flat(self):
-        raise NotImplementedError
+    # if _str == "cast" or _str == "all":
 
-    #         return (
-    #             self["values"],
-    #             self["spaces"],
-    #             [str(i) for i, v in enumerate(self["values"])],
+    # y.reset()
+    # targetdomain = StateElement(
+    #     values=None,
+    #     spaces=[
+    #         coopihc.space.Space(
+    #             [
+    #                 -numpy.ones((2, 1), dtype=numpy.float32),
+    #                 numpy.ones((2, 1), dtype=numpy.float32),
+    #             ]
     #         )
+    #         for j in range(3)
+    #     ],
+    # )
+    # res = y.cast(targetdomain)
+
+    # b = StateElement(
+    #     values=5,
+    #     spaces=coopihc.space.Space(
+    #         [numpy.array([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5], dtype=numpy.int16)]
+    #     ),
+    # )
+
+    # a = StateElement(
+    #     values=0,
+    #     spaces=coopihc.space.Space(
+    #         [
+    #             numpy.array([-1], dtype=numpy.float32),
+    #             numpy.array([1], dtype=numpy.float32),
+    #         ]
+    #     ),
+    # )
+    # # C2D
+    # continuous = []
+    # discrete = []
+    # for elem in numpy.linspace(-1, 1, 200):
+    #     a["values"] = elem
+    #     continuous.append(a["values"][0].squeeze().tolist())
+    #     discrete.append(a.cast(b, mode="center")["values"][0].squeeze().tolist())
+    # import matplotlib.pyplot as plt
+
+    # plt.plot(continuous, discrete, "b*")
+    # plt.show()
+
+    # # D2C
+
+    # continuous = []
+    # discrete = []
+    # for elem in [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]:
+    #     b["values"] = elem
+    #     discrete.append(elem)
+    #     continuous.append(b.cast(a, mode="edges")["values"][0].squeeze().tolist())
+    # import matplotlib.pyplot as plt
+
+    # plt.plot(discrete, continuous, "b*")
+    # plt.show()
+
+    # # C2C
+
+    # a = StateElement(
+    #     values=0,
+    #     spaces=coopihc.space.Space(
+    #         [
+    #             numpy.array([-2], dtype=numpy.float32),
+    #             numpy.array([1], dtype=numpy.float32),
+    #         ]
+    #     ),
+    # )
+    # b = StateElement(
+    #     values=3.5,
+    #     spaces=coopihc.space.Space(
+    #         [
+    #             numpy.array([3], dtype=numpy.float32),
+    #             numpy.array([4], dtype=numpy.float32),
+    #         ]
+    #     ),
+    # )
+    # c1 = []
+    # c2 = []
+    # for elem in numpy.linspace(-2, 1, 100):
+    #     a["values"] = elem
+    #     c1.append(a["values"][0].squeeze().tolist())
+    #     c2.append(a.cast(b)["values"][0].squeeze().tolist())
+    # import matplotlib.pyplot as plt
+
+    # plt.plot(c1, c2, "b*")
+    # plt.show()
+
+    # # D2D
+    # a = StateElement(
+    #     values=5,
+    #     spaces=coopihc.space.Space(
+    #         [numpy.array([i for i in range(11)], dtype=numpy.int16)]
+    #     ),
+    # )
+    # b = StateElement(
+    #     values=5,
+    #     spaces=coopihc.space.Space(
+    #         [numpy.array([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5], dtype=numpy.int16)]
+    #     ),
+    # )
+
+    # d1 = []
+    # d2 = []
+    # for i in range(11):
+    #     a["values"] = i
+    #     d1.append(i)
+    #     d2.append(a.cast(b)["values"][0].squeeze().tolist())
+    # import matplotlib.pyplot as plt
+
+    # plt.plot(d1, d2, "b*")
+    # plt.show()
 
     @classmethod
     def implements(cls, numpy_function):

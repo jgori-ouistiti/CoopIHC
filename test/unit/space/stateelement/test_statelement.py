@@ -677,6 +677,12 @@ def test_reset():
     test_reset_multidiscrete()
 
 
+def test_flat():
+    global discr_space
+    x = StateElement(1, discr_space)
+    print(x._flat())
+
+
 if __name__ == "__main__":
 
     test_array_init()
@@ -691,3 +697,4 @@ if __name__ == "__main__":
     test__repr__()
     test_serialize()
     test_reset()
+    test_flat()

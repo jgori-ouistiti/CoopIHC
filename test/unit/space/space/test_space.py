@@ -3,6 +3,7 @@ from coopihc.space.utils import discrete_space, continuous_space, multidiscrete_
 from coopihc.helpers import flatten
 import numpy
 import json
+import pytest
 
 
 def test_init_discrete():
@@ -760,6 +761,130 @@ def test_cartesian_product():
     test_cartesian_product_mix()
 
 
+def test__getitem__discrete():
+    s = Space(numpy.array([1, 2, 3], dtype=numpy.int16), "discrete", contains="hard")
+    with pytest.raises(TypeError):
+        s[0]
+
+
+def test__getitem__int_continuous():
+    s = Space(
+        [
+            -numpy.ones((2, 2), dtype=numpy.float32),
+            numpy.ones((2, 2), dtype=numpy.float32),
+        ],
+        "continuous",
+        contains="hard",
+        seed=456,
+    )
+    assert s[0] == Space(
+        [
+            -numpy.ones((1, 1), dtype=numpy.float32),
+            numpy.ones((1, 1), dtype=numpy.float32),
+        ],
+        "continuous",
+        contains="hard",
+        seed=456,
+    )
+
+
+def test__getitem__slice_continuous():
+    s = Space(
+        [
+            -numpy.ones((2, 2), dtype=numpy.float32),
+            numpy.ones((2, 2), dtype=numpy.float32),
+        ],
+        "continuous",
+        contains="hard",
+        seed=456,
+    )
+    assert s[:, 0] == Space(
+        [
+            -numpy.ones((2, 1), dtype=numpy.float32),
+            numpy.ones((2, 1), dtype=numpy.float32),
+        ],
+        "continuous",
+        contains="hard",
+        seed=456,
+    )
+    assert s[0, :] == Space(
+        [
+            -numpy.ones((1, 2), dtype=numpy.float32),
+            numpy.ones((1, 2), dtype=numpy.float32),
+        ],
+        "continuous",
+        contains="hard",
+        seed=456,
+    )
+    assert s[:, :] == s
+
+
+def test__getitem__int_multidiscrete():
+    q = Space(
+        [
+            numpy.array([i + 6 for i in range(2)], dtype=numpy.int16),
+            numpy.array([i for i in range(2)], dtype=numpy.int16),
+        ],
+        "multidiscrete",
+        contains="hard",
+        seed=789,
+    )
+    assert q[0] == Space(
+        numpy.array([i + 6 for i in range(2)]), "discrete", contains="hard", seed=789
+    )
+    assert q[1] == Space(
+        numpy.array([i for i in range(2)]), "discrete", contains="hard", seed=789
+    )
+
+
+def test__getitem__slice_multidiscrete():
+    q = Space(
+        [
+            numpy.array([i + 6 for i in range(2)], dtype=numpy.int16),
+            numpy.array([i for i in range(4)], dtype=numpy.int16),
+            numpy.array([i - 2 for i in range(2)], dtype=numpy.int16),
+            numpy.array([i + 2 for i in range(4)], dtype=numpy.int16),
+        ],
+        "multidiscrete",
+        contains="hard",
+        seed=789,
+    )
+    assert q[:2] == Space(
+        [
+            numpy.array([i + 6 for i in range(2)], dtype=numpy.int16),
+            numpy.array([i for i in range(4)], dtype=numpy.int16),
+        ],
+        "multidiscrete",
+        contains="hard",
+        seed=789,
+    )
+    assert q[2:] == Space(
+        [
+            numpy.array([i - 2 for i in range(2)], dtype=numpy.int16),
+            numpy.array([i + 2 for i in range(4)], dtype=numpy.int16),
+        ],
+        "multidiscrete",
+        contains="hard",
+        seed=789,
+    )
+    # assert q[slice(0, 1, 1)] == Space(
+    #     [
+    #         numpy.array([i + 6 for i in range(2)], dtype=numpy.int16),
+    #     ],
+    #     "discrete",
+    #     contains="hard",
+    #     seed=789,
+    # )
+
+
+def test__getitem__():
+    test__getitem__discrete()
+    test__getitem__int_continuous()
+    test__getitem__int_multidiscrete()
+    test__getitem__slice_continuous()
+    test__getitem__slice_multidiscrete()
+
+
 if __name__ == "__main__":
     test_discrete()
     test_multidiscrete()
@@ -770,3 +895,4 @@ if __name__ == "__main__":
     test_sample()
     test_serialize()
     test_cartesian_product()
+    test__getitem__()
