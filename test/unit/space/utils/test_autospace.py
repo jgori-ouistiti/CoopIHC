@@ -58,10 +58,18 @@ def test_multidiscrete():
 
 
 def test_continuous():
-    assert autospace(-numpy.array([[1, 1], [1, 1]]), numpy.array([[1, 1], [1, 1]]))
-    assert autospace([-numpy.array([[1, 1], [1, 1]]), numpy.array([[1, 1], [1, 1]])])
-    assert autospace([[-1, -1], [-1, -1]], [[1, 1], [1, 1]])
-    assert autospace([[[-1, -1], [-1, -1]], [[1, 1], [1, 1]]])
+    assert autospace(
+        -numpy.array([[1, 1], [1, 1]]), numpy.array([[1, 1], [1, 1]])
+    ) == Space([-numpy.ones((2, 2)), numpy.ones((2, 2))], "continuous")
+    assert autospace(
+        [-numpy.array([[1, 1], [1, 1]]), numpy.array([[1, 1], [1, 1]])]
+    ) == Space([-numpy.ones((2, 2)), numpy.ones((2, 2))], "continuous")
+    assert autospace([[-1, -1], [-1, -1]], [[1, 1], [1, 1]]) == Space(
+        [-numpy.ones((2, 2)), numpy.ones((2, 2))], "continuous"
+    )
+    assert autospace([[[-1, -1], [-1, -1]], [[1, 1], [1, 1]]]) == Space(
+        [-numpy.ones((2, 2)), numpy.ones((2, 2))], "continuous"
+    )
 
 
 def test_base_init():

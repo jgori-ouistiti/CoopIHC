@@ -113,11 +113,18 @@ def autospace(*input_array, seed=None, contains="soft", dtype=None):
 
 
         # Continuous
-        assert autospace(-numpy.array([[1, 1], [1, 1]]), numpy.array([[1, 1], [1, 1]]))
-        assert autospace([-numpy.array([[1, 1], [1, 1]]), numpy.array([[1, 1], [1, 1]])])
-        assert autospace([[-1, -1], [-1, -1]], [[1, 1], [1, 1]])
-        assert autospace([[[-1, -1], [-1, -1]], [[1, 1], [1, 1]]])
-
+        assert autospace(
+            -numpy.array([[1, 1], [1, 1]]), numpy.array([[1, 1], [1, 1]])
+        ) == Space([-numpy.ones((2, 2)), numpy.ones((2, 2))], "continuous")
+        assert autospace(
+            [-numpy.array([[1, 1], [1, 1]]), numpy.array([[1, 1], [1, 1]])]
+        ) == Space([-numpy.ones((2, 2)), numpy.ones((2, 2))], "continuous")
+        assert autospace([[-1, -1], [-1, -1]], [[1, 1], [1, 1]]) == Space(
+            [-numpy.ones((2, 2)), numpy.ones((2, 2))], "continuous"
+        )
+        assert autospace([[[-1, -1], [-1, -1]], [[1, 1], [1, 1]]]) == Space(
+            [-numpy.ones((2, 2)), numpy.ones((2, 2))], "continuous"
+        )
     """
     k = 0
     while k < 5:

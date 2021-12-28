@@ -279,6 +279,10 @@ class StateElement(numpy.ndarray):
         return numpy.full(self.shape, True)
 
     def cast(self, other, mode="center"):
+        """cast
+
+        Cast value from one space to another. Not implemented yet, old code in comment.
+        """
         raise NotImplementedError
 
     # def _discrete2continuous(self, other, mode="center"):
