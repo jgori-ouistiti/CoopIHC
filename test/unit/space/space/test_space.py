@@ -602,6 +602,164 @@ def test_serialize():
     test_serialize_multidiscrete()
 
 
+def test_cartesian_product_discrete():
+    s = Space(
+        numpy.array([i for i in range(3)], dtype=numpy.int16),
+        "discrete",
+        contains="hard",
+        seed=123,
+    )
+    q = Space(
+        numpy.array([-i for i in range(3)], dtype=numpy.int16),
+        "discrete",
+        contains="hard",
+        seed=123,
+    )
+    cp, _ = Space.cartesian_product(s, q)
+    assert (
+        cp
+        == numpy.array(
+            [
+                [0, 0],
+                [0, -1],
+                [0, -2],
+                [1, 0],
+                [1, -1],
+                [1, -2],
+                [2, 0],
+                [2, -1],
+                [2, -2],
+            ]
+        )
+    ).all()
+
+
+def test_cartesian_product_continuous():
+    s = Space(
+        [
+            -numpy.ones((2, 2), dtype=numpy.float32),
+            numpy.ones((2, 2), dtype=numpy.float32),
+        ],
+        "continuous",
+        contains="hard",
+        seed=456,
+    )
+    q = Space(
+        [
+            -2 * numpy.ones((2, 2), dtype=numpy.float32),
+            2 * numpy.ones((2, 2), dtype=numpy.float32),
+        ],
+        "continuous",
+        contains="hard",
+        seed=456,
+    )
+    cp, _shape = Space.cartesian_product(s, q)
+    assert len(cp) == 1
+
+
+def test_cartesian_product_multidiscrete():
+    s = Space(
+        [
+            numpy.array([i for i in range(2)], dtype=numpy.int16),
+            numpy.array([i for i in range(2)], dtype=numpy.int16),
+        ],
+        "multidiscrete",
+        contains="hard",
+        seed=789,
+    )
+    cp, _ = Space.cartesian_product(s)
+    assert (cp == numpy.array([[0, 0], [0, 1], [1, 0], [1, 1]])).all()
+
+    q = Space(
+        [
+            numpy.array([i + 6 for i in range(2)], dtype=numpy.int16),
+            numpy.array([i + 6 for i in range(2)], dtype=numpy.int16),
+        ],
+        "multidiscrete",
+        contains="hard",
+        seed=789,
+    )
+    cp, shape = Space.cartesian_product(s, q)
+    assert (
+        cp
+        == numpy.array(
+            [
+                [0, 0, 6, 6],
+                [0, 0, 6, 7],
+                [0, 0, 7, 6],
+                [0, 0, 7, 7],
+                [0, 1, 6, 6],
+                [0, 1, 6, 7],
+                [0, 1, 7, 6],
+                [0, 1, 7, 7],
+                [1, 0, 6, 6],
+                [1, 0, 6, 7],
+                [1, 0, 7, 6],
+                [1, 0, 7, 7],
+                [1, 1, 6, 6],
+                [1, 1, 6, 7],
+                [1, 1, 7, 6],
+                [1, 1, 7, 7],
+            ]
+        )
+    ).all()
+
+
+def test_cartesian_product_mix():
+    s = Space(
+        numpy.array([i for i in range(3)], dtype=numpy.int16),
+        "discrete",
+        contains="hard",
+        seed=123,
+    )
+    q = Space(
+        [
+            numpy.array([i + 6 for i in range(2)], dtype=numpy.int16),
+            numpy.array([i + 6 for i in range(2)], dtype=numpy.int16),
+        ],
+        "multidiscrete",
+        contains="hard",
+        seed=789,
+    )
+    r = Space(
+        [
+            -numpy.ones((2, 2), dtype=numpy.float32),
+            numpy.ones((2, 2), dtype=numpy.float32),
+        ],
+        "continuous",
+        contains="hard",
+        seed=456,
+    )
+    cp, shape = Space.cartesian_product(s, q, r)
+    assert (
+        cp
+        == numpy.array(
+            [
+                [0, 6, 6, None],
+                [0, 6, 7, None],
+                [0, 7, 6, None],
+                [0, 7, 7, None],
+                [1, 6, 6, None],
+                [1, 6, 7, None],
+                [1, 7, 6, None],
+                [1, 7, 7, None],
+                [2, 6, 6, None],
+                [2, 6, 7, None],
+                [2, 7, 6, None],
+                [2, 7, 7, None],
+            ]
+        )
+    ).all()
+    assert shape == [(1,), (2, 1), (2, 2)]
+
+
+def test_cartesian_product():
+    test_cartesian_product_discrete()
+    test_cartesian_product_continuous()
+    test_cartesian_product_multidiscrete()
+    test_cartesian_product_mix()
+
+
 if __name__ == "__main__":
     test_discrete()
     test_multidiscrete()
@@ -611,3 +769,4 @@ if __name__ == "__main__":
     test_iter()
     test_sample()
     test_serialize()
+    test_cartesian_product()

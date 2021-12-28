@@ -24,6 +24,12 @@ class NumpyFunctionNotHandledWarning(Warning):
     __module__ = Warning.__module__
 
 
+class RedefiningHandledFunctionWarning(Warning):
+    """Warning raised when the numpy function is already handled by the StateElement and is going to be redefined."""
+
+    __module__ = Warning.__module__
+
+
 class SpaceLengthError(Exception):
     """Error raised when the space length does not match the value length."""
 

@@ -373,14 +373,21 @@ class Space:
         else:
             raise StopIteration
 
+    # Test repr
     def __repr__(self):
         """__repr__"""
         if self.space_type == "continuous":
-            return "Space[Continuous({}), {}]".format(self.shape, self.dtype)
+            return "Space([{}, {}], 'continuous', contains = '{}')".format(
+                self.low, self.high, self.contains
+            )
         elif self.space_type == "discrete":
-            return "Space[Discrete({}), {}]".format(self.N, self.dtype)
+            return "Space({}, 'discrete', contains = '{}')".format(
+                self._array_bound, self.contains
+            )
         elif self.space_type == "multidiscrete":
-            return "Space[MultiDiscrete({}), {}]".format(self.N, self.dtype)
+            return "Space([{}], 'multidiscrete', contains = '{}')".format(
+                ",".join([str(a) for a in self._array_bound]), self.contains
+            )
         else:
             return super().__repr__()
 
@@ -577,3 +584,78 @@ class Space:
             "seed": self.seed,
             "contains": self.contains,
         }
+
+    @staticmethod
+    def cartesian_product(*spaces):
+        """cartesian_product
+
+        Realizes the cartesian product of the spaces provided in input. For this method, continuous spaces are treated as singletons {None}.
+
+        .. code-block:: python
+
+            s = Space(
+                numpy.array([i for i in range(3)], dtype=numpy.int16),
+                "discrete",
+                contains="hard",
+                seed=123,
+            )
+            q = Space(
+                [
+                    numpy.array([i + 6 for i in range(2)], dtype=numpy.int16),
+                    numpy.array([i + 6 for i in range(2)], dtype=numpy.int16),
+                ],
+                "multidiscrete",
+                contains="hard",
+                seed=789,
+            )
+            r = Space(
+                [
+                    -numpy.ones((2, 2), dtype=numpy.float32),
+                    numpy.ones((2, 2), dtype=numpy.float32),
+                ],
+                "continuous",
+                contains="hard",
+                seed=456,
+            )
+            cp, shape = Space.cartesian_product(s, q, r)
+            assert (
+                cp
+                == numpy.array(
+                    [
+                        [0, 6, 6, None],
+                        [0, 6, 7, None],
+                        [0, 7, 6, None],
+                        [0, 7, 7, None],
+                        [1, 6, 6, None],
+                        [1, 6, 7, None],
+                        [1, 7, 6, None],
+                        [1, 7, 7, None],
+                        [2, 6, 6, None],
+                        [2, 6, 7, None],
+                        [2, 7, 6, None],
+                        [2, 7, 7, None],
+                    ]
+                )
+            ).all()
+            assert shape == [(1,), (2, 1), (2, 2)]
+
+
+        :return: cartesian product and shape of associated spaces
+        :rtype: tuple(numpy.ndarray, list(tuples))
+        """
+        arrays = []
+        shape = []
+        for space in spaces:
+            shape.append(space.shape)
+            if space.space_type == "discrete":
+                arrays.append(space._array_bound)
+            elif space.space_type == "continuous":
+                arrays.append(numpy.array([None]))
+            elif space.space_type == "multidiscrete":
+                arrays.extend(space._array_bound)
+        la = len(arrays)
+        dtype = numpy.result_type(*arrays)
+        arr = numpy.empty([len(a) for a in arrays] + [la], dtype=dtype)
+        for i, a in enumerate(numpy.ix_(*arrays)):
+            arr[..., i] = a
+        return arr.reshape(-1, la), shape
