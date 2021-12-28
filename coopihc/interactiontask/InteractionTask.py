@@ -1,3 +1,6 @@
+"""This module provides access to the InteractionTask class."""
+
+
 from abc import ABC, abstractmethod
 from coopihc.space.State import State
 from coopihc.space.StateElement import StateElement
@@ -50,6 +53,9 @@ class InteractionTask(ABC):
         :return: turn number
         :rtype: numpy.ndarray
         """
+        if self.bundle is None:
+            no_bundle_specified = "turn_number accesses the bundle's turn number. self.bundle was None. Is this task part of a bundle?"
+            raise Exception(no_bundle_specified)
         return self.bundle.turn_number
 
     @property

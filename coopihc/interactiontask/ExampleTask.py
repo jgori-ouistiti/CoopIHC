@@ -1,3 +1,9 @@
+"""
+This module provides access to an example subclass of
+the InteractionTask class.
+"""
+
+
 import numpy
 from coopihc.space.Space import Space
 from coopihc.space.StateElement import StateElement
