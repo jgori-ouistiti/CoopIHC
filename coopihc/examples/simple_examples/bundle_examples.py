@@ -8,28 +8,24 @@ root = file.parents[3]
 sys.path.append(str(root))
 
 import numpy
-from coopihc.interactiontask import ExampleTask
+from coopihc.interactiontask.ExampleTask import ExampleTask
 from coopihc.space.State import State
 from coopihc.space.Space import Space
+from coopihc.space.utils import discrete_space
 from coopihc.space.StateElement import StateElement
 from coopihc.bundle.Bundle import Bundle
 from coopihc.agents.BaseAgent import BaseAgent
 from coopihc.policy.BasePolicy import BasePolicy
 from coopihc.agents.ExampleUser import ExampleUser
 
+
 # [start-check-task]
 # Define agent action states (what actions they can take)
 user_action_state = State()
-user_action_state["action"] = StateElement(
-    values=None,
-    spaces=[Space([numpy.array([-1, 0, 1], dtype=numpy.int16)])],
-)
+user_action_state["action"] = StateElement(0, discrete_space([-1, 0, 1]))
 
 assistant_action_state = State()
-assistant_action_state["action"] = StateElement(
-    values=None,
-    spaces=[Space([numpy.array([-1, 0, 1], dtype=numpy.int16)])],
-)
+assistant_action_state["action"] = StateElement(0, discrete_space([-1, 0, 1]))
 
 # Bundle a task together with two BaseAgents
 bundle = Bundle(
