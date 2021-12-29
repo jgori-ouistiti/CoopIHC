@@ -42,8 +42,7 @@ class _Bundle:
         self.game_state = State()
 
         turn_index = StateElement(
-            values=[0],
-            spaces=Space([numpy.array([0, 1, 2, 3])], dtype=numpy.int8),
+            0, Space(numpy.array([0, 1, 2, 3], dtype=numpy.int8), "discrete")
         )
 
         self.game_state["turn_index"] = turn_index

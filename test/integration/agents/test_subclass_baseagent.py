@@ -23,8 +23,7 @@ class NonMinimalAgent(BaseAgent):
         # custom policy
         action_state = State()
         action_state["action"] = StateElement(
-            values=2,
-            spaces=Space([numpy.array([1, 2, 3], dtype=numpy.int16)]),
+            2, Space(numpy.array([1, 2, 3], dtype=numpy.int16), "discrete")
         )
         policy = ExamplePolicy(action_state=action_state)
 
@@ -33,7 +32,7 @@ class NonMinimalAgent(BaseAgent):
         state = State(
             **{
                 "substate_1": StateElement(
-                    values=1, spaces=Space([numpy.array([0, 1], dtype=numpy.int16)])
+                    1, Space(numpy.array([0, 1], dtype=numpy.int16), "discrete")
                 )
             }
         )
@@ -132,7 +131,7 @@ def test_nonminimalagent():
 def test_state():
     agent = NonMinimalAgent()
     assert agent.state["substate_1"] == StateElement(
-        values=1, spaces=Space([numpy.array([0, 1], dtype=numpy.int16)])
+        1, Space(numpy.array([0, 1], dtype=numpy.int16), "discrete")
     )
 
 
@@ -140,8 +139,7 @@ def test_policy():
     agent = NonMinimalAgent()
     assert isinstance(agent.policy, ExamplePolicy)
     assert agent.action == StateElement(
-        values=2,
-        spaces=Space([numpy.array([1, 2, 3], dtype=numpy.int16)]),
+        2, Space(numpy.array([1, 2, 3], dtype=numpy.int16), "discrete")
     )
 
 
@@ -185,8 +183,7 @@ def test_override_policy():
     agent = NonMinimalAgent(override_policy=(policy, {}))
     assert isinstance(agent.policy, BasePolicy)
     assert agent.action == StateElement(
-        values=None,
-        spaces=Space([numpy.array([None], dtype=object)]),
+        0, Space(numpy.array([0, 1], dtype=numpy.int16), "discrete")
     )
 
 

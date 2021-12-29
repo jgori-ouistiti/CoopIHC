@@ -419,14 +419,23 @@ class Space:
                     # return self.__getitem__(key.start)
                     raise NotImplementedError
                 else:
+
                     space_type = "multidiscrete"
-                    _array = _array.tolist()
-                return Space(
-                    _array,
-                    space_type,
-                    seed=self.seed,
-                    contains=self.contains,
-                )
+                # A length one tuple will give a discrete space. This could be detected easily with len(key). However, it is harder to detect the length of a slice, since it depends on the array it is evaluated on. To account for this, we just try to use a multidiscrete space and if that fails try a discrete space instead.
+                try:
+                    return Space(
+                        _array,
+                        space_type,
+                        seed=self.seed,
+                        contains=self.contains,
+                    )
+                except:
+                    return Space(
+                        _array,
+                        "discrete",
+                        seed=self.seed,
+                        contains=self.contains,
+                    )
         else:
             raise NotImplementedError
 

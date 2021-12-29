@@ -683,6 +683,58 @@ def test_flat():
     print(x._flat())
 
 
+def test__setitem__():
+    global discr_space
+    x = StateElement(1, discr_space)
+    with pytest.warns(StateNotContainedWarning):
+        x[:] = 4
+
+
+def test__getitem__discrete():
+    global discr_space
+    x = StateElement(1, discr_space)
+    assert x[0, {"spaces": True}] == x
+    assert x[0, {"spaces": True}] is not x
+    assert x[0] == x
+
+
+def test__getitem__continuous():
+    global cont_space
+    x = StateElement(numpy.array([[0.0, 0.1], [0.2, 0.3]]), cont_space)
+    assert x[0, 0] == 0.0
+    assert x[0, 0, {"spaces": True}] == StateElement(
+        numpy.array([[0.0]]), autospace(numpy.array([[-1]]), numpy.array([[1]]))
+    )
+    assert x[0, 1, {"spaces": True}] == StateElement(
+        numpy.array([[0.1]]), autospace(numpy.array([[-1]]), numpy.array([[1]]))
+    )
+    assert x[1, 0, {"spaces": True}] == StateElement(
+        numpy.array([[0.2]]), autospace(numpy.array([[-1]]), numpy.array([[1]]))
+    )
+    assert x[1, 1, {"spaces": True}] == StateElement(
+        numpy.array([[0.3]]), autospace(numpy.array([[-1]]), numpy.array([[1]]))
+    )
+    assert (x[:, 1] == numpy.array([0.1, 0.3], dtype=numpy.float32)).all()
+    assert (
+        x[:, 1, {"spaces": True}]
+        == StateElement(
+            numpy.array([0.1, 0.3], dtype=numpy.float32),
+            autospace(numpy.array([[-1], [-1]]), numpy.array([[1], [1]])),
+        )
+    ).all()
+
+
+def test__getitem__multidiscrete():
+    global cont_space
+    x = StateElement(numpy.array([[0.0, 0.1], [0.2, 0.3]]), cont_space)
+
+
+def test__getitem__():
+    test__getitem__discrete()
+    test__getitem__continuous()
+    test__getitem__multidiscrete()
+
+
 if __name__ == "__main__":
 
     test_array_init()
@@ -696,5 +748,7 @@ if __name__ == "__main__":
     test__iter__()
     test__repr__()
     test_serialize()
-    test_reset()
-    test_flat()
+    # test_reset()
+    # test_flat() # broken
+    # test__setitem__()
+    test__getitem__()

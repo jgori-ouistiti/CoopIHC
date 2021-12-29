@@ -28,6 +28,28 @@ class StateElement(numpy.ndarray):
 
     An Element of a State. This is basically a version of numpy ndarrays where values are associated to a space.
 
+
+    .. code-block:: python
+
+        # Discrete
+        discr_space = discrete_space([1, 2, 3])
+        x = StateElement([2], discr_space, out_of_bounds_mode="error")
+        # Continuous
+        cont_space = continuous_space(-numpy.ones((2, 2)), numpy.ones((2, 2)))
+        x = StateElement(
+            numpy.array([[0, 0], [0, 0]]), cont_space, out_of_bounds_mode="error"
+        )
+        # Multidiscrete
+        multidiscr_space = multidiscrete_space(
+            [
+                numpy.array([1, 2, 3]),
+                numpy.array([1, 2, 3, 4, 5]),
+                numpy.array([1, 3, 5, 8]),
+            ]
+        )
+        x = StateElement([1, 5], multidiscr_space, out_of_bounds_mode="error")
+
+
     :param input_array: value array-like
     :type input_array: numpy array-like
     :param spaces: Spaces where input_array takes value
@@ -80,9 +102,10 @@ class StateElement(numpy.ndarray):
         """__array_finalize__, see https://numpy.org/doc/stable/user/basics.subclassing.html"""
         if obj is None:
             return
-
-        self.spaces = getattr(obj, "spaces", None)
-        self.out_of_bounds_mode = getattr(obj, "out_of_bounds_mode", None)
+        spaces = getattr(obj, "spaces", None)
+        out_of_bounds_mode = getattr(obj, "out_of_bounds_mode", None)
+        self.spaces = spaces
+        self.out_of_bounds_mode = out_of_bounds_mode
         self.kwargs = getattr(obj, "kwargs", {})
 
     def __array_ufunc__(self, ufunc, method, *input_args, out=None, **kwargs):
@@ -198,6 +221,59 @@ class StateElement(numpy.ndarray):
         else:
             raise StopIteration
 
+    def __getitem__(self, key):
+        """__getitem__
+
+        Includes an extra mechanism, to automatically extract values with the corresponding spaces, which slightly abuses the slice and indexing notations:
+
+        .. code-block:: python
+
+        global cont_space
+        x = StateElement(numpy.array([[0.0, 0.1], [0.2, 0.3]]), cont_space)
+        assert x[0, 0] == 0.0
+        assert x[0, 0, {"spaces": True}] == StateElement(
+            numpy.array([[0.0]]), autospace(numpy.array([[-1]]), numpy.array([[1]]))
+        )
+
+
+
+        :param key: [description]
+        :type key: [type]
+        :raises NotImplementedError: [description]
+        :return: [description]
+        :rtype: [type]
+        """
+        if isinstance(key, tuple) and key[-1] == {"spaces": True}:
+            key = key[:-1]
+            item = super().__getitem__(key)
+            try:
+                spaces = self.spaces[key]
+            except TypeError:  # if discrete space
+                spaces = self.spaces
+            return StateElement(
+                item.view(numpy.ndarray).ravel(),
+                spaces,
+                out_of_bounds_mode=self.out_of_bounds_mode,
+                **self.kwargs,
+            )
+        else:
+            return super().__getitem__(key)
+
+    def __setitem__(self, key, value):
+        """__setitem__
+
+        Simply calles numpy's __setitem__ after having checked input values.
+
+        :param key: [description]
+        :type key: [type]
+        :param value: [description]
+        :type value: [type]
+        """
+        value = StateElement._process_input_values(
+            value, self.spaces, self.out_of_bounds_mode
+        )
+        super().__setitem__(key, value)
+
     def __str__(self):
         return self.__repr__()
 
@@ -234,9 +310,10 @@ class StateElement(numpy.ndarray):
         if value is None:
             self[:] = self.spaces.sample()
         else:
-            self[:] = StateElement._process_input_values(
-                value, self.spaces, self.out_of_bounds_mode
-            )
+            # self[:] = StateElement._process_input_values(
+            #     value, self.spaces, self.out_of_bounds_mode
+            # )
+            self[:] = value
 
     def serialize(self):
         """Generate a JSON representation of StateElement.
@@ -311,6 +388,9 @@ class StateElement(numpy.ndarray):
         Cast value from one space to another. Not implemented yet, old code in comment.
         """
         raise NotImplementedError
+
+    def _flat(self):
+        return numpy.ndarray.__repr__(self)
 
     # def _discrete2continuous(self, other, mode="center"):
     #         values = []

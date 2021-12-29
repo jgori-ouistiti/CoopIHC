@@ -22,8 +22,7 @@ class BasePolicy:
         if action_state is None:
             action_state = State()
             action_state["action"] = StateElement(
-                values=None,
-                spaces=Space([numpy.array([None], dtype=object)]),
+                0, Space(numpy.array([0, 1], dtype=numpy.int16), "discrete")
             )
 
         self.action_state = action_state

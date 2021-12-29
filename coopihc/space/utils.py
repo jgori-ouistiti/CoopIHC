@@ -18,6 +18,12 @@ class StateNotContainedWarning(Warning):
     __module__ = Warning.__module__
 
 
+class NotKnownSerializationWarning(Warning):
+    """Warning raised when the State tries to serialize an item which does not have a serialize method."""
+
+    __module__ = Warning.__module__
+
+
 class NumpyFunctionNotHandledWarning(Warning):
     """Warning raised when the numpy function is not handled yet by the StateElement."""
 

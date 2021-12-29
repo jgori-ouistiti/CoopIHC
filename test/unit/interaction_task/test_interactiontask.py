@@ -4,6 +4,8 @@ coopihc package."""
 
 import numpy
 from coopihc import InteractionTask, StateElement, Space, discrete_space
+from coopihc.space.utils import StateNotContainedWarning, StateNotContainedError
+import pytest
 
 
 class MinimalTask(InteractionTask):
@@ -26,7 +28,29 @@ class MinimalTaskWithState(MinimalTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.state["x"] = StateElement(0, discrete_space(numpy.array([-1, 0, 1])))
+        self.state["x"] = StateElement(
+            0, discrete_space(numpy.array([-1, 0, 1])), out_of_bounds_mode="warning"
+        )
+
+
+class MinimalTaskWithStateAugmented(MinimalTask):
+    """Non-functional minimal subclass including a state to use
+    in tests."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.state["x"] = StateElement(
+            0, discrete_space(numpy.array([-1, 0, 1])), out_of_bounds_mode="warning"
+        )
+        self.state["y"] = StateElement(
+            2, discrete_space(numpy.array([2, 3, 4, 5])), out_of_bounds_mode="error"
+        )
+        self.state["z"] = StateElement(
+            2,
+            discrete_space(numpy.array([i for i in range(1, 10)])),
+            out_of_bounds_mode="clip",
+        )
 
 
 def test_imports():
@@ -178,7 +202,7 @@ def test_base_reset_randomness():
 
     for _ in range(1000):
         task._base_reset()
-        value = task.state["x"].values[0][0][0]
+        value = task.state["x"].squeeze().tolist()
         counter[value] += 1
 
     for value in possible_values:
@@ -191,13 +215,69 @@ def test_base_reset_without_dic():
     test_base_reset_randomness()
 
 
-def test_base_reset():
-    """Tests the forced reset mechanism provided by the _base_reset method
-    of InteractionTask that is called by _Bundle.reset()."""
-    # Check reset without dic
-    test_base_reset_without_dic()
+def test_base_reset_with_full_dic():
+    task = MinimalTaskWithState()
+    reset_dic = {"x": numpy.array([0])}
+    task._base_reset(reset_dic)
+    assert isinstance(task.state["x"], StateElement)
+    assert task.state["x"] == 0
+    reset_dic = {"x": numpy.array([1])}
+    task._base_reset(reset_dic)
+    assert isinstance(task.state["x"], StateElement)
+    assert task.state["x"] == 1
+    reset_dic = {"x": numpy.array([-1])}
+    task._base_reset(reset_dic)
+    assert isinstance(task.state["x"], StateElement)
+    assert task.state["x"] == -1
+    reset_dic = {"x": numpy.array([-2])}
+    with pytest.warns(StateNotContainedWarning):
+        task._base_reset(reset_dic)
+    assert isinstance(task.state["x"], StateElement)
+    assert task.state["x"] == -2
+    reset_dic = {"x": numpy.array([2])}
+    with pytest.warns(StateNotContainedWarning):
+        task._base_reset(reset_dic)
+    assert task.state["x"] == 2
+    assert isinstance(task.state["x"], StateElement)
+    task = MinimalTaskWithStateAugmented()
+    reset_dic = {"x": numpy.array([0]), "y": numpy.array([5]), "z": numpy.array([1])}
+    task._base_reset(reset_dic)
+    assert task.state["x"] == 0
+    assert isinstance(task.state["x"], StateElement)
+    assert task.state["y"] == 5
+    assert isinstance(task.state["y"], StateElement)
+    assert task.state["z"] == 1
+    assert isinstance(task.state["z"], StateElement)
+    reset_dic = {"x": numpy.array([0]), "y": numpy.array([6]), "z": numpy.array([1])}
+    with pytest.raises(StateNotContainedError):
+        task._base_reset(reset_dic)
+    reset_dic = {"x": numpy.array([0]), "y": numpy.array([5]), "z": numpy.array([-8])}
+    task._base_reset(reset_dic)
+    assert task.state["z"] == 1
 
-    """The first thing that comes to mind that is missing is to verify the forced-reset mechanism. When you reset a bundle, you can pass it a reset_dictionnary {'task_state': task_reset_dic, 'user_state': user_reset_dic, etc.}. The value associated with the task_state key is passed to _base_reset as dic. A couple things to check here are that without dic provided, the state is randomly reset (maybe check by fixing the seed of the stateElements), with dic provided the reset is correctly achieved to the forced state in input, and in between (if the reset_dic specifies a value for x_1 but not x_2, x_2 should be reset randomly)"""
+
+def test_base_reset_with_partial_dic():
+    task = MinimalTaskWithStateAugmented()
+    reset_dic = {"x": numpy.array([0]), "y": numpy.array([2])}
+    task._base_reset(reset_dic)
+    assert task.state["x"] == 0
+    assert isinstance(task.state["x"], StateElement)
+    assert task.state["y"] == 2
+    assert isinstance(task.state["y"], StateElement)
+
+    set_z = {}
+    for i in range(100):
+        task._base_reset(reset_dic)
+        set_z[str(task.state["z"])] = task.state["z"].squeeze().tolist()
+
+    assert sorted(list(set_z.values())) == [i for i in range(1, 10)]
+
+
+def test_base_reset():
+    """Tests the forced reset mechanism provided by the _base_reset method"""
+    test_base_reset_without_dic()
+    test_base_reset_with_full_dic()
+    test_base_reset_with_partial_dic()
 
 
 def test_interactiontask():

@@ -2,6 +2,7 @@ from coopihc.space.State import State
 from coopihc.observation.BaseObservationEngine import BaseObservationEngine
 from coopihc.observation.utils import base_task_engine_specification
 import copy
+import numpy
 
 
 class RuleObservationEngine(BaseObservationEngine):
@@ -126,7 +127,9 @@ class RuleObservationEngine(BaseObservationEngine):
         ) in self.mapping:
             if observation.get(substate) is None:
                 observation[substate] = State()
-            _obs = copy.copy(game_state[substate][subsubstate]["values"][_slice])
+            _obs = copy.copy(
+                (game_state[substate][subsubstate][_slice]).view(numpy.ndarray)
+            )
             if _func:
                 if _args:
                     _obs = _func(_obs, game_state, *_args)
@@ -146,7 +149,7 @@ class RuleObservationEngine(BaseObservationEngine):
             observation[substate][subsubstate] = copy.copy(
                 game_state[substate][subsubstate]
             )
-            observation[substate][subsubstate]["values"] = [_obs]
+            observation[substate][subsubstate] = [_obs]
 
         return observation
 
@@ -176,7 +179,6 @@ class RuleObservationEngine(BaseObservationEngine):
                 continue
             if subsubstate == "all":
                 for key, value in game_state[substate].items():
-                    value = value["values"]
                     v = extradeterministicrules.get((substate, key))
                     if v is not None:
                         f, a = v

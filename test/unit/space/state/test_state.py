@@ -1,4 +1,5 @@
 import coopihc
+from coopihc.space.Space import Space
 from coopihc.space.StateElement import StateElement
 from coopihc.space.State import State
 from coopihc.space.utils import (
@@ -83,24 +84,96 @@ state["sub2"] = substate2
 filterdict = dict(
     {
         "sub1": dict({"x1": 0, "x2": slice(0, 2)}),
-        "sub2": dict({"y2": 0}),
+        "sub2": dict({"y2": 2}),
     }
 )
 
 
 def test_filter():
-    # too long to write out the assertions
-    f_state = state.filter("spaces", filterdict=filterdict)
-    print(f_state)
-    f_state = state.filter("values", filterdict=filterdict)
-    print(f_state)
-    f_state = state.filter("spaces")
-    print(f_state)
-    f_state = state.filter("values")
-    print(f_state)
+    global filterdict, state
+    f_state = state.filter(mode="spaces", filterdict=filterdict)
+    assert f_state == {
+        "sub1": {
+            "x1": Space(numpy.array([1, 2, 3]), "discrete", contains="soft"),
+            "x2": Space(
+                [numpy.array([0, 1, 2]), numpy.array([1, 2, 3])],
+                "multidiscrete",
+                contains="soft",
+            ),
+        },
+        "sub2": {"y2": Space(numpy.array([0, 1, 2, 3]), "discrete", contains="soft")},
+    }
+
+    f_state = state.filter(mode="array", filterdict=filterdict)
+    # print(f_state)
+    f_state = state.filter(mode="stateelement", filterdict=filterdict)
+    # print(f_state)
+    f_state = state.filter(mode="spaces")
+    # print(f_state)
+    f_state = state.filter(mode="array")
+    # print(f_state)
+
+
+def test_serialize():
+    global state
+    assert state.serialize() == {
+        "sub1": {
+            "x1": {
+                "values": [1],
+                "spaces": {
+                    "array_list": [1, 2, 3],
+                    "space_type": "discrete",
+                    "seed": None,
+                    "contains": "soft",
+                },
+            },
+            "x2": {
+                "values": [[1], [2], [3]],
+                "spaces": {
+                    "array_list": [[0, 1, 2], [1, 2, 3], [0, 1, 2, 3]],
+                    "space_type": "multidiscrete",
+                    "seed": None,
+                    "contains": "soft",
+                },
+            },
+            "x3": {
+                "values": [[1.5, 1.5, 1.5], [1.5, 1.5, 1.5], [1.5, 1.5, 1.5]],
+                "spaces": {
+                    "array_list": [
+                        [[1.0, 1.0, 1.0], [1.0, 1.0, 1.0], [1.0, 1.0, 1.0]],
+                        [[2.0, 2.0, 2.0], [2.0, 2.0, 2.0], [2.0, 2.0, 2.0]],
+                    ],
+                    "space_type": "continuous",
+                    "seed": None,
+                    "contains": "soft",
+                },
+            },
+        },
+        "sub2": {
+            "y1": {
+                "values": [1],
+                "spaces": {
+                    "array_list": [1, 2, 3],
+                    "space_type": "discrete",
+                    "seed": None,
+                    "contains": "soft",
+                },
+            },
+            "y2": {
+                "values": [[1], [2], [3]],
+                "spaces": {
+                    "array_list": [[0, 1, 2], [1, 2, 3], [0, 1, 2, 3]],
+                    "space_type": "multidiscrete",
+                    "seed": None,
+                    "contains": "soft",
+                },
+            },
+        },
+    }
 
 
 if __name__ == "__main__":
     test__init__()
     test_reset()
     test_filter()
+    test_serialize()

@@ -4,6 +4,8 @@
 from abc import ABC, abstractmethod
 from coopihc.space.State import State
 from coopihc.space.StateElement import StateElement
+import numpy
+
 
 """
     The main API methods for this class are:
@@ -127,18 +129,23 @@ class InteractionTask(ABC):
         :type dic: dictionnary, optional
         """
         self.round = 0
-
+        self.state.reset(dic={})
         if not dic:
-            self.state.reset(dic={})
             return
 
         self.reset(dic=dic)
         for key in list(self.state.keys()):
             value = dic.get(key)
             if isinstance(value, StateElement):
-                value = value["values"]
-            if value is not None:
-                self.state[key]["values"] = value
+                self.state[key] = value
+                continue
+            elif isinstance(value, numpy.ndarray):
+                self.state[key][:] = value
+
+            elif value is None:
+                continue
+            else:
+                raise NotImplementedError
 
     def base_user_step(self, *args, **kwargs):
         """base user step

@@ -15,7 +15,7 @@ class BaseAgent(ABC):
 
 
 
-    By default, this class will be initialized with an empty internal ``State``, a ``BasePolicy`` with a single 'None' action, a ``RuleObservationEngine`` with a ``BaseUser`` or ``BaseAssistant`` profile, and a ``BaseInference`` engine.
+    By default, this class will be initialized with an empty internal ``State``, a ``BasePolicy`` with a single action, a ``RuleObservationEngine`` with a ``BaseUser`` or ``BaseAssistant`` profile, and a ``BaseInference`` engine.
 
     Some things to know:
 
