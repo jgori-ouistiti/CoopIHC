@@ -1,5 +1,6 @@
 import numpy
 import itertools
+import warnings
 
 
 class Space:
@@ -220,6 +221,8 @@ class Space:
         To allow Python's 'in' operator to work. See examples in init w/r hard/soft
 
         """
+        if item is None:
+            return False
         if self.contains == "hard":
             if not isinstance(item, numpy.ndarray):
                 return False
@@ -229,11 +232,12 @@ class Space:
                 return False
 
         elif self.contains == "soft":
+            # if len(item) != len(self):
+            #     return False
             if not hasattr(item, "shape"):
                 item = numpy.asarray(item)
             if item.shape != self.shape:
                 try:
-                    # Don't actually store reshaped item, just see if it works
                     item = item.reshape(self.shape)
                 except ValueError:
                     return False
@@ -374,6 +378,14 @@ class Space:
             raise StopIteration
 
     def __getitem__(self, key):
+        """__getitem__
+
+        .. warning::
+
+            Indexing with an integer on continuous spaces may be counterintuitive when compared to __iter__'s behavior.
+            For example, iterating on a continuous space will return spaces made of the rows of the initial space if dim[0] > 1, and columns of the initial space if dim[0] == 1. However, space[0] is equivalent to space[0,0]. So, contrary to what may be expected, next(iter(s)) != s[0] i.e. the first element returned when for-looping over a space is not s[0].
+
+        """
         if self.space_type == "discrete":
             raise TypeError(
                 "'{}' object with space_type='{}' is not subscriptable".format(
@@ -382,6 +394,13 @@ class Space:
             )
         if isinstance(key, int):
             if self.space_type == "continuous":
+                from coopihc.space.utils import ContinuousSpaceIntIndexingWarning
+
+                warnings.warn(
+                    ContinuousSpaceIntIndexingWarning(
+                        "You are indexing a continuous space with an integer index, which may be ambiguous. "
+                    )
+                )
                 return Space(
                     [
                         numpy.atleast_2d(self.low.ravel()[key]),

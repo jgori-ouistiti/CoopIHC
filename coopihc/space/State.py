@@ -305,14 +305,23 @@ class State(dict):
             ret_dict[key] = value_
         return ret_dict
 
-    # def __str__(self):
-    #     """Print out the game_state and the name of each substate with according indices."""
+    def _tabulate(self):
+        """_tabulate
 
-    #     table_header = ["Index", "Label", "Value", "Space"]
-    #     table_rows = []
-    #     for i, (v, s, l) in enumerate(zip(*self._flat())):
-    #         table_rows.append([str(i), l, str(v), str(s)])
+        See __str__ for usage
 
-    #     _str = tabulate(table_rows, table_header)
+        """
+        table = []
+        line_no = 0
+        for n, (key, value) in enumerate(self.items()):
+            tab, tablines = value._tabulate()
+            for nline, line in enumerate(tab):
+                if isinstance(value, State) and nline != 0:
+                    key = " "
+                line.insert(0, key)
+            table.extend(tab)
+            line_no += (n + 1) * (nline + 1)
+        return (table, line_no)
 
-    #     return _str
+    def __str__(self):
+        return tabulate(self._tabulate()[0])

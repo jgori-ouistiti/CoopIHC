@@ -116,12 +116,12 @@ class BaseInferenceEngine:
 
         if self.host.role == "user":
             try:
-                return self.buffer[-1]["user_state"], 0
+                return self.observation["user_state"], 0
             except KeyError:
                 return OrderedDict({}), 0
         elif self.host.role == "assistant":
             try:
-                return self.buffer[-1]["assistant_state"], 0
+                return self.observation["assistant_state"], 0
             except KeyError:
                 return OrderedDict({}), 0
 

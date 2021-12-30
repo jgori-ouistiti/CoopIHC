@@ -43,10 +43,18 @@ class _Bundle:
         self.game_state = State()
 
         turn_index = StateElement(
-            0, Space(numpy.array([0, 1, 2, 3], dtype=numpy.int8), "discrete")
+            numpy.array([0]),
+            Space(numpy.array([0, 1, 2, 3], dtype=numpy.int8), "discrete"),
+        )
+        round_index = StateElement(
+            numpy.array([0]),
+            Space(numpy.array([0, 1], dtype=numpy.int8), "discrete"),
+            out_of_bounds_mode="raw",
         )
 
-        self.game_state["turn_index"] = turn_index
+        self.game_state["game_info"] = State()
+        self.game_state["game_info"]["turn_index"] = turn_index
+        self.game_state["game_info"]["round_index"] = round_index
         self.game_state["task_state"] = task.state
         self.game_state["user_state"] = user.state
         self.game_state["assistant_state"] = assistant.state
@@ -65,8 +73,6 @@ class _Bundle:
         self.task.finit()
         self.user.finit()
         self.assistant.finit()
-
-        self.round_number = 0
 
         # Needed for render
         self.active_render_figure = None
@@ -110,12 +116,28 @@ class _Bundle:
         :return: turn number
         :rtype: numpy.ndarray
         """
-        return self.game_state["turn_index"]
+        return self.game_state["game_info"]["turn_index"]
 
     @turn_number.setter
     def turn_number(self, value):
         self._turn_number = value
-        self.game_state["turn_index"] = value
+        self.game_state["game_info"]["turn_index"][:] = value
+
+    @property
+    def round_number(self):
+        """round_number
+
+        The round number in the game (0 to N)
+
+        :return: turn number
+        :rtype: numpy.ndarray
+        """
+        return self.game_state["game_info"]["round_index"]
+
+    @round_number.setter
+    def round_number(self, value):
+        self._round_number = value
+        self.game_state["game_info"]["round_index"][:] = value
 
     def reset(self, turn=0, task=True, user=True, assistant=True, dic={}):
         """Reset bundle.
@@ -295,8 +317,10 @@ class _Bundle:
 
             self.turn_number = (self.turn_number + 1) % 4
 
-        self.round_number += 1
-        self.task.round += 1
+        self.round_number = (
+            self.round_number + 1
+        )  # Caveat: __iadd__ is not a Numpy ufunc, and so self.round_number += 1 does not work as intended.
+        # self.task.round += 1
 
         return self.game_state, rewards, False
 

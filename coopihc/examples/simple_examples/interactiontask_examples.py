@@ -32,9 +32,7 @@ bundle = Bundle(
 
 # Reset the task, plot the state.
 bundle.reset(turn=1)
-print(bundle.game_state)
 bundle.step(numpy.array([1]), numpy.array([1]))
-print(bundle.game_state)
 
 # Test simple input
 bundle.step(numpy.array([1]), numpy.array([1]))
@@ -45,7 +43,7 @@ while True:
     game_state, rewards, is_done = bundle.step(
         bundle.user.policy.sample()[0], bundle.assistant.policy.sample()[0]
     )
-    print(game_state["task_state"]["x"].squeeze().tolist())
+    # print(game_state["task_state"]["x"].squeeze().tolist())
     if is_done:
         break
 # [end-check-task]

@@ -10,6 +10,7 @@ from coopihc.space.utils import (
     continuous_space,
 )
 import numpy
+from tabulate import tabulate
 
 s = 0
 
@@ -27,7 +28,7 @@ def test__init__():
     assert "y" in s.keys()
 
 
-def test_reset():
+def test_reset_small():
     global s
     s.reset()
     assert s["x"] in autospace([1, 2, 3])
@@ -172,8 +173,44 @@ def test_serialize():
     }
 
 
+def test_reset_full():
+    reset_dic = {
+        "sub1": {"x1": 3, "x2": numpy.array([0, 1, 0]).reshape(3, 1)},
+        "sub2": {"y1": 3},
+    }
+    state.reset(reset_dic)
+    assert state["sub1"]["x1"] == 3
+    assert (state["sub1"]["x2"] == numpy.array([0, 1, 0]).reshape(3, 1)).all()
+    assert state["sub2"]["y1"] == 3
+
+
+def test_tabulate_small():
+    x = StateElement(1, autospace([1, 2, 3]))
+    s = State()
+    s["x"] = x
+    s["y"] = StateElement(
+        0 * numpy.ones((2, 2)), autospace(-numpy.ones((2, 2)), numpy.ones((2, 2)))
+    )
+    print(s._tabulate())
+    print(tabulate(s._tabulate()[0]))
+
+
+def test_tabulate_full():
+    global state
+    state["sub3"] = StateElement(0, autospace([0, 1, 2]))
+    print(state._tabulate())
+    print(tabulate(state._tabulate()[0]))
+
+
+def test_tabulate():
+    test_tabulate_small()
+    test_tabulate_full()
+
+
 if __name__ == "__main__":
     test__init__()
-    test_reset()
     test_filter()
     test_serialize()
+    test_reset_small()
+    test_reset_full()
+    test_tabulate()

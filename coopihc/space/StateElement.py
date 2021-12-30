@@ -66,7 +66,7 @@ class StateElement(numpy.ndarray):
 
     """
 
-    __precedence__ = {"error": 0, "warning": 1, "clip": 2, "silent": 3, "raw": 4}
+    __precedence__ = {"error": 0, "warning": 2, "clip": 1, "silent": 3, "raw": 4}
     HANDLED_FUNCTIONS = {}
     SAFE_FUNCTIONS = ["all"]
 
@@ -389,8 +389,55 @@ class StateElement(numpy.ndarray):
         """
         raise NotImplementedError
 
-    def _flat(self):
-        return numpy.ndarray.__repr__(self)
+    def _tabulate(self):
+        """_tabulate
+
+        outputs a list ready for tabulate.tabulate(), as well as the number of lines of the generated table.
+
+        Examples:
+
+        .. code-block::
+            x = StateElement(1, discr_space)
+            print(x._tabulate())
+            >>> ([[array([1], dtype=int16), 'Discr(3)']], 1)
+
+            cont_space = autospace(-numpy.ones((3, 3)), numpy.ones((3, 3)))
+            x = StateElement(numpy.zeros((3, 3)), cont_space)
+            print(x._tabulate())
+            >>> ([[array([[0., 0., 0.],
+                    [0., 0., 0.],
+                    [0., 0., 0.]], dtype=float32), '\nCont(3, 3)\n']], 3)
+
+            x = StateElement(
+                numpy.array([[1], [1], [8]]), multidiscr_space, out_of_bounds_mode="error"
+            )
+            print(x._tabulate())
+            >>> ([[array([[1],
+                    [1],
+                    [8]], dtype=int16), '\nMultiDiscr[2, 5, 4]\n']], 3)
+
+
+        :return: list ready for tabulate.tabulate(), line numbers
+        :rtype: tuple(list, int)
+        """
+        try:
+            space = ["" for i in range(self.shape[0])]
+        except IndexError:  # for shape (X,)
+            space = [""]
+        _index = int(len(space) / 2)
+        if self.spaces.space_type == "continuous":
+            space[_index] = "Cont{}".format(self.spaces.shape)
+            array = self.view(numpy.ndarray)
+        elif self.spaces.space_type == "discrete":
+            space[_index] = "Discr({})".format(self.spaces.N)
+            array = self.view(numpy.ndarray)[0]
+        elif self.spaces.space_type == "multidiscrete":
+            space[_index] = "MultiDiscr{}".format(self.spaces.N)
+            array = self.view(numpy.ndarray).reshape(-1)
+        else:
+            raise NotImplementedError
+
+        return ([[array, "\n".join(space)]], self.shape[0])
 
     # def _discrete2continuous(self, other, mode="center"):
     #         values = []
@@ -695,7 +742,9 @@ class StateElement(numpy.ndarray):
                 multidiscrete = False
                 numpy_input_array = [numpy_input_array]
 
-            for ni, (v, s) in enumerate(zip(numpy_input_array, spaces)):
+            for ni, (v, s) in enumerate(
+                itertools.zip_longest(numpy_input_array, spaces)
+            ):
                 # Make sure value is same input type (shape + dtype) as space. Space specs take over value specs.
                 if v is not None:
 

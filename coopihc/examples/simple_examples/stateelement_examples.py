@@ -1,311 +1,205 @@
-import sys
-from pathlib import Path
+import numpy
+from coopihc.space.Space import Space
+from coopihc.space.StateElement import StateElement
+from coopihc.space.utils import (
+    continuous_space,
+    discrete_space,
+    multidiscrete_space,
+    autospace,
+    StateNotContainedError,
+)
 
-file = Path(__file__).resolve()
-root = file.parents[3]
-sys.path.append(str(root))
+numpy.set_printoptions(precision=3, suppress=True)
 
-if __name__ == "__main__":
+# [start-stateelement-init]
+discr_space = discrete_space([1, 2, 3])
+x = StateElement([2], discr_space, out_of_bounds_mode="error")
 
-    import numpy
-    from coopihc.space.Space import Space
-    from coopihc.space.StateElement import StateElement
+cont_space = continuous_space(-numpy.ones((2, 2)), numpy.ones((2, 2)))
+y = StateElement(numpy.zeros((2, 2)), cont_space, out_of_bounds_mode="error")
 
-    numpy.set_printoptions(precision=3, suppress=True)
+multidiscr_space = multidiscrete_space(
+    [
+        numpy.array([1, 2, 3]),
+        numpy.array([1, 2, 3, 4, 5]),
+        numpy.array([1, 3, 5, 8]),
+    ]
+)
+z = StateElement([1, 5, 3], multidiscr_space, out_of_bounds_mode="error")
+# [end-stateelement-init]
 
-    # [start-stateelement-init]
-    x = StateElement(
-        values=None,
-        spaces=[
-            Space(
-                [
-                    numpy.array([-1], dtype=numpy.float32),
-                    numpy.array([1], dtype=numpy.float32),
-                ]
-            ),
-            Space([numpy.array([1, 2, 3], dtype=numpy.int16)]),
-            Space([numpy.array([-6, -5, -4, -3, -2, -1], dtype=numpy.int16)]),
-        ],
-    )
+# [start-stateelement-reset]
 
-    y = StateElement(
-        values=None,
-        spaces=[
-            Space(
-                [
-                    numpy.array([i for i in range(10)], dtype=numpy.int16),
-                    numpy.array([i for i in range(10)], dtype=numpy.int16),
-                ]
-            )
-            for j in range(3)
-        ],
-        clipping_mode="error",
-    )
-    # [end-stateelement-init]
+# Random resets
+x.reset()
+y.reset()
+z.reset()
 
-    # [start-stateelement-reset]
-    x.reset()
-    y.reset()
-    reset_dic = {"values": [-1 / 2, 2, -2]}
-    x.reset(dic=reset_dic)
-    reset_dic = {"values": [[0, 0], [10, 10], [5, 5]]}
-    try:
-        y.reset(dic=reset_dic)
-    except StateNotContainedError:
-        print("raised error as expected")
-    # [end-stateelement-reset]
+# Forced resets
+x.reset(value=2)
+# you don't actually have to specify the value keyword
+y.reset(0.59 * numpy.ones((2, 2)))
+z.reset([1, 1, 8])
 
-    # [start-stateelement-iter]
-    for _x in x:
-        print(_x)
+# forced reset also raise input checks:
+try:
+    x.reset(value=5)
+except StateNotContainedError:
+    print("raised Error {} as expected".format(StateNotContainedError))
 
-    for _y in y:
-        print(_y)
-    # [end-stateelement-iter]
+# [end-stateelement-reset]
 
-    # [start-stateelement-cp]
-    x.reset()
-    for n, _x in enumerate(x.cartesian_product()):
-        # print(n, _x.values)
-        print(n, _x)
-    y.reset()
-    # There are a million possible elements in y, so consider the first ubspace only
-    for n, _y in enumerate(y[0].cartesian_product()):
-        print(n, _y.values)
-    # [end-stateelement-cp]
+# [start-stateelement-iter]
+# iterating over a discrete space returns itself
+x = StateElement([2], discr_space, out_of_bounds_mode="error")
+for _x in x:
+    assert _x == x
 
-    # [start-stateelement-comp]
-    x.reset()
-    a = x[0]
-    print(x < numpy.array([2, -2, 4]))
-    # [end-stateelement-comp]
+# iterating over a continuous space: first over rows, then over columns
+x = StateElement(numpy.zeros((2, 2)), cont_space)
+for _x in x:
+    for __x in _x:
+        assert isinstance(__x, StateElement)
+        assert __x.equals(
+            StateElement(numpy.array([[0]]), autospace([[-1]], [[1]])), mode="hard"
+        )
 
-    y.reset()
-    targetdomain = StateElement(
-        values=None,
-        spaces=[
-            Space(
-                [
-                    -numpy.ones((2, 1), dtype=numpy.float32),
-                    numpy.ones((2, 1), dtype=numpy.float32),
-                ]
-            )
-            for j in range(3)
-        ],
-    )
-    res = y.cast(targetdomain)
+# iterating over a multidiscrete space returns discrete spaces
+multidiscr_space = multidiscrete_space(
+    [
+        numpy.array([1, 2]),
+        numpy.array([1, 2, 3, 4, 5]),
+        numpy.array([1, 3, 5, 8]),
+    ]
+)
+x = StateElement(numpy.array([[1], [1], [3]]), multidiscr_space)
+for n, _x in enumerate(x):
+    assert _x.spaces.space_type == "discrete"
+# [end-stateelement-iter]
 
-    # [start-stateelement-cast]
-    b = StateElement(
-        values=5,
-        spaces=Space(
-            [numpy.array([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5], dtype=numpy.nt16)]
-        ),
-    )
 
-    a = StateElement(
-        values=0,
-        spaces=Space(
-            [
-                numpy.array([-1], dtype=numpy.float32),
-                numpy.array([1], dtype=numpy.float32),
-            ]
-        ),
-    )
-    import matplotlib.pyplot as plt
+# [start-stateelement-comp]
+x.reset()
+x < 4
+# [end-stateelement-comp]
 
-    # C2D
-    continuous = []
-    discrete = []
-    for elem in numpy.linspace(-1, 1, 200):
-        a["values"] = elem
-        continuous.append(a["values"][0].squeeze().tolist())
-        discrete.append(a.cast(b, mode="center")["values"][0].squeeze().tolist())
+# y.reset()
+# targetdomain = StateElement(
+#     values=None,
+#     spaces=[
+#         Space(
+#             [
+#                 -numpy.ones((2, 1), dtype=numpy.float32),
+#                 numpy.ones((2, 1), dtype=numpy.float32),
+#             ]
+#         )
+#         for j in range(3)
+#     ],
+# )
+# res = y.cast(targetdomain)
 
-    plt.plot(continuous, discrete, "b*")
-    plt.show()
+# b = StateElement(
+#     values=5,
+#     spaces=Space(
+#         [numpy.array([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5], dtype=numpy.nt16)]
+#     ),
+# )
 
-    # D2C
+# a = StateElement(
+#     values=0,
+#     spaces=Space(
+#         [
+#             numpy.array([-1], dtype=numpy.float32),
+#             numpy.array([1], dtype=numpy.float32),
+#         ]
+#     ),
+# )
+# import matplotlib.pyplot as plt
 
-    continuous = []
-    discrete = []
-    for elem in [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]:
-        b["values"] = elem
-        discrete.append(elem)
-        continuous.append(b.cast(a, mode="edges")["values"][0].squeeze().tolist())
+# # C2D
+# continuous = []
+# discrete = []
+# for elem in numpy.linspace(-1, 1, 200):
+#     a["values"] = elem
+#     continuous.append(a["values"][0].squeeze().tolist())
+#     discrete.append(a.cast(b, mode="center")["values"][0].squeeze().tolist())
 
-    plt.plot(discrete, continuous, "b*")
-    plt.show()
+# plt.plot(continuous, discrete, "b*")
+# plt.show()
 
-    # C2C
+# # D2C
 
-    a = StateElement(
-        values=0,
-        spaces=Space(
-            [
-                numpy.array([-2], dtype=numpy.float32),
-                numpy.array([1], dtype=numpy.float32),
-            ]
-        ),
-    )
-    b = StateElement(
-        values=3.5,
-        spaces=Space(
-            [
-                numpy.array([3], dtype=numpy.float32),
-                numpy.array([4], dtype=numpy.float32),
-            ],
-        ),
-    )
+# continuous = []
+# discrete = []
+# for elem in [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]:
+#     b["values"] = elem
+#     discrete.append(elem)
+#     continuous.append(b.cast(a, mode="edges")["values"][0].squeeze().tolist())
 
-    c1 = []
-    c2 = []
-    for elem in numpy.linspace(-2, 1, 100):
-        a["values"] = elem
-        c1.append(a["values"][0].squeeze().tolist())
-        c2.append(a.cast(b)["values"][0].squeeze().tolist())
+# plt.plot(discrete, continuous, "b*")
+# plt.show()
 
-    plt.plot(c1, c2, "b*")
-    plt.show()
+# # C2C
 
-    # D2D
-    a = StateElement(
-        values=5, spaces=Space([numpy.array([i for i in range(11)], dtype=numpy.int16)])
-    )
-    b = StateElement(
-        values=5,
-        spaces=Space(
-            [numpy.array([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5], dtype=numpy.nt16)]
-        ),
-    )
+# a = StateElement(
+#     values=0,
+#     spaces=Space(
+#         [
+#             numpy.array([-2], dtype=numpy.float32),
+#             numpy.array([1], dtype=numpy.float32),
+#         ]
+#     ),
+# )
+# b = StateElement(
+#     values=3.5,
+#     spaces=Space(
+#         [
+#             numpy.array([3], dtype=numpy.float32),
+#             numpy.array([4], dtype=numpy.float32),
+#         ],
+#     ),
+# )
 
-    d1 = []
-    d2 = []
-    for i in range(11):
-        a["values"] = i
-        d1.append(i)
-        d2.append(a.cast(b)["values"][0].squeeze().tolist())
+# c1 = []
+# c2 = []
+# for elem in numpy.linspace(-2, 1, 100):
+#     a["values"] = elem
+#     c1.append(a["values"][0].squeeze().tolist())
+#     c2.append(a.cast(b)["values"][0].squeeze().tolist())
 
-    plt.plot(d1, d2, "b*")
-    plt.show()
-    # [end-stateelement-cast]
+# plt.plot(c1, c2, "b*")
+# plt.show()
 
-    # [start-stateelement-arithmetic]
-    # Neg
-    x = StateElement(
-        values=numpy.array([[-0.237]], dtype=numpy.float32),
-        spaces=Space(
-            [
-                numpy.array([-1], dtype=numpy.float32),
-                numpy.array([1], dtype=numpy.float32),
-            ]
-        ),
-    )
-    print(-x)
+# # D2D
+# a = StateElement(
+#     values=5, spaces=Space([numpy.array([i for i in range(11)], dtype=numpy.int16)])
+# )
+# b = StateElement(
+#     values=5,
+#     spaces=Space(
+#         [numpy.array([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5], dtype=numpy.nt16)]
+#     ),
+# )
 
-    # Sum
-    x = StateElement(
-        values=numpy.array([[-0.237]], dtype=numpy.float32),
-        spaces=Space(
-            [
-                numpy.array([-1], dtype=numpy.float32),
-                numpy.array([1], dtype=numpy.float32),
-            ]
-        ),
-    )
-    y = StateElement(
-        values=numpy.array([[-0.135]], dtype=numpy.float32),
-        spaces=Space(
-            [
-                numpy.array([-1], dtype=numpy.float32),
-                numpy.array([1], dtype=numpy.float32),
-            ]
-        ),
-    )
-    # adding two simple StateElements
-    print(x + y)
-    # add with a scalar
-    z = -0.5
-    print(x + z)
+# d1 = []
+# d2 = []
+# for i in range(11):
+#     a["values"] = i
+#     d1.append(i)
+#     d2.append(a.cast(b)["values"][0].squeeze().tolist())
 
-    a = StateElement(
-        values=numpy.array([[-0.237, 0]], dtype=numpy.float32),
-        spaces=Space(
-            [
-                numpy.array([-1, -1], dtype=numpy.float32),
-                numpy.array([1, 1], dtype=numpy.float32),
-            ]
-        ),
-    )
-    b = StateElement(
-        values=numpy.array([[0.5, 0.5]], dtype=numpy.float32),
-        spaces=Space(
-            [
-                numpy.array([-1, -1], dtype=numpy.float32),
-                numpy.array([1, 1], dtype=numpy.float32),
-            ]
-        ),
-    )
+# plt.plot(d1, d2, "b*")
+# plt.show()
 
-    print(a + b)
-    print(b + a)
-    print(a - b)
-    print(b - a)
-    c = numpy.array([0.12823329, -0.10512559])
-    print(a + c)
-    print(c + a)
-    print(a - c)
-    print(c - a)
 
-    # Mul
-    a = StateElement(
-        values=numpy.array([[-0.237, 0]], dtype=numpy.float32),
-        spaces=Space(
-            [
-                numpy.array([-1, -1], dtype=numpy.float32),
-                numpy.array([1, 1], dtype=numpy.float32),
-            ]
-        ),
-    )
-    b = StateElement(
-        values=numpy.array([[0.5, 0.5]], dtype=numpy.float32),
-        spaces=Space(
-            [
-                numpy.array([-1, -1], dtype=numpy.float32),
-                numpy.array([1, 1], dtype=numpy.float32),
-            ]
-        ),
-    )
+# [start-stateelement-cast]
 
-    c = 1
-    print(a * b)
-    print(a * c)
-    print(b * a)
-    print(c * a)
+# TODO
 
-    # Matmul
-    a = StateElement(
-        values=numpy.array([[-0.237, 0], [1, 1]], dtype=numpy.float32),
-        spaces=Space(
-            [
-                numpy.array([[-1, -1], [-1, -1]], dtype=numpy.float32),
-                numpy.array([[1, 1], [1, 1]], dtype=numpy.float32),
-            ]
-        ),
-    )
-    b = StateElement(
-        values=numpy.array([[0.5, 0.5]], dtype=numpy.float32),
-        spaces=Space(
-            [
-                numpy.array([-1, -1], dtype=numpy.float32).reshape(-1, 1),
-                numpy.array([1, 1], dtype=numpy.float32).reshape(-1, 1),
-            ]
-        ),
-    )
+# [end-stateelement-cast]
 
-    z = numpy.ones((2, 2))
+# [start-stateelement-arithmetic]
 
-    print(a @ b)
-    print(z @ a)
-    print(a @ z)
-    # [end-stateelement-arithmetic]
+# TODO
+
+# [end-stateelement-arithmetic]

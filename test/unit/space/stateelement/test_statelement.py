@@ -14,7 +14,7 @@ import numpy
 import pytest
 import json
 import copy
-
+from tabulate import tabulate
 
 cont_space = None
 discr_space = None
@@ -53,17 +53,31 @@ def test_array_init_multidiscrete():
             numpy.array([1, 3, 5, 8]),
         ]
     )
-    x = StateElement([1, 5], multidiscr_space, out_of_bounds_mode="error")
+    x = StateElement([1, 5, 3], multidiscr_space, out_of_bounds_mode="error")
     assert hasattr(x, "spaces")
     assert isinstance(x.spaces, Space)
-    assert x.shape == (2, 1)
-    assert (x == numpy.array([[1], [5]], dtype=numpy.int16)).all()
+    assert x.shape == (3, 1)
+    assert (x == numpy.array([[1], [5], [3]], dtype=numpy.int16)).all()
+
+
+def test_array_short():
+    global multidiscr_space
+    multidiscr_space = multidiscrete_space(
+        [
+            numpy.array([1, 2, 3]),
+            numpy.array([1, 2, 3, 4, 5]),
+            numpy.array([1, 3, 5, 8]),
+        ]
+    )
+    with pytest.raises(StateNotContainedError):
+        x = StateElement([1, 5], multidiscr_space, out_of_bounds_mode="error")
 
 
 def test_array_init():
     test_array_init_discrete()
     test_array_init_continuous()
     test_array_init_multidiscrete()
+    test_array_short()
 
 
 def test_array_init_error_discrete():
@@ -422,7 +436,7 @@ def test_array_function_simple():
     test_amax_implements_decorator()
 
 
-def test_array_function():
+def test__array_function__():
     test_array_function_simple()
 
 
@@ -522,7 +536,7 @@ def test__iter__continuous():
 
 def test__iter__multidiscrete():
     global multidiscr_space
-    new_multidiscr_space = multidiscrete_space(
+    multidiscr_space = multidiscrete_space(
         [
             numpy.array([1, 2]),
             numpy.array([1, 2, 3, 4, 5]),
@@ -606,7 +620,7 @@ def test_serialize_multidiscrete():
     assert x.serialize() == {
         "values": [[1], [1], [8]],
         "spaces": {
-            "array_list": [[1, 2, 3], [1, 2, 3, 4, 5], [1, 3, 5, 8]],
+            "array_list": [[1, 2], [1, 2, 3, 4, 5], [1, 3, 5, 8]],
             "space_type": "multidiscrete",
             "seed": None,
             "contains": "soft",
@@ -677,11 +691,6 @@ def test_reset():
     test_reset_multidiscrete()
 
 
-def test_flat():
-    global discr_space
-    x = StateElement(1, discr_space)
-    print(x._flat())
-
 
 def test__setitem__():
     global discr_space
@@ -725,14 +734,54 @@ def test__getitem__continuous():
 
 
 def test__getitem__multidiscrete():
-    global cont_space
-    x = StateElement(numpy.array([[0.0, 0.1], [0.2, 0.3]]), cont_space)
+    global multidiscr_space
+    x = StateElement(
+        numpy.array([[1], [1], [8]]), multidiscr_space, out_of_bounds_mode="error"
+    )
+    assert x[0] == StateElement(
+        numpy.array([1]), autospace([1, 2]), out_of_bounds_mode="error"
+    )
+    assert x[1] == StateElement(
+        numpy.array([1]), autospace([1, 2, 3, 4, 5]), out_of_bounds_mode="error"
+    )
+    assert x[2] == StateElement(
+        numpy.array([8]), autospace([1, 3, 5, 8]), out_of_bounds_mode="error"
+    )
 
 
 def test__getitem__():
     test__getitem__discrete()
     test__getitem__continuous()
     test__getitem__multidiscrete()
+
+
+def test_tabulate_discrete():
+    global discr_space
+    x = StateElement(1, discr_space)
+    print(x._tabulate())
+    print(tabulate(x._tabulate()[0]))
+
+
+def test_tabulate_continuous():
+    cont_space = autospace(-numpy.ones((3, 3)), numpy.ones((3, 3)))
+    x = StateElement(numpy.zeros((3, 3)), cont_space)
+    print(x._tabulate())
+    print(tabulate(x._tabulate()[0]))
+
+
+def test_tabulate_multidiscrete():
+    global multidiscr_space
+    x = StateElement(
+        numpy.array([[1], [1], [8]]), multidiscr_space, out_of_bounds_mode="error"
+    )
+    print(x._tabulate())
+    print(tabulate(x._tabulate()[0]))
+
+
+def test_tabulate():
+    test_tabulate_discrete()
+    test_tabulate_continuous()
+    test_tabulate_multidiscrete()
 
 
 if __name__ == "__main__":
@@ -743,12 +792,12 @@ if __name__ == "__main__":
     test_array_init_clip()
     test_array_init_dtype()
     test__array_ufunc__()
-    test_array_function()
+    test__array_function__()
     test_equals()
     test__iter__()
     test__repr__()
     test_serialize()
-    # test_reset()
-    # test_flat() # broken
-    # test__setitem__()
+    test_reset()
+    test__setitem__()
     test__getitem__()
+    test_tabulate()

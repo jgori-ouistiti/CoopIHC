@@ -43,7 +43,10 @@ class ExampleTask(InteractionTask):
         is_done = False
         self.state["x"] += self.user_action
         # Stopping condition
-        if self.state["x"] == 4:
+        if self.state["x"] >= 4:
+            if self.state["x"] > 4:
+                print(self.bundle.game_state)
+                print("\n\n\n\n\n=====================\n\n\n\n")
             is_done = True
         return self.state, -1, is_done, {}
 

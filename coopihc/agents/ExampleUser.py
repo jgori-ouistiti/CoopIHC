@@ -59,4 +59,4 @@ class ExampleUser(BaseAgent):
 
         :meta public:
         """
-        self.state["goal"]["values"] = 4
+        self.state["goal"][:] = 4

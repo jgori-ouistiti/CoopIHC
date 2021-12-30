@@ -127,9 +127,8 @@ class RuleObservationEngine(BaseObservationEngine):
         ) in self.mapping:
             if observation.get(substate) is None:
                 observation[substate] = State()
-            _obs = copy.copy(
-                (game_state[substate][subsubstate][_slice]).view(numpy.ndarray)
-            )
+
+            _obs = copy.copy((game_state[substate][subsubstate][_slice]))
             if _func:
                 if _args:
                     _obs = _func(_obs, game_state, *_args)
@@ -149,7 +148,7 @@ class RuleObservationEngine(BaseObservationEngine):
             observation[substate][subsubstate] = copy.copy(
                 game_state[substate][subsubstate]
             )
-            observation[substate][subsubstate] = [_obs]
+            observation[substate][subsubstate] = _obs
 
         return observation
 
@@ -189,7 +188,12 @@ class RuleObservationEngine(BaseObservationEngine):
                         g, b = w
                     else:
                         g, b = None, None
-                    mapping.append((substate, key, slice(0, len(value), 1), f, a, g, b))
+                    # deal with ints
+                    try:
+                        _len = len(value)
+                    except TypeError:
+                        _len = 1
+                    mapping.append((substate, key, slice(0, _len, 1), f, a, g, b))
             elif subsubstate is None:
                 pass
             else:

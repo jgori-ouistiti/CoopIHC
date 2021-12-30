@@ -6,12 +6,7 @@ import gym
 from coopihc.helpers import hard_flatten
 
 
-def remove_prefix(text, prefix):
-    # from Python 3.9 use str.removeprefix() directly
-    # copied from https://stackoverflow.com/questions/16891340/remove-a-prefix-from-a-string
-    return text[text.startswith(prefix) and len(prefix) :]
-
-
+# ======================== Warnings ========================
 class StateNotContainedWarning(Warning):
     """Warning raised when the value is not contained in the space."""
 
@@ -19,6 +14,12 @@ class StateNotContainedWarning(Warning):
 
 
 class NotKnownSerializationWarning(Warning):
+    """Warning raised when the State tries to serialize an item which does not have a serialize method."""
+
+    __module__ = Warning.__module__
+
+
+class ContinuousSpaceIntIndexingWarning(Warning):
     """Warning raised when the State tries to serialize an item which does not have a serialize method."""
 
     __module__ = Warning.__module__
@@ -34,6 +35,15 @@ class RedefiningHandledFunctionWarning(Warning):
     """Warning raised when the numpy function is already handled by the StateElement and is going to be redefined."""
 
     __module__ = Warning.__module__
+
+
+class WrongConvertorWarning(Warning):
+    """Warning raised when the value is not contained in the space."""
+
+    __module__ = Warning.__module__
+
+
+# ======================== Errors ========================
 
 
 class SpaceLengthError(Exception):
@@ -58,6 +68,9 @@ class NotASpaceError(Exception):
     """Error raised when the object is not a space."""
 
     __module__ = Exception.__module__
+
+
+# ======================== Shortcuts ========================
 
 
 def autospace(*input_array, seed=None, contains="soft", dtype=None):
@@ -348,6 +361,9 @@ def multidiscrete_space(array_list, dtype=numpy.int16, **kwargs):
         return autospace(array_list, dtype=dtype, **kwargs)
 
 
+# ======================== Convertors ========================
+
+
 def _partialclass(cls, *args):
     """_partialclass
 
@@ -363,12 +379,6 @@ def _partialclass(cls, *args):
         )
 
     return ChangeLayoutAction
-
-
-class WrongConvertorWarning(Warning):
-    """Warning raised when the value is not contained in the space."""
-
-    __module__ = Warning.__module__
 
 
 class RLConvertor:
