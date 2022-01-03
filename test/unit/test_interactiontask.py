@@ -4,6 +4,7 @@ coopihc package."""
 
 import numpy
 from coopihc import InteractionTask, StateElement, Space
+from copy import copy
 
 
 class MinimalTask(InteractionTask):
@@ -193,13 +194,33 @@ def test_base_reset_without_dic():
     test_base_reset_randomness()
 
 
+def test_task_state_dic():
+    """Tests the reset method when a dic including a task state is provided."""
+    # Setup
+    X = "x"  # Literal
+    task = MinimalTaskWithState()
+    dic = {X: 1}
+    assert task.state[X].values[0][0][0] != dic[X]
+
+    # Reset task state
+    task._base_reset(dic=dic)
+
+    # Check that task_state is overwritten
+    assert task.state["x"] == dic[X]
+
+
+def test_base_reset_with_dic():
+    """Tests the reset method when a dic is provided."""
+    test_task_state_dic()
+
+
 def test_base_reset():
     """Tests the forced reset mechanism provided by the _base_reset method
     of InteractionTask that is called by _Bundle.reset()."""
     # Check reset without dic
     test_base_reset_without_dic()
-
-    """The first thing that comes to mind that is missing is to verify the forced-reset mechanism. When you reset a bundle, you can pass it a reset_dictionnary {'task_state': task_reset_dic, 'user_state': user_reset_dic, etc.}. The value associated with the task_state key is passed to _base_reset as dic. A couple things to check here are that without dic provided, the state is randomly reset (maybe check by fixing the seed of the stateElements), with dic provided the reset is correctly achieved to the forced state in input, and in between (if the reset_dic specifies a value for x_1 but not x_2, x_2 should be reset randomly)"""
+    # Check reset with dic
+    test_base_reset_with_dic()
 
 
 def test_interactiontask():

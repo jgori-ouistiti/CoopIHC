@@ -121,19 +121,32 @@ class InteractionTask(ABC):
     def _base_reset(self, dic=None):
         """base reset
 
-        Method that wraps the user defined reset() method. Takes care of the dictionnary reset mechanism and updates rounds.
+        Method that wraps the user defined reset() method. Takes care of the dictionary reset mechanism and updates rounds. The dictionary can
+        include values for all keys of state of the task (e.g. a cursor
+        position).
 
-        :param dic: reset dictionnary (passed by bundle),
-        :type dic: dictionnary, optional
+        Example:
+
+        .. code-block:: python
+
+            new_fixation_value = self.game_state["task_state"]["fixation"]
+            reset_dic = {"fixation": new_fixation_value}
+            self._base_reset(dic=reset_dic)
+
+        .. note ::
+
+            This method is usually only called by _Bundle.reset().
+
+        :param dic: reset dictionary (passed by bundle),
+        :type dic: dictionary, optional
         """
         self.round = 0
+        self.reset(dic=dic)
 
         if not dic:
             self.state.reset(dic={})
-            self.reset(dic=dic)
             return
 
-        self.reset(dic=dic)
         for key in list(self.state.keys()):
             value = dic.get(key)
             if isinstance(value, StateElement):
