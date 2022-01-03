@@ -199,14 +199,16 @@ def test_task_state_dic():
     # Setup
     X = "x"  # Literal
     task = MinimalTaskWithState()
-    dic = {X: 1}
-    assert task.state[X].values[0][0][0] != dic[X]
+    x_state = copy(task.state[X])
+    x_state.values = 1
+    dic = {X: x_state}
+    assert task.state[X] != dic[X]
 
     # Reset task state
     task._base_reset(dic=dic)
 
     # Check that task_state is overwritten
-    assert task.state["x"] == dic[X]
+    assert task.state[X] == dic[X]
 
 
 def test_base_reset_with_dic():

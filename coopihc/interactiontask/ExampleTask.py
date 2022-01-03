@@ -17,7 +17,7 @@ class ExampleTask(InteractionTask):
 
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, scale=1, **kwargs):
         # Call super().__init__() beofre anything else, which initializes ome useful attributes, including a State (self.state) for the task
         super().__init__(*args, **kwargs)
 
@@ -52,6 +52,7 @@ class ExampleTask(InteractionTask):
         """
         is_done = False
         self.state["x"] += self.user_action
+
         if int(self.state["x"]["values"][0]) == 4:
             is_done = True
         return self.state, -1, is_done, {}
@@ -65,6 +66,7 @@ class ExampleTask(InteractionTask):
         :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float, boolean, dictionnary)
         """
         is_done = False
+
         self.state["x"] += self.assistant_action
         if int(self.state["x"]["values"][0]) == 4:
             is_done = True

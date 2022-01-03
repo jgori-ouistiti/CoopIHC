@@ -8,6 +8,9 @@ class ExampleInferenceEngine(BaseInferenceEngine):
 
     """
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     def infer(self, *args, **kwargs):
         """infer
 

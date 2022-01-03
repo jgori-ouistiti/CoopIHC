@@ -21,16 +21,17 @@ package_data = \
 
 install_requires = \
 ['PyYAML>=6.0,<7.0',
- 'coopihczoo',
- 'gym>=0.21.0,<0.22.0',
+ 'gym>=0.17,<0.18',
  'matplotlib>=3,<4',
  'numpy>=1,<2',
- 'scipy>=1,<2',
- 'tabulate']
+ 'scipy>=1.7.3,<2.0.0',
+ 'stable-baselines3>=1.3.0,<2.0.0',
+ 'tabulate',
+ 'websockets>=10.1,<11.0']
 
 setup_kwargs = {
     'name': 'coopihc',
-    'version': '0.0.4',
+    'version': '0.0.7',
     'description': 'Two-agent component-based interaction environments for computational HCI with Python',
     'long_description': None,
     'author': 'Julien Gori',

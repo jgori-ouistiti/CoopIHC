@@ -1,12 +1,16 @@
 import copy
 import numpy
 import json
-import sys
 import itertools
+import warnings
 
 from coopihc.helpers import flatten
 from coopihc.space.Space import Space
-from coopihc.space.utils import SpaceLengthError, StateNotContainedError
+from coopihc.space.utils import (
+    SpaceLengthError,
+    StateNotContainedError,
+    StateNotContainedWarning,
+)
 
 
 class StateElement:
@@ -20,7 +24,7 @@ class StateElement:
     :param list(numpy.array) values: Value of the substate. Some processing is applied to values if the input does not match the space and correct syntax.
     :param list(Space) spaces: Space (domain) in which value lives. Some processing is applied to spaces if the input does not match the correct syntax.
     :param str clipping_mode: What to do when the value is not in the space. If 'error', raise a StateNotContainedError. If 'warning', print a warning on stdout. If 'clip', automatically clip the value so that it is contained. Defaults to 'warning'.
-    :param str typing_priority: What to do when the type of the space does not match the type of the value. If 'space', convert the value to the dtype of the space, if 'value' the converse. Default to space.
+    :param str typing_priority: What to do when the type of the space does not match the type of the value. If 'space', convert the value to the dtype of the space, if 'value' the converse. Defaults to space.
 
     """
 
@@ -103,11 +107,7 @@ class StateElement:
 
     # Itemization
     def __setitem__(self, key, item):
-        if key == "values":
-            setattr(self, key, self._preprocess_values(item))
-        elif key == "spaces":
-            setattr(self, key, self._preprocess_spaces(item))
-        elif key == "clipping_mode":
+        if key in ["values", "spaces", "clipping_mode"]:
             setattr(self, key, item)
         else:
             raise ValueError(
@@ -128,21 +128,6 @@ class StateElement:
                 'Indexing only works with keys ("values", "spaces", "clipping_mode") or integers'
             )
 
-    def __getattr__(self, key):
-        _np = sys.modules["numpy"]
-        if hasattr(_np, key):
-            # adapted from https://stackoverflow.com/questions/13776504/how-are-arguments-passed-to-a-function-through-getattr
-            def wrapper(*args, **kwargs):
-                return getattr(_np, key)(self.values, *args, **kwargs)
-
-            return wrapper
-
-        raise AttributeError(
-            "StateElement does not have attribute {}. Tried to fall back to numpy but it also did not have this attribute".format(
-                key
-            )
-        )
-
     # Comparison
     def _comp_preface(self, other):
         if isinstance(other, StateElement):
@@ -152,9 +137,17 @@ class StateElement:
         return self, other
 
     def __eq__(self, other):
+        if self.spaces != other.spaces:
+            return False
         self, other = self._comp_preface(other)
         return numpy.array(
             [numpy.equal(s, o) for s, o in zip(self["values"], other)]
+        ).all()
+
+    def equal(self, other, *args, **kwargs):
+        self, other = self._comp_preface(other)
+        return numpy.array(
+            [numpy.equal(s, o, *args, **kwargs) for s, o in zip(self["values"], other)]
         ).all()
 
     def __lt__(self, other):
@@ -369,7 +362,6 @@ class StateElement:
         """
         lists = []
         for value, space in zip(self.values, self.spaces):
-            # print(value, space)
             if not space.continuous:
                 for r in space.range:
                     lists.append(r.squeeze().tolist())
@@ -412,6 +404,7 @@ class StateElement:
 
     def _preprocess_values(self, values):
         values = flatten([values])
+
         # Allow a single None syntax
         try:
             if values == [None]:
@@ -454,9 +447,11 @@ class StateElement:
                         )
                     )
                 elif self.clipping_mode == "warning":
-                    print(
-                        "Warning: Instantiated Value {}({}) is not contained in corresponding space {} (low = {}, high = {})".format(
-                            str(v), type(v), str(s), str(s.low), str(s.high)
+                    warnings.warn(
+                        StateNotContainedWarning(
+                            "Warning: Instantiated Value {}({}) is not contained in corresponding space {} (low = {}, high = {})".format(
+                                str(v), type(v), str(s), str(s.low), str(s.high)
+                            )
                         )
                     )
                 elif self.clipping_mode == "clip":
@@ -464,7 +459,16 @@ class StateElement:
                     # v = self._clip_1d(v, s)
                 else:
                     pass
+            # should not be needed, but hack for now. The problem was triggered when running stable_baselines' check_env on the env created by GymTrain. I believe the problem comes when creating vectorized envs, but could not point to it. Here we force the shape of the values, which seems to work for now, but at the cost of extra operations.
+            # ===================
+            if isinstance(v, numpy.ndarray):
+                v = numpy.atleast_2d(v.squeeze())
+            # =====================
             values[ni] = v
+            # should not be needed, but hack for now, see above
+            # ===================
+            values = flatten(values)
+            # =====================
         return values
 
     def _flat(self):
