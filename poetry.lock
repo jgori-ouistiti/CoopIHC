@@ -382,6 +382,14 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
+name = "py-cpuinfo"
+version = "8.0.0"
+description = "Get CPU info with pure Python 2 & 3"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "pycparser"
 version = "2.21"
 description = "C parser in Python"
@@ -439,6 +447,23 @@ toml = "*"
 
 [package.extras]
 testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "requests", "xmlschema"]
+
+[[package]]
+name = "pytest-benchmark"
+version = "3.4.1"
+description = "A ``pytest`` fixture for benchmarking code. It will group the tests into rounds that are calibrated to the chosen timer."
+category = "dev"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+
+[package.dependencies]
+py-cpuinfo = "*"
+pytest = ">=3.8"
+
+[package.extras]
+aspect = ["aspectlib"]
+elasticsearch = ["elasticsearch"]
+histogram = ["pygal", "pygaljs"]
 
 [[package]]
 name = "python-dateutil"
@@ -859,7 +884,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "843fba85cc521e20655a0e923b228fb0f55e526a0b43bc252560a89d29f85eba"
+content-hash = "f590bb2119e682731587deb97ceacaaf55768cc924a05f0b8778795361ece7f0"
 
 [metadata.files]
 alabaster = [
@@ -1290,6 +1315,9 @@ py = [
     {file = "py-1.11.0-py2.py3-none-any.whl", hash = "sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378"},
     {file = "py-1.11.0.tar.gz", hash = "sha256:51c75c4126074b472f746a24399ad32f6053d1b34b68d2fa41e558e6f4a98719"},
 ]
+py-cpuinfo = [
+    {file = "py-cpuinfo-8.0.0.tar.gz", hash = "sha256:5f269be0e08e33fd959de96b34cd4aeeeacac014dd8305f70eb28d06de2345c5"},
+]
 pycparser = [
     {file = "pycparser-2.21-py2.py3-none-any.whl", hash = "sha256:8ee45429555515e1f6b185e78100aea234072576aa43ab53aefcae078162fca9"},
     {file = "pycparser-2.21.tar.gz", hash = "sha256:e644fdec12f7872f86c58ff790da456218b10f863970249516d60a5eaca77206"},
@@ -1309,6 +1337,10 @@ pyparsing = [
 pytest = [
     {file = "pytest-6.2.5-py3-none-any.whl", hash = "sha256:7310f8d27bc79ced999e760ca304d69f6ba6c6649c0b60fb0e04a4a77cacc134"},
     {file = "pytest-6.2.5.tar.gz", hash = "sha256:131b36680866a76e6781d13f101efb86cf674ebb9762eb70d3082b6f29889e89"},
+]
+pytest-benchmark = [
+    {file = "pytest-benchmark-3.4.1.tar.gz", hash = "sha256:40e263f912de5a81d891619032983557d62a3d85843f9a9f30b98baea0cd7b47"},
+    {file = "pytest_benchmark-3.4.1-py2.py3-none-any.whl", hash = "sha256:36d2b08c4882f6f997fd3126a3d6dfd70f3249cde178ed8bbc0b73db7c20f809"},
 ]
 python-dateutil = [
     {file = "python-dateutil-2.8.2.tar.gz", hash = "sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86"},
