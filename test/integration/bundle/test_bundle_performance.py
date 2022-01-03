@@ -8,6 +8,7 @@ from coopihc import (
     BaseAgent,
     BasePolicy,
 )
+import cProfile
 
 
 def test_bundle_round(benchmark):
@@ -53,4 +54,4 @@ def bundle_round():
 # +        MAIN          +
 # +----------------------+
 if __name__ == "__main__":
-    bundle_round()
+    cProfile.run("bundle_round()", sort="cumulative")
