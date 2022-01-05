@@ -7,6 +7,7 @@ from coopihc import (
     ExampleTask,
     BaseAgent,
     BasePolicy,
+    discrete_space,
 )
 import cProfile
 
@@ -22,16 +23,10 @@ def bundle_round():
     BaseAgents as user and assistant."""
     # Define agent action states (what actions they can take)
     user_action_state = State()
-    user_action_state["action"] = StateElement(
-        values=None,
-        spaces=[Space([numpy.array([-1, 0, 1], dtype=int)])],
-    )
+    user_action_state["action"] = StateElement(0, discrete_space([-1, 0, 1]))
 
     assistant_action_state = State()
-    assistant_action_state["action"] = StateElement(
-        values=None,
-        spaces=[Space([numpy.array([-1, 0, 1], dtype=int)])],
-    )
+    assistant_action_state["action"] = StateElement(0, discrete_space([-1, 0, 1]))
 
     # Bundle a task together with two BaseAgents
     bundle = Bundle(
@@ -44,10 +39,14 @@ def bundle_round():
     )
 
     # Reset the task, run a round
-    bundle.reset(turn=1)
-    assert bundle.task.state["x"].values[0][0][0] == 0
+    assert bundle.task.state["x"] == 0
+    assert isinstance(bundle.task.state["x"], StateElement)
+    bundle.reset()
+    assert bundle.task.state["x"] == 0
+    assert isinstance(bundle.task.state["x"], StateElement)
     bundle.step(user_action=1, assistant_action=1)
-    assert bundle.task.state["x"].values[0][0][0] == 2
+    assert bundle.task.state["x"] == 2
+    assert isinstance(bundle.task.state["x"], StateElement)
 
 
 # +----------------------+
