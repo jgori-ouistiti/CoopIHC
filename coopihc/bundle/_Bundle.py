@@ -237,7 +237,7 @@ class _Bundle:
         #     user_action, assistant_action = args
 
         if go_to_turn is None:
-            go_to_turn = self.turn_number
+            go_to_turn = copy.copy(self.turn_number)
 
         _started = False
         rewards = {}
