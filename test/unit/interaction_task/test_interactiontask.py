@@ -53,12 +53,33 @@ class MinimalTaskWithStateAugmented(MinimalTask):
         )
 
 
-class MinimalTaskWithStateAndReset(MinimalTaskWithState):
+class MinimalTaskWithStateAndDirectReset(MinimalTaskWithState):
     """Non-functional minimal subclass including a state and reset method
-    to use in tests."""
+    to use in tests. This class resets the state element directly."""
 
     def reset(self, dic=None):
-        self.state["x"] = -1
+        reset_value = -1
+        self.state["x"][:] = reset_value
+
+
+class MinimalTaskWithStateAndResetViaState(MinimalTaskWithState):
+    """Non-functional minimal subclass including a state and reset method
+    to use in tests. This class resets the state element via the state
+    property."""
+
+    def reset(self, dic=None):
+        reset_value = -1
+        self.state.reset(dic={"x": reset_value})
+
+
+class MinimalTaskWithStateAndResetViaStateElement(MinimalTaskWithState):
+    """Non-functional minimal subclass including a state and reset method
+    to use in tests. This class resets the state element via the
+    StateElement's reset method."""
+
+    def reset(self, dic=None):
+        reset_value = -1
+        self.state["x"].reset(value=reset_value)
 
 
 def test_imports():
@@ -284,12 +305,17 @@ def test_base_reset_with_partial_dic():
 def test_base_reset_with_overwritten_reset():
     """Tests the _base_reset method if the subclassed InteractionTask has
     implemented a custom reset methd."""
-    task = MinimalTaskWithStateAndReset()
-    assert task.state["x"] == 0
-    assert isinstance(task.state["x"], StateElement)
-    task._base_reset()
-    assert task.state["x"] == -1
-    assert isinstance(task.state["x"], StateElement)
+    for task_class in [
+        MinimalTaskWithStateAndDirectReset,
+        MinimalTaskWithStateAndResetViaState,
+        MinimalTaskWithStateAndResetViaStateElement,
+    ]:
+        task = task_class()
+        assert task.state["x"] == 0
+        assert isinstance(task.state["x"], StateElement)
+        task._base_reset()
+        assert task.state["x"] == -1
+        assert isinstance(task.state["x"], StateElement)
 
 
 def test_base_reset():
