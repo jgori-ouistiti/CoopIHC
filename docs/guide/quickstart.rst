@@ -11,7 +11,7 @@ Installation
 
 .. code-block:: python
 
-    python3 -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ coopihc
+    python3 -m pip install --extra-index-url https://test.pypi.org/simple/ coopihc
 
 This will allow you to install coopihc from TestPyPI and the dependencies from PyPI.
 

@@ -1,10 +1,4 @@
 import numpy
-import sys
-from pathlib import Path
-
-file = Path(__file__).resolve()
-root = file.parents[3]
-sys.path.append(str(root))
 
 from coopihc.agents.BaseAgent import BaseAgent
 from coopihc.space.State import State
@@ -21,15 +15,14 @@ from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 # Define a state
 state = State()
 state["goalstate"] = StateElement(
-    values=numpy.array([4]),
-    spaces=[Space([numpy.array([-4, -3, -2, -1, 0, 1, 2, 3, 4], dtype=numpy.int16)])],
+    4,
+    Space(numpy.array([-4, -3, -2, -1, 0, 1, 2, 3, 4], dtype=numpy.int16), "discrete"),
 )
 
 # Define a policy (random policy)
 action_state = State()
 action_state["action"] = StateElement(
-    values=None,
-    spaces=[Space([numpy.array([-1, 0, 1], dtype=numpy.int16)])],
+    0, Space(numpy.array([-1, 0, 1], dtype=numpy.int16), "discrete")
 )
 agent_policy = BasePolicy(action_state)
 

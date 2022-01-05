@@ -24,8 +24,7 @@ class ExampleAssistant(BaseAgent):
         # Call the policy defined above
         action_state = State()
         action_state["action"] = StateElement(
-            values=0,
-            spaces=[Space([numpy.array([0], dtype=numpy.int16)])],
+            0, Space(numpy.array([0], dtype=numpy.int16), "discrete")
         )
         agent_policy = BasePolicy(action_state)
 

@@ -28,10 +28,10 @@ to install the dependencies. More information on (poetry's website)[https://pyth
 # Publishing to (Test)PyPI with poetry
 
 ```shell
-poetry init
 poetry build
-poetry run twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 poetry export --without-hashes --dev -f requirements.txt --output requirements.txt
+poetry run twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+
 ```
 
 # Installing locally
@@ -81,7 +81,6 @@ Constraints for formatting code include
 	:type a: [type]
 	:param b: [description]
 	:type b: [type]
-	:raises RunTimeError: [description]
 	:return: [description]
 	:rtype: [type]
 	"""

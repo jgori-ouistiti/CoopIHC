@@ -6,6 +6,7 @@ import numpy
 import yaml
 from collections import OrderedDict
 import matplotlib.pyplot as plt
+import copy
 
 
 class _Bundle:
@@ -42,11 +43,18 @@ class _Bundle:
         self.game_state = State()
 
         turn_index = StateElement(
-            values=[0],
-            spaces=Space([numpy.array([0, 1, 2, 3])], dtype=numpy.int8),
+            numpy.array([0]),
+            Space(numpy.array([0, 1, 2, 3], dtype=numpy.int8), "discrete"),
+        )
+        round_index = StateElement(
+            numpy.array([0]),
+            Space(numpy.array([0, 1], dtype=numpy.int8), "discrete"),
+            out_of_bounds_mode="raw",
         )
 
-        self.game_state["turn_index"] = turn_index
+        self.game_state["game_info"] = State()
+        self.game_state["game_info"]["turn_index"] = turn_index
+        self.game_state["game_info"]["round_index"] = round_index
         self.game_state["task_state"] = task.state
         self.game_state["user_state"] = user.state
         self.game_state["assistant_state"] = assistant.state
@@ -65,8 +73,6 @@ class _Bundle:
         self.task.finit()
         self.user.finit()
         self.assistant.finit()
-
-        self.round_number = 0
 
         # Needed for render
         self.active_render_figure = None
@@ -110,12 +116,28 @@ class _Bundle:
         :return: turn number
         :rtype: numpy.ndarray
         """
-        return self.game_state["turn_index"]["values"][0]
+        return self.game_state["game_info"]["turn_index"]
 
     @turn_number.setter
     def turn_number(self, value):
         self._turn_number = value
-        self.game_state["turn_index"]["values"] = numpy.array(value)
+        self.game_state["game_info"]["turn_index"][:] = value
+
+    @property
+    def round_number(self):
+        """round_number
+
+        The round number in the game (0 to N)
+
+        :return: turn number
+        :rtype: numpy.ndarray
+        """
+        return self.game_state["game_info"]["round_index"]
+
+    @round_number.setter
+    def round_number(self, value):
+        self._round_number = value
+        self.game_state["game_info"]["round_index"][:] = value
 
     def reset(self, turn=0, task=True, user=True, assistant=True, dic={}):
         """Reset bundle.
@@ -244,6 +266,11 @@ class _Bundle:
                 if user_action is None:
                     user_action, user_policy_reward = self.user._take_action()
                 else:
+                    # Convert action to stateElement
+                    if not isinstance(user_action, StateElement):
+                        se_action = copy.copy(self.user.action)
+                        se_action[:] = user_action
+                        user_action = se_action
                     user_policy_reward = 0
                 self.broadcast_action("user", user_action)
                 task_reward, is_done = self._user_second_half_step(user_action)
@@ -274,6 +301,11 @@ class _Bundle:
                         assistant_policy_reward,
                     ) = self.assistant._take_action()
                 else:
+                    # Convert action to stateElement
+                    if not isinstance(assistant_action, StateElement):
+                        se_action = copy.copy(self.assistant.action)
+                        se_action[:] = assistant_action
+                        assistant_action = se_action
                     assistant_policy_reward = 0
                 self.broadcast_action("assistant", assistant_action)
                 task_reward, is_done = self._assistant_second_half_step(
@@ -285,8 +317,10 @@ class _Bundle:
 
             self.turn_number = (self.turn_number + 1) % 4
 
-        self.round_number += 1
-        self.task.round += 1
+        self.round_number = (
+            self.round_number + 1
+        )  # Caveat: __iadd__ is not a Numpy ufunc, and so self.round_number += 1 does not work as intended.
+        # self.task.round += 1
 
         return self.game_state, rewards, False
 
@@ -566,11 +600,11 @@ class _Bundle:
         :type action: Any
         """
         # update game state and observations
-        if isinstance(action, StateElement):
-            getattr(self, role).policy.action_state["action"] = action
-            getattr(self, role).observation["{}_action".format(role)]["action"] = action
-        else:
-            getattr(self, role).policy.action_state["action"]["values"] = action
-            getattr(self, role).observation["{}_action".format(role)]["action"][
-                "values"
-            ] = action
+        # if isinstance(action, StateElement):
+        getattr(self, role).policy.action_state["action"] = action
+        getattr(self, role).observation["{}_action".format(role)]["action"] = action
+        # elif isinstance(action, numpy.ndarray):
+        #     getattr(self, role).policy.action_state["action"] = StateElement(action)
+        #     getattr(self, role).observation["{}_action".format(role)]["action"] = action
+        # else:
+        #     raise NotImplementedError

@@ -24,17 +24,17 @@ class ExampleUser(BaseAgent):
         # Define an internal state with a 'goal' substate
         state = State()
         state["goal"] = StateElement(
-            values=4,
-            spaces=[
-                Space([numpy.array([-4, -3, -2, -1, 0, 1, 2, 3, 4], dtype=numpy.int16)])
-            ],
+            4,
+            Space(
+                numpy.array([-4, -3, -2, -1, 0, 1, 2, 3, 4], dtype=numpy.int16),
+                "discrete",
+            ),
         )
 
         # Call the policy defined above
         action_state = State()
         action_state["action"] = StateElement(
-            values=None,
-            spaces=[Space([numpy.array([-1, 0, 1], dtype=numpy.int16)])],
+            0, Space(numpy.array([-1, 0, 1], dtype=numpy.int16), "discrete")
         )
         agent_policy = ExamplePolicy(action_state=action_state)
 
@@ -59,4 +59,4 @@ class ExampleUser(BaseAgent):
 
         :meta public:
         """
-        self.state["goal"]["values"] = 4
+        self.state["goal"][:] = 4

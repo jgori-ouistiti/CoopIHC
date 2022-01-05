@@ -116,7 +116,9 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
             return draw, fill, symbol
 
         def draw_beliefs(ax):
-            beliefs = hard_flatten(self.host.state["beliefs"]["values"])
+            # beliefs = hard_flatten(self.host.state["beliefs"]["values"])
+            beliefs = self.host.state["beliefs"].squeeze().tolist()
+
             ticks = []
             ticklabels = []
             for i, b in enumerate(beliefs):
@@ -161,12 +163,10 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
 
         observation = self.buffer[-1]
         state = observation["assistant_state"]
-        old_beliefs = state["beliefs"]["values"][0].squeeze().tolist()
+        old_beliefs = state["beliefs"].squeeze().tolist()
         user_action = observation["user_action"]["action"]
 
-        print(old_beliefs)
         for nt, t in enumerate(self.set_theta):
-            print(nt, t)
             # candidate_observation = copy.copy(observation)
             candidate_observation = copy.deepcopy(observation)
             for key, value in t.items():
@@ -187,5 +187,5 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
             )
             old_beliefs = [1 for i in old_beliefs]
         new_beliefs = [i / sum(old_beliefs) for i in old_beliefs]
-        state["beliefs"]["values"] = numpy.array(new_beliefs)
+        state["beliefs"][:] = numpy.array(new_beliefs)
         return state, 0

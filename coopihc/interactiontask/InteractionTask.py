@@ -1,6 +1,11 @@
+"""This module provides access to the InteractionTask class."""
+
+
 from abc import ABC, abstractmethod
 from coopihc.space.State import State
 from coopihc.space.StateElement import StateElement
+import numpy
+
 
 """
     The main API methods for this class are:
@@ -50,6 +55,9 @@ class InteractionTask(ABC):
         :return: turn number
         :rtype: numpy.ndarray
         """
+        if self.bundle is None:
+            no_bundle_specified = "turn_number accesses the bundle's turn number. self.bundle was None. Is this task part of a bundle?"
+            raise Exception(no_bundle_specified)
         return self.bundle.turn_number
 
     @property
@@ -121,19 +129,23 @@ class InteractionTask(ABC):
         :type dic: dictionnary, optional
         """
         self.round = 0
-
+        self.state.reset(dic={})
         if not dic:
-            self.state.reset(dic={})
-            self.reset(dic=dic)
             return
 
         self.reset(dic=dic)
         for key in list(self.state.keys()):
             value = dic.get(key)
             if isinstance(value, StateElement):
-                value = value["values"]
-            if value is not None:
-                self.state[key]["values"] = value
+                self.state[key] = value
+                continue
+            elif isinstance(value, numpy.ndarray):
+                self.state[key][:] = value
+
+            elif value is None:
+                continue
+            else:
+                raise NotImplementedError
 
     def base_user_step(self, *args, **kwargs):
         """base user step
@@ -186,19 +198,11 @@ class InteractionTask(ABC):
         return None
 
     @abstractmethod
-    def reset(self, dic=None):
+    def reset(self):
         """reset
 
         Redefine this to specify how to reinitialize the task before each new game.
 
-        .. warning::
-
-            the method signature is likely outdated and should be reset(self) since the base_reset() method already accounts for the reset dic mechanism
-
-        :param dic: [likely outdated], defaults to None
-        :type dic: [type], optional
-        :return: task state
-        :rtype: :py:class:`State<coopihc.space.State.State>`
         """
         return None
 

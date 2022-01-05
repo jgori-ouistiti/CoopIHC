@@ -52,3 +52,28 @@ from .policy.ExamplePolicy import ExamplePolicy
 from .space.Space import Space
 from .space.State import State
 from .space.StateElement import StateElement
+
+# ---------------- warnings
+from .space.utils import StateNotContainedWarning
+from .space.utils import NotKnownSerializationWarning
+from .space.utils import ContinuousSpaceIntIndexingWarning
+from .space.utils import NumpyFunctionNotHandledWarning
+from .space.utils import RedefiningHandledFunctionWarning
+from .space.utils import WrongConvertorWarning
+
+# ----------------- errors
+from .space.utils import SpaceLengthError
+from .space.utils import StateNotContainedError
+from .space.utils import SpacesNotIdenticalError
+from .space.utils import NotASpaceError
+
+# -------------------- shortcuts
+from .space.utils import autospace
+from .space.utils import discrete_space
+from .space.utils import continuous_space
+from .space.utils import multidiscrete_space
+
+# ------------------ convertors
+from .space.utils import GymConvertor
+from .space.utils import WrongConvertorError
+from .space.utils import GymForceConvertor
