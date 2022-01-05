@@ -26,7 +26,7 @@ class ExampleAssistant(BaseAgent):
         action_state["action"] = StateElement(
             0, Space(numpy.array([0], dtype=numpy.int16), "discrete")
         )
-        agent_policy = BasePolicy(action_state)
+        agent_policy = BasePolicy(action_state=action_state)
 
         # Use default observation and inference engines
         observation_engine = None

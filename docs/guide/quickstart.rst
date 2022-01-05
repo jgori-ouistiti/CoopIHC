@@ -13,7 +13,13 @@ Installation
 
     python3 -m pip install --extra-index-url https://test.pypi.org/simple/ coopihc
 
-This will allow you to install coopihc from TestPyPI and the dependencies from PyPI.
+You can also build directly from the github repository. To do so, install poetry, and run 
+
+.. code-block:: shell
+
+    poetry install
+
+from within the folder. This will install *CoopIHC* in editable mode (basically equivalent to ``python3 -m pip install -e .``)
 
 Interaction Model
 -------------------

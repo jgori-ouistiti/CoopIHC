@@ -35,25 +35,23 @@ class ExampleTask(InteractionTask):
 
     def reset(self, dic=None):
         # Always start with state 'x' at 0
-        self.state["x"] = 0
+        self.state["x"][:] = 0
         return
 
     def user_step(self, *args, **kwargs):
         # Modify the state in place, adding the user action
         is_done = False
-        self.state["x"] += self.user_action
+        self.state["x"][:] = self.state["x"] + self.user_action
+
         # Stopping condition
-        if self.state["x"] >= 4:
-            if self.state["x"] > 4:
-                print(self.bundle.game_state)
-                print("\n\n\n\n\n=====================\n\n\n\n")
+        if self.state["x"] == 4:
             is_done = True
         return self.state, -1, is_done, {}
 
     def assistant_step(self, *args, **kwargs):
         is_done = False
         # Modify the state in place, adding the assistant action
-        self.state["x"] += self.assistant_action
+        self.state["x"][:] = self.state["x"] + self.assistant_action
         # Stopping condition
         if self.state["x"] == 4:
             is_done = True

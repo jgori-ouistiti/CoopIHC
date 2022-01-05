@@ -45,6 +45,7 @@ class _Bundle:
         turn_index = StateElement(
             numpy.array([0]),
             Space(numpy.array([0, 1, 2, 3], dtype=numpy.int8), "discrete"),
+            out_of_bounds_mode="raw",
         )
         round_index = StateElement(
             numpy.array([0]),
@@ -191,13 +192,16 @@ class _Bundle:
             assistant_dic = dic.get("assistant_state")
             assistant_state = self.assistant._base_reset(dic=assistant_dic)
 
+        self.round_number[:] = 0
+
         self.turn_number = turn
+
         if turn == 0:
             return self.game_state
         if turn >= 1:
             self._user_first_half_step()
         if turn >= 2:
-            user_action, _ = self.user.take_action()
+            user_action, _ = self.user._take_action()
             self.broadcast_action("user", user_action)
             self._user_second_half_step(user_action)
         if turn >= 3:
@@ -220,38 +224,29 @@ class _Bundle:
         :return: gamestate, reward, game finished flag
         :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, collections.OrderedDict, boolean)
         """
-        # step() was called
-        # if not args:
-        #     user_action, assistant_action = None, None
-        # elif len(args) == 1:
-        #     if self.kwargs.get("name") == "no-assistant":
-        #         user_action, assistant_action = args[0], None
-        #     elif self.kwargs.get("name") == "no-user":
-        #         user_action, assistant_action = None, args[0]
-        #     else:
-        #         raise AttributeError(
-        #             "Passing a single action is only allowed when the game is played with a single agent."
-        #         )
-        # step(user_action, None) or step(None, assistant_action) or step(user_action, assistant_action) was called
-        # else:
-        #     user_action, assistant_action = args
 
         if go_to_turn is None:
-            go_to_turn = self.turn_number
+            go_to_turn = self.turn_number.squeeze().tolist()
 
         _started = False
         rewards = {}
         rewards["user_observation_reward"] = 0
         rewards["user_inference_reward"] = 0
+        rewards["user_policy_reward"] = 0
         rewards["first_task_reward"] = 0
         rewards["assistant_observation_reward"] = 0
         rewards["assistant_inference_reward"] = 0
+        rewards["assistant_policy_reward"] = 0
         rewards["second_task_reward"] = 0
 
         while self.turn_number != go_to_turn or (not _started):
+
             _started = True
             # User observes and infers
-            if self.turn_number == 0:
+            if self.turn_number == 0 and "no-user" not in self.kwargs.get("name"):
+                print("\n============")
+                print(dict.__repr__(self.game_state))
+                print(self.game_state)
                 (
                     user_obs_reward,
                     user_infer_reward,
@@ -262,7 +257,7 @@ class _Bundle:
                 ) = (user_obs_reward, user_infer_reward)
 
             # User takes action and receives reward from task
-            elif self.turn_number == 1:
+            elif self.turn_number == 1 and "no-user" not in self.kwargs.get("name"):
                 if user_action is None:
                     user_action, user_policy_reward = self.user._take_action()
                 else:
@@ -274,13 +269,14 @@ class _Bundle:
                     user_policy_reward = 0
                 self.broadcast_action("user", user_action)
                 task_reward, is_done = self._user_second_half_step(user_action)
+                rewards["user_policy_reward"] = user_policy_reward
                 rewards["first_task_reward"] = task_reward
                 if is_done:
                     return self.game_state, rewards, is_done
 
             # Assistant observes and infers
-            elif (
-                self.turn_number == 2 and not self.kwargs.get("name") == "no-assistant"
+            elif self.turn_number == 2 and "no-assistant" not in self.kwargs.get(
+                "name"
             ):
                 (
                     assistant_obs_reward,
@@ -292,8 +288,8 @@ class _Bundle:
                 ) = (assistant_obs_reward, assistant_infer_reward)
 
             # Assistant takes action and receives reward from task
-            elif (
-                self.turn_number == 3 and not self.kwargs.get("name") == "no-assistant"
+            elif self.turn_number == 3 and "no-assistant" not in self.kwargs.get(
+                "name"
             ):
                 if assistant_action is None:
                     (
@@ -311,16 +307,14 @@ class _Bundle:
                 task_reward, is_done = self._assistant_second_half_step(
                     assistant_action
                 )
+                rewards["assistant_policy_reward"] = assistant_policy_reward
                 rewards["second_task_reward"] = task_reward
                 if is_done:
                     return self.game_state, rewards, is_done
 
-            self.turn_number = (self.turn_number + 1) % 4
+                self.round_number = self.round_number + 1
 
-        self.round_number = (
-            self.round_number + 1
-        )  # Caveat: __iadd__ is not a Numpy ufunc, and so self.round_number += 1 does not work as intended.
-        # self.task.round += 1
+            self.turn_number = (self.turn_number + 1) % 4
 
         return self.game_state, rewards, False
 
@@ -599,12 +593,9 @@ class _Bundle:
         :param action: action
         :type action: Any
         """
-        # update game state and observations
-        # if isinstance(action, StateElement):
+
         getattr(self, role).policy.action_state["action"] = action
-        getattr(self, role).observation["{}_action".format(role)]["action"] = action
-        # elif isinstance(action, numpy.ndarray):
-        #     getattr(self, role).policy.action_state["action"] = StateElement(action)
-        #     getattr(self, role).observation["{}_action".format(role)]["action"] = action
-        # else:
-        #     raise NotImplementedError
+        try:
+            getattr(self, role).observation["{}_action".format(role)]["action"] = action
+        except AttributeError:
+            pass

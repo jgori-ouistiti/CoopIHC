@@ -204,9 +204,9 @@ class BaseAgent(ABC):
         :meta private:
         """
         if policy is None:
-            self.policy = BasePolicy()
+            self.policy = BasePolicy(**kwargs)
         else:
-            self.policy = policy
+            self.policy = policy(**kwargs)
         self.policy.host = self
 
     def attach_observation_engine(self, observation_engine, **kwargs):
