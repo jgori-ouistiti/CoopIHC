@@ -23,7 +23,9 @@ CoopIHC uses poetry to manage dependencies. You can run
 poetry install
 ```
 
-to install the dependencies. More information on (poetry's website)[https://python-poetry.org/]
+to install the dependencies. More information on (poetry's website)[https://python-poetry.org/].
+
+When new dependencies are added (even dev dependencies), make sure to update not only the TOML file (`poetry add package`) but also the `requirements.txt`to make sure that the automatic PR checks pass (`poetry export -f requirements.txt --output requirements.txt --dev`).
 
 # Publishing to (Test)PyPI with poetry
 
