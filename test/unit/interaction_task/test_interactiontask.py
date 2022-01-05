@@ -34,8 +34,8 @@ class MinimalTaskWithState(MinimalTask):
 
 
 class MinimalTaskWithStateAugmented(MinimalTask):
-    """Non-functional minimal subclass including a state to use
-    in tests."""
+    """Non-functional minimal subclass including a more complex
+    state to use in tests."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -51,6 +51,14 @@ class MinimalTaskWithStateAugmented(MinimalTask):
             discrete_space(numpy.array([i for i in range(1, 10)])),
             out_of_bounds_mode="clip",
         )
+
+
+class MinimalTaskWithStateAndReset(MinimalTaskWithState):
+    """Non-functional minimal subclass including a state and reset method
+    to use in tests."""
+
+    def reset(self, dic=None):
+        self.state["x"] = -1
 
 
 def test_imports():
@@ -273,11 +281,23 @@ def test_base_reset_with_partial_dic():
     assert sorted(list(set_z.values())) == [i for i in range(1, 10)]
 
 
+def test_base_reset_with_overwritten_reset():
+    """Tests the _base_reset method if the subclassed InteractionTask has
+    implemented a custom reset methd."""
+    task = MinimalTaskWithStateAndReset()
+    assert task.state["x"] == 0
+    assert isinstance(task.state["x"], StateElement)
+    task._base_reset()
+    assert task.state["x"] == -1
+    assert isinstance(task.state["x"], StateElement)
+
+
 def test_base_reset():
     """Tests the forced reset mechanism provided by the _base_reset method"""
     test_base_reset_without_dic()
     test_base_reset_with_full_dic()
     test_base_reset_with_partial_dic()
+    test_base_reset_with_overwritten_reset()
 
 
 def test_interactiontask():
