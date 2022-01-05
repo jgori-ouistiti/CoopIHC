@@ -24,6 +24,7 @@ install_requires = \
  'gym>=0.17,<0.18',
  'matplotlib>=3,<4',
  'numpy>=1,<2',
+ 'pytest-timeout>=2.0.2,<3.0.0',
  'scipy>=1.7.3,<2.0.0',
  'stable-baselines3>=1.3.0,<2.0.0',
  'tabulate',
