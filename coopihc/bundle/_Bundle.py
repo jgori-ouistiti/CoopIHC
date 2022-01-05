@@ -181,15 +181,15 @@ class _Bundle:
 
         if task:
             task_dic = dic.get("task_state")
-            task_state = self.task._base_reset(dic=task_dic)
+            self.task._base_reset(dic=task_dic)
 
         if user:
             user_dic = dic.get("user_state")
-            user_state = self.user._base_reset(dic=user_dic)
+            self.user._base_reset(dic=user_dic)
 
         if assistant:
             assistant_dic = dic.get("assistant_state")
-            assistant_state = self.assistant._base_reset(dic=assistant_dic)
+            self.assistant._base_reset(dic=assistant_dic)
 
         self.turn_number = turn
         if turn == 0:
