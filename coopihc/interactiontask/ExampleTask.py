@@ -35,7 +35,7 @@ class ExampleTask(InteractionTask):
 
     def reset(self, dic=None):
         # Always start with state 'x' at 0
-        self.state["x"] = 0
+        self.state["x"][:] = 0
         return
 
     def user_step(self, *args, **kwargs):
