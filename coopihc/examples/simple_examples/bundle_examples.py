@@ -50,7 +50,6 @@ while True:
         break
 # [end-check-task]
 # [start-check-taskuser]
-print('\n############"')
 
 
 class ExampleTaskWithoutAssistant(ExampleTask):
@@ -63,11 +62,9 @@ example_user = ExampleUser()
 bundle = Bundle(task=example_task, user=example_user)
 # reset at turn 1 so that the observation is accessible to the user (viz. to the policy)
 bundle.reset(turn=1)
-print(bundle.game_state)
 
 while 1:
     state, rewards, is_done = bundle.step(user_action=None)
-    print(bundle.game_state)
 
     if is_done:
         break
@@ -86,10 +83,14 @@ bundle = Bundle(task=example_task, user=example_user, assistant=example_assistan
 bundle.reset(
     turn=1
 )  # Reset in a state where the user has already produced an observation and made an inference.
+print('\n############"')
 
+print(bundle.game_state)
 # Step through the bundle (i.e. play full rounds)
 while 1:
     state, rewards, is_done = bundle.step(user_action=1, assistant_action=None)
+    print(bundle.game_state)
+
     if is_done:
         break
 # [end-highlevel-code]

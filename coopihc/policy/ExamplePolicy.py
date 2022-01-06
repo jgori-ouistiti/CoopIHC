@@ -38,5 +38,7 @@ class ExamplePolicy(BasePolicy):
         else:
             _action_value = 0
 
-        new_action = self.new_action[:] = _action_value
+        new_action = self.new_action
+        new_action[:] = _action_value
+
         return new_action, 0

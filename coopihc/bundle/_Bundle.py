@@ -244,9 +244,6 @@ class _Bundle:
             _started = True
             # User observes and infers
             if self.turn_number == 0 and "no-user" not in self.kwargs.get("name"):
-                print("\n============")
-                print(dict.__repr__(self.game_state))
-                print(self.game_state)
                 (
                     user_obs_reward,
                     user_infer_reward,

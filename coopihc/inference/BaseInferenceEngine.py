@@ -113,17 +113,16 @@ class BaseInferenceEngine:
         :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float)
         """
         # do something with information inside buffer
-
         if self.host.role == "user":
             try:
                 return self.observation["user_state"], 0
             except KeyError:
-                return OrderedDict({}), 0
-        elif self.host.role == "assistant":
+                return {}, 0
+        else:
             try:
                 return self.observation["assistant_state"], 0
             except KeyError:
-                return OrderedDict({}), 0
+                return {}, 0
 
     def reset(self):
         """reset
