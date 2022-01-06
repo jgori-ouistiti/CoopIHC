@@ -7,13 +7,15 @@ Quick Start
 Installation
 ---------------
 
-*CoopIHC* is currently available on `TestPyPI <https://test.pypi.org/project/coopihc/>`_ You can install the package using pip with the following command:
+*CoopIHC* is currently available on `TestPyPI <https://test.pypi.org/project/coopihc/>`_, although this might not be the latest version. You can install the package using pip with the following command:
 
 .. code-block:: python
 
     python3 -m pip install --extra-index-url https://test.pypi.org/simple/ coopihc
 
-You can also build directly from the github repository. To do so, install poetry, and run 
+
+
+You can also build directly from the github repository to get the latest version. To do so, install poetry, and run 
 
 .. code-block:: shell
 
@@ -52,7 +54,7 @@ The interaction model uses the concept of states, for which *CoopIHC* introduces
    :end-before: [end-state-example]
 
 
-To find out more about these, go to :doc:`Space, StateElement, State<space>`.
+To find out more about these, go to :doc:`Space<space>`, :doc:`StateElement<stateelement>` and :doc:`State<state>`.
 
 
 Tasks

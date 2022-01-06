@@ -8,6 +8,7 @@ from coopihc.space.utils import (
     autospace,
     StateNotContainedError,
 )
+import pytest
 
 numpy.set_printoptions(precision=3, suppress=True)
 
@@ -27,6 +28,74 @@ multidiscr_space = multidiscrete_space(
 )
 z = StateElement([1, 5, 3], multidiscr_space, out_of_bounds_mode="error")
 # [end-stateelement-init]
+
+# [start-stateelement-ufunc]
+discr_space = discrete_space([1, 2, 3])
+x = StateElement(2, discr_space, out_of_bounds_mode="error")
+assert x + numpy.array(1) == 3
+assert x + 1 == 3
+try:
+    x + 2
+except StateNotContainedError:
+    print("Exception as expected")
+# [end-stateelement-ufunc]
+
+# [start-stateelement-array-function]
+cont_space = autospace([[-1, -1], [-1, -2]], [[1, 1], [1, 3]], dtype=numpy.float64)
+x = StateElement(
+    numpy.array([[0, 0.1], [-0.5, 0.8]], dtype=numpy.float64),
+    cont_space,
+    out_of_bounds_mode="warning",
+)
+
+# We would like to use numpy.amax(x)
+# The function is not handled, so a warning is issued
+with pytest.warns(NumpyFunctionNotHandledWarning):
+    y = numpy.amax(x)
+
+assert isinstance(y, numpy.ndarray)
+assert not isinstance(y, StateElement)
+assert y == 0.8
+assert not hasattr(y, "spaces")
+assert not hasattr(y, "out_of_bounds_mode")
+
+
+@StateElement.implements(numpy.amax)
+def amax(arr, **keywordargs):
+    spaces, out_of_bounds_mode, kwargs = (
+        arr.spaces,
+        arr.out_of_bounds_mode,
+        arr.kwargs,
+    )
+    obj = arr.view(numpy.ndarray)
+    argmax = numpy.argmax(obj, **keywordargs)
+    index = numpy.unravel_index(argmax, arr.spaces.shape)
+    obj = numpy.amax(obj, **keywordargs)
+    obj = numpy.asarray(obj).view(StateElement)
+    if arr.spaces.space_type == "continuous":
+        obj.spaces = autospace(
+            numpy.atleast_2d(arr.spaces.low[index[0], index[1]]),
+            numpy.atleast_2d(arr.spaces.high[index[0], index[1]]),
+        )
+    else:
+        raise NotImplementedError
+    obj.out_of_bounds_mode = arr.out_of_bounds_mode
+    obj.kwargs = arr.kwargs
+    return obj
+
+
+y = numpy.amax(x)
+assert isinstance(y, StateElement)
+assert StateElement.HANDLED_FUNCTIONS.get(numpy.amax) is not None
+assert x.HANDLED_FUNCTIONS.get(numpy.amax) is not None
+assert y.shape == ()
+assert y == 0.8
+assert y.spaces.space_type == "continuous"
+assert y.spaces.shape == (1, 1)
+assert y.spaces.low == numpy.array([[-2]])
+assert y.spaces.high == numpy.array([[3]])
+# [end-stateelement-array-function]
+
 
 # [start-stateelement-reset]
 
