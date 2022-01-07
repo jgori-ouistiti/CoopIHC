@@ -83,7 +83,6 @@ def test_properties():
     # Direct attributes
     assert hasattr(task, "_state")
     assert hasattr(task, "bundle")
-    assert hasattr(task, "round")
     assert hasattr(task, "timestep")
     assert hasattr(task, "ax")
     # Property functions

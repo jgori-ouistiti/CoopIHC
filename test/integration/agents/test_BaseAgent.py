@@ -33,7 +33,7 @@ inference_engine = BaseInferenceEngine(buffer_depth=0)
 
 new_agent = BaseAgent(
     "user",
-    agent_policy=agent_policy,
+    agent_policy=BasePolicy,
     agent_observation_engine=observation_engine,
     agent_inference_engine=inference_engine,
     agent_state=state,
