@@ -58,7 +58,6 @@ multidiscrete_space = Space(
 # [end-space-complex-def]
 
 # [start-space-autospace]
-
 # Space(numpy.array([1, 2, 3]), "discrete")
 autospace([1, 2, 3])
 autospace([[1, 2, 3]])
@@ -141,8 +140,15 @@ g = Space(
 h = Space(numpy.array([i for i in range(10)], dtype=numpy.int16), "discrete")
 
 f.sample()
+# >>> Space([[[-2. -2.]
+#  [-1. -1.]], [[1. 1.]
+#  [1. 1.]]], 'continuous', contains = 'soft')
 g.sample()
+# >>> Space([[ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+#  24 25 26 27 28 29 30],[ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+#  24 25 26 27 28 29 30]], 'multidiscrete', contains = 'soft')
 h.sample()
+# >>> Space([0 1 2 3 4 5 6 7 8 9], 'discrete', contains = 'soft')
 # [end-space-sample]
 
 # [start-space-iter]
@@ -170,3 +176,43 @@ for _h in h:
         # print(__h)
         pass
 # [end-space-iter]
+
+# [start-space-cp]
+s = Space(
+    numpy.array([i for i in range(3)], dtype=numpy.int16),
+    "discrete",
+)
+q = Space(
+    [
+        numpy.array([i + 6 for i in range(2)], dtype=numpy.int16),
+        numpy.array([i + 6 for i in range(2)], dtype=numpy.int16),
+    ],
+    "multidiscrete",
+)
+r = Space(
+    [
+        -numpy.ones((2, 2), dtype=numpy.float32),
+        numpy.ones((2, 2), dtype=numpy.float32),
+    ],
+    "continuous",
+)
+cp, shape = Space.cartesian_product(s, q, r)
+# cp
+# >>> [[0 6 6 None]
+#     [0 6 7 None]
+#     [0 7 6 None]
+#     [0 7 7 None]
+#     [1 6 6 None]
+#     [1 6 7 None]
+#     [1 7 6 None]
+#     [1 7 7 None]
+#     [2 6 6 None]
+#     [2 6 7 None]
+#     [2 7 6 None]
+#     [2 7 7 None]]
+
+# shape
+# >>> [(1,), (2, 1), (2, 2)]
+
+
+# [end-space-cp]

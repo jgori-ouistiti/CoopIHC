@@ -18,7 +18,7 @@ class ExampleTask(InteractionTask):
 
     """
 
-    def __init__(self, *args, scale=1, **kwargs):
+    def __init__(self, *args, **kwargs):
 
         # Call super().__init__() beofre anything else, which initializes some useful attributes, including a State (self.state) for the task
 
@@ -41,23 +41,25 @@ class ExampleTask(InteractionTask):
     def user_step(self, *args, **kwargs):
         # Modify the state in place, adding the user action
         is_done = False
-        self.state["x"] += self.user_action
-        # Stopping condition
-        if self.state["x"] >= 4:
-            if self.state["x"] > 4:
-                print(self.bundle.game_state)
-                print("\n\n\n\n\n=====================\n\n\n\n")
+        self.state["x"][:] = self.state["x"] + self.user_action
+
+        # Stopping condition, return is_done boolean floag
+        if self.state["x"] == 4:
             is_done = True
-        return self.state, -1, is_done, {}
+
+        reward = -1
+        return self.state, reward, is_done
 
     def assistant_step(self, *args, **kwargs):
         is_done = False
         # Modify the state in place, adding the assistant action
-        self.state["x"] += self.assistant_action
-        # Stopping condition
+        self.state["x"][:] = self.state["x"] + self.assistant_action
+        # Stopping condition, return is_done boolean floag
         if self.state["x"] == 4:
             is_done = True
-        return self.state, -1, is_done, {}
+
+        reward = -1
+        return self.state, reward, is_done
 
     def render(self, *args, mode="text"):
 

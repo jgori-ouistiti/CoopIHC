@@ -13,12 +13,6 @@ from .agents.lqrcontrollers.LQRController import LQRController
 
 from .bundle._Bundle import _Bundle
 from .bundle.Bundle import Bundle
-from .bundle._PlayAssistant import PlayAssistant
-from .bundle._PlayBoth import PlayBoth
-from .bundle._PlayNone import PlayNone
-from .bundle._PlayUser import PlayUser
-from .bundle._SinglePlayUser import SinglePlayUser
-from .bundle._SinglePlayUserAuto import SinglePlayUserAuto
 from .bundle.wrappers.Train import Train
 from .bundle.WsServer import WsServer
 from .bundle.wrappers import BundleWrapper, PipedTaskBundleWrapper

@@ -204,9 +204,17 @@ class BaseAgent(ABC):
         :meta private:
         """
         if policy is None:
-            self.policy = BasePolicy()
+            policy = BasePolicy
+
+        if type(policy).__name__ == "type":
+            self.policy = policy(**kwargs)
         else:
             self.policy = policy
+            if kwargs != {}:
+                raise AttributeError(
+                    "Can't input an instantiated policy and associated keyword arguments. Either pass the policy class, or fully instantiate that policy before passing it."
+                )
+
         self.policy.host = self
 
     def attach_observation_engine(self, observation_engine, **kwargs):
@@ -221,17 +229,25 @@ class BaseAgent(ABC):
         """
         if observation_engine is None:
             if self.role == "user":
-                self.observation_engine = RuleObservationEngine(
+                observation_engine = RuleObservationEngine(
                     deterministic_specification=base_user_engine_specification
                 )
             elif self.role == "assistant":
-                self.observation_engine = RuleObservationEngine(
+                observation_engine = RuleObservationEngine(
                     deterministic_specification=base_assistant_engine_specification
                 )
             else:
                 raise NotImplementedError
+
+        if type(observation_engine).__name__ == "type":
+            self.observation_engine = observation_engine(**kwargs)
         else:
             self.observation_engine = observation_engine
+            if kwargs != {}:
+                raise AttributeError(
+                    "Can't input an instantiated observation engine and associated keyword arguments. Either pass the observation engine class, or fully instantiate that policy before passing it."
+                )
+
         self.observation_engine.host = self
 
     def attach_inference_engine(self, inference_engine, **kwargs):
@@ -245,9 +261,19 @@ class BaseAgent(ABC):
         :meta private:
         """
         if inference_engine is None:
-            self.inference_engine = BaseInferenceEngine()
+            inference_engine = BaseInferenceEngine()
+        else:
+            inference_engine = inference_engine
+
+        if type(inference_engine).__name__ == "type":
+            self.inference_engine = inference_engine(**kwargs)
         else:
             self.inference_engine = inference_engine
+            if kwargs != {}:
+                raise AttributeError(
+                    "Can't input an instantiated inference engine and associated keyword arguments. Either pass the inference engine class, or fully instantiate that policy before passing it."
+                )
+
         self.inference_engine.host = self
 
     def _base_reset(self, all=True, dic=None):

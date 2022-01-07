@@ -39,7 +39,6 @@ class InteractionTask(ABC):
 
         self._state = State()
         self.bundle = None
-        self.round = 0
         self.timestep = 0.1
 
         # Render
@@ -133,12 +132,16 @@ class InteractionTask(ABC):
         :param dic: reset dictionary (passed by bundle),
         :type dic: dictionary, optional
         """
-        self.round = 0
+
+        # Reset everything randomly before  starting
         self.state.reset(dic={})
+        # Apply end-user defined reset
         self.reset(dic=dic)
+
         if not dic:
             return
 
+        # forced reset with dic
         for key in list(self.state.keys()):
             value = dic.get(key)
             if isinstance(value, StateElement):

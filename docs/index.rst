@@ -16,8 +16,9 @@ Welcome to CoopIHC's documentation!
 
 *CoopIHC*, pronounced 'kopik', is a Python module that provides a common basis for describing **computational Human Computer Interaction (HCI)** contexts, mostly targeted at expressing models of users and intelligent assistants.
 
-1. It provides a common conceptual and practical reference, which facilitates reusing and helps extending other researcher's work. Some examples that use *CoopIHC* can be found in the `CoopIHC-Zoo <https://jgori-ouistiti.github.io/CoopIHC-zoo/>`_. These full examples, or parts thereof, can be re-used easily by a *CoopIHC* user.
-2. It can help design intelligent assistants. For example, you can wrap a CoopIHC :py:mod:`Bundle <../coopihc.bundle>` into an environment that is compatible with `gym <https://gym.openai.com/>`_ and use off-the-shelf Deep Reinforcement Learning algorithms to train a policy for an intelligent assistant.
+1. It provides a common conceptual and practical reference, which facilitates reusing and helps extending other researcher's work. Some examples that use *CoopIHC* can be found in the `CoopIHC-Zoo <https://jgori-ouistiti.github.io/CoopIHC-zoo/>`_. These full examples, or parts thereof, can be re-used easily by a *CoopIHC* end-user.
+2. It can help design intelligent assistants. For example, you can wrap a CoopIHC :py:class:`Bundle<../coopihc.bundle.Bundle.Bundle>` into an environment that is compatible with `gym <https://gym.openai.com/>`_ and use off-the-shelf Deep Reinforcement Learning algorithms to train a policy for an intelligent assistant.
+3. It provides modeling help. Currently, some checks are provided to ensure model paramters are correctly identifiable, see `CoopIHC-ModelChekcs <https://github.com/christophajohns/CoopIHC-ModelChecks/>`_
 
 
 
@@ -27,7 +28,7 @@ The philosophy of *CoopIHC* is to separate interactive systems into three compon
 2. A **user**, which is either a real user *or* a synthetic user model,
 3. An **assistant** agent which helps the user accomplish its task.
 
-and **bundling** them back together using so-called :py:mod:`Bundle <../coopihc.bundle>`. Different bundles exist for many different cases:
+and **bundling** them back together using a so-called :py:mod:`Bundle <../coopihc.Bundle.Bundle>`. Bundles can be used for many different cases:
 
 * Evaluate user (synthetic or real) coupled with an intelligent assistant,
 * Train a user model to obtain a realistic synthetic user model,
@@ -38,9 +39,6 @@ and **bundling** them back together using so-called :py:mod:`Bundle <../coopihc.
 
 
 *CoopIHC* builds on a two-agent interaction model, see the :doc:`Interaction Model<guide/interaction_model>` and :doc:`Terminology<guide/terminology>`.
-
-
-
 
 
 
@@ -66,6 +64,8 @@ and **bundling** them back together using so-called :py:mod:`Bundle <../coopihc.
     guide/terminology
     guide/interaction_model
     guide/space
+    guide/stateelement
+    guide/state
     guide/policy
     guide/observation_engine
     guide/inference_engine
@@ -86,16 +86,10 @@ and **bundling** them back together using so-called :py:mod:`Bundle <../coopihc.
 	API reference <_autosummary/coopihc>
 
 
-TODO list:
-==============
+Known Caveats
+=====================
 
-* have a task possess an observation engine for cleaner separability between modules
-* think about standardized logging capabilities
-* provide test code to ensure the engines are working properly
-* verify full arithmetic operations for StateElement
-* make a mapping object for RuleObservationEngine, smoothen the ruleObservationEngine specification
-* profile CoopIHC to see whether there are any bottlenecks (deepcopies are one)
-
+1. In place additions e.g. ``self.state['x'] += 1`` work, but do not trigger the expected ``out_of_bounds_mode`` behavior. in short, the reason for that is that in place addition calls ``__iadd__`` which is not a Numpy ``__ufunc__``. There are several workarounds possible. One based on the ``@implements`` mechanism described in the ``StateElement`` page which would fix the problem for everyone. Another is simply to do something like ``self.state['x'] = self.state['x'] + 1``
 
 
 Indices
