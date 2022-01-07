@@ -135,3 +135,6 @@ dmypy.json
 # Pipfile (use requirements.txt instead)
 Pipfile
 Pipfile.lock
+
+# Benchmarks
+.benchmarks/
