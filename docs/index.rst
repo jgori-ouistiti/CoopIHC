@@ -64,6 +64,8 @@ and **bundling** them back together using a so-called :py:mod:`Bundle <../coopih
     guide/terminology
     guide/interaction_model
     guide/space
+    guide/stateelement
+    guide/state
     guide/policy
     guide/observation_engine
     guide/inference_engine

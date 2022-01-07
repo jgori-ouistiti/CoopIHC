@@ -26,17 +26,17 @@ class Train:
     :param API: API with which the bundle will be made compatible for, defaults to "gym-force". In gym force, a limited gym compatible environment is created, which casts everything to float32 and boxes.
     :type API: str, optional
     :param observation_dict: to filter out observations, you can apply a dictionnary, defaults to None. e.g.:
+    :type observation_dict: collections.OrderedDict, optional
 
     ..code-block:: python
 
         filterdict = OrderedDict(
-        {
-            "user_state": OrderedDict({"goal": 0}),
-            "task_state": OrderedDict({"x": 0}),
-        }
-    )
+            {
+                "user_state": OrderedDict({"goal": 0}),
+                "task_state": OrderedDict({"x": 0}),
+            }
+        )
 
-    :type observation_dict: collections.OrderedDict, optional
     :param reset_dic: During training, the bundle will be repeatedly reset. Pass the reset_dic here (see bundle reset mechanism), defaults to {}
     :type reset_dic: dict, optional
     :param reset_turn: During training, the bundle will be repeatedly reset. Pass the reset_turn here (see bundle reset_turn mechanism), defaults to 0

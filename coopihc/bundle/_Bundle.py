@@ -458,7 +458,7 @@ class _Bundle:
         """
 
         # Play user's turn in the task
-        task_state, task_reward, is_done, _ = self.task.base_user_step(user_action)
+        task_state, task_reward, is_done = self.task.base_user_step(user_action)
 
         # update task state (likely not needed, remove ?)
         self.broadcast_state("user", "task_state", task_state)
@@ -495,7 +495,7 @@ class _Bundle:
 
         # Play assistant's turn in the task
 
-        task_state, task_reward, is_done, _ = self.task.base_assistant_step(
+        task_state, task_reward, is_done = self.task.base_assistant_step(
             assistant_action
         )
         # update task state

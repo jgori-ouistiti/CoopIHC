@@ -54,7 +54,7 @@ while True:
 
 class ExampleTaskWithoutAssistant(ExampleTask):
     def assistant_step(self, *args, **kwargs):
-        return self.state, 0, False, {}
+        return self.state, 0, False
 
 
 example_task = ExampleTaskWithoutAssistant()

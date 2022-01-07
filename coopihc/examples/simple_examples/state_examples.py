@@ -60,6 +60,17 @@ substate2["y2"] = StateElement(  # multidiscrete subsubstate substate2/y2
 
 state["sub1"] = substate  # assign substates to super state
 state["sub2"] = substate2
+# >>> print(state)
+# ----  --  ---------------  -------------------
+# sub1  x1  1                Discr(3)
+#       x2  [1 2 3]          MultiDiscr[3, 3, 4]
+#       x3  [[1.5 1.5 1.5]   Cont(3, 3)
+#            [1.5 1.5 1.5]
+#            [1.5 1.5 1.5]]
+# sub2  y1  1                Discr(3)
+#       y2  [1 2 3]          MultiDiscr[3, 3, 4]
+# ----  --  ---------------  -------------------
+
 # [end-state-example]
 
 # [start-state-reset]

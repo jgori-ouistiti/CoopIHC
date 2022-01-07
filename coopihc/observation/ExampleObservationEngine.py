@@ -1,4 +1,5 @@
 from coopihc.observation.BaseObservationEngine import BaseObservationEngine
+from coopihc.space.State import State
 
 
 class ExampleObservationEngine(BaseObservationEngine):
@@ -24,4 +25,5 @@ class ExampleObservationEngine(BaseObservationEngine):
         :return: (observation, obs reward)
         :rtype: tuple(`State<coopihc.space.State.State`, float)
         """
-        return game_state[self.observable_state], 0
+
+        return State(**{self.observable_state: game_state[self.observable_state]}), 0

@@ -7,6 +7,7 @@ from coopihc.space.utils import (
     multidiscrete_space,
     autospace,
     StateNotContainedError,
+    NumpyFunctionNotHandledWarning,
 )
 import pytest
 
@@ -40,9 +41,9 @@ except StateNotContainedError:
     print("Exception as expected")
 # [end-stateelement-ufunc]
 
-# [start-stateelement-array-function]
+# [start-stateelement-array-function-not-defined]
 cont_space = autospace([[-1, -1], [-1, -2]], [[1, 1], [1, 3]], dtype=numpy.float64)
-x = StateElement(
+g = StateElement(
     numpy.array([[0, 0.1], [-0.5, 0.8]], dtype=numpy.float64),
     cont_space,
     out_of_bounds_mode="warning",
@@ -51,15 +52,16 @@ x = StateElement(
 # We would like to use numpy.amax(x)
 # The function is not handled, so a warning is issued
 with pytest.warns(NumpyFunctionNotHandledWarning):
-    y = numpy.amax(x)
+    h = numpy.amax(g)
 
-assert isinstance(y, numpy.ndarray)
-assert not isinstance(y, StateElement)
-assert y == 0.8
-assert not hasattr(y, "spaces")
-assert not hasattr(y, "out_of_bounds_mode")
+assert isinstance(h, numpy.ndarray)
+assert not isinstance(h, StateElement)
+assert h == 0.8
+assert not hasattr(h, "spaces")
+assert not hasattr(h, "out_of_bounds_mode")
+# [end-stateelement-array-function-not-defined]
 
-
+# [start-stateelement-array-function-define]
 @StateElement.implements(numpy.amax)
 def amax(arr, **keywordargs):
     spaces, out_of_bounds_mode, kwargs = (
@@ -71,7 +73,7 @@ def amax(arr, **keywordargs):
     argmax = numpy.argmax(obj, **keywordargs)
     index = numpy.unravel_index(argmax, arr.spaces.shape)
     obj = numpy.amax(obj, **keywordargs)
-    obj = numpy.asarray(obj).view(StateElement)
+    obj = numpy.asarray(obj).reshape(1, 1).view(StateElement)
     if arr.spaces.space_type == "continuous":
         obj.spaces = autospace(
             numpy.atleast_2d(arr.spaces.low[index[0], index[1]]),
@@ -84,17 +86,17 @@ def amax(arr, **keywordargs):
     return obj
 
 
-y = numpy.amax(x)
+h = numpy.amax(g)
 assert isinstance(y, StateElement)
 assert StateElement.HANDLED_FUNCTIONS.get(numpy.amax) is not None
-assert x.HANDLED_FUNCTIONS.get(numpy.amax) is not None
-assert y.shape == ()
-assert y == 0.8
-assert y.spaces.space_type == "continuous"
-assert y.spaces.shape == (1, 1)
-assert y.spaces.low == numpy.array([[-2]])
-assert y.spaces.high == numpy.array([[3]])
-# [end-stateelement-array-function]
+assert g.HANDLED_FUNCTIONS.get(numpy.amax) is not None
+assert h.shape == (1, 1)
+assert h == 0.8
+assert h.spaces.space_type == "continuous"
+assert h.spaces.shape == (1, 1)
+assert h.spaces.low == numpy.array([[-2]])
+assert h.spaces.high == numpy.array([[3]])
+# [end-stateelement-array-function-define]
 
 
 # [start-stateelement-reset]
@@ -126,12 +128,17 @@ for _x in x:
 
 # iterating over a continuous space: first over rows, then over columns
 x = StateElement(numpy.zeros((2, 2)), cont_space)
-for _x in x:
-    for __x in _x:
+for i, _x in enumerate(x):
+    for j, __x in enumerate(_x):
         assert isinstance(__x, StateElement)
-        assert __x.equals(
-            StateElement(numpy.array([[0]]), autospace([[-1]], [[1]])), mode="hard"
-        )
+        if i == 1 and j == 1:
+            assert __x.equals(
+                StateElement(numpy.array([[0]]), autospace([[-2]], [[3]])), mode="hard"
+            )
+        else:
+            assert __x.equals(
+                StateElement(numpy.array([[0]]), autospace([[-1]], [[1]])), mode="hard"
+            )
 
 # iterating over a multidiscrete space returns discrete spaces
 multidiscr_space = multidiscrete_space(
@@ -146,11 +153,30 @@ for n, _x in enumerate(x):
     assert _x.spaces.space_type == "discrete"
 # [end-stateelement-iter]
 
-
 # [start-stateelement-comp]
 x.reset()
 x < 4
 # [end-stateelement-comp]
+
+
+# [start-stateelement-equal]
+discr_space = discrete_space([1, 2, 3])
+other_discr_space = discrete_space([1, 2, 3, 4])
+x = StateElement(numpy.array(1), discr_space)
+w = StateElement(numpy.array(1), other_discr_space)
+assert w.equals(x)
+assert not w.equals(x, "hard")
+# [end-stateelement-equal]
+
+
+# [start-stateelement-getitem]
+x = StateElement(numpy.array([[0.0, 0.1], [0.2, 0.3]]), cont_space)
+assert x[0, 0] == 0.0
+assert x[0, 0, {"spaces": True}] == StateElement(
+    numpy.array([[0.0]]), autospace(numpy.array([[-1]]), numpy.array([[1]]))
+)
+# [end-stateelement-getitem]
+
 
 # y.reset()
 # targetdomain = StateElement(

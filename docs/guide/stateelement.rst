@@ -1,15 +1,24 @@
-.. space:
+.. stateelement:
 
 StateElement
 -----------------
 
-A ``StateElement`` is a a combination of a value and a space. Under the hood, ``StateElement`` subclasses ``numpy.ndarray``; essentially, it adds a layer that checks whether the values are contained in the space (and what to do if not). As a result, many NumPy methods will work. A few simple examples are provided below.
+A ``StateElement`` is a a combination of a value and a space. Under the hood, ``StateElement`` subclasses ``numpy.ndarray``; essentially, it adds a layer that checks whether the values are contained in the space (and what to do if not). As a result, many NumPy methods will work.
+
+Instantiating a StateElement is straightforward.
 
 .. literalinclude:: ../../coopihc/examples/simple_examples/stateelement_examples.py
    :language: python
    :linenos:
    :start-after: [start-stateelement-init]
    :end-before: [end-stateelement-init]
+
+
+.. note::
+
+   The examples above give the preferred input shape, but StateElement will consider the input as an array and try to viewcast input that does not match expected shape. That means that e.g. ``x = StateElement(2, discr_space, out_of_bounds_mode="error")`` is also considered valid input.
+
+
 
 ``StateElement`` has an ``out_of_bounds_mode`` keyword argument (defaults to 'warning') that specifies what to do when a value is not contained in the space:
 
@@ -24,8 +33,8 @@ A ``StateElement`` is a a combination of a value and a space. Under the hood, ``
    Broad/viewcasting and type casting are applied if necessary to the first four cases if the space has "contains" set to "soft", but never with "raw". 
 
 Using NumPy functions
-------------------------
-There are several ways to use Numpy functions directly on StateElements. The easiest case if when you are okay with losing the information pertaining to space. In that case, you can just work with the array directly by casting the stateelement to an array:
+^^^^^^^^^^^^^^^^^^^^^^
+There are several ways to use Numpy functions directly on StateElements. The easiest case is when you are okay with losing the information pertaining to space. In that case, you can just work with the array directly by casting the stateelement to an array:
 
 .. code-block:: python
    :linenos:
@@ -41,13 +50,15 @@ There are several ways to use Numpy functions directly on StateElements. The eas
    # to use numpy.amax, just cast x to an array with x.view(numpy.ndarray)
    max = numpy.amax(x.view(numpy.ndarray))
 
+
+
 If you want to retain space information, there is another way, which depends on which type of Numpy function you want to use.
 
 NumPy universal functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-`Numpy universal functions <https://numpy.org/doc/stable/reference/ufuncs.html>`_ operate on ndarrays element-by-element, and support broad- and type-casting. A list of these functions is found `here <https://numpy.org/doc/stable/reference/ufuncs.html#available-ufuncs>`_. All universal functions should work on StateElement. 
+`Numpy universal functions <https://numpy.org/doc/stable/reference/ufuncs.html>`_ are a collection of functions which operate on ndarrays element-by-element, and support broad- and type-casting. A list of these functions is found `here <https://numpy.org/doc/stable/reference/ufuncs.html#available-ufuncs>`_. All universal functions should work on StateElement. 
 
-For example, addition is supported:
+For example, this example shows addition and equality to be supported, since both a universal functions.
 
 .. literalinclude:: ../../coopihc/examples/simple_examples/stateelement_examples.py
    :language: python
@@ -61,23 +72,31 @@ For example, addition is supported:
 
 .. warning::
 
-   Not all functions are universal functions. For example ``iadd`` (in-place add), called when doing e.g. ``x+=1`` is not.
+   Not all functions are universal functions. For example in-place addition (``numpy.iadd()``, called when doing e.g. ``x += 1``) is not.
 
 
 Using NumPy \_\_array_function\_\_ dispatching
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-For NumPy functions that are not universal functions, you can use NumPy's \_\_array_function\_\_ dispatching mechanism, see `Numpy docs <https://numpy.org/doc/stable/user/basics.dispatch.html>`_. In that case, you actually have to write the function. Once it's written, you can wrap it up in an ``@implements`` decorator, and then it's accessible to all StateElements. In fact, you can even submit a PR to CoopIHC's Github and add it permanently for others to use.
-An example is provided below. Of course it helps to know how NumPy works.
-
+For NumPy functions that are not universal functions, you can apply the function directly on the StateElement. This will issue a ``NumpyFunctionNotHandledWarning``, and will call the numpy function on the StateElement cast as a numpy array. In practice, this is equivalent to the first solution ``numpy.amax(x.view(numpy.ndarray))``, except you didn't cast the StateElement yourself and therefore you are being warned.
 
 .. literalinclude:: ../../coopihc/examples/simple_examples/stateelement_examples.py
    :language: python
    :linenos:
-   :start-after: [start-stateelement-array-function]
-   :end-before: [end-stateelement-array-function]
+   :start-after: [start-stateelement-array-function-not-defined]
+   :end-before: [end-stateelement-array-function-not-defined]
 
+To retain the state information you can use NumPy's \_\_array_function\_\_ dispatching mechanism, see `Numpy docs <https://numpy.org/doc/stable/user/basics.dispatch.html>`_. In that case, you actually have to write the function. Once it's written, you can wrap it up in an ``@implements`` decorator, and then it's accessible to all StateElements. In fact, you can even submit a PR to CoopIHC's Github and add it permanently for others to use.
+An example is provided below. Of course it helps to know how NumPy works.
+The example below shows an imperefect implementation of ``amax``, that only works for continuous spaces and default amax arguments.
 
+.. literalinclude:: ../../coopihc/examples/simple_examples/stateelement_examples.py
+   :language: python
+   :linenos:
+   :start-after: [start-stateelement-array-function-define]
+   :end-before: [end-stateelement-array-function-define]
 
+Other mechanisms
+^^^^^^^^^^^^^^^^^^^
 
 + **You can randomize its values**
     .. literalinclude:: ../../coopihc/examples/simple_examples/stateelement_examples.py
@@ -96,78 +115,28 @@ An example is provided below. Of course it helps to know how NumPy works.
        :end-before: [end-stateelement-iter]
 
 
-+ **You can perform many arithmetic operations, including matrix multiplication**
++ **You can compare them**. This includes a "hard" comparison, which checks if spaces are equal.
 
-    .. literalinclude:: ../../coopihc/examples/simple_examples/stateelement_examples.py
-       :language: python
-       :linenos:
-       :start-after: [start-stateelement-arithmetic]
-       :end-before: [end-stateelement-arithmetic]
+   .. literalinclude:: ../../coopihc/examples/simple_examples/stateelement_examples.py
+         :language: python
+         :linenos:
+         :start-after: [start-stateelement-equal]
+         :end-before: [end-stateelement-equal]
 
-+ **You can perform logical comparisons**
++ **You can extract values with or without spaces**. Extracting the spaces together with the values can be done by a mechanism that abuses the slice notation.
 
-    .. literalinclude:: ../../coopihc/examples/simple_examples/stateelement_examples.py
-       :language: python
-       :linenos:
-       :start-after: [start-stateelement-comp]
-       :end-before: [end-stateelement-comp]
+   .. literalinclude:: ../../coopihc/examples/simple_examples/stateelement_examples.py
+         :language: python
+         :linenos:
+         :start-after: [start-stateelement-getitem]
+         :end-before: [end-stateelement-getitem]
 
-+ **You can perform the cartesian product of its spaces**
+.. + **You can cast values of a StateElement, to and from continuous to and from discrete spaces.**
 
-    .. literalinclude:: ../../coopihc/examples/simple_examples/stateelement_examples.py
-       :language: python
-       :linenos:
-       :start-after: [start-stateelement-cp]
-       :end-before: [end-stateelement-cp]
+..     .. literalinclude:: ../../coopihc/examples/simple_examples/stateelement_examples.py
+..        :language: python
+..        :linenos:
+..        :start-after: [start-stateelement-cast]
+..        :end-before: [end-stateelement-cast]
 
-+ **You can cast values of a StateElement, to and from continuous to and from discrete spaces.**
-
-    .. literalinclude:: ../../coopihc/examples/simple_examples/stateelement_examples.py
-       :language: python
-       :linenos:
-       :start-after: [start-stateelement-cast]
-       :end-before: [end-stateelement-cast]
-
-
-
-
-
-State
-------------
-States are the higher level container used in *CoopIHC*, that can contain either StateElements or other States. They derive from collections.OrderedDict
-
-    + as a result their syntax are identical
-    + the existing methods and operators defined for OrderedDict also work on states (e.g. iteration, keys(), items() etc. possible)
-
-Defining a State is straightforward
-
-.. literalinclude:: ../../coopihc/examples/simple_examples/state_examples.py
-   :language: python
-   :linenos:
-   :start-after: [start-state-init]
-   :end-before: [end-state-init]
-
-States can be initialized to a random values (or forced, like StateElements)
-
-.. literalinclude:: ../../coopihc/examples/simple_examples/state_examples.py
-   :language: python
-   :linenos:
-   :start-after: [start-state-reset]
-   :end-before: [end-state-reset]
-
-States can also be filtered by providing an OrderedDict of items that you would like to retain
-
-.. literalinclude:: ../../coopihc/examples/simple_examples/state_examples.py
-   :language: python
-   :linenos:
-   :start-after: [start-state-filter]
-   :end-before: [end-state-filter]
-
-States can also be serialized to a a dictionnary
-
-.. literalinclude:: ../../coopihc/examples/simple_examples/state_examples.py
-   :language: python
-   :linenos:
-   :start-after: [start-state-serialize]
-   :end-before: [end-state-serialize]
 

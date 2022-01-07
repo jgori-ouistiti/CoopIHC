@@ -5,7 +5,7 @@ from coopihc.policy.BasePolicy import BasePolicy
 class ExamplePolicy(BasePolicy):
     """ExamplePolicy
 
-    A simple policy which assumes that the agent using it has a 'goal' state nd that the task has an 'x' state. x is compared to the goal and appropriate ction is taken to make sure x reaches the goal.
+    A simple policy which assumes that the agent using it has a 'goal' state and that the task has an 'x' state. x is compared to the goal and appropriate action is taken to make sure x reaches the goal.
 
 
     """
