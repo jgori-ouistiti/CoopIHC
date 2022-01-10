@@ -55,7 +55,7 @@ def sort_two_lists(list1, list2, *args, **kwargs):
     return sortedlist1, sortedlist2
 
 
-def isdefined(obj):
-    if None not in flatten(obj):
-        return True
-    return False
+# def isdefined(obj):
+#     if None not in flatten(obj):
+#         return True
+#     return False

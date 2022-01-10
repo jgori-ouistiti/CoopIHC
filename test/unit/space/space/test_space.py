@@ -754,11 +754,23 @@ def test_cartesian_product_mix():
     assert shape == [(1,), (2, 1), (2, 2)]
 
 
+def test_cartesian_product_single():
+    s = Space(
+        numpy.array([0, 1, 2, 3, 4, 5, 6], dtype=numpy.int16),
+        "discrete",
+        contains="soft",
+    )
+    cp, shape = Space.cartesian_product(s)
+    assert (cp == numpy.array([[0], [1], [2], [3], [4], [5], [6]])).all()
+    assert shape == [(1,)]
+
+
 def test_cartesian_product():
     test_cartesian_product_discrete()
     test_cartesian_product_continuous()
     test_cartesian_product_multidiscrete()
     test_cartesian_product_mix()
+    test_cartesian_product_single()
 
 
 def test__getitem__discrete():

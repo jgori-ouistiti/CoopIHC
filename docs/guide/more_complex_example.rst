@@ -1,4 +1,4 @@
-.. more_complex_example:
+.. worked_out_example:
 
 Basic Example
 -----------------

@@ -1,5 +1,6 @@
 import numpy
 from coopihc.policy.BasePolicy import BasePolicy
+from coopihc.space.Space import Space
 
 
 class BadlyDefinedLikelihoodError(Exception):
@@ -33,6 +34,10 @@ class ELLDiscretePolicy(BasePolicy):
     def attach_likelihood_function(self, _function):
         self._bind(_function, "compute_likelihood")
 
+    @staticmethod
+    def test():
+        pass
+
     def sample(self, observation=None):
         """sample
 
@@ -45,7 +50,7 @@ class ELLDiscretePolicy(BasePolicy):
             observation = self.host.inference_engine.buffer[-1]
         actions, llh = self.forward_summary(observation)
         action = actions[self.rng.choice(len(llh), p=llh)]
-        self.action_state["action"] = action
+        self.action_state["action"][:] = action
         return action, 0
 
     def forward_summary(self, observation):
@@ -60,11 +65,13 @@ class ELLDiscretePolicy(BasePolicy):
         """
         llh, actions = [], []
         action_stateelement = self.action_state["action"]
-        for action in action_stateelement.cartesian_product():
+        action_space = action_stateelement.spaces
+
+        for action in Space.cartesian_product(action_space)[0]:
             llh.append(self.compute_likelihood(action, observation))
             actions.append(action)
         ACCEPTABLE_ERROR = 1e-13
-        error = 1 - sum(llh)
+        error = abs(1 - sum(llh))
         if error > ACCEPTABLE_ERROR:
             raise BadlyDefinedLikelihoodError(
                 "Likelihood does not sum to 1: {}".format(llh)
