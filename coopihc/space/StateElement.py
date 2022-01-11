@@ -742,12 +742,19 @@ class StateElement(numpy.ndarray):
                 multidiscrete = False
                 numpy_input_array = [numpy_input_array]
 
+            if spaces.space_type == "continuous" and isinstance(
+                numpy_input_array, numpy.ndarray
+            ):
+                numpy_input_array = numpy.atleast_2d(numpy_input_array)
+                if numpy_input_array.shape[0] == 1:
+                    numpy_input_array = numpy_input_array.reshape(-1, 1)
+
             for ni, (v, s) in enumerate(
                 itertools.zip_longest(numpy_input_array, spaces)
             ):
+
                 # Make sure value is same input type (shape + dtype) as space. Space specs take over value specs.
                 if v is not None:
-
                     v = numpy.array(v).reshape(s.shape).astype(s.dtype)
                     dtype_container.append(s.dtype.type)
                 if v not in s:

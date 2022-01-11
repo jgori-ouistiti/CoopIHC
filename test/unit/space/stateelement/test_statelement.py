@@ -44,6 +44,17 @@ def test_array_init_continuous():
     assert (x == numpy.zeros((2, 2), dtype=numpy.float32)).all()
 
 
+def test_array_init_cont_extra():
+    s = StateElement(
+        numpy.array([1 / 8 for i in range(8)]),
+        autospace(
+            numpy.zeros((1, 8)),
+            numpy.ones((1, 8)),
+        ),
+        out_of_bounds_mode="error",
+    )
+
+
 def test_array_init_multidiscrete():
     global multidiscr_space
     multidiscr_space = multidiscrete_space(
@@ -78,6 +89,7 @@ def test_array_init():
     test_array_init_continuous()
     test_array_init_multidiscrete()
     test_array_short()
+    test_array_init_cont_extra()
 
 
 def test_array_init_error_discrete():
@@ -691,7 +703,6 @@ def test_reset():
     test_reset_multidiscrete()
 
 
-
 def test__setitem__():
     global discr_space
     x = StateElement(1, discr_space)
@@ -731,6 +742,12 @@ def test__getitem__continuous():
             autospace(numpy.array([[-1], [-1]]), numpy.array([[1], [1]])),
         )
     ).all()
+
+    # case below solved by numpy_input_array = numpy.atleast_2d(numpy_input_array)
+    y = StateElement(
+        numpy.array([[0.0, 0.1, 0.2, 0.3]]), autospace([[0, 0, 0, 0]], [[1, 1, 1, 1]])
+    )
+    y[:] = numpy.array([0.8, 0.8, 0.8, 0.8])
 
 
 def test__getitem__multidiscrete():

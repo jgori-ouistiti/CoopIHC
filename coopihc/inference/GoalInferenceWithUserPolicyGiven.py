@@ -35,8 +35,8 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
             self.user_policy_model = None
             return
         if not policy.explicit_likelihood:
-            print(
-                "Warning: This inference engine requires a policy defined by an explicit likelihood"
+            raise AttributeError(
+                "This inference engine requires a policy defined by an explicit likelihood"
             )
         print("Attached policy {} to {}".format(policy, self.__class__.__name__))
         self.user_policy_model = policy
@@ -116,7 +116,6 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
             return draw, fill, symbol
 
         def draw_beliefs(ax):
-            # beliefs = hard_flatten(self.host.state["beliefs"]["values"])
             beliefs = self.host.state["beliefs"].squeeze().tolist()
 
             ticks = []
@@ -144,7 +143,7 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
                 self.ax.set_title(type(self).__name__ + " beliefs")
 
         if "text" in mode:
-            beliefs = hard_flatten(self.host.state["beliefs"]["values"])
+            beliefs = self.host.state["beliefs"].squeeze().tolist()
             print("beliefs", beliefs)
 
     def infer(self):

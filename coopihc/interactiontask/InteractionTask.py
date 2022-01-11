@@ -62,6 +62,13 @@ class InteractionTask(ABC):
         return self.bundle.turn_number
 
     @property
+    def round_number(self):
+        if self.bundle is None:
+            no_bundle_specified = "turn_number accesses the bundle's turn number. self.bundle was None. Is this task part of a bundle?"
+            raise Exception(no_bundle_specified)
+        return self.bundle.round_number
+
+    @property
     def state(self):
         """state
 

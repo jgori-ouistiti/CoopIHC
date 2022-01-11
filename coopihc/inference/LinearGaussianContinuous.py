@@ -72,12 +72,15 @@ class LinearGaussianContinuous(BaseInferenceEngine):
         else:
             y, v = self.provide_likelihood()
 
-        oldmu, oldsigma = state["belief"]["values"]
+        oldmu = state["belief-mu"]
+        oldsigma = state["belief-sigma"]
         new_sigma = numpy.linalg.inv((numpy.linalg.inv(oldsigma) + numpy.linalg.inv(v)))
         newmu = new_sigma @ (
             numpy.linalg.inv(v) @ y.T + numpy.linalg.inv(oldsigma) @ oldmu.T
         )
-        state["belief"]["values"] = [newmu, new_sigma]
+        state["belief-mu"][:] = newmu
+        state["belief-sigma"][:, :] = new_sigma
+
         return state, 0
 
     def render(self, *args, **kwargs):
@@ -105,7 +108,7 @@ class LinearGaussianContinuous(BaseInferenceEngine):
                 self.ax = ax
 
             self.draw_beliefs(ax, dim)
-            mean_belief, std_belief = self.host.state["belief"]["values"]
+            mean_belief = self.host.state["belief-mu"]
             if dim == 1:
                 mean_belief = numpy.array([mean_belief.squeeze().tolist(), 0])
 
@@ -113,7 +116,12 @@ class LinearGaussianContinuous(BaseInferenceEngine):
             self.ax.set_title(type(self).__name__ + " beliefs")
 
         if "text" in mode:
-            print(self.host.state["belief"]["values"])
+            print(
+                "Belief: Mu = {}, Sigma = {}".format(
+                    self.host.state["belief-mu"].view(numpy.ndarray),
+                    self.host.state["belief-sigma"].view(numpy.ndarray),
+                )
+            )
 
     def draw_beliefs(self, ax, dim):
         """draw_beliefs
@@ -125,7 +133,7 @@ class LinearGaussianContinuous(BaseInferenceEngine):
         :param dim: dimension of data
         :type dim: int
         """
-        mu, cov = self.host.state["belief"]["values"]
+        mu, cov = self.host.state["belief-mu"], self.host.state["belief-sigma"]
         print(mu, cov)
         if dim == 2:
             self.patch = self.confidence_ellipse(mu, cov, ax)
@@ -163,8 +171,8 @@ class LinearGaussianContinuous(BaseInferenceEngine):
         ax.plot(
             vec,
             [
-                -0.5 + 0.05 * self.host.bundle.task.round,
-                -0.5 + 0.05 * self.host.bundle.task.round,
+                -0.5 + 0.05 * self.host.bundle.round_number,
+                -0.5 + 0.05 * self.host.bundle.round_number,
             ],
             "-",
             marker="|",

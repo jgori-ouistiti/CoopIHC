@@ -3,8 +3,11 @@ import math
 import copy
 
 from coopihc.space.State import State
+from coopihc.space.Space import Space
 from coopihc.helpers import sort_two_lists
 from coopihc.policy.BasePolicy import BasePolicy
+
+import numpy
 
 # ============= Discrete Policies =================
 
@@ -39,14 +42,21 @@ class BIGDiscretePolicy(BasePolicy):
     :type user_policy_model: ELLDiscretePolicy<coopihc.policy.ELLDiscretePolicy.ELLDiscretePolicy>`
     """
 
-    def __init__(self, assistant_action_state, user_policy_model, *args, **kwargs):
+    def __init__(
+        self, assistant_action_state, user_policy_model, *args, threshold=0.8, **kwargs
+    ):
+        self.threshold = threshold
         super().__init__(*args, action_state=assistant_action_state, **kwargs)
 
-        self.assistant_action_set = self.action_state["action"].cartesian_product()
+        self.assistant_action_set = Space.cartesian_product(
+            self.action_state["action"].spaces
+        )[0]
+
         self.user_policy_model = user_policy_model
-        self.user_action_set = user_policy_model.action_state[
-            "action"
-        ].cartesian_product()
+        self.user_action_set = Space.cartesian_product(
+            user_policy_model.action_state["action"].spaces
+        )[0]
+
         self.user_policy_likelihood_function = user_policy_model.compute_likelihood
 
     def attach_set_theta(self, set_theta):
@@ -54,15 +64,6 @@ class BIGDiscretePolicy(BasePolicy):
 
     def attach_transition_function(self, trans_func):
         self.transition_function = trans_func
-
-    #
-    # def generate_candidate_next_state(self, observation, assistant_action):
-    #     print(observation, assistant_action)
-    #     return candidate_next_state
-    #
-    # def generate_candidate_next_observation(self, candidate_next_state):
-    #     # do something
-    #     return observation
 
     def PYy_Xx(self, user_action, assistant_action, potential_states, beliefs):
         """:math:`P(Y=y|X=x)`
@@ -171,7 +172,7 @@ class BIGDiscretePolicy(BasePolicy):
             potential_states.append(potential_state)
 
         return self.HY__Xx(potential_states, assistant_action, beliefs) - self.HY__OoXx(
-            potential_states, assistant_action, beliefs
+            potential_states, beliefs
         )
 
     def find_best_action(self):
@@ -185,15 +186,18 @@ class BIGDiscretePolicy(BasePolicy):
         :rtype: tuple(list, list)
         """
 
-        beliefs = self.host.state["beliefs"]["values"][0].squeeze().tolist()
-        # hp, hp_target = max(beliefs), targets[beliefs.index(max(beliefs))]
-        # if hp > self.threshold:
-        #     return [hp_target], [None]
-        # else:
-        observation = self.host.inference_engine.buffer[-1]
+        beliefs = self.host.state["beliefs"]
+        index = numpy.argmax(beliefs)
+        hp = beliefs[index]
+        if hp > self.threshold:
+            targets = self.observation["task_state"]["targets"]
+            hp_target = targets[index]
+            return [hp_target], [None]
+        else:
+            observation = self.observation
 
         IG_storage = [
-            self.IG(action, observation, beliefs)
+            self.IG(action, observation, beliefs.squeeze().tolist())
             for action in self.assistant_action_set
         ]
 
@@ -212,5 +216,7 @@ class BIGDiscretePolicy(BasePolicy):
         :rtype: tuple(`StateElement<coopihc.space.StateElement.StateElement>`, float)
         """
         self._actions, self._IG = self.find_best_action()
-        # logger.info('Actions and associated expected information gain:\n{}'.format(tabulate(list(zip(self._actions['values'], self._IG)), headers = ['action', 'Expected Information Gain']) ))
-        return self._actions[0], 0
+        new_action = self.new_action
+        new_action[:] = self._actions[0]
+
+        return new_action, 0

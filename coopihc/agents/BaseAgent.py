@@ -363,7 +363,11 @@ class BaseAgent(ABC):
         :meta private:
         """
         # agent observes the state
+        print("\n========")
+        print(self.bundle.game_state)
         agent_observation, agent_obs_reward = self._observe(self.bundle.game_state)
+        print(dict.__repr__(agent_observation))
+        print(agent_observation)
 
         # Pass observation to InferenceEngine Buffer
         self.inference_engine.add_observation(agent_observation)

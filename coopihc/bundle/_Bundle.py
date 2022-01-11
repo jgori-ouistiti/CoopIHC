@@ -328,6 +328,8 @@ class _Bundle:
 
         self.rendered_mode = mode
         if "text" in mode:
+            print("\n")
+            print("Round number {}".format(self.round_number.squeeze().tolist()))
             print("Task Render")
             self.task.render(mode="text", *args, **kwargs)
             print("User Render")
@@ -345,7 +347,7 @@ class _Bundle:
                     self.axtask,
                     self.axuser,
                     self.axassistant,
-                    mode=mode,
+                    mode="plot",
                     *args,
                     **kwargs,
                 )
@@ -416,7 +418,7 @@ class _Bundle:
 
         if self.active_render_figure:
             plt.close(self.fig)
-            self.active_render_figure = None
+            # self.active_render_figure = None
 
     def _user_first_half_step(self):
         """_user_first_half_step
