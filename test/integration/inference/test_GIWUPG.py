@@ -81,4 +81,17 @@ def test_infer():
     posterior = [1 / 7 * ERROR_RATE for i in range(7)]
     posterior[2] = 1 / 7 * (1 - ERROR_RATE)
     posterior = [p / sum(posterior) for p in posterior]
-    assert numpy.linalg.norm(state["beliefs"] - numpy.array(posterior)) < 1e-6
+    assert (
+        numpy.linalg.norm(
+            state["beliefs"].reshape(
+                -1,
+            )
+            - numpy.array(posterior)
+        )
+        < 1e-6
+    )
+
+
+if __name__ == "__main__":
+    test_init()
+    test_infer()

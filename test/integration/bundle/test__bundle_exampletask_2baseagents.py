@@ -310,7 +310,8 @@ def test_multistep_none():
         new_value = x + user_action + assistant_action
         if new_value >= 4:
             assert is_done == True
-            return
+            assert state["task_state"]["x"] == 4
+            break
         else:
             assert is_done == False
 

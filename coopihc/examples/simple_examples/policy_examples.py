@@ -1,7 +1,7 @@
 from coopihc.policy.ExamplePolicy import ExamplePolicy
 from coopihc.space.StateElement import StateElement
 from coopihc.space.State import State
-from coopihc.policies.ELLDiscretePolicy import ELLDiscretePolicy
+from coopihc.policy.ELLDiscretePolicy import ELLDiscretePolicy
 from coopihc.space.utils import autospace
 
 
