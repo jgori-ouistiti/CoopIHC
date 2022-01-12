@@ -60,6 +60,9 @@ class LinearGaussianContinuous(BaseInferenceEngine):
         :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float)
         """
         observation = self.buffer[-1]
+        print('"\n=======')
+        print(dict.__repr__(observation))
+        print(observation)
         if self.host.role == "user":
             state = observation["user_state"]
         else:

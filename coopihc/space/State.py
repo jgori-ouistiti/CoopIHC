@@ -3,6 +3,7 @@ import json
 from tabulate import tabulate
 import numpy
 import warnings
+import itertools
 
 from coopihc.helpers import flatten
 from coopihc.space.StateElement import StateElement
@@ -71,6 +72,20 @@ class State(dict):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+    def __eq__(self, other):
+        for (key, value), (okey, ovalue) in itertools.zip_longest(
+            self.items(), other.items()
+        ):
+            cond = value == ovalue
+            if not isinstance(cond, bool):
+                try:
+                    cond = cond.all()
+                except:
+                    cond = all(cond)
+            if not (key == okey and cond):
+                return False
+        return True
+
     def reset(self, dic={}):
         """Initialize the state. See StateElement
 
@@ -100,18 +115,6 @@ class State(dict):
         for key, value in self.items():
             reset_dic = dic.get(key)
             value.reset(reset_dic)
-
-    # def _flat(self):
-    #     values = []
-    #     spaces = []
-    #     labels = []
-
-    #     for n, (k, v) in enumerate(self.items()):
-    #         values.append(v._flat())
-    #         spaces.append(v.spaces._flat())
-    #         labels.extend([k + "|" + str(label) for label in range(len(v.spaces))])
-
-    #     return values, spaces, labels
 
     def filter(self, mode="array", filterdict=None):
         """Extract some part of the state information

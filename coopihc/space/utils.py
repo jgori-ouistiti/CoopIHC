@@ -1,4 +1,5 @@
 from coopihc.space.Space import Space
+
 import numpy
 import functools
 import warnings
@@ -787,3 +788,108 @@ class GymForceConvertor(RLConvertor):
             range,
             self.bundle_action_spaces,
         )
+
+
+def example_state():
+    from coopihc.space.State import State
+    from coopihc.space.StateElement import StateElement
+
+    state = State()
+    substate = State()
+    substate["x1"] = StateElement(1, discrete_space([1, 2, 3]))
+    substate["x2"] = StateElement(
+        [1, 2, 3],
+        multidiscrete_space(
+            [
+                [0, 1, 2],
+                [1, 2, 3],
+                [
+                    0,
+                    1,
+                    2,
+                    3,
+                ],
+            ]
+        ),
+    )
+    substate["x3"] = StateElement(
+        1.5 * numpy.ones((3, 3)),
+        continuous_space(numpy.ones((3, 3)), 2 * numpy.ones((3, 3))),
+    )
+
+    substate2 = State()
+    substate2["y1"] = StateElement(1, discrete_space([1, 2, 3]))
+    substate2["y2"] = StateElement(
+        [1, 2, 3],
+        multidiscrete_space(
+            [
+                [0, 1, 2],
+                [1, 2, 3],
+                [
+                    0,
+                    1,
+                    2,
+                    3,
+                ],
+            ]
+        ),
+    )
+    state["sub1"] = substate
+    state["sub2"] = substate2
+    return state
+
+
+def example_game_state():
+    from coopihc.space.State import State
+    from coopihc.space.StateElement import StateElement
+
+    return State(
+        game_info=State(
+            turn_index=StateElement(
+                0, autospace([0, 1, 2, 3]), out_of_bounds_mode="raw"
+            ),
+            round_index=StateElement(1, autospace([0, 1]), out_of_bounds_mode="raw"),
+        ),
+        task_state=State(
+            position=StateElement(
+                2, autospace([0, 1, 2, 3]), out_of_bounds_mode="clip"
+            ),
+            targets=StateElement(
+                [0, 1],
+                autospace([0, 1, 2, 3], [0, 1, 2, 3]),
+                out_of_bounds_mode="warning",
+            ),
+        ),
+        user_state=State(
+            goal=StateElement(0, autospace([0, 1, 2, 3]), out_of_bounds_mode="warning")
+        ),
+        assistant_state=State(
+            beliefs=StateElement(
+                numpy.array(
+                    [
+                        [0.125],
+                        [0.125],
+                        [0.125],
+                        [0.125],
+                        [0.125],
+                        [0.125],
+                        [0.125],
+                        [0.125],
+                    ]
+                ),
+                autospace(
+                    [
+                        [[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]],
+                        [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]],
+                    ]
+                ),
+                out_of_bounds_mode="error",
+            )
+        ),
+        user_action=State(
+            action=StateElement(1, autospace([-1, 0, 1]), out_of_bounds_mode="warning")
+        ),
+        assistant_action=State(
+            action=StateElement(2, autospace([0, 1, 2, 3]), out_of_bounds_mode="error")
+        ),
+    )

@@ -7,17 +7,14 @@ The internal states of users and assistants are expected to evolve over time, na
 
 To account for this, *CoopIHC* provides an inference engine, which updates agent's internal states from their observations.
 
-All inference engines are obtained by subclassing the base class ``InferenceEngine``. This inference engine provides a buffer and an API used by bundles to add observations to the engine.
+All inference engines are obtained by subclassing the base class ``BaseInferenceEngine``. 
 
 
 
-
-.. _base-inference-engine-label:
-
-The ``InferenceEngine``
+The ``BaseInferenceEngine``
 ---------------------------
 
-The buffer that is maintained by the inference engine is a simple FIFO buffer, see below. The buffer depth parameter equals the number of observations that are stored. The example below has a ``buffer_depth=10``.
+The buffer that is maintained by the base inference engine is a simple FIFO buffer, see below. The buffer depth parameter equals the number of observations that are stored. The example below has a ``buffer_depth=10``.
 
 .. tikz:: Inference Engine Buffer
     :include: tikz/inference_engine.tikz
@@ -27,23 +24,11 @@ The buffer that is maintained by the inference engine is a simple FIFO buffer, s
 
 Observations are added to the inference engine's buffer by the bundle, who calls the engine's ``add_observation`` method.
 
-.. note::
-
-    The flattened observations are stored in the buffer.
-
-.. note::
-
-    Default observation values for the buffer can be indicated using the ``init_value`` parameter
-
-.. note::
-
-    not tested, I think the flattening is not performed now.
-
 
 List of inference engines (ongoing)
 ------------------------------------
 
-* ``GoalInferenceWithUserModelGiven`` (GIWOMG) [link]:  An Inference Engine used by an assistant to infer the goal of an assistant. It assumes that the user chooses as goal one of the targets of the task, stored in the 'Targets' substate of the task. It is also assumed that the assistant has an internal state 'Beliefs'. The inference is based on a discrete Bayes update, where the likelihood comes from an user_model which has to be provided to this engine.
+* ``GoalInferenceWithUserModelGiven`` (GIWUMG) [link]:  An Inference Engine used by an assistant to infer the goal of an assistant. It assumes that the user chooses as goal one of the targets of the task, stored in the 'Targets' substate of the task. It is also assumed that the assistant has an internal state 'Beliefs'. The inference is based on a discrete Bayes update, where the likelihood comes from an user_model which has to be provided to this engine.
 
 
 
@@ -51,7 +36,7 @@ List of inference engines (ongoing)
 
 .. note::
 
-    Currently the covariance matrix for the likelihood is assumed to be contained by the host as self.Sigma. Change this.
+    Currently the covariance matrix for the likelihood is assumed to be contained by the host as self.Sigma. 
 
 The following table summarizes the inference engines implemented.
 
@@ -59,11 +44,11 @@ The following table summarizes the inference engines implemented.
 ======= ==============  ==========  ======  ===================================
 Engine      Discrete    Continuous  Method   user model has to be provided?
 ======= ==============  ==========  ======  ===================================
-GIWOMG          ✔️                   Bayes                  ✔️
+GIWUMG          ✔️                   Bayes                  ✔️
 CG                          ✔️       Bayes                 (✔️)
 ======= ==============  ==========  ======  ===================================
 
-``GoalInferenceWithUserModelGiven`` (GIWOMG)
+``GoalInferenceWithUserModelGiven`` (GIWUMG)
 """"""""""""""""""""""""""""""""""""""""""""""""""""
 Bayesian updating in the discrete case.
 Computes for each target :math:`\theta` the associated posterior probability, given an observation :math:`x` and the last user action :math:`y`:
@@ -71,6 +56,35 @@ Computes for each target :math:`\theta` the associated posterior probability, gi
 .. math::
 
     P(\Theta = \theta | X=x, Y=y) = \frac{p(Y = y | \Theta = \theta, X=x)}{\sum_{\Theta} p(Y=y|\Theta = \theta, X=x)} P(\Theta = \theta).
+
+This inference engine expects the likelihood model :math:`p(Y = y | \Theta = \theta, X=x)` to be supplied:
+
+.. code-block:: python
+
+    # Define the likelihood model for the user policy
+    # user_policy_model = XXX
+
+    inference_engine = GoalInferenceWithUserPolicyGiven()
+    # Attach it to the engine
+    inference_engine.attach_policy(user_policy_model)
+
+It also expects that the set of :math:`\theta`'s is supplied:
+
+.. code-block:: python
+
+    set_theta = [
+        {
+            ("user_state", "goal"): StateElement(
+                t,
+                discrete_space(numpy.array(list(range(self.bundle.task.gridsize)))),
+            )
+        }
+        for t in self.bundle.task.state["targets"]
+    ]
+
+    inference_engine.attach_set_theta(set_theta)
+
+You can find a full worked-out example in CoopIHC-Zoo's pointing module.
 
 
 ``ContinuousGaussian`` (CG)

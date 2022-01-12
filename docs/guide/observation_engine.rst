@@ -10,95 +10,181 @@ In an interactive setting, states are rarely perfectly observable by the various
 
 Furthermore, there might be a cost associated with making observations:
 
-    * A human observer may take some time to locate a target. Usually, there will be a tradeoff between the time needed to produce and observation and the quality of that observation (speed-accuracy tradeoff)
-    * A human observer may enjoy making observations which are very different (according to some criterion) to the previous ones, in which case it would be rewarded for satisfying its curiosity
+    * For example, there can be a tradeoff between the time needed to produce an observation and its quality: Precise observations may be costly (in terms of time).
+    * A human observer may enjoy making observations which are very different (according to some criterion) to the previous ones, in which case it would be rewarded for differing observations, satisfying its curiosity.
 
-*CoopIHC* provides a generic object called an observation engine which specifies how an observation is created from the game state. Each substate of the game state can be addressed specifically. For example, in the example below, the observation engine is defined in a way that it will not observe the first substate, that it will have a noisy observation of the second substate, and that it will perfectly observe the remainder of the state.
+*CoopIHC* provides a generic object called an observation engine which specifies how an observation is created from the game state. To create a new observation engine, you can use an existing observation engine or subclass the ``BaseObservationEngine``.
+
+
+Subclassing ``BaseObservationEngine``
+--------------------------------------
+
+Only the ``observe`` method has to be redefined:
+
+.. literalinclude:: ../../coopihc/observation/ExampleObservationEngine.py
+   :language: python
+   :linenos:
+   :start-after: [start-obseng-subclass]
+   :end-before: [end-obseng-subclass]
+
+.. note::
+
+    The signature ``observe(self, game_state=None)`` is expected. When called with ``game_state = None``, the engine will fetch the agent's observation. If the game state is actually passed, it will user the input state as basis to produce the observation. This is useful e.g. when testing your engine and you want to control the input.
+
+
+RuleObservationEngine
+------------------------
+This observation engine is specified by rules regarding each particular substate, using a so called mapping.
+
+.. code-block:: python
+
+    obs_eng = RuleObservationEngine(mapping=mapping)
+    obs, reward = obs_eng.observe(game_state=example_game_state())
+
+For example, in the example below, the observation engine is defined in a way that it will not observe the first substate, that it will have a noisy observation of the second substate, and that it will perfectly observe the remainder of the state.
 
 .. tikz:: The observation engine
     :include: tikz/observation_engine.tikz
     :xscale: 100
     :align: center
 
-
-The ``Observation Engine`` class
----------------------------------
-The Observation Engine class is the Base class from which all Observation Engines are derived. It provides nothing but a type attribute and an observe method. This method is redefined in the observation engines derived from this base class.
-
-*CoopIHC* currently provide three observation engines:
-
-1. ``RuleObservationEngine`` [link], which produces perfect observations on the substates targeted by the 'rule'.
-2. ``NoisyRuleObservationEngine`` [link], which produces perfect and/or noisy observations on the substates targeted by a 'rule' and some 'noiserules'
-3. ``ProcessObservationEngine`` [link], which produces observations by having a 'process' start from the game state and finish at another state. The intent of this engine is to use a run of a fully functioning bundle to produce observations e.g. the ``ChenEyePointingTask`` [link] from the eye module.
-
-
-.. _rule-observation-engine-label:
-
-The ``RuleObservationEngine``
----------------------------------
- A rule observation engine is initialized with a rule e.g.
+A mapping is any iterable where an item is:
 
 .. code-block:: python
 
-    observation_engine = RuleObservationEngine(BaseUserObservationRule)
+    (substate, subsubstate, _slice, _func, _args, _nfunc, _nargs)
 
-A rule is an ``OrderedDict``, see e.g. the ``BaseUserObservationRule``
+The elements in this mapping are applied to create a particular component of the observation space, as follows
 
 .. code-block:: python
 
-    BaseUserObservationRule = OrderedDict([('b_state', 'all'), ('task_state', 'all'), ('user_state', 'all'), ('assistant_state', None) ])
+    observation_component = _nfunc(_func(state[substate][subsubstate][_slice], _args), _nargs)
+
+which are then collected to form an observed state. For example, a valid mapping for the ``example_game_state`` mapping that states that everything should be observed except the game information is as follows:
+
+.. code-block:: python
+
+    from coopihc.space.utils import example_game_state
+    print(example_game_state())
+
+    # Define mapping
+    mapping = [
+        ("task_state", "position", slice(0, 1, 1), None, None, None, None),
+        ("task_state", "targets", slice(0, 2, 1), None, None, None, None),
+        ("user_state", "goal", slice(0, 1, 1), None, None, None, None),
+        ("assistant_state", "beliefs", slice(0, 8, 1), None, None, None, None),
+        ("user_action", "action", slice(0, 1, 1), None, None, None, None),
+        ("assistant_action", "action", slice(0, 1, 1), None, None, None, None),
+    ]
+
+    # Apply mapping
+    obseng = RuleObservationEngine(mapping=mapping)
+    obseng.observe(example_game_state())
+
+As a more complex example, suppose we want to have an observation engine that behaves as above, but which doubles the observation on the ("user_state", "goal") StateElement. We also want to have a noisy observation of the ("task_state", "position") StateElement. We would need the following mapping:
+
+.. code-block:: python
+
+    def f(observation, gamestate, *args):
+        gain = args[0]
+        return gain * observation
+
+    def g(observation, gamestate, *args):
+        return random.randint(0, 1) + observation
+
+    mapping = [
+        ("task_state", "position", slice(0, 1, 1), None, None, g, ()),
+        ("task_state", "targets", slice(0, 2, 1), None, None, None, None),
+        ("user_state", "goal", slice(0, 1, 1), f, (2,), None, None),
+        ("user_action", "action", slice(0, 1, 1), None, None, None, None),
+        ("assistant_action", "action", slice(0, 1, 1), None, None, None, None),
+    ]
+
+.. note::
+
+    It is important to respect the signature of the functions you pass in the mapping (viz. f and g's signatures).
 
 
-Values in the ordered dictionnary may be
+Typing out a mapping may be a bit laborious and hard to comprehend for collaborators; there are some shortcuts that make defining this engine easier.
 
-* 'all', in which case the whole substate is observed
-* None, in which case none of the substate is observed
-* [deprecated] a slice object, in which case the corresponding slice of the state is extracted.
+Example usage:
+
+.. code-block:: python
+
+    obs_eng = RuleObservationEngine(
+        deterministic_specification=engine_specification,
+        extradeterministicrules=extradeterministicrules,
+        extraprobabilisticrules=extraprobabilisticrules,
+    )
+
+There are three types of rules:
+
+1. Deterministic rules, which specify at a high level which states are observable or not, e.g.
+
+.. code-block :: python
+
+    engine_specification = [
+            ("turn_index", "all"),
+            ("task_state", "targets", slice(0, 1, 1)),
+            ("user_state", "all"),
+            ("assistant_state", None),
+            ("user_action", "all"),
+            ("assistant_action", "all"),
+        ]
+
+2. Extra deterministic rules, which add some specific rules to specific substates
+
+.. code-block:: python
+
+    def f(observation, gamestate, *args):
+        gain = args[0]
+        return gain * observation
+
+    f_rule = {("user_state", "goal"): (f, (2,))}
+    extradeterministicrules = {}
+    extradeterministicrules.update(f_rule)
+
+3. Extra probabilistic rules, which are used to e.g. add noise
+
+.. code-block :: python
+
+    def g(observation, gamestate, *args):
+        return random.random() + observation
+
+    g_rule = {("task_state", "position"): (g, ())}
+    extraprobabilisticrules = {}
+    extraprobabilisticrules.update(g_rule)
+
+
+
+
+
+.. warning ::
+
+    This observation engine handles deep copies, to make sure operations based on observations don't mess up the actual states. This might be slow though. If you want to get around this, you could subclass the RuleObservationEngine to remove copies.
+
+
+
+
 
 Several rules are predefined:
 
-==============================  =================  ============== ================= ====================
-Rule name                           Bundle state    Task state      User state      Assistant state
-==============================  =================  ============== ================= ====================
-OracleObservationRule               ✔️                      ✔️              ✔️                  ✔️
-BaseBlindRule                       ✔️                      ❌               ❌               ❌
-TaskObservationRule                 ✔️                      ✔️              ❌               ❌
-BaseUserObservationRule         ✔️                      ✔️              ✔️              ❌
-BaseAssistantObservationRule        ✔️                  ✔️                 ❌                 ✔️
-==============================  =================  ============== ================= ====================
++----------------+------------+-------------+-------------+------------------+--------------+-------------------+--------------------------------------+
+| Rule Name      | Game Info  | Task State  | User State  | Assistant State  | User Action  | Assistant Action  | Full name                            |
++================+============+=============+=============+==================+==============+===================+======================================+
+| Oracle         | |tick|     | |tick|      | |tick|      | |tick|           | |tick|       | |tick|            | oracle_engine_specification          |
++----------------+------------+-------------+-------------+------------------+--------------+-------------------+--------------------------------------+
+| Blind          | |tick|     | |cross|     | |cross|     | |cross|          | |tick|       | |tick|            | blind_engine_specification           |
++----------------+------------+-------------+-------------+------------------+--------------+-------------------+--------------------------------------+
+| BaseTask       | |tick|     | |tick|      | |cross|     | |cross|          | |tick|       | |tick|            | base_task_engine_specification       |
++----------------+------------+-------------+-------------+------------------+--------------+-------------------+--------------------------------------+
+| BaseUser       | |tick|     | |tick|      | |tick|      | |cross|          | |tick|       | |tick|            | base_user_engine_specification       |
++----------------+------------+-------------+-------------+------------------+--------------+-------------------+--------------------------------------+
+| BaseAssistant  | |tick|     | |tick|      | |cross|     | |tick|           | |tick|       | |tick|            | base_assistant_engine_specification  |
++----------------+------------+-------------+-------------+------------------+--------------+-------------------+--------------------------------------+
 
 
-.. note::
 
-    While it may be tempting to reduce the size of the observation if some substates are not relevant, it is usually better to do this later directly from the bundle. For example, to remove the substates irrelevant for training the ``Train`` wrapper provides the ``squeeze_output()`` [link]  method.
+.. |tick| unicode:: U+2705 .. tick sign
+.. |cross| unicode:: U+274C .. cross sign
 
-.. note::
-
-    TODO: this solution doesn't work anymore with slices
-
-The ``NoisyRuleObservationEngine``
--------------------------------------
-
-The noisy rule observation engine subclasses a rule observation engine. In addition to the 'rule', it expects a list of noiserules, which specify methods to add noise.
-
-A noiserule is a tuple (substate, subsubstate, index, method). For example, the noiserule below specifies to apply the method numpy.random.random to ``game_state['task_state']['Targets'][0]``
-
-.. code-block:: python
-
-    noiserule = ('task_state', 'Targets', 0, numpy.random.random)
-
-
-A noisy rule observation engine can initialized like so:
-
-.. code-block:: python
-
-    noiserules = [('task_state', 'Targets', 0, numpy.random.random)]
-    observation_engine = NoisyRuleObservationEngine(BaseUserObservationRule, noiserules)
-
-The ``ProcessObservationEngine``
-------------------------------------
-.. note::
-
-    TODO: The intent of this engine is to use a run of a fully functioning bundle to produce observations. For example, the eye module can be used as an observation process to detect a target in a layout. The number of turns required to locate the target (i.e. time it takes to locate the target) is returned via the rewards.
-
-This is still work in progress.
