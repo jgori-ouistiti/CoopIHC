@@ -17,7 +17,6 @@ class CascadedObservationEngine(BaseObservationEngine):
     def __init__(self, engine_list, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.engine_list = engine_list
-        # self.type = "multi"
 
     def __content__(self):
         """__content__

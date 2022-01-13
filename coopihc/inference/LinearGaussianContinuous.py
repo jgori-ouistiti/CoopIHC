@@ -16,19 +16,12 @@ class LinearGaussianContinuous(BaseInferenceEngine):
     :type likelihood_binding: function
     """
 
-    def __init__(self, likelihood_binding, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
 
         super().__init__()
         self.render_tag = ["text", "plot"]
 
-        self.bind(likelihood_binding, "provide_likelihood")
-
-    def provide_likelihood(self):
-        raise NotImplementedError(
-            "You should bind a method named 'provide_likelihood' to this inference engine"
-        )
-
-    def infer(self):
+    def infer(self, user_state=None):
         """infer
 
         Update the Gaussian beliefs: assuming a Gaussian noisy observation model:
@@ -59,32 +52,36 @@ class LinearGaussianContinuous(BaseInferenceEngine):
         :return: (new internal state, reward)
         :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float)
         """
-        observation = self.buffer[-1]
-        print('"\n=======')
-        print(dict.__repr__(observation))
-        print(observation)
-        if self.host.role == "user":
-            state = observation["user_state"]
-        else:
-            state = observation["assistant_state"]
+        if user_state is None:
+            observation = self.observation
+            if self.host.role == "user":
+                user_state = observation["user_state"]
+            else:
+                user_state = observation["assistant_state"]
 
-        if self.provide_likelihood is None:
-            print(
-                "Please call attach_yms() method before. You have to specify which components of the states constitute the observation that is used to update the beliefs."
-            )
-        else:
-            y, v = self.provide_likelihood()
+        # Likelihood model
+        y, v = user_state["y"].view(numpy.ndarray), user_state["Sigma_0"].view(
+            numpy.ndarray
+        )
+        # Prior
+        oldmu, oldsigma = user_state["belief-mu"].view(numpy.ndarray), user_state[
+            "belief-sigma"
+        ].view(numpy.ndarray)
 
-        oldmu = state["belief-mu"]
-        oldsigma = state["belief-sigma"]
+        print(y, (y).shape)
+        print(v, (v).shape)
+        print(oldmu, (oldmu).shape)
+        print(oldsigma, oldsigma.shape)
+
+        # Posterior
         new_sigma = numpy.linalg.inv((numpy.linalg.inv(oldsigma) + numpy.linalg.inv(v)))
         newmu = new_sigma @ (
-            numpy.linalg.inv(v) @ y.T + numpy.linalg.inv(oldsigma) @ oldmu.T
+            numpy.linalg.inv(v) @ y + numpy.linalg.inv(oldsigma) @ oldmu
         )
-        state["belief-mu"][:] = newmu
-        state["belief-sigma"][:, :] = new_sigma
+        user_state["belief-mu"][:] = newmu
+        user_state["belief-sigma"][:, :] = new_sigma
 
-        return state, 0
+        return user_state, 0
 
     def render(self, *args, **kwargs):
         """render

@@ -271,6 +271,10 @@ class _Bundle:
                 if is_done:
                     return self.game_state, rewards, is_done
 
+            elif self.turn_number == 2 and "no-assistant" in self.kwargs.get("name"):
+                print("\n==============yes\n================")
+                self.round_number = self.round_number + 1
+
             # Assistant observes and infers
             elif self.turn_number == 2 and "no-assistant" not in self.kwargs.get(
                 "name"

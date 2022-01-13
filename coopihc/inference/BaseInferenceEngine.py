@@ -103,7 +103,7 @@ class BaseInferenceEngine:
         setattr(self, as_name, bound_method)
         return bound_method
 
-    def infer(self):
+    def infer(self, user_state=None):
         """infer
 
         The main method of this class. Return the new value of the internal state of the agent, as well as the reward associated with inferring the state. By default, this inference engine does nothing, and just returns the state with a null reward.
@@ -112,6 +112,8 @@ class BaseInferenceEngine:
         :return: (new internal state, reward)
         :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float)
         """
+        if user_state is not None:
+            return user_state, 0
         # do something with information inside buffer
         if self.host.role == "user":
             try:

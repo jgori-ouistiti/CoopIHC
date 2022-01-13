@@ -206,6 +206,7 @@ class RuleObservationEngine(BaseObservationEngine):
             if _nfunc:
                 if _nargs:
                     _obs = _nfunc(_obs, game_state, *_nargs)
+
                 else:
                     _obs = _nfunc(_obs, game_state)
 
@@ -293,4 +294,5 @@ class RuleObservationEngine(BaseObservationEngine):
                     )
                 elif isinstance(_slice, slice):
                     mapping.append((substate, subsubstate, _slice, f, a, g, b))
+
         return mapping

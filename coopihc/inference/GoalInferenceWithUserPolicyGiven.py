@@ -146,7 +146,7 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
             beliefs = self.host.state["beliefs"].squeeze().tolist()
             print("beliefs", beliefs)
 
-    def infer(self):
+    def infer(self, user_state=None):
         """infer
 
         Update the substate 'beliefs' from the internal state. Generate candidate observations for each potential target, evaluate its likelihood and update the prior to form the posterior. Normalize the posterior and return the new state.
@@ -159,10 +159,11 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
             raise RuntimeError(
                 "This inference engine requires a likelihood-based model of an user policy to function."
             )
+        if user_state is None:
+            observation = self.buffer[-1]
+            user_state = observation["assistant_state"]
 
-        observation = self.buffer[-1]
-        state = observation["assistant_state"]
-        old_beliefs = state["beliefs"].squeeze().tolist()
+        old_beliefs = user_state["beliefs"].squeeze().tolist()
         user_action = observation["user_action"]["action"]
 
         for nt, t in enumerate(self.set_theta):
@@ -186,5 +187,5 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
             )
             old_beliefs = [1 for i in old_beliefs]
         new_beliefs = [i / sum(old_beliefs) for i in old_beliefs]
-        state["beliefs"][:] = numpy.array(new_beliefs)
-        return state, 0
+        user_state["beliefs"][:] = numpy.array(new_beliefs)
+        return user_state, 0
