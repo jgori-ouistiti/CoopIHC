@@ -4,6 +4,7 @@ coopihc package."""
 from coopihc.observation.RuleObservationEngine import RuleObservationEngine
 from coopihc.space.utils import example_game_state
 import random
+import pytest
 
 
 def test_imports():
@@ -375,6 +376,9 @@ def test_apply_mapping():
     test_apply_deterministic_all_mapping_extradeterministic_extraprobabilistic()
 
 
+# =========================== Shortcuts ==================
+
+
 def test_oracle():
     from coopihc.observation.utils import oracle_engine_specification
 
@@ -386,20 +390,79 @@ def test_oracle():
     assert obs == gamestate
 
 
+def test_blind():
+    from coopihc.observation.utils import blind_engine_specification
+
+    obs_eng = RuleObservationEngine(
+        deterministic_specification=blind_engine_specification
+    )
+    gamestate = example_game_state()
+    obs, reward = obs_eng.observe(game_state=gamestate)
+    del gamestate["task_state"]
+    del gamestate["user_state"]
+    del gamestate["assistant_state"]
+    assert obs == gamestate
+
+
+def test_basetask():
+    from coopihc.observation.utils import base_task_engine_specification
+
+    obs_eng = RuleObservationEngine(
+        deterministic_specification=base_task_engine_specification
+    )
+    gamestate = example_game_state()
+    obs, reward = obs_eng.observe(game_state=gamestate)
+    del gamestate["user_state"]
+    del gamestate["assistant_state"]
+    assert obs == gamestate
+
+
+def test_baseuser():
+    from coopihc.observation.utils import base_user_engine_specification
+
+    obs_eng = RuleObservationEngine(
+        deterministic_specification=base_user_engine_specification
+    )
+    gamestate = example_game_state()
+    obs, reward = obs_eng.observe(game_state=gamestate)
+    del gamestate["assistant_state"]
+    assert obs == gamestate
+
+
+def test_baseassistant():
+    from coopihc.observation.utils import base_assistant_engine_specification
+
+    obs_eng = RuleObservationEngine(
+        deterministic_specification=base_assistant_engine_specification
+    )
+    gamestate = example_game_state()
+    obs, reward = obs_eng.observe(game_state=gamestate)
+    del gamestate["user_state"]
+    assert obs == gamestate
+
+
 def test_preimplemented_rules():
     test_oracle()
+    test_blind()
+    test_basetask()
+    test_baseuser()
+    test_baseassistant()
 
 
-# def test_observe():
-#     obseng = BaseObservationEngine()
-#     with pytest.raises(AttributeError):
-#         obseng.observe()
-#     from coopihc.space.utils import example_state
+def test_observe():
+    # Default to basetask engine
+    obseng = RuleObservationEngine()
+    with pytest.raises(AttributeError):
+        obseng.observe()
+    from coopihc.space.utils import example_game_state
 
-#     _example_state = example_state()
-#     obs = obseng.observe(_example_state)
-#     # Check equality on repr --- imperfect
-#     assert obs[0].__repr__() == _example_state.__repr__()
+    _example_state = example_game_state()
+    obs = obseng.observe(_example_state)[0]  # remove reward
+    del _example_state["user_state"]
+    del _example_state["assistant_state"]
+
+    assert obs == _example_state
+
 
 # +----------------------+
 # +        MAIN          +
@@ -408,4 +471,5 @@ if __name__ == "__main__":
     test_observationengine()
     test_create_mapping()
     test_apply_mapping()
-    # test_observe()
+    test_preimplemented_rules()
+    test_observe()

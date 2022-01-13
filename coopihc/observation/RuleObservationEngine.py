@@ -90,7 +90,7 @@ class RuleObservationEngine(BaseObservationEngine):
     .. code-block :: python
 
         engine_specification = [
-            ("turn_index", "all"),
+            ("game_info", "all"),
             ("task_state", "targets", slice(0, 1, 1)),
             ("user_state", "all"),
             ("assistant_state", None),
@@ -192,9 +192,9 @@ class RuleObservationEngine(BaseObservationEngine):
             _nfunc,
             _nargs,
         ) in self.mapping:
+
             if observation.get(substate) is None:
                 observation[substate] = State()
-
             _obs = copy.copy((game_state[substate][subsubstate][_slice]))
             if _func:
                 if _args:

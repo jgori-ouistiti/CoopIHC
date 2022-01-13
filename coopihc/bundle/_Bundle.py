@@ -194,7 +194,7 @@ class _Bundle:
 
         self.round_number[:] = 0
 
-        self.turn_number = turn
+        self.turn_number[:] = turn
 
         if turn == 0:
             return self.game_state

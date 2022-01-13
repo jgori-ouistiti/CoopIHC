@@ -124,7 +124,7 @@ There are three types of rules:
 .. code-block :: python
 
     engine_specification = [
-            ("turn_index", "all"),
+            ("game_info", "all"),
             ("task_state", "targets", slice(0, 1, 1)),
             ("user_state", "all"),
             ("assistant_state", None),

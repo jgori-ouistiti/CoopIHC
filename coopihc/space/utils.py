@@ -846,9 +846,11 @@ def example_game_state():
     return State(
         game_info=State(
             turn_index=StateElement(
-                0, autospace([0, 1, 2, 3]), out_of_bounds_mode="raw"
+                numpy.array([0]), autospace([0, 1, 2, 3]), out_of_bounds_mode="raw"
             ),
-            round_index=StateElement(1, autospace([0, 1]), out_of_bounds_mode="raw"),
+            round_index=StateElement(
+                numpy.array([1]), autospace([0, 1]), out_of_bounds_mode="raw"
+            ),
         ),
         task_state=State(
             position=StateElement(
