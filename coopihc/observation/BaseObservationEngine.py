@@ -31,7 +31,7 @@ class BaseObservationEngine:
         returns the last observation
 
         :return: last observation
-        :rtype: `State<coopihc.space.State.State`
+        :rtype: :py:class:`State <coopihc.space.State.State>`
         """
         try:
             return self.host.inference_engine.buffer[-1]
@@ -45,7 +45,7 @@ class BaseObservationEngine:
         returns the last action
 
         :return: last action
-        :rtype: `State<coopihc.space.State.State`
+        :rtype: :py:class:`State<coopihc.space.State.State>`
         """
         try:
             return self.host.policy.action_state["action"]
@@ -66,9 +66,9 @@ class BaseObservationEngine:
             deepcopy mechanisms is extremely slow
 
         :param game_state: game state
-        :type game_state: `State<coopihc.space.State.State`
+        :type game_state: :py:class:`State<coopihc.space.State.State>`
         :return: observation, obs reward
-        :rtype: tuple(`State<coopihc.space.State.State`, float)
+        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float)
         """
         if game_state is None:
             game_state = self.host.bundle.game_state

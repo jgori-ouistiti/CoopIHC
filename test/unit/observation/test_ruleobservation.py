@@ -74,7 +74,7 @@ def test_observationengine():
 def test_create_deterministic_all_mapping():
 
     engine_specification = [
-        ("turn_index", "all"),
+        ("game_info", "all"),
         ("task_state", "all"),
         ("user_state", "all"),
         ("assistant_state", "all"),
@@ -85,6 +85,8 @@ def test_create_deterministic_all_mapping():
     obs_eng = RuleObservationEngine(deterministic_specification=engine_specification)
     mapping = obs_eng.create_mapping(example_game_state())
     assert mapping == [
+        ("game_info", "turn_index", slice(0, 1, 1), None, None, None, None),
+        ("game_info", "round_index", slice(0, 1, 1), None, None, None, None),
         ("task_state", "position", slice(0, 1, 1), None, None, None, None),
         ("task_state", "targets", slice(0, 2, 1), None, None, None, None),
         ("user_state", "goal", slice(0, 1, 1), None, None, None, None),
@@ -98,7 +100,7 @@ def test_create_deterministic_all_mapping():
 def test_create_deterministic_all_mapping_remove_one():
 
     engine_specification = [
-        ("turn_index", "all"),
+        ("game_info", "all"),
         ("task_state", "all"),
         ("user_state", "all"),
         ("assistant_state", None),
@@ -109,6 +111,8 @@ def test_create_deterministic_all_mapping_remove_one():
     obs_eng = RuleObservationEngine(deterministic_specification=engine_specification)
     mapping = obs_eng.create_mapping(example_game_state())
     assert mapping == [
+        ("game_info", "turn_index", slice(0, 1, 1), None, None, None, None),
+        ("game_info", "round_index", slice(0, 1, 1), None, None, None, None),
         ("task_state", "position", slice(0, 1, 1), None, None, None, None),
         ("task_state", "targets", slice(0, 2, 1), None, None, None, None),
         ("user_state", "goal", slice(0, 1, 1), None, None, None, None),
@@ -119,7 +123,7 @@ def test_create_deterministic_all_mapping_remove_one():
 
 def test_create_deterministic_all_mapping_remove_subsubstate():
     engine_specification = [
-        ("turn_index", "all"),
+        ("game_info", "all"),
         ("task_state", "targets"),
         ("user_state", "all"),
         ("assistant_state", None),
@@ -129,6 +133,8 @@ def test_create_deterministic_all_mapping_remove_subsubstate():
     obs_eng = RuleObservationEngine(deterministic_specification=engine_specification)
     mapping = obs_eng.create_mapping(example_game_state())
     assert mapping == [
+        ("game_info", "turn_index", slice(0, 1, 1), None, None, None, None),
+        ("game_info", "round_index", slice(0, 1, 1), None, None, None, None),
         ("task_state", "targets", slice(0, 2, 1), None, None, None, None),
         ("user_state", "goal", slice(0, 1, 1), None, None, None, None),
         ("user_action", "action", slice(0, 1, 1), None, None, None, None),
@@ -138,7 +144,7 @@ def test_create_deterministic_all_mapping_remove_subsubstate():
 
 def test_create_deterministic_all_mapping_remove_subsubstate_slice():
     engine_specification = [
-        ("turn_index", "all"),
+        ("game_info", "all"),
         ("task_state", "targets", slice(0, 1, 1)),
         ("user_state", "all"),
         ("assistant_state", None),
@@ -148,6 +154,8 @@ def test_create_deterministic_all_mapping_remove_subsubstate_slice():
     obs_eng = RuleObservationEngine(deterministic_specification=engine_specification)
     mapping = obs_eng.create_mapping(example_game_state())
     assert mapping == [
+        ("game_info", "turn_index", slice(0, 1, 1), None, None, None, None),
+        ("game_info", "round_index", slice(0, 1, 1), None, None, None, None),
         ("task_state", "targets", slice(0, 1, 1), None, None, None, None),
         ("user_state", "goal", slice(0, 1, 1), None, None, None, None),
         ("user_action", "action", slice(0, 1, 1), None, None, None, None),
@@ -157,7 +165,7 @@ def test_create_deterministic_all_mapping_remove_subsubstate_slice():
 
 def test_create_deterministic_all_mapping_extradeterministic():
     engine_specification = [
-        ("turn_index", "all"),
+        ("game_info", "all"),
         ("task_state", "all"),
         ("user_state", "all"),
         ("assistant_state", None),
@@ -179,6 +187,8 @@ def test_create_deterministic_all_mapping_extradeterministic():
     )
     mapping = obs_eng.create_mapping(example_game_state())
     assert mapping == [
+        ("game_info", "turn_index", slice(0, 1, 1), None, None, None, None),
+        ("game_info", "round_index", slice(0, 1, 1), None, None, None, None),
         ("task_state", "position", slice(0, 1, 1), None, None, None, None),
         ("task_state", "targets", slice(0, 2, 1), None, None, None, None),
         ("user_state", "goal", slice(0, 1, 1), f, (2,), None, None),
@@ -189,7 +199,7 @@ def test_create_deterministic_all_mapping_extradeterministic():
 
 def test_create_deterministic_all_mapping_extradeterministic_extraprobabilistic():
     engine_specification = [
-        ("turn_index", "all"),
+        ("game_info", "all"),
         ("task_state", "all"),
         ("user_state", "all"),
         ("assistant_state", None),
@@ -219,6 +229,8 @@ def test_create_deterministic_all_mapping_extradeterministic_extraprobabilistic(
     )
     mapping = obs_eng.create_mapping(example_game_state())
     assert mapping == [
+        ("game_info", "turn_index", slice(0, 1, 1), None, None, None, None),
+        ("game_info", "round_index", slice(0, 1, 1), None, None, None, None),
         ("task_state", "position", slice(0, 1, 1), None, None, g, ()),
         ("task_state", "targets", slice(0, 2, 1), None, None, None, None),
         ("user_state", "goal", slice(0, 1, 1), f, (2,), None, None),

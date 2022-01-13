@@ -161,9 +161,9 @@ class RuleObservationEngine(BaseObservationEngine):
         Wrapper around apply_mapping for interfacing with bundle.
 
         :param game_state: game state
-        :type game_state: `State<coopihc.space.State.State`
+        :type game_state: :py:class:`State <coopihc.space.State.State>`
         :return: (observation, obs reward)
-        :rtype: tuple(`State<coopihc.space.State.State`, float)
+        :rtype: tuple(:py:class:`State <coopihc.space.State.State>`, float)
         """
         game_state = super().observe(game_state=game_state)[0]
 
@@ -178,9 +178,9 @@ class RuleObservationEngine(BaseObservationEngine):
         Apply the rule mapping
 
         :param game_state: game state
-        :type game_state: `State<coopihc.space.State.State`
+        :type game_state: :py:class:`State <coopihc.space.State.State>`
         :return: observation
-        :rtype: `State<coopihc.space.State.State`
+        :rtype: :py:class:`State <coopihc.space.State.State>`
         """
         observation = State()
         for (
@@ -225,7 +225,7 @@ class RuleObservationEngine(BaseObservationEngine):
         Create mapping from the high level rules specified in the Rule Engine.
 
         :param game_state: game state
-        :type game_state: `State<coopihc.space.State.State>`
+        :type game_state: :py:class:`State <coopihc.space.State.State>`
         :return: Mapping
         :rtype: iterable
         """
@@ -241,8 +241,8 @@ class RuleObservationEngine(BaseObservationEngine):
         mapping = []
         for substate, *rest in observation_engine_specification:
             subsubstate = rest[0]
-            if substate == "turn_index":
-                continue
+            # if substate == "turn_index":
+            #     continue
             if subsubstate == "all":
                 for key, value in game_state[substate].items():
                     v = extradeterministicrules.get((substate, key))

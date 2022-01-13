@@ -88,8 +88,22 @@ def test_init_args():
         Space(numpy.array([-6, -5, -4, -3, -2, -1], dtype=numpy.int16), "discrete"),
     )
 
+    turn_index = StateElement(
+        numpy.array([0]),
+        Space(numpy.array([0, 1, 2, 3], dtype=numpy.int8), "discrete"),
+        out_of_bounds_mode="raw",
+    )
+    round_index = StateElement(
+        numpy.array([0]),
+        Space(numpy.array([0, 1], dtype=numpy.int8), "discrete"),
+        out_of_bounds_mode="raw",
+    )
+
     gamestate = State(
         **{
+            "game_info": State(
+                **{"turn_index": turn_index, "round_index": round_index}
+            ),
             "task_state": State(**{"tx": se_tx, "ty": se_ty, "tz": se_tz}),
             "user_state": State(**{"ux": copy.copy(se_tx)}),
             "assistant_state": State(**{"ax": copy.copy(se_ty)}),
@@ -101,6 +115,7 @@ def test_init_args():
     assert reward == 0
     assert observed_gamestate == State(
         **{
+            "game_info": gamestate["game_info"],
             "task_state": gamestate["task_state"],
             "user_state": gamestate["user_state"],
         }

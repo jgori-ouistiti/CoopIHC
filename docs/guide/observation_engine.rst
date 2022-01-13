@@ -69,6 +69,8 @@ which are then collected to form an observed state. For example, a valid mapping
 
     # Define mapping
     mapping = [
+        ("game_info", "turn_index", slice(0, 1, 1), None, None, None, None),
+        ("game_info", "round_index", slice(0, 1, 1), None, None, None, None),
         ("task_state", "position", slice(0, 1, 1), None, None, None, None),
         ("task_state", "targets", slice(0, 2, 1), None, None, None, None),
         ("user_state", "goal", slice(0, 1, 1), None, None, None, None),
