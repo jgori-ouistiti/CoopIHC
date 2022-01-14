@@ -2,6 +2,8 @@
 
 The Observation Engines
 ========================
+.. start-quickstart-obseng-intro
+
 In an interactive setting, states are rarely perfectly observable by the various agents:
 
     * the other agent's internal states are unknown,
@@ -15,22 +17,45 @@ Furthermore, there might be a cost associated with making observations:
 
 *CoopIHC* provides a generic object called an observation engine which specifies how an observation is created from the game state. To create a new observation engine, you can use an existing observation engine or subclass the ``BaseObservationEngine``.
 
+.. end-quickstart-obseng-intro
+
 
 Subclassing ``BaseObservationEngine``
 --------------------------------------
+.. start-quickstart-obseng-subclass
 
-Only the ``observe`` method has to be redefined:
+To create a new engine by subclassing the ``BaseObservationEngine`` class, you simply have to redefine the ``observe()`` method. You can virtually put anything inside this function: that includes the output of a neural network, of a complex simulation process, and even the output of another bundle (see :doc:`modularity` for an example). Below, we show a basic example we define an engine that only looks at a particular substate.
 
 .. literalinclude:: ../../coopihc/observation/ExampleObservationEngine.py
-   :language: python
-   :linenos:
-   :start-after: [start-obseng-subclass]
-   :end-before: [end-obseng-subclass]
+    :linenos:
+    :pyobject: ExampleObservationEngine
+
+Don't forget to return a reward with the observation. The effect of this engine can be tested by plugging in a simple State:
+
+.. literalinclude:: ../../coopihc/examples/simple_examples/observation_examples.py
+    :language: python
+    :linenos:
+    :start-after: [start-obseng-example]
+    :end-before: [end-obseng-example]
+
 
 .. note::
 
     The signature ``observe(self, game_state=None)`` is expected. When called with ``game_state = None``, the engine will fetch the agent's observation. If the game state is actually passed, it will user the input state as basis to produce the observation. This is useful e.g. when testing your engine and you want to control the input.
 
+.. end-quickstart-obseng-subclass
+
+
+Combining Engines -- CascadedObservationEngine
+-----------------------------------------------
+
+Serially combine several engines. Not documented yet, see API Reference
+
+
+WrapAsObservationEngine
+------------------------
+
+Wrap a bundle as an engine. Not documented yet, see API Reference
 
 RuleObservationEngine
 ------------------------
@@ -189,4 +214,6 @@ Several rules are predefined:
 
 .. |tick| unicode:: U+2705 .. tick sign
 .. |cross| unicode:: U+274C .. cross sign
+
+
 

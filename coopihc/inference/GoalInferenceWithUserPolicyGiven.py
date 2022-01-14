@@ -10,11 +10,78 @@ from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
     """GoalInferenceWithUserPolicyGiven
 
-    An inference Engine used by an assistant to infer the 'goal' of a user.
-    The inference is based on a model of the user policy, which has to be provided to this engine.
 
-    :param \*args: policy model
-    :type \*args: :py:mod`Policy<coopihc.policy>`
+    An Inference Engine used by an assistant to infer the 'goal' of a user via Bayesian updating. The likelihood is given through an ``ELLDiscretePolicy``, which acts as the model of the user behavior.
+
+
+
+    - **Expectations of the engine**
+
+        This inference engine expects:
+
+        + the agent to have a 'belief' state, corresponding to the discrete belief pmf. in its internal state:
+        + the modeler to attach a user policy model to the engine ``inference_engine.attach_policy(user_policy_model)``
+        + the modeler to attach the set of possible user goals ``inference_engine.attach_set_theta(set_theta)``
+
+
+    - **Inference**
+
+
+        Bayesian updating in the discrete case.
+        Computes for each target :math:`\theta` the associated posterior probability, given an observation :math:`x` and the last user action :math:`y`:
+
+        .. math::
+
+            P(\\Theta = \\theta | X=x, Y=y) = \\frac{p(Y = y | \\Theta = \\theta, X=x)}{\sum_{\\Theta} p(Y=y|\\Theta = \\theta, X=x)} P(\Theta = \\theta).
+
+        The likelihood model (directly obtainable from an ``ELLDiscretePolicy``) :math:`p(Y = y | \Theta = \\theta, X=x)` has to be supplied
+
+        .. code-block:: python
+
+            # Define the likelihood model for the user policy
+            # user_policy_model = XXX
+            # assert isinstance(user_policy_model, ELLDiscretePolicy)
+
+            inference_engine = GoalInferenceWithUserPolicyGiven()
+            # Attach it to the engine
+            inference_engine.attach_policy(user_policy_model)
+
+        It also expects that the set of :math:`\theta`'s is supplied:
+
+        .. code-block:: python
+
+            set_theta = [
+                {
+                    ("user_state", "goal"): StateElement(
+                        t,
+                        discrete_space(numpy.array(<XXX>),
+                    )
+                }
+                for t in <potential_targets>
+            ]
+
+            inference_engine.attach_set_theta(set_theta)
+
+
+    - **Render**
+
+        ---- plot mode:
+
+        This engine will plot a bar chart of the beliefs on the assistant axis
+
+        ---- text mode:
+
+        This engine will print out the beliefs to the terminal
+
+
+    - **Example files**
+
+        coopihczoo.pointing.assistants
+
+
+    :param user_policy_model: a model of the user policy, defaults to None
+    :type user_policy_model: :py:class:`EELDiscretePolicy <coopihc.policy.ELLDiscretePolicy.ELLDiscretePolicy>`, optional
+
     """
 
     def __init__(self, *args, user_policy_model=None, **kwargs):
@@ -24,13 +91,6 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
         self.render_tag = ["plot", "text"]
 
     def attach_policy(self, policy):
-        """attach_policy
-
-        Attach a policy to the engine from which it can sample.
-
-        :param policy: a policy
-        :type policy: :py:mod`Policy<coopihc.policy>`
-        """
         if policy is None:
             self.user_policy_model = None
             return
@@ -42,13 +102,6 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
         self.user_policy_model = policy
 
     def attach_set_theta(self, set_theta):
-        """attach_set_theta
-
-        The set of possible 'goal's.
-
-        :param set_theta: dictionnary
-        :type set_theta: dictionnary
-        """
         self.set_theta = set_theta
 
     def render(self, *args, **kwargs):

@@ -3,7 +3,7 @@
 
 Space
 ---------------
-``Space`` s are used by :ref:`StateElement` s, to specify in which domain a substate can live. Space ranges are defined by NumPy arrays. The complete interface is explained in the :py:class:`API Reference<coopihc.space.Space.Space>`.
+``Space`` s are used by ``StateElement`` s, to specify in which domain a substate can live. Space ranges are defined by NumPy arrays. The complete interface is explained in the :py:class:`API Reference<coopihc.space.Space.Space>`.
 
 Defining spaces
 ^^^^^^^^^^^^^^^^^

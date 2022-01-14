@@ -61,35 +61,38 @@ and **bundling** them back together using a so-called :py:mod:`Bundle <../coopih
     :maxdepth: 1
     :caption: User Guide
 
-    guide/terminology
     guide/interaction_model
     guide/space
     guide/stateelement
     guide/state
+    guide/tasks
+    guide/agents
     guide/policy
     guide/observation_engine
     guide/inference_engine
-    guide/tasks
-    guide/agents
     guide/bundles
     guide/user_modeling
     guide/wrappers
-
-	
+    guide/repository
 
 
    
 .. toctree::
-	:hidden:	
+    :maxdepth: 1
+    :caption: See also
 
 	Home page <self>
 	API reference <_autosummary/coopihc>
+    guide/terminology
+
 
 
 Known Caveats
 =====================
 
 1. In place additions e.g. ``self.state['x'] += 1`` work, but do not trigger the expected ``out_of_bounds_mode`` behavior. in short, the reason for that is that in place addition calls ``__iadd__`` which is not a Numpy ``__ufunc__``. There are several workarounds possible. One based on the ``@implements`` mechanism described in the ``StateElement`` page which would fix the problem for everyone. Another is simply to do something like ``self.state['x'] = self.state['x'] + 1``
+
+
 
 
 Indices

@@ -4,7 +4,15 @@ from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 class CascadedInferenceEngine(BaseInferenceEngine):
     """ExampleInferenceEngine
 
-    Example class
+    Combine two or more inference engines serially. Example code:
+
+    .. code-block::
+
+        first_inference_engine = ProvideLikelihoodInferenceEngine(perceptualnoise)
+        second_inference_engine = LinearGaussianContinuous()
+        inference_engine = CascadedInferenceEngine(
+            [first_inference_engine, second_inference_engine]
+        )
 
     """
 

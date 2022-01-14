@@ -2,7 +2,6 @@
 __version__ = "0.0.6"
 
 from .agents.BaseAgent import BaseAgent
-from .agents.GoalDrivenDiscreteUser import GoalDrivenDiscreteUser
 from .agents.ExampleUser import ExampleUser
 from .agents.ExampleAssistant import ExampleAssistant
 

@@ -5,7 +5,31 @@ Policies
 
 Subclassing BasePolicy
 -------------------------
-You can define a new policy by subclassing the ``BasePolicy``; for which you can find an example in the :doc:`quickstart`. Other than that, there are a few predefined policies which you may find useful.
+
+.. start-quickstart-policy
+
+You can define a new policy by subclassing the ``BasePolicy`` class and redefining the ``sample()`` method. Below, we show how ``ExamplePolicy`` is defined.
+
+.. literalinclude:: ../../coopihc/policy/ExamplePolicy.py
+    :linenos:
+    :pyobject: ExamplePolicy
+
+
+.. note::
+
+    The action that is returned has to be a valid ``StateElement``. Inside the policy, you can directly call ``self.new_action`` which returns a valid ``StateElement`` without a value, which you can just fill in, as done in the example.
+
+.. note::
+
+    Don't forget to return a reward with the action.
+
+.. note::
+
+    You can virtually put anything inside this function: that includes the output of a neural network, of a complex simulation process, and even the output of another bundle (see :doc:`modularity` for an example.)
+
+.. end-quickstart-policy
+
+Other than that, there are a few predefined policies which you may find useful.
 
 
 Explicit Likelihood Discrete (ELLD) Policy
@@ -93,7 +117,14 @@ You can find an example implementation in CoopIHC-Zoo's pointing module. Below a
 
 
 
+LinearFeedback
+-----------------
 
+RLPolicy
+---------
+
+WrapAsPolicy
+-------------
 
 
 
