@@ -66,7 +66,20 @@ class StateElement(numpy.ndarray):
 
     """
 
-    __precedence__ = {"error": 0, "warning": 2, "clip": 1, "silent": 3, "raw": 4}
+    # Simple static two-way dict
+    __precedence__ = {
+        "error": 0,
+        "warning": 2,
+        "clip": 1,
+        "silent": 3,
+        "raw": 4,
+        "0": "error",
+        "2": "warning",
+        "1": "clip",
+        "3": "silent",
+        "4": "raw",
+    }
+
     HANDLED_FUNCTIONS = {}
     SAFE_FUNCTIONS = ["all"]
 
@@ -262,13 +275,14 @@ class StateElement(numpy.ndarray):
     def __setitem__(self, key, value):
         """__setitem__
 
-        Simply calles numpy's __setitem__ after having checked input values.
+        Simply calls numpy's __setitem__ after having checked input values.
 
         :param key: [description]
         :type key: [type]
         :param value: [description]
         :type value: [type]
         """
+
         value = StateElement._process_input_values(
             value, self.spaces, self.out_of_bounds_mode
         )
@@ -481,16 +495,14 @@ class StateElement(numpy.ndarray):
             )
 
         if isinstance(other, StateElement):
-            other = other.spaces
             mix_outbounds = min(
                 self.__precedence__[self.out_of_bounds_mode],
                 self.__precedence__[other.out_of_bounds_mode],
             )
-            mix_outbounds = (
-                self.__precedence__[
-                    list(self.__precedence__.values()).index[mix_outbounds]
-                ],
-            )
+
+            mix_outbounds = self.__precedence__[str(mix_outbounds)]
+            other = other.spaces
+
         else:
             mix_outbounds = self.out_of_bounds_mode
 
@@ -655,120 +667,6 @@ class StateElement(numpy.ndarray):
             raise NotImplementedError
 
         return ([[array, "\n".join(space)]], self.shape[0])
-
-    # if _str == "cast" or _str == "all":
-
-    # y.reset()
-    # targetdomain = StateElement(
-    #     values=None,
-    #     spaces=[
-    #         coopihc.space.Space(
-    #             [
-    #                 -numpy.ones((2, 1), dtype=numpy.float32),
-    #                 numpy.ones((2, 1), dtype=numpy.float32),
-    #             ]
-    #         )
-    #         for j in range(3)
-    #     ],
-    # )
-    # res = y.cast(targetdomain)
-
-    # b = StateElement(
-    #     values=5,
-    #     spaces=coopihc.space.Space(
-    #         [numpy.array([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5], dtype=numpy.int16)]
-    #     ),
-    # )
-
-    # a = StateElement(
-    #     values=0,
-    #     spaces=coopihc.space.Space(
-    #         [
-    #             numpy.array([-1], dtype=numpy.float32),
-    #             numpy.array([1], dtype=numpy.float32),
-    #         ]
-    #     ),
-    # )
-    # # C2D
-    # continuous = []
-    # discrete = []
-    # for elem in numpy.linspace(-1, 1, 200):
-    #     a["values"] = elem
-    #     continuous.append(a["values"][0].squeeze().tolist())
-    #     discrete.append(a.cast(b, mode="center")["values"][0].squeeze().tolist())
-    # import matplotlib.pyplot as plt
-
-    # plt.plot(continuous, discrete, "b*")
-    # plt.show()
-
-    # # D2C
-
-    # continuous = []
-    # discrete = []
-    # for elem in [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]:
-    #     b["values"] = elem
-    #     discrete.append(elem)
-    #     continuous.append(b.cast(a, mode="edges")["values"][0].squeeze().tolist())
-    # import matplotlib.pyplot as plt
-
-    # plt.plot(discrete, continuous, "b*")
-    # plt.show()
-
-    # # C2C
-
-    # a = StateElement(
-    #     values=0,
-    #     spaces=coopihc.space.Space(
-    #         [
-    #             numpy.array([-2], dtype=numpy.float32),
-    #             numpy.array([1], dtype=numpy.float32),
-    #         ]
-    #     ),
-    # )
-    # b = StateElement(
-    #     values=3.5,
-    #     spaces=coopihc.space.Space(
-    #         [
-    #             numpy.array([3], dtype=numpy.float32),
-    #             numpy.array([4], dtype=numpy.float32),
-    #         ]
-    #     ),
-    # )
-    # c1 = []
-    # c2 = []
-    # for elem in numpy.linspace(-2, 1, 100):
-    #     a["values"] = elem
-    #     c1.append(a["values"][0].squeeze().tolist())
-    #     c2.append(a.cast(b)["values"][0].squeeze().tolist())
-    # import matplotlib.pyplot as plt
-
-    # plt.plot(c1, c2, "b*")
-    # plt.show()
-
-    # # D2D
-    # a = StateElement(
-    #     values=5,
-    #     spaces=coopihc.space.Space(
-    #         [numpy.array([i for i in range(11)], dtype=numpy.int16)]
-    #     ),
-    # )
-    # b = StateElement(
-    #     values=5,
-    #     spaces=coopihc.space.Space(
-    #         [numpy.array([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5], dtype=numpy.int16)]
-    #     ),
-    # )
-
-    # d1 = []
-    # d2 = []
-    # for i in range(11):
-    #     a["values"] = i
-    #     d1.append(i)
-    #     d2.append(a.cast(b)["values"][0].squeeze().tolist())
-    # import matplotlib.pyplot as plt
-
-    # plt.plot(d1, d2, "b*")
-    # plt.show()
 
     @classmethod
     def implements(cls, numpy_function):

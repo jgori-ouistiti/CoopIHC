@@ -634,9 +634,12 @@ class Space:
         """
         _l = []
         if self.space_type == "continuous":
-            return (self.high - self.low) * self.rng.random(
-                self.shape, dtype=self.dtype
-            ) + self.low
+            # if high and/or lows contain numpy.inf, this will lead to nans and/or infs. In that case, just sample from a centered unit Gaussian. This may trigger warnings if either the lower or upper bound is infinite but not the other since the sample may not be actually included in the space.
+            return numpy.nan_to_num(
+                (self.high - self.low), nan=1, posinf=1
+            ) * self.rng.random(self.shape, dtype=self.dtype) + numpy.nan_to_num(
+                self.low, neginf=1
+            )
         elif self.space_type == "discrete":
             return numpy.array([self.rng.choice(self._array_bound).astype(self.dtype)])
         elif self.space_type == "multidiscrete":

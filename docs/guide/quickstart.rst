@@ -34,7 +34,7 @@ High-level view of CoopIHC code
 
 At a high level, your CoopIHC code will usually look like this
 
-.. literalinclude:: ../../coopihc/examples/simple_examples/bundle_examples.py
+.. literalinclude:: ../../coopihc/examples/basic_examples/bundle_examples.py
    :language: python
    :linenos:
    :start-after: [start-highlevel-code]
@@ -47,7 +47,7 @@ States
 ------------
 The interaction model uses the concept of states, for which *CoopIHC* introduces the ``Space`` ``StateElement`` and ``State`` objects. In the example below, a super-state is defined by a state, which itself is defined by two substates. Each of those substates holds a StateElement, which is a combination of a value and a space.
 
-.. literalinclude:: ../../coopihc/examples/simple_examples/state_examples.py
+.. literalinclude:: ../../coopihc/examples/basic_examples/state_examples.py
    :language: python
    :linenos:
    :start-after: [start-state-example]

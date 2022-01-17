@@ -21,7 +21,6 @@ class IHDT_LQRController(LQRController):
     def __init__(self, role, Q, R, Gamma):
 
         super().__init__(role, Q, R, gamma=Gamma)
-        self.timespace = "discrete"
 
     def finit(self):
         """finit

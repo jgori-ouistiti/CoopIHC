@@ -10,7 +10,7 @@ Defining spaces
 
 Spaces can be either continuous, discrete or multidiscrete. For continuous spaces, you have to specify lower and upper bounds, for discrete and multidiscrete spaces you have to specify the array of possible values. Some shortcuts exist to make defining Spaces less cumbersome.
 
-.. literalinclude:: ../../coopihc/examples/simple_examples/space_examples.py
+.. literalinclude:: ../../coopihc/examples/basic_examples/space_examples.py
    :language: python
    :linenos:
    :start-after: [start-space-def]
@@ -18,7 +18,7 @@ Spaces can be either continuous, discrete or multidiscrete. For continuous space
 
 A global shortcut function called ``autospace`` exists that lets you define any space in a less rigorous way, at the cost of some extra computation:
 
-.. literalinclude:: ../../coopihc/examples/simple_examples/space_examples.py
+.. literalinclude:: ../../coopihc/examples/basic_examples/space_examples.py
    :language: python
    :linenos:
    :start-after: [start-space-autospace]
@@ -45,7 +45,7 @@ Values ``in`` space
 ************************
 You can check if a value belongs to a space with Python's ``in`` operator:
 
-.. literalinclude:: ../../coopihc/examples/simple_examples/space_examples.py
+.. literalinclude:: ../../coopihc/examples/basic_examples/space_examples.py
    :language: python
    :linenos:
    :start-after: [start-space-contains]
@@ -61,7 +61,7 @@ Sampling from spaces
 **************************
 You can sample values from spaces using the ``sample()`` method:
 
-.. literalinclude:: ../../coopihc/examples/simple_examples/space_examples.py
+.. literalinclude:: ../../coopihc/examples/basic_examples/space_examples.py
    :language: python
    :linenos:
    :start-after: [start-space-sample]
@@ -75,7 +75,7 @@ Iterating over spaces
 *************************
 You can iterate over spaces, potentially several times:
 
-.. literalinclude:: ../../coopihc/examples/simple_examples/space_examples.py
+.. literalinclude:: ../../coopihc/examples/basic_examples/space_examples.py
    :language: python
    :linenos:
    :start-after: [start-space-iter]
@@ -91,7 +91,7 @@ Cartesian Product
 ********************
 You can compute the cartesian product of several spaces. For continuous spaces, a ``None`` value is used.
 
-.. literalinclude:: ../../coopihc/examples/simple_examples/space_examples.py
+.. literalinclude:: ../../coopihc/examples/basic_examples/space_examples.py
    :language: python
    :linenos:
    :start-after: [start-space-cp]

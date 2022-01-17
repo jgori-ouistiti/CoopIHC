@@ -11,13 +11,17 @@ from coopihc.interactiontask.InteractionTask import InteractionTask
 class ClassicControlTask(InteractionTask):
     """ClassicControlTask 
 
-    A task used for the classic control setting
+    A task used for a classic control setting with signal dependent and independent noise. You can account for control-dependent noise with an appropriate noise model in the policy or the observation engine.
+
+    The task has a state x(.) which evolves according to
 
     .. math ::
 
         \\begin{align}
-            x(+) = Ax() + Bu() + Fx().\\beta + G.\\omega \\\\
+            x(+.) = Ax(.) + Bu(.) + Fx(.).\\beta + G.\\omega \\\\
         \\end{align}
+
+    where :math:``u(.)`` is the user action. The task is finised when the first component x[0,0] is close enough to 0. Currently this is implemented as the condition ``abs(x[0, 0]) <= 0.01``.
 
     where :math:`\\beta, \\omega \\sim \\mathcal{N}(0, \\sqrt{dt})` are Wiener processes.
 
@@ -33,15 +37,17 @@ class ClassicControlTask(InteractionTask):
     .. math ::
 
         \\begin{align}
-            A_d = I + dt \cdot{} A
+            A_d = I + dt \cdot{} A \\\\
             B_d = dt \cdot{} B
         \\end{align}
+
+
 
     :param timestep: dt
     :type timestep: float
     :param A: Passive dynamics
     :type A: numpy.ndarray
-    :param B: Response to control
+    :param B: Response to command
     :type B: numpy.ndarray
     :param F: signal dependent noise, defaults to None
     :type F: numpy.ndarray, optional
@@ -71,15 +77,16 @@ class ClassicControlTask(InteractionTask):
         self.dim = max(A.shape)
         self.state = State()
         self.state["x"] = StateElement(
-            values=numpy.zeros((self.dim, 1)),
-            spaces=Space(
+            numpy.zeros((self.dim, 1)),
+            Space(
                 [
                     -numpy.ones((self.dim, 1)) * numpy.inf,
                     numpy.ones((self.dim, 1)) * numpy.inf,
-                ]
+                ],
+                "continuous",
             ),
         )
-        self.state_last_x = copy.copy(self.state["x"]["values"])
+        self.state_last_x = copy.copy(self.state["x"])
         self.timestep = timestep
 
         if F is None:
@@ -111,59 +118,53 @@ class ClassicControlTask(InteractionTask):
 
         Define whether to use continuous or discrete representation.
         """
-        if self.bundle.user.timespace == "continuous":
-            self.A = self.A_c
-            self.B = self.B_c
-        else:
-            self.A = self.A_d
-            self.B = self.B_d
+        # if self.bundle.user.timespace == "continuous":
+        #     self.A = self.A_c
+        #     self.B = self.B_c
+        # else:
+        #     self.A = self.A_d
+        #     self.B = self.B_d
+
+        self.A = self.A_d
+        self.B = self.B_d
 
     def reset(self, dic=None):
-        """reset
+        """Force all substates except the first to be null.
 
-        rorce all substates except the first to be null. Store the last state as an attribute (useful for rendering).
-
-        .. warning::
-
-            dic mechanism likely outdated.
+        Force all substates except the first to be null. Also stores the last state as an attribute (for rendering).
 
 
-
-        :param dic: [description], defaults to None
-        :type dic: [type], optional
+        :param dic: reset_dic, see :py:class:``InteractionTask <coopihc.interactiontask.InteractionTask.InteractionTask>``, defaults to None
+        :type dic: dictionnary, optional
         """
-        super().reset()
         # Force zero velocity
-        self.state["x"]["values"][0][1:] = 0
 
-        if dic is not None:
-            super().reset(dic=dic)
+        self.state["x"] *= numpy.array([1] + [0 for i in range(self.dim - 1)]).reshape(
+            (-1, 1)
+        )
 
-        self.state_last_x = copy.copy(self.state["x"]["values"])
+        self.state_last_x = copy.copy(self.state["x"])
 
-    def user_step(self, user_action):
+    def user_step(self, *args, **kwargs):
         """user step
 
-        Apply equations defined in the class docstring.
+        Takes the state from x(.) to x(+.) according to
 
-        .. warning ::
+        .. math ::
 
-            call to super likely deprecated, check signature.
+            \\begin{align}
+                x(+.) = Ax(.) + Bu(.) + Fx(.).\\beta + G.\\omega \\\\
+            \\end{align}
 
-        :param user_action: user action
-        :type user_action: `State<coopihc.space.State.State>`
-        :return: (task state, task reward, is_done flag, {})
-        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float, boolean, dictionnary)
         """
-        # print(user_action, type(user_action))
         is_done = False
         # Call super for counters
-        super().user_step(user_action)
 
         # For readability
         A, B, F, G = self.A, self.B, self.F, self.G
-        u = user_action["values"][0]
-        x = self.state["x"]["values"][0].reshape(-1, 1)
+
+        _u = self.user_action.view(numpy.ndarray)
+        _x = self.state["x"].view(numpy.ndarray)
 
         # Generate noise samples
         if self.noise == "on":
@@ -174,31 +175,22 @@ class ClassicControlTask(InteractionTask):
             omega = numpy.random.normal(0, 0, (self.dim, 1))
 
         # Store last_x for render
-        self.state_last_x = copy.deepcopy(self.state["x"]["values"])
+        self.state_last_x = copy.copy(self.state["x"])
         # Deterministic update + State dependent noise + independent noise
-        if self.bundle.user.timespace == "discrete":
-            x = (A @ x + B * u) + F @ x * beta + G @ omega
-        else:
-            x += (A @ x + B * u) * self.timestep + F @ x * beta + G @ omega
+        # if self.timespace == "discrete":
+        _x = (A @ _x + B * _u) + F @ _x * beta + G @ omega
+        # else:
+        #     x += (A @ x + B * u) * self.timestep + F @ x * beta + G @ omega
 
-        self.state["x"]["values"] = x
-        if abs(x[0, 0]) <= 0.01:
+        self.state["x"][:] = _x
+        if abs(_x[0, 0]) <= 0.01:
             is_done = True
 
-        return self.state, 0, is_done, {}
+        return self.state, 0, is_done
 
-    def assistant_step(self, assistant_action):
-        """assistant_step
-
-        Nothing.
-
-        :param assistant_action: assistant action
-        :type assistant_action: `State<coopihc.space.State.State>`
-        :return: (task state, task reward, is_done flag, {})
-        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float, boolean, dictionnary)
-        """
-        # return super().assistant_step(assistant_action)
-        return self.state, 0, False, {}
+    def assistant_step(self, *args, **kwargs):
+        """assistant_step"""
+        return self.state, 0, False
 
     def render(self, *args, **kwargs):
         """render
@@ -237,7 +229,7 @@ class ClassicControlTask(InteractionTask):
                 self.draw()
 
     def draw(self):
-        if (self.state_last_x[0] == self.state["x"]["values"][0]).all():
+        if (self.state_last_x == self.state["x"]).all():
             pass
         else:
             for i in range(self.dim):
@@ -248,8 +240,8 @@ class ClassicControlTask(InteractionTask):
                     ],
                     flatten(
                         [
-                            self.state_last_x[0][i, 0].tolist(),
-                            self.state["x"]["values"][0][i, 0].tolist(),
+                            self.state_last_x[i, 0].tolist(),
+                            self.state["x"][i, 0].tolist(),
                         ]
                     ),
                     "-",

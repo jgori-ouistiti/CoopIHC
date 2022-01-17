@@ -91,6 +91,7 @@ Known Caveats
 =====================
 
 1. In place additions e.g. ``self.state['x'] += 1`` work, but do not trigger the expected ``out_of_bounds_mode`` behavior. in short, the reason for that is that in place addition calls ``__iadd__`` which is not a Numpy ``__ufunc__``. There are several workarounds possible. One based on the ``@implements`` mechanism described in the ``StateElement`` page which would fix the problem for everyone. Another is simply to do something like ``self.state['x'] = self.state['x'] + 1``
+2. Some forms of indexing do not work e.g. ``self.state['x'][:,1] = [2,3]`` does not work. The problem could be overcome if someone shows interest. In practical cases you can work around this limitation.
 
 
 

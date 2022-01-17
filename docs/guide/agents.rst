@@ -33,7 +33,7 @@ You define a new agent is by subclassing the ``BaseAgent`` class. For example, w
 
 You can check that the user model works as intended by bundling it with the task. Below, we try it out without an assistant, so we modify the task very simply by redefining its ``assistant_step()`` method.
 
-.. literalinclude:: ../../coopihc/examples/simple_examples/bundle_examples.py
+.. literalinclude:: ../../coopihc/examples/basic_examples/bundle_examples.py
     :language: python
     :linenos:
     :start-after: [start-check-taskuser]

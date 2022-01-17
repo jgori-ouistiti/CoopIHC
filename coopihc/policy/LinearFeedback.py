@@ -51,12 +51,6 @@ class LinearFeedback(BasePolicy):
         noise_func_args=(),
         **kwargs
     ):
-        """__init__ [summary]
-
-        [extended_summary]
-
-
-        """
         super().__init__(*args, action_state=action_state, **kwargs)
         self.state_indicator = state_indicator
 

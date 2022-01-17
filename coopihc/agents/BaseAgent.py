@@ -23,7 +23,7 @@ class BaseAgent(ABC):
 
     .. code-block:: python
 
-        changed_policy_user = MyNewUser(agent_policy = some_other_policy)
+        changed_policy_user = MyNewUser(override_agent_policy = (some_other_policy, other_policy_kwargs))
 
     * You can access observations and actions of an agent directly via the built-in properties action and observation. For example, you access the last observation of the agent ``MyNewUser`` with
 

@@ -38,7 +38,7 @@ Explicit Likelihood Discrete (ELLD) Policy is used in cases where the agent mode
 
 Below, we define a simple probabilistic model which assigns different probabilities to each possible discrete action. Note that this function signature is what *CoopIHC* expects to find: in most cases the model will depend on at least the observation and on the particular action.
 
-.. literalinclude:: ../../coopihc/examples/simple_examples/policy_examples.py
+.. literalinclude:: ../../coopihc/examples/basic_examples/policy_examples.py
    :language: python
    :linenos:
    :start-after: [start-elld-def-model]
@@ -47,7 +47,7 @@ Below, we define a simple probabilistic model which assigns different probabilit
 
 You can then define your policy and attach the model to it:
 
-.. literalinclude:: ../../coopihc/examples/simple_examples/policy_examples.py
+.. literalinclude:: ../../coopihc/examples/basic_examples/policy_examples.py
    :language: python
    :linenos:
    :start-after: [start-elld-attach]

@@ -32,7 +32,7 @@ To create a new engine by subclassing the ``BaseObservationEngine`` class, you s
 
 Don't forget to return a reward with the observation. The effect of this engine can be tested by plugging in a simple State:
 
-.. literalinclude:: ../../coopihc/examples/simple_examples/observation_examples.py
+.. literalinclude:: ../../coopihc/examples/basic_examples/observation_examples.py
     :language: python
     :linenos:
     :start-after: [start-obseng-example]

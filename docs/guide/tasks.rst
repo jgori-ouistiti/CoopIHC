@@ -34,7 +34,7 @@ Some comments on the code snippet above:
 
 .. You can verify that the task works as intended by bundling it with two ``BaseAgents`` (the simplest version of agents). Make sur that the actions spaces make sense, by specifying the policy for the two baseagents.
 
-.. .. literalinclude:: ../../coopihc/examples/simple_examples/interactiontask_examples.py
+.. .. literalinclude:: ../../coopihc/examples/basic_examples/interactiontask_examples.py
 ..    :language: python
 ..    :linenos:
 ..    :start-after: [start-check-task]

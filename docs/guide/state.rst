@@ -7,7 +7,7 @@ States are the higher level containers used in *CoopIHC*, that can contain eithe
 
 + **Defining a State** is straightforward
 
-   .. literalinclude:: ../../coopihc/examples/simple_examples/state_examples.py
+   .. literalinclude:: ../../coopihc/examples/basic_examples/state_examples.py
       :language: python
       :linenos:
       :start-after: [start-state-example]
@@ -15,7 +15,7 @@ States are the higher level containers used in *CoopIHC*, that can contain eithe
 
 + States can be **initialized** to a random values (or forced, like StateElements). To use the forced reset mechanism you have to provide a reset dictionnary, whose structure is identical to the state, see below. Substates which are not in the dictionnary are reset by random sampling.
 
-   .. literalinclude:: ../../coopihc/examples/simple_examples/state_examples.py
+   .. literalinclude:: ../../coopihc/examples/basic_examples/state_examples.py
       :language: python
       :linenos:
       :start-after: [start-state-reset]
@@ -23,7 +23,7 @@ States are the higher level containers used in *CoopIHC*, that can contain eithe
 
 + States can also be **filtered** by providing a dictionnary of items that you would like to retain, where each value is an index or slice that indicates which component of the StateElement you would like to filter out.
 
-.. literalinclude:: ../../coopihc/examples/simple_examples/state_examples.py
+.. literalinclude:: ../../coopihc/examples/basic_examples/state_examples.py
    :language: python
    :linenos:
    :start-after: [start-state-filter]
@@ -31,7 +31,7 @@ States are the higher level containers used in *CoopIHC*, that can contain eithe
 
 + States can also be **serialized** to a a dictionnary
 
-.. literalinclude:: ../../coopihc/examples/simple_examples/state_examples.py
+.. literalinclude:: ../../coopihc/examples/basic_examples/state_examples.py
    :language: python
    :linenos:
    :start-after: [start-state-serialize]

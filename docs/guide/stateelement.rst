@@ -7,7 +7,7 @@ A ``StateElement`` is a a combination of a value and a space. Under the hood, ``
 
 Instantiating a StateElement is straightforward.
 
-.. literalinclude:: ../../coopihc/examples/simple_examples/stateelement_examples.py
+.. literalinclude:: ../../coopihc/examples/basic_examples/stateelement_examples.py
    :language: python
    :linenos:
    :start-after: [start-stateelement-init]
@@ -60,7 +60,7 @@ NumPy universal functions
 
 For example, this example shows addition and equality to be supported, since both a universal functions.
 
-.. literalinclude:: ../../coopihc/examples/simple_examples/stateelement_examples.py
+.. literalinclude:: ../../coopihc/examples/basic_examples/stateelement_examples.py
    :language: python
    :linenos:
    :start-after: [start-stateelement-ufunc]
@@ -79,7 +79,7 @@ Using NumPy \_\_array_function\_\_ dispatching
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 For NumPy functions that are not universal functions, you can apply the function directly on the StateElement. This will issue a ``NumpyFunctionNotHandledWarning``, and will call the numpy function on the StateElement cast as a numpy array. In practice, this is equivalent to the first solution ``numpy.amax(x.view(numpy.ndarray))``, except you didn't cast the StateElement yourself and therefore you are being warned.
 
-.. literalinclude:: ../../coopihc/examples/simple_examples/stateelement_examples.py
+.. literalinclude:: ../../coopihc/examples/basic_examples/stateelement_examples.py
    :language: python
    :linenos:
    :start-after: [start-stateelement-array-function-not-defined]
@@ -89,7 +89,7 @@ To retain the state information you can use NumPy's \_\_array_function\_\_ dispa
 An example is provided below. Of course it helps to know how NumPy works.
 The example below shows an imperefect implementation of ``amax``, that only works for continuous spaces and default amax arguments.
 
-.. literalinclude:: ../../coopihc/examples/simple_examples/stateelement_examples.py
+.. literalinclude:: ../../coopihc/examples/basic_examples/stateelement_examples.py
    :language: python
    :linenos:
    :start-after: [start-stateelement-array-function-define]
@@ -99,7 +99,7 @@ Other mechanisms
 ^^^^^^^^^^^^^^^^^^^
 
 + **You can randomize its values**
-    .. literalinclude:: ../../coopihc/examples/simple_examples/stateelement_examples.py
+    .. literalinclude:: ../../coopihc/examples/basic_examples/stateelement_examples.py
        :language: python
        :linenos:
        :start-after: [start-stateelement-reset]
@@ -108,7 +108,7 @@ Other mechanisms
 
 + **You can iterate over them**
 
-    .. literalinclude:: ../../coopihc/examples/simple_examples/stateelement_examples.py
+    .. literalinclude:: ../../coopihc/examples/basic_examples/stateelement_examples.py
        :language: python
        :linenos:
        :start-after: [start-stateelement-iter]
@@ -117,7 +117,7 @@ Other mechanisms
 
 + **You can compare them**. This includes a "hard" comparison, which checks if spaces are equal.
 
-   .. literalinclude:: ../../coopihc/examples/simple_examples/stateelement_examples.py
+   .. literalinclude:: ../../coopihc/examples/basic_examples/stateelement_examples.py
          :language: python
          :linenos:
          :start-after: [start-stateelement-equal]
@@ -125,7 +125,7 @@ Other mechanisms
 
 + **You can extract values with or without spaces**. Extracting the spaces together with the values can be done by a mechanism that abuses the slice notation.
 
-   .. literalinclude:: ../../coopihc/examples/simple_examples/stateelement_examples.py
+   .. literalinclude:: ../../coopihc/examples/basic_examples/stateelement_examples.py
          :language: python
          :linenos:
          :start-after: [start-stateelement-getitem]
@@ -133,7 +133,7 @@ Other mechanisms
 
 + **You can cast values from one space to the other**. This includes two modes of casting between discrete and continuous spaces.
 
-   .. literalinclude:: ../../coopihc/examples/simple_examples/stateelement_examples.py
+   .. literalinclude:: ../../coopihc/examples/basic_examples/stateelement_examples.py
          :language: python
          :linenos:
          :start-after: [start-stateelement-cast]
@@ -141,7 +141,7 @@ Other mechanisms
 
 .. + **You can cast values of a StateElement, to and from continuous to and from discrete spaces.**
 
-..     .. literalinclude:: ../../coopihc/examples/simple_examples/stateelement_examples.py
+..     .. literalinclude:: ../../coopihc/examples/basic_examples/stateelement_examples.py
 ..        :language: python
 ..        :linenos:
 ..        :start-after: [start-stateelement-cast]
