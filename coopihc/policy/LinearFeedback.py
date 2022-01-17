@@ -7,37 +7,62 @@ from coopihc.policy.BasePolicy import BasePolicy
 class LinearFeedback(BasePolicy):
     """LinearFeedback
 
-    Linear Feedback policy, which applies a feedback gain to a given state of the observation.
+    Linear Feedback policy, which applies a feedback gain to a given state of the observation, and passes it to a function.
 
-    :param state_indicator: which state to be used as feedback
-    :type state_indicator: string
-    :param slice: slice to select substates of state_indicator
-    :type slice: slice
+    For example with:
+
+        + ``state_indicator = ('user_state', 'substate1', slice(0,2,1))``
+        + ``feedback_gain = -numpy.eye(2)``
+        + ``noise_function = f(action, observation, *args)``
+        + ``noise_func_args = (1,2)``
+
+    You will get
+
+    .. code-block:: python
+
+        obs = observation['user_state']['substate_1'][slice(0,2,1)]
+        action = - -numpy.eye(2 @ obs)
+        return f(action, observation, *(1,2))
+
+
+    You can change the feedback gain online via the ``set_feedback_gain()`` method
+
+
     :param action_state: see `BasePolicy<coopihc.policy.BasePolicy.BasePolicy`
     :type action_state: `State<coopihc.space.State.State`
-    :param feedback_gain: feedback gain matrix, defaults to "identity"
-    :type feedback_gain: numpy.ndarray, optional
+    :param state_indicator: specifies which component is used as feedback information e.g. ``('user_state', 'substate1', slice(0,2,1))``
+    :type state_indicator: iterable
+    :param feedback_gain: Feedback gain matrix, defaults to "identity", which creates a negative identity matrix.
+    :type feedback_gain: str or numpy.ndarray, optional
+    :param noise_function: a function that produces a noise sample to add to the generated action, defaults to None
+    :type noise_function: function, optional
+    :param noise_func_args: arguments to the function above, defaults to ()
+    :type noise_func_args: tuple, optional
+
     """
 
     def __init__(
         self,
-        state_indicator,
         action_state,
+        state_indicator,
         *args,
         feedback_gain="identity",
-        slice=None,
+        noise_function=None,
+        noise_func_args=(),
         **kwargs
     ):
+        """__init__ [summary]
+
+        [extended_summary]
+
+
+        """
         super().__init__(*args, action_state=action_state, **kwargs)
         self.state_indicator = state_indicator
-        self.slice = slice
-        self.noise_function = kwargs.get("noise_function")
-        # bind the noise function
-        if self.noise_function is not None:
-            self._bind(self.noise_function, as_name="noise_function")
 
-        self.noise_args = kwargs.get("noise_function_args")
         self.feedback_gain = feedback_gain
+        self.noise_function = noise_function
+        self.noise_args = noise_func_args
 
     def set_feedback_gain(self, gain):
         """set_feedback_gain
@@ -60,26 +85,20 @@ class LinearFeedback(BasePolicy):
         if observation is None:
             observation = self.observation
 
-        if isinstance(self.slice, list):
-            raise NotImplementedError
+        output = observation
+        for item in self.state_indicator:
+            output = output[item]
 
-        substate = observation
-        for key in self.state_indicator:
-            substate = substate[key]
-        if self.slice is not None:
-            substate = substate[self.slice]
+        output = output.view(numpy.ndarray)
 
-        if isinstance(self.feedback_gain, str):
-            if self.feedback_gain == "identity":
-                self.feedback_gain = -numpy.eye(max(substate["values"][0].shape))
+        if self.feedback_gain == "identity":
+            self.feedback_gain = -numpy.eye(max(output.shape))
 
-        noiseless_feedback = -self.feedback_gain @ substate.reshape((-1, 1))
-        noise = self.noise_function(noiseless_feedback, observation, *self.noise_args)
+        noiseless_feedback = -self.feedback_gain @ output.reshape((-1, 1))
+        noisy_action = self.noise_function(
+            noiseless_feedback, observation, *self.noise_args
+        )
         action = self.action
-        action["values"] = noiseless_feedback + noise.reshape((-1, 1))
-        # if not hasattr(noise, '__iter__'):
-        #     noise = [noise]
-        # header = ['action', 'noiseless', 'noise']
-        # rows = [action, noiseless_feedback , noise]
-        # logger.info('Policy {} selected action\n{})'.format(self.__class__.__name__, tabulate(rows, header) ))
+        action[:] = noisy_action
+
         return action, 0

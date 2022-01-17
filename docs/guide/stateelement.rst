@@ -131,6 +131,14 @@ Other mechanisms
          :start-after: [start-stateelement-getitem]
          :end-before: [end-stateelement-getitem]
 
++ **You can cast values from one space to the other**. This includes two modes of casting between discrete and continuous spaces.
+
+   .. literalinclude:: ../../coopihc/examples/simple_examples/stateelement_examples.py
+         :language: python
+         :linenos:
+         :start-after: [start-stateelement-cast]
+         :end-before: [end-stateelement-cast]
+
 .. + **You can cast values of a StateElement, to and from continuous to and from discrete spaces.**
 
 ..     .. literalinclude:: ../../coopihc/examples/simple_examples/stateelement_examples.py

@@ -178,123 +178,84 @@ assert x[0, 0, {"spaces": True}] == StateElement(
 # [end-stateelement-getitem]
 
 
-# y.reset()
-# targetdomain = StateElement(
-#     values=None,
-#     spaces=[
-#         Space(
-#             [
-#                 -numpy.ones((2, 1), dtype=numpy.float32),
-#                 numpy.ones((2, 1), dtype=numpy.float32),
-#             ]
-#         )
-#         for j in range(3)
-#     ],
-# )
-# res = y.cast(targetdomain)
-
-# b = StateElement(
-#     values=5,
-#     spaces=Space(
-#         [numpy.array([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5], dtype=numpy.nt16)]
-#     ),
-# )
-
-# a = StateElement(
-#     values=0,
-#     spaces=Space(
-#         [
-#             numpy.array([-1], dtype=numpy.float32),
-#             numpy.array([1], dtype=numpy.float32),
-#         ]
-#     ),
-# )
-# import matplotlib.pyplot as plt
-
-# # C2D
-# continuous = []
-# discrete = []
-# for elem in numpy.linspace(-1, 1, 200):
-#     a["values"] = elem
-#     continuous.append(a["values"][0].squeeze().tolist())
-#     discrete.append(a.cast(b, mode="center")["values"][0].squeeze().tolist())
-
-# plt.plot(continuous, discrete, "b*")
-# plt.show()
-
-# # D2C
-
-# continuous = []
-# discrete = []
-# for elem in [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]:
-#     b["values"] = elem
-#     discrete.append(elem)
-#     continuous.append(b.cast(a, mode="edges")["values"][0].squeeze().tolist())
-
-# plt.plot(discrete, continuous, "b*")
-# plt.show()
-
-# # C2C
-
-# a = StateElement(
-#     values=0,
-#     spaces=Space(
-#         [
-#             numpy.array([-2], dtype=numpy.float32),
-#             numpy.array([1], dtype=numpy.float32),
-#         ]
-#     ),
-# )
-# b = StateElement(
-#     values=3.5,
-#     spaces=Space(
-#         [
-#             numpy.array([3], dtype=numpy.float32),
-#             numpy.array([4], dtype=numpy.float32),
-#         ],
-#     ),
-# )
-
-# c1 = []
-# c2 = []
-# for elem in numpy.linspace(-2, 1, 100):
-#     a["values"] = elem
-#     c1.append(a["values"][0].squeeze().tolist())
-#     c2.append(a.cast(b)["values"][0].squeeze().tolist())
-
-# plt.plot(c1, c2, "b*")
-# plt.show()
-
-# # D2D
-# a = StateElement(
-#     values=5, spaces=Space([numpy.array([i for i in range(11)], dtype=numpy.int16)])
-# )
-# b = StateElement(
-#     values=5,
-#     spaces=Space(
-#         [numpy.array([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5], dtype=numpy.nt16)]
-#     ),
-# )
-
-# d1 = []
-# d2 = []
-# for i in range(11):
-#     a["values"] = i
-#     d1.append(i)
-#     d2.append(a.cast(b)["values"][0].squeeze().tolist())
-
-# plt.plot(d1, d2, "b*")
-# plt.show()
-
-
 # [start-stateelement-cast]
 
-# TODO
+# --------------------------- Init viz.
+
+# import matplotlib.pyplot as plt
+
+# fig = plt.figure()
+# axd2c = fig.add_subplot(221)
+# axc2d = fig.add_subplot(222)
+# axc2c = fig.add_subplot(223)
+# axd2d = fig.add_subplot(224)
+
+# --------------------------  Discrete 2 Continuous
+discr_space = autospace([1, 2, 3])
+cont_space = autospace([[-1.5]], [[1.5]])
+
+_center = []
+_edges = []
+for i in [1, 2, 3]:
+    x = StateElement(i, discr_space)
+    _center.append(x.cast(cont_space, mode="center").squeeze().tolist())
+    _edges.append(x.cast(cont_space, mode="edges").squeeze().tolist())
+
+
+# axd2c.plot(numpy.array([1, 2, 3]), numpy.array(_center) - 0.05, "+", label="center")
+# axd2c.plot(numpy.array([1, 2, 3]), numpy.array(_edges) + 0.05, "o", label="edges")
+# axd2c.legend()
+
+# ------------------------   Continuous 2 Discrete
+center = []
+edges = []
+for i in numpy.linspace(-1.5, 1.5, 100):
+    x = StateElement(numpy.array(i).reshape((1, 1)), cont_space)
+
+    ret_stateElem = x.cast(discr_space, mode="center")
+    center.append(ret_stateElem[:].squeeze().tolist())
+
+    ret_stateElem = x.cast(discr_space, mode="edges")
+    edges.append(ret_stateElem[:].squeeze().tolist())
+
+
+# axc2d.plot(
+#     numpy.linspace(-1.5, 1.5, 100), numpy.array(center) - 0.05, "+", label="center"
+# )
+# axc2d.plot(
+#     numpy.linspace(-1.5, 1.5, 100), numpy.array(edges) + 0.05, "o", label="edges"
+# )
+# axc2d.legend()
+
+
+# ------------------------- Continuous2Continuous
+
+cont_space = autospace(numpy.full((2, 2), -1), numpy.full((2, 2), 1))
+other_cont_space = autospace(numpy.full((2, 2), 0), numpy.full((2, 2), 4))
+
+output = []
+for i in numpy.linspace(-1, 1, 100):
+    x = StateElement(numpy.full((2, 2), i), cont_space)
+    output.append(x.cast(other_cont_space)[0, 0].squeeze().tolist())
+
+# axc2c.plot(numpy.linspace(-1, 1, 100), numpy.array(output), "-")
+
+# -------------------------- Discrete2Discrete
+
+discr_space = autospace([1, 2, 3, 4])
+other_discr_space = autospace([11, 12, 13, 14])
+
+
+output = []
+for i in [1, 2, 3, 4]:
+    x = StateElement(i, discr_space)
+    output.append(x.cast(other_discr_space).squeeze().tolist())
+
+# axd2d.plot([1, 2, 3, 4], output, "+")
+
+
+# ----------------------- show viz
+# plt.tight_layout()
+# plt.show()
 
 # [end-stateelement-cast]
-
-# [start-stateelement-arithmetic]
-
-# TODO
-
-# [end-stateelement-arithmetic]

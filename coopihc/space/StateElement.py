@@ -383,11 +383,228 @@ class StateElement(numpy.ndarray):
         return numpy.full(self.shape, True)
 
     def cast(self, other, mode="center"):
-        """cast
+        """Convert values of a StateElement taking values in one space to those of another space, if a one-to-one mapping is possible.
 
-        Cast value from one space to another. Not implemented yet, old code in comment.
+        Equally spaced discrete spaces are assumed when converting between continuous and discrete spaces.
+
+        The mode parameter indicates how the discrete space is mapped to a continuous space. If ``mode = 'edges'``, then the continuous space will prefectly overlap with unit width intervals of the discrete space. Otherwise, the continuous spaces' boundaries will match with the center of the two extreme intervals of the discrete space. Examples below, including visualisations.
+
+
+            + discrete2continuous:
+
+            .. code-block:: python
+
+                cont_space = autospace([[-1.5]], [[1.5]])
+                x = StateElement([1], discr_space)
+                ret_stateElem = x.cast(cont_space, mode="edges")
+                assert ret_stateElem == StateElement(numpy.array([[-1.5]]), cont_space)
+                ret_stateElem = x.cast(cont_space, mode="center")
+                assert ret_stateElem == StateElement(numpy.array([[-1]]), cont_space)
+
+
+            + continuous2continuous:
+
+            .. code-block:: python
+
+                    center = []
+                    edges = []
+                    for i in numpy.linspace(-1.5, 1.5, 100):
+                        x = StateElement(numpy.array(i).reshape((1, 1)), cont_space)
+                        ret_stateElem = x.cast(discr_space, mode="center")
+                        if i < -0.75:
+                            assert ret_stateElem == StateElement(1, discr_space)
+                        if i > -0.75 and i < 0.75:
+                            assert ret_stateElem == StateElement(2, discr_space)
+                        if i > 0.75:
+                            assert ret_stateElem == StateElement(3, discr_space)
+                        center.append(ret_stateElem[:].squeeze().tolist())
+
+                        ret_stateElem = x.cast(discr_space, mode="edges")
+                        if i < -0.5:
+                            assert ret_stateElem == StateElement(1, discr_space)
+                        if i > -0.5 and i < 0.5:
+                            assert ret_stateElem == StateElement(2, discr_space)
+                        if i > 0.5:
+                            assert ret_stateElem == StateElement(3, discr_space)
+
+                        edges.append(ret_stateElem[:].squeeze().tolist())
+
+
+                    import matplotlib.pyplot as plt
+
+                    fig = plt.figure()
+                    ax = fig.add_subplot(111)
+                    ax.plot(
+                        numpy.linspace(-1.5, 1.5, 100), numpy.array(center) - 0.05, "+", label="center"
+                    )
+                    ax.plot(
+                        numpy.linspace(-1.5, 1.5, 100), numpy.array(edges) + 0.05, "o", label="edges"
+                    )
+                    ax.legend()
+                    plt.show()
+
+            + continuous2continuous: (currently only works if all elements of the lower and upper bounds are equal (e.g. autospace([[-1,-1]],[[1,1]]) would work, but not autospace([[-1,-2]],[[1,1]]))
+
+            .. code-block:: python
+
+                cont_space = autospace(numpy.full((2, 2), -1), numpy.full((2, 2), 1))
+                other_cont_space = autospace(numpy.full((2, 2), 0), numpy.full((2, 2), 4))
+
+                for i in numpy.linspace(-1, 1, 100):
+                    x = StateElement(numpy.full((2, 2), i), cont_space)
+                    ret_stateElement = x.cast(other_cont_space)
+                    assert (ret_stateElement == (x + 1) * 2).all()
+
+            + discrete2discrete:
+
+            .. code-block:: python
+
+                discr_space = autospace([1, 2, 3, 4])
+                other_discr_space = autospace([11, 12, 13, 14])
+
+                for i in [1, 2, 3, 4]:
+                    x = StateElement(i, discr_space)
+                    ret_stateElement = x.cast(other_discr_space)
+                    assert ret_stateElement == x + 10
+
+
+        :param other: Space to cast values to. Also works with a StateElement.
+        :type other: :py:class:`Space <coopihc.space.Space.Space>`
+        :param mode: how to map discrete and continuous spaces, defaults to "center". See examples in the documentation.
+        :type mode: str, optional
         """
-        raise NotImplementedError
+        if not isinstance(other, (StateElement, Space)):
+            raise TypeError(
+                "input arg {} of type {} must be of type StateElement or Space".format(
+                    str(other), type(other)
+                )
+            )
+
+        if isinstance(other, StateElement):
+            other = other.spaces
+            mix_outbounds = min(
+                self.__precedence__[self.out_of_bounds_mode],
+                self.__precedence__[other.out_of_bounds_mode],
+            )
+            mix_outbounds = (
+                self.__precedence__[
+                    list(self.__precedence__.values()).index[mix_outbounds]
+                ],
+            )
+        else:
+            mix_outbounds = self.out_of_bounds_mode
+
+        self_spacetype = self.spaces.space_type
+        other_spacetype = other.space_type
+
+        if self_spacetype == "discrete" and other_spacetype == "continuous":
+            value = self._discrete2continuous(other, mode=mode)
+        elif self_spacetype == "continuous" and other_spacetype == "continuous":
+            value = self._continuous2continuous(other)
+        elif self_spacetype == "continuous" and other_spacetype == "discrete":
+            value = self._continuous2discrete(other, mode=mode)
+        elif self_spacetype == "discrete" and other_spacetype == "discrete":
+            if self.spaces.N == other.N:
+                value = self._discrete2discrete(other)
+            else:
+                raise ValueError(
+                    "You are trying to match a discrete space to another discrete space of different size {} != {}.".format(
+                        self.spaces.N, other.N
+                    )
+                )
+        else:
+            raise NotImplementedError
+
+        return StateElement(
+            numpy.atleast_2d(numpy.array(value)),
+            other,
+            out_of_bounds_mode=mix_outbounds,
+        )
+
+    def _discrete2continuous(self, other, mode="center"):
+
+        if not (
+            self.spaces.space_type == "discrete" and other.space_type == "continuous"
+        ):
+            raise AttributeError(
+                "Use this only to go from a discrete to a continuous space"
+            )
+        if mode == "edges":
+            ls = numpy.linspace(other.low, other.high, self.spaces.N)
+            shift = 0
+        elif mode == "center":
+            ls = numpy.linspace(other.low, other.high, self.spaces.N + 1)
+            shift = (ls[1] - ls[0]) / 2
+
+        value = shift + ls[self.spaces._array_bound.squeeze().tolist().index(self[:])]
+        return numpy.array(value).reshape((-1, 1))
+
+    def _continuous2discrete(self, other, mode="center"):
+
+        if not (
+            self.spaces.space_type == "continuous" and other.space_type == "discrete"
+        ):
+            raise AttributeError(
+                "Use this only to go from a continuous to a discrete space"
+            )
+
+        _range = (self.spaces.high - self.spaces.low).squeeze()
+        if mode == "edges":
+            _remainder = (self[:].squeeze() - self.spaces.low.squeeze()) % (
+                _range / other.N
+            )
+            index = min(
+                int(
+                    (self[:].squeeze() - self.spaces.low.squeeze() - _remainder)
+                    / _range
+                    * other.N
+                ),
+                other.N - 1,
+            )
+        elif mode == "center":
+            N = other.N - 1
+            _remainder = (
+                self[:].squeeze() - self.spaces.low.squeeze() + (_range / 2 / N)
+            ) % (_range / (N))
+
+            index = int(
+                (
+                    self[:].squeeze()
+                    - self.spaces.low.squeeze()
+                    - _remainder
+                    + _range / 2 / N
+                )
+                / _range
+                * N
+                + 1e-5
+            )  # 1e-5 --> Hack to get around floating point arithmetic
+        return other._array_bound.squeeze().tolist()[index]
+
+    def _continuous2continuous(self, other):
+        if not (
+            self.spaces.space_type == "continuous" and other.space_type == "continuous"
+        ):
+            raise AttributeError(
+                "Use this only to go from a continuous to a continuous space"
+            )
+        s_range = self.spaces.high - self.spaces.low
+        o_range = other.high - other.low
+        s_mid = (self.spaces.high + self.spaces.low) / 2
+        o_mid = (other.high + other.low) / 2
+
+        return (self[:] - s_mid) / s_range * o_range + o_mid
+
+    def _discrete2discrete(self, other):
+
+        if not (self.spaces.space_type == "discrete" or other.space_type == "discrete"):
+            raise AttributeError(
+                "Use this only to go from a discrete to a discrete space"
+            )
+        return other._array_bound.squeeze()[
+            self.spaces._array_bound.squeeze()
+            .tolist()
+            .index(self[:].squeeze().tolist())
+        ]
 
     def _tabulate(self):
         """_tabulate
@@ -438,130 +655,6 @@ class StateElement(numpy.ndarray):
             raise NotImplementedError
 
         return ([[array, "\n".join(space)]], self.shape[0])
-
-    # def _discrete2continuous(self, other, mode="center"):
-    #         values = []
-    #         for sv, ss, os in zip(self["values"][0], self["spaces"][0], other["spaces"][0]):
-    #             if not (not ss.continuous and os.continuous):
-    #                 raise AttributeError(
-    #                     "Use this only to go from a discrete to a continuous space"
-    #                 )
-
-    #             _range = ss.range[0].squeeze()
-
-    #             if mode == "edges":
-    #                 N = len(_range)
-    #                 ls = numpy.linspace(os.low, os.high, N)
-    #                 shift = 0
-    #             elif mode == "center":
-    #                 N = len(_range) + 1
-    #                 ls = numpy.linspace(os.low, os.high, N)
-    #                 shift = (ls[1] - ls[0]) / 2
-
-    #             values.append(ls[list(_range).index(sv)] + shift)
-    #         return values
-
-    #     def _continuous2discrete(self, other, mode="center"):
-    #         values = []
-    #         for sv, ss, os in zip(self["values"][0], self["spaces"][0], other["spaces"][0]):
-    #             if not (ss.continuous and not os.continuous):
-    #                 raise AttributeError(
-    #                     "Use this only to go from a continuous to a discrete space"
-    #                 )
-
-    #             _range = (ss.high - ss.low).squeeze()
-    #             if mode == "edges":
-
-    #                 _remainder = (sv.squeeze() - ss.low.squeeze()) % (_range / os.N)
-    #                 index = int(
-    #                     (sv.squeeze() - ss.low.squeeze() - _remainder) / _range * os.N
-    #                 )
-    #             elif mode == "center":
-    #                 N = os.N - 1
-    #                 _remainder = (sv.squeeze() - ss.low.squeeze() + (_range / 2 / N)) % (
-    #                     _range / (N)
-    #                 )
-
-    #                 index = int(
-    #                     (sv.squeeze() - ss.low.squeeze() - _remainder + _range / 2 / N)
-    #                     / _range
-    #                     * N
-    #                     + 1e-5
-    #                 )  # 1e-5 --> Hack to get around floating point arithmetic
-    #             values.append(os.range[0].squeeze()[index])
-
-    #         return values
-
-    #     def _continuous2continuous(self, other):
-    #         values = []
-    #         for sv, ss, os in zip(self["values"][0], self["spaces"][0], other["spaces"][0]):
-    #             if not (ss.continuous and os.continuous):
-    #                 raise AttributeError(
-    #                     "Use this only to go from a continuous to a continuous space"
-    #                 )
-    #             s_range = ss.high - ss.low
-    #             o_range = os.high - os.low
-    #             s_mid = (ss.high + ss.low) / 2
-    #             o_mid = (os.high + os.low) / 2
-
-    #             values.append((sv - s_mid) / s_range * o_range + o_mid)
-    #             return values
-
-    #     def _discrete2discrete(self, other):
-
-    #         values = []
-    #         for sv, ss, os in zip(self["values"][0], self["spaces"][0], other["spaces"][0]):
-    #             if ss.continuous or os.continuous:
-    #                 raise AttributeError(
-    #                     "Use this only to go from a discrete to a discrete space"
-    #                 )
-    #             values.append(
-    #                 os.range[0].squeeze()[ss.range[0].squeeze().tolist().index(sv)]
-    #             )
-    #             return values
-
-    #     def cast(self, other, mode="center"):
-    #         """Convert values from one StateElement with one space to another with another space, whenever a one-to-one mapping is possible. Equally spaced discrete spaces are assumed.
-
-    #         :param StateElement other: The StateElement to which the value is converted to.
-    #         :param type mode: How to convert between discrete and continuous spaces. If mode == 'center', then the continuous domain will finish at the center of the edge discrete items. If mode == 'edges', the continous domain will finisg at the edges of the edge discrete items.
-    #         :return: A new StateElement with the space from other and the converted value from self.
-    #         :rtype: StateElement
-
-    #         """
-    #         if not isinstance(other, StateElement):
-    #             raise TypeError(
-    #                 "input arg {} must be of type StateElement".format(str(other))
-    #             )
-
-    #         values = []
-    #         for s, o in zip(self, other):
-    #             for sv, ss, ov, os in zip(
-    #                 s["values"], s["spaces"], o["values"], o["spaces"]
-    #             ):
-    #                 if not ss.continuous and os.continuous:
-    #                     value = s._discrete2continuous(o, mode=mode)
-    #                 elif ss.continuous and os.continuous:
-    #                     value = s._continuous2continuous(o)
-    #                 elif ss.continuous and not os.continuous:
-    #                     value = s._continuous2discrete(o, mode=mode)
-    #                 elif not ss.continuous and not os.continuous:
-    #                     if ss.N == os.N:
-    #                         value = s._discrete2discrete(o)
-    #                     else:
-    #                         raise ValueError(
-    #                             "You are trying to match a discrete space to another discrete space of different size."
-    #                         )
-    #                 else:
-    #                     raise NotImplementedError
-    #                 values.extend(value)
-
-    #         return StateElement(
-    #             values=values,
-    #             spaces=other["spaces"],
-    #             clipping_mode=self._mix_modes(other),
-    #             typing_priority=self.typing_priority,
-    #         )
 
     # if _str == "cast" or _str == "all":
 

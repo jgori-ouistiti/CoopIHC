@@ -1,3 +1,4 @@
+from sre_parse import State
 from coopihc.space.Space import Space
 from coopihc.space.StateElement import StateElement
 from coopihc.space.utils import (
@@ -801,20 +802,116 @@ def test_tabulate():
     test_tabulate_multidiscrete()
 
 
+def test_cast_discrete_to_cont():
+    global discr_space
+    cont_space = autospace([[-1.5]], [[1.5]])
+    x = StateElement([1], discr_space)
+    ret_stateElem = x.cast(cont_space, mode="edges")
+    assert ret_stateElem == StateElement(numpy.array([[-1.5]]), cont_space)
+    ret_stateElem = x.cast(cont_space, mode="center")
+    assert ret_stateElem == StateElement(numpy.array([[-1]]), cont_space)
+
+    x = StateElement([2], discr_space)
+    ret_stateElem = x.cast(cont_space, mode="edges")
+    assert ret_stateElem == StateElement(numpy.array([[0]]), cont_space)
+    ret_stateElem = x.cast(cont_space, mode="center")
+    assert ret_stateElem == StateElement(numpy.array([[0]]), cont_space)
+
+    x = StateElement([3], discr_space)
+    ret_stateElem = x.cast(cont_space, mode="edges")
+    assert ret_stateElem == StateElement(numpy.array([[1.5]]), cont_space)
+    ret_stateElem = x.cast(cont_space, mode="center")
+    assert ret_stateElem == StateElement(numpy.array([[1]]), cont_space)
+
+
+def test_cast_cont_to_discrete():
+    cont_space = autospace([[-1.5]], [[1.5]])
+    x = StateElement([0], cont_space)
+    ret_stateElem = x.cast(discr_space, mode="center")
+    assert ret_stateElem == StateElement(2, discr_space)
+    ret_stateElem = x.cast(discr_space, mode="edges")
+    assert ret_stateElem == StateElement(2, discr_space)
+
+    center = []
+    edges = []
+    for i in numpy.linspace(-1.5, 1.5, 100):
+        x = StateElement(numpy.array(i).reshape((1, 1)), cont_space)
+        ret_stateElem = x.cast(discr_space, mode="center")
+        if i < -0.75:
+            assert ret_stateElem == StateElement(1, discr_space)
+        if i > -0.75 and i < 0.75:
+            assert ret_stateElem == StateElement(2, discr_space)
+        if i > 0.75:
+            assert ret_stateElem == StateElement(3, discr_space)
+        center.append(ret_stateElem[:].squeeze().tolist())
+
+        ret_stateElem = x.cast(discr_space, mode="edges")
+        if i < -0.5:
+            assert ret_stateElem == StateElement(1, discr_space)
+        if i > -0.5 and i < 0.5:
+            assert ret_stateElem == StateElement(2, discr_space)
+        if i > 0.5:
+            assert ret_stateElem == StateElement(3, discr_space)
+
+        edges.append(ret_stateElem[:].squeeze().tolist())
+
+    # import matplotlib.pyplot as plt
+
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111)
+    # ax.plot(
+    #     numpy.linspace(-1.5, 1.5, 100), numpy.array(center) - 0.05, "+", label="center"
+    # )
+    # ax.plot(
+    #     numpy.linspace(-1.5, 1.5, 100), numpy.array(edges) + 0.05, "o", label="edges"
+    # )
+    # ax.legend()
+    # plt.show()
+
+
+def test_cast_cont_to_cont():
+    cont_space = autospace(numpy.full((2, 2), -1), numpy.full((2, 2), 1))
+    other_cont_space = autospace(numpy.full((2, 2), 0), numpy.full((2, 2), 4))
+
+    for i in numpy.linspace(-1, 1, 100):
+        x = StateElement(numpy.full((2, 2), i), cont_space)
+        ret_stateElement = x.cast(other_cont_space)
+        assert (ret_stateElement == (x + 1) * 2).all()
+
+
+def test_cast_discr_to_discr():
+    discr_space = autospace([1, 2, 3, 4])
+    other_discr_space = autospace([11, 12, 13, 14])
+
+    for i in [1, 2, 3, 4]:
+        x = StateElement(i, discr_space)
+        ret_stateElement = x.cast(other_discr_space)
+        assert ret_stateElement == x + 10
+
+
+def test_cast():
+    # Test below are with argument type: space. Multidiscrete not included yet
+    test_cast_discrete_to_cont()
+    test_cast_cont_to_discrete()
+    test_cast_cont_to_cont()
+    test_cast_discr_to_discr()
+
+
 if __name__ == "__main__":
 
     test_array_init()
-    test_array_init_error()
-    test_array_init_warning()
-    test_array_init_clip()
-    test_array_init_dtype()
-    test__array_ufunc__()
-    test__array_function__()
-    test_equals()
-    test__iter__()
-    test__repr__()
-    test_serialize()
-    test_reset()
-    test__setitem__()
-    test__getitem__()
-    test_tabulate()
+    # test_array_init_error()
+    # test_array_init_warning()
+    # test_array_init_clip()
+    # test_array_init_dtype()
+    # test__array_ufunc__()
+    # test__array_function__()
+    # test_equals()
+    # test__iter__()
+    # test__repr__()
+    # test_serialize()
+    # test_reset()
+    # test__setitem__()
+    # test__getitem__()
+    # test_tabulate()
+    test_cast()
