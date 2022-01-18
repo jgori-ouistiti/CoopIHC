@@ -85,8 +85,11 @@ class LinearFeedback(BasePolicy):
 
         output = output.view(numpy.ndarray)
 
-        if self.feedback_gain == "identity":
-            self.feedback_gain = -numpy.eye(max(output.shape))
+        if isinstance(
+            self.feedback_gain, str
+        ):  # Checking type is needed to suppress FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison in Python 3.8 + NumPy 1.22.0
+            if self.feedback_gain == "identity":
+                self.feedback_gain = -numpy.eye(max(output.shape))
 
         noiseless_feedback = -self.feedback_gain @ output.reshape((-1, 1))
         noisy_action = self.noise_function(

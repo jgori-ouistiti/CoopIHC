@@ -104,7 +104,7 @@ class LQRController(BaseAgent):
                 self.ax.set_ylabel("Action")
             if self.action:
                 self.ax.plot(
-                    self.bundle.task.round * self.bundle.task.timestep,
+                    self.bundle.round_number * self.bundle.task.timestep,
                     self.action,
                     "bo",
                 )

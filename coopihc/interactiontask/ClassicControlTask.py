@@ -13,13 +13,23 @@ class ClassicControlTask(InteractionTask):
 
     A task used for a classic control setting with signal dependent and independent noise. You can account for control-dependent noise with an appropriate noise model in the policy or the observation engine.
 
-    The task has a state x(.) which evolves according to
+    The task has a state x(.) which evolves according to 
 
     .. math ::
 
         \\begin{align}
-            x(+.) = Ax(.) + Bu(.) + Fx(.).\\beta + G.\\omega \\\\
+            x(+.) = Ax(.) + Bu(.) + Fx(.).\\beta + G.\\omega + Hu(.)d\\gamma \\\\
         \\end{align}
+
+    for "timespace=discrete" and
+
+    .. math ::
+
+        \\begin{align}
+            x(+.) = (Ax(.) + Bu(.))dt + Fx(.).\\beta + G.\\omega \\\\
+        \\end{align}
+
+    for "timespace=continuous".
 
     where :math:``u(.)`` is the user action. The task is finised when the first component x[0,0] is close enough to 0. Currently this is implemented as the condition ``abs(x[0, 0]) <= 0.01``.
 
@@ -53,9 +63,13 @@ class ClassicControlTask(InteractionTask):
     :type F: numpy.ndarray, optional
     :param G: independent noise, defaults to None
     :type G: numpy.ndarray, optional
+    :param H: control-dependent noise, defaults to None
+    :type H: numpy.ndarray, optional
     :param discrete_dynamics: whether A and B are continuous or discrete, defaults to True
     :type discrete_dynamics: bool, optional
     :param noise: whether to include noise, defaults to "on"
+    :type noise: str, optional
+    :param timespace: if the task is modeled as discrete or continuous, defaults to "discrete"
     :type noise: str, optional
     """
 
@@ -64,11 +78,13 @@ class ClassicControlTask(InteractionTask):
         timestep,
         A,
         B,
+        *args,
         F=None,
         G=None,
+        H=None,
         discrete_dynamics=True,
         noise="on",
-        *args,
+        timespace="discrete",
         **kwargs
     ):
 
@@ -97,6 +113,8 @@ class ClassicControlTask(InteractionTask):
             self.G = numpy.zeros(A.shape)
         else:
             self.G = G
+        if H is None:
+            self.H = numpy.zeros(B.shape)
         # Convert dynamics between discrete and continuous.
         if discrete_dynamics:
             self.A_d = A
@@ -112,21 +130,19 @@ class ClassicControlTask(InteractionTask):
             self.B_d = timestep * B
 
         self.noise = noise
+        self.timespace = timespace
 
     def finit(self):
         """finit
 
-        Define whether to use continuous or discrete representation.
+        Define whether to use continuous or discrete representation for A and B
         """
-        # if self.bundle.user.timespace == "continuous":
-        #     self.A = self.A_c
-        #     self.B = self.B_c
-        # else:
-        #     self.A = self.A_d
-        #     self.B = self.B_d
-
-        self.A = self.A_d
-        self.B = self.B_d
+        if self.timespace == "continuous":
+            self.A = self.A_c
+            self.B = self.B_c
+        else:
+            self.A = self.A_d
+            self.B = self.B_d
 
     def reset(self, dic=None):
         """Force all substates except the first to be null.
@@ -161,7 +177,7 @@ class ClassicControlTask(InteractionTask):
         # Call super for counters
 
         # For readability
-        A, B, F, G = self.A, self.B, self.F, self.G
+        A, B, F, G, H = self.A, self.B, self.F, self.G, self.H
 
         _u = self.user_action.view(numpy.ndarray)
         _x = self.state["x"].view(numpy.ndarray)
@@ -177,10 +193,15 @@ class ClassicControlTask(InteractionTask):
         # Store last_x for render
         self.state_last_x = copy.copy(self.state["x"])
         # Deterministic update + State dependent noise + independent noise
-        # if self.timespace == "discrete":
-        _x = (A @ _x + B * _u) + F @ _x * beta + G @ omega
-        # else:
-        #     x += (A @ x + B * u) * self.timestep + F @ x * beta + G @ omega
+        if self.timespace == "discrete":
+            _x = (A @ _x + B * _u) + F @ _x * beta + G @ omega + H * _u * gamma
+        else:
+            _x += (
+                (A @ _x + B * _u) * self.timestep
+                + F @ _x * beta
+                + G @ omega
+                + H * _u * gamma
+            )
 
         self.state["x"][:] = _x
         if abs(_x[0, 0]) <= 0.01:
@@ -235,8 +256,8 @@ class ClassicControlTask(InteractionTask):
             for i in range(self.dim):
                 self.axes[i].plot(
                     [
-                        ((self.turn_number - 1) / 2 - 1) * self.timestep,
-                        (self.turn_number - 1) / 2 * self.timestep,
+                        ((self.round_number - 1) / 2 - 1) * self.timestep,
+                        (self.round_number - 1) / 2 * self.timestep,
                     ],
                     flatten(
                         [
