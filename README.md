@@ -29,123 +29,36 @@ You can them import the necessary packages from `coopihc`.
 
 ## Quickstart
 
-At a high level, CoopIHC code will usually consist of defining tasks, agents (users and assistants), bundling them together, and playing several rounds of interaction until the game ends.
+At a high level, CoopIHC code will usually consist of defining tasks, agents (users and assistants), bundling them together, and playing several rounds of interaction until the game ends. This generates data that you can then use for something else.
 
-### Task
-
-Tasks represent whatever the user is interacting with. They are essentially characterized by:
-
-- An internal state, the **task state** which holds all the task's information.
-- A **user step (transition) function**, which describes how the task state changes based on the user action.
-- An **assistant step (transition) function**, which describes how the task state changes based on the assistant action.
 
 ```Python
-from coopihc.interactiontask import InteractionTask
-from coopihc.space import StateElement, Space
-
-class ExampleTask(InteractionTask):
-    """
-    ExampleTask with two agents. The task is finished when 'x' reaches 4.
-    The user and assistants can both do -1, +0, +1 to 'x'.
-    """
-
-    def __init__(self):
-        super().__init__()
-
-        self.state["x"] = StateElement(
-            values=0,
-            spaces=Space([numpy.arange(-4, 5, dtype=numpy.int16)])
-        )
-
-    def reset(self):
-        self.state["x"]["values"] = 0
-
-    def user_step(self):
-        is_done = False
-        self.state["x"] += self.user_action
-        if int(self.state["x"]["values"][0]) == 4:
-            is_done = True
-        return self.state, -1, is_done, {}
-
-    def assistant_step(self):
-        is_done = False
-        self.state["x"] += self.assistant_action
-        if int(self.state["x"]["values"][0]) == 4:
-            is_done = True
-        return self.state, -1, is_done, {}
-
-    def render(self):
-            print(f"Turn number {self.turn_number}")
-            print(self.state)
-```
-
-### Agents
-
-Defining a new agent is done by subclassing the `BaseAgent` class:
-
-```Python
-from coopihc.agents import BaseAgent
-from coopihc.space import StateStateElement, Space
-from coopihc.policy import BasePolicy
-
-class ExampleUser(BaseAgent):
-    """An agent that handles the BasePolicy."""
-
-    def __init__(self):
-        # Define an internal state with a 'goal' substate
-        state = State()
-        state["goal"] = StateElement(
-            values=4,
-            spaces=[Space([numpy.arange(-4, 5, dtype=numpy.int16)])],
-        )
-
-        # Define a policy (random policy)
-        action_state = State()
-        action_state["action"] = StateElement(
-            values=None,
-            spaces=[Space([numpy.array([-1, 0, 1], dtype=numpy.int16)])],
-        )
-        agent_policy = BasePolicy(action_state)
-
-        super().__init__(
-            "user",
-            agent_policy=agent_policy,
-            agent_state=state,
-        )
-
-    # Override default behaviour of BaseAgent which would randomly
-    # sample new goal values on each reset.
-    # Here for purpose of demonstration we impose a goal = 4.
-    def reset(self, dic=None):
-        self.state["goal"]["values"] = 4
-```
-
-### Bundle
-
-Defining a bundle consists of (at least) a task and a user.
-It can optionally include an assistant.
-
-```Python
-from coopihc.bundle import Bundle
-
 # Define a task
 example_task = ExampleTask()
 # Define a user
 example_user = ExampleUser()
+# Define an assistant
+example_assistant = ExampleAssistant()
 # Bundle them together
-bundle = Bundle(task=example_task, user=example_user)
-# Reset the bundle (i.e. initialize it to a random or presecribed states)
-bundle.reset(turn=1)
-# Step through the bundle (i.e. play a full round)
+bundle = Bundle(task=example_task, user=example_user, assistant=example_assistant)
+# Reset the bundle (i.e. initialize it to a random or prescribed states)
+bundle.reset(
+    turn=1
+)  # Reset in a state where the user has already produced an observation and made an inference.
+
+# Step through the bundle (i.e. play full rounds)
 while 1:
-    user_action = bundle.user.policy.sample()[0]
-    state, rewards, is_done = bundle.step(user_action)
-    print(state, rewards, is_done)
+    state, rewards, is_done = bundle.step(user_action=1, assistant_action=None)
+    # Do something with the state or the rewards
     if is_done:
         break
 ```
 
-It consists of defining tasks, users, assistants, bundling them together, and playing several rounds of interaction until the game ends.
+The point of CoopIHC is to make task and agent definitions generic, to facilitate re-use of various components among researchers. For example, a few user models are released with CoopIHC that can be used off the shelf, and we are actively adding more. Tasks and agents can also be combined freely via a single Bundle object. This allows you to test various user models or assistants with minimal effort, including real user input.
+
+
+
+Head over to the [Quickstart](https://jgori-ouistiti.github.io/CoopIHC/guide/quickstart.html) to get a better picture.
 
 ## Contribution Guidelines
 
