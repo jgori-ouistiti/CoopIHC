@@ -70,3 +70,8 @@ Sending a PR without discussion might end up resulting in a rejected PR because 
 To learn more about making a contribution to CoopIHC, please see our [Contribution page](CONTRIBUTING.md).
 
 Link to the project site: https://jgori-ouistiti.github.io/CoopIHC
+
+## Contributors
+
+Julien Gori (gori@isir.upmc.fr, CNRS, ISIR, Sorbonne Université)
+Christoph Johns
