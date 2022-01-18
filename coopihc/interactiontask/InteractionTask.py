@@ -1,6 +1,11 @@
+"""This module provides access to the InteractionTask class."""
+
+
 from abc import ABC, abstractmethod
 from coopihc.space.State import State
 from coopihc.space.StateElement import StateElement
+import numpy
+
 
 """
     The main API methods for this class are:
@@ -24,7 +29,9 @@ from coopihc.space.StateElement import StateElement
 class InteractionTask(ABC):
     """InteractionTask
 
-    The class that defines an Interaction Task. Subclass this task when creating a new task to ensure compatibility with CoopIHC. When doing so, make sure to call ``super()`` in ``__init__()``.
+    The class that defines an Interaction Task. Subclass this task when
+    creating a new task to ensure compatibility with CoopIHC. When doing so,
+    make sure to call ``super()`` in ``__init__()``.
 
     """
 
@@ -32,7 +39,6 @@ class InteractionTask(ABC):
 
         self._state = State()
         self.bundle = None
-        self.round = 0
         self.timestep = 0.1
 
         # Render
@@ -50,7 +56,17 @@ class InteractionTask(ABC):
         :return: turn number
         :rtype: numpy.ndarray
         """
+        if self.bundle is None:
+            no_bundle_specified = "turn_number accesses the bundle's turn number. self.bundle was None. Is this task part of a bundle?"
+            raise Exception(no_bundle_specified)
         return self.bundle.turn_number
+
+    @property
+    def round_number(self):
+        if self.bundle is None:
+            no_bundle_specified = "turn_number accesses the bundle's turn number. self.bundle was None. Is this task part of a bundle?"
+            raise Exception(no_bundle_specified)
+        return self.bundle.round_number
 
     @property
     def state(self):
@@ -103,9 +119,11 @@ class InteractionTask(ABC):
             "Name": self.__class__.__name__,
             "State": self.state.__content__(),
         }
-        """Describe how the task state should be reset. This method has to be redefined when subclassing this class.
+        """Describe how the task state should be reset. This method has to be
+        redefined when subclassing this class.
 
-        :param args: (OrderedDict) state to which the task should be reset, if provided.
+        :param args: (OrderedDict) state to which the task should be reset,
+        if provided.
 
         :return: state (OrderedDict) of the task.
 
@@ -115,30 +133,40 @@ class InteractionTask(ABC):
     def _base_reset(self, dic=None):
         """base reset
 
-        Method that wraps the user defined reset() method. Takes care of the dictionnary reset mechanism and updates rounds.
+        Method that wraps the user defined reset() method. Takes care of the
+        dictionary reset mechanism and updates rounds.
 
-        :param dic: reset dictionnary (passed by bundle),
-        :type dic: dictionnary, optional
+        :param dic: reset dictionary (passed by bundle),
+        :type dic: dictionary, optional
         """
-        self.round = 0
+
+        # Reset everything randomly before  starting
+        self.state.reset(dic={})
+        # Apply end-user defined reset
+        self.reset(dic=dic)
 
         if not dic:
-            self.state.reset(dic={})
-            self.reset(dic=dic)
             return
 
-        self.reset(dic=dic)
+        # forced reset with dic
         for key in list(self.state.keys()):
             value = dic.get(key)
             if isinstance(value, StateElement):
-                value = value["values"]
-            if value is not None:
-                self.state[key]["values"] = value
+                self.state[key] = value
+                continue
+            elif isinstance(value, numpy.ndarray):
+                self.state[key][:] = value
+
+            elif value is None:
+                continue
+            else:
+                raise NotImplementedError
 
     def base_user_step(self, *args, **kwargs):
         """base user step
 
-        Wraps the user defined user_step() method. For now does little but provide default values, may be useful later.
+        Wraps the user defined user_step() method. For now does little but
+        provide default values, may be useful later.
 
         :return: (task state, task reward, is_done flag, metadata):
         :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float, boolean, dictionnary)
@@ -152,7 +180,8 @@ class InteractionTask(ABC):
     def base_assistant_step(self, *args, **kwargs):
         """base assistant step
 
-        Wraps the assistant defined assistant_step() method. For now does little but provide default values, may be useful later.
+        Wraps the assistant defined assistant_step() method. For now does
+        little but provide default values, may be useful later.
 
         :return: (task state, task reward, is_done flag, metadata):
         :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float, boolean, dictionnary)
@@ -186,19 +215,12 @@ class InteractionTask(ABC):
         return None
 
     @abstractmethod
-    def reset(self, dic=None):
+    def reset(self):
         """reset
 
-        Redefine this to specify how to reinitialize the task before each new game.
+        Redefine this to specify how to reinitialize the task before each new
+        game.
 
-        .. warning::
-
-            the method signature is likely outdated and should be reset(self) since the base_reset() method already accounts for the reset dic mechanism
-
-        :param dic: [likely outdated], defaults to None
-        :type dic: [type], optional
-        :return: task state
-        :rtype: :py:class:`State<coopihc.space.State.State>`
         """
         return None
 

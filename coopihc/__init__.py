@@ -2,7 +2,6 @@
 __version__ = "0.0.6"
 
 from .agents.BaseAgent import BaseAgent
-from .agents.GoalDrivenDiscreteUser import GoalDrivenDiscreteUser
 from .agents.ExampleUser import ExampleUser
 from .agents.ExampleAssistant import ExampleAssistant
 
@@ -13,12 +12,6 @@ from .agents.lqrcontrollers.LQRController import LQRController
 
 from .bundle._Bundle import _Bundle
 from .bundle.Bundle import Bundle
-from .bundle._PlayAssistant import PlayAssistant
-from .bundle._PlayBoth import PlayBoth
-from .bundle._PlayNone import PlayNone
-from .bundle._PlayUser import PlayUser
-from .bundle._SinglePlayUser import SinglePlayUser
-from .bundle._SinglePlayUserAuto import SinglePlayUserAuto
 from .bundle.wrappers.Train import Train
 from .bundle.WsServer import WsServer
 from .bundle.wrappers import BundleWrapper, PipedTaskBundleWrapper
@@ -52,3 +45,28 @@ from .policy.ExamplePolicy import ExamplePolicy
 from .space.Space import Space
 from .space.State import State
 from .space.StateElement import StateElement
+
+# ---------------- warnings
+from .space.utils import StateNotContainedWarning
+from .space.utils import NotKnownSerializationWarning
+from .space.utils import ContinuousSpaceIntIndexingWarning
+from .space.utils import NumpyFunctionNotHandledWarning
+from .space.utils import RedefiningHandledFunctionWarning
+from .space.utils import WrongConvertorWarning
+
+# ----------------- errors
+from .space.utils import SpaceLengthError
+from .space.utils import StateNotContainedError
+from .space.utils import SpacesNotIdenticalError
+from .space.utils import NotASpaceError
+
+# -------------------- shortcuts
+from .space.utils import autospace
+from .space.utils import discrete_space
+from .space.utils import continuous_space
+from .space.utils import multidiscrete_space
+
+# ------------------ convertors
+from .space.utils import GymConvertor
+from .space.utils import WrongConvertorError
+from .space.utils import GymForceConvertor

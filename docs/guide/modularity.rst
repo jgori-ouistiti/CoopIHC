@@ -3,6 +3,10 @@
 Modularity
 ===============
 
+.. warning::
+
+    All examples outdated
+
 The API used in *CoopIHC* being straightforward, one can create new classes from scratch, by subclassing one of the coopihc classes, adding a few methods, and adhering to a few conventions.
 
 Another way in which one can create new classes, which we explain now, is by re-using existing classes, and wrapping them appropriately.

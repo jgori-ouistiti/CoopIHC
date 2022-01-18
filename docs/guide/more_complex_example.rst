@@ -1,4 +1,11 @@
-.. more_complex_example:
+.. worked_out_example:
+
+
+.. warning::
+
+    All examples outdated
+
+
 
 Basic Example
 -----------------
@@ -411,7 +418,7 @@ Now, you could explore other policies, or better, use an optimization process to
 
 
 More complex example
--------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 We will use the previous user model and combine it with a more complex assistant, namely a Bayesian Information Gain (:download:`BIG <https://hal.inria.fr/hal-01677122/document>`) Assistant. The idea of a BIG is that the assistant extracts as much information as possible from the user at each step. Roughly speaking, it will position the cursor somewhat in between the most probable targets.
 

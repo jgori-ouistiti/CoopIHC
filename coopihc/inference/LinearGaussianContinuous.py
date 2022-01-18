@@ -8,30 +8,23 @@ from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 class LinearGaussianContinuous(BaseInferenceEngine):
     """LinearGaussianContinuous
 
-    An Inference Engine that handles a continuous Gaussian Belief. It assumes a Gaussian prior and a Gaussian likelihood. ---- Currently the covariance matrix for the likelihood is assumed to be contained by the host as self.Sigma. Maybe change this ----
+    An Inference Engine that handles a continuous Gaussian Belief. It assumes a Gaussian prior and a Gaussian likelihood.
 
-    The mean and covariance matrices of Belief are stored in the substates 'MuBelief' and 'SigmaBelief'.
+    - **Expectations of the engine**
 
-    :param likelihood_binding: function which computes the likelihood of each future observation
-    :type likelihood_binding: function
-    """
+        This inference engine expects the agent to have in its internal state:
 
-    def __init__(self, likelihood_binding, *args, **kwargs):
+            + The mean matrix of the belief, stored as 'belief-mu'
+            + The covariance matrix of the belief, stored as 'belief-sigma'
+            + The new observation, stored as 'y'
+            + The covariance matrix associated with the observation, stored as 'Sigma_0'
 
-        super().__init__()
-        self.render_tag = ["text", "plot"]
 
-        self.bind(likelihood_binding, "provide_likelihood")
+    - **Inference**
 
-    def provide_likelihood(self):
-        raise NotImplementedError(
-            "You should bind a method named 'provide_likelihood' to this inference engine"
-        )
+        This engine uses the observation to update the beliefs (which has been computed from previous observations).
 
-    def infer(self):
-        """infer
-
-        Update the Gaussian beliefs: assuming a Gaussian noisy observation model:
+        To do so, a Gaussian noisy observation model is assumed, where x is the latest mean matrix of the belief.
 
         .. math::
 
@@ -39,7 +32,8 @@ class LinearGaussianContinuous(BaseInferenceEngine):
             p(y|x) \\sim \\mathcal{N}(x, \\Sigma_0)
             \\end{align}
 
-        and with a Gaussian prior
+
+        If the initial prior (belief probability) is Gaussian as well, then the posterior will remain Gaussian (because we are only applying linear operations to Gaussians, Gaussianity is preserved). So the posterior after t-1 observations has the following form, where :math:`(\\mu(t-1), \\Sigma(t-1))` are respectively the mean and covariance matrices of the beliefs.
 
         .. math::
 
@@ -47,7 +41,7 @@ class LinearGaussianContinuous(BaseInferenceEngine):
             p(x(t-1)) \\sim \mathcal{N}(\\mu(t-1), \\Sigma(t-1))
             \\end{align}
 
-        we have that 
+        On each new observation, the mean and covariance matrices are updated like so:
 
         .. math::
 
@@ -56,29 +50,52 @@ class LinearGaussianContinuous(BaseInferenceEngine):
             \\Sigma(t) = (\\Sigma_0^{-1} + \\Sigma(t-1)^{-1})^{-1}
             \\end{align}
 
-        :return: (new internal state, reward)
-        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float)
-        """
-        observation = self.buffer[-1]
-        if self.host.role == "user":
-            state = observation["user_state"]
-        else:
-            state = observation["assistant_state"]
+    
+    - **Render**
 
-        if self.provide_likelihood is None:
-            print(
-                "Please call attach_yms() method before. You have to specify which components of the states constitute the observation that is used to update the beliefs."
-            )
-        else:
-            y, v = self.provide_likelihood()
+        ---- plot mode:
 
-        oldmu, oldsigma = state["belief"]["values"]
+        This engine will plot mean beliefs on the task axis and the covariance beliefs on the agent axis, plotted as confidence intervals (bars for 1D and ellipses for 2D).
+
+
+    - **Example files**
+
+        coopihczoo.eye.users
+
+
+    """
+
+    def __init__(self, *args, **kwargs):
+
+        super().__init__()
+        self.render_tag = ["text", "plot"]
+
+    def infer(self, user_state=None):
+        if user_state is None:
+            observation = self.observation
+            if self.host.role == "user":
+                user_state = observation["user_state"]
+            else:
+                user_state = observation["assistant_state"]
+
+        # Likelihood model
+        y, v = user_state["y"].view(numpy.ndarray), user_state["Sigma_0"].view(
+            numpy.ndarray
+        )
+        # Prior
+        oldmu, oldsigma = user_state["belief-mu"].view(numpy.ndarray), user_state[
+            "belief-sigma"
+        ].view(numpy.ndarray)
+
+        # Posterior
         new_sigma = numpy.linalg.inv((numpy.linalg.inv(oldsigma) + numpy.linalg.inv(v)))
         newmu = new_sigma @ (
-            numpy.linalg.inv(v) @ y.T + numpy.linalg.inv(oldsigma) @ oldmu.T
+            numpy.linalg.inv(v) @ y + numpy.linalg.inv(oldsigma) @ oldmu
         )
-        state["belief"]["values"] = [newmu, new_sigma]
-        return state, 0
+        user_state["belief-mu"][:] = newmu
+        user_state["belief-sigma"][:, :] = new_sigma
+
+        return user_state, 0
 
     def render(self, *args, **kwargs):
         """render
@@ -105,7 +122,7 @@ class LinearGaussianContinuous(BaseInferenceEngine):
                 self.ax = ax
 
             self.draw_beliefs(ax, dim)
-            mean_belief, std_belief = self.host.state["belief"]["values"]
+            mean_belief = self.host.state["belief-mu"]
             if dim == 1:
                 mean_belief = numpy.array([mean_belief.squeeze().tolist(), 0])
 
@@ -113,7 +130,12 @@ class LinearGaussianContinuous(BaseInferenceEngine):
             self.ax.set_title(type(self).__name__ + " beliefs")
 
         if "text" in mode:
-            print(self.host.state["belief"]["values"])
+            print(
+                "Belief: Mu = {}, Sigma = {}".format(
+                    self.host.state["belief-mu"].view(numpy.ndarray),
+                    self.host.state["belief-sigma"].view(numpy.ndarray),
+                )
+            )
 
     def draw_beliefs(self, ax, dim):
         """draw_beliefs
@@ -125,7 +147,7 @@ class LinearGaussianContinuous(BaseInferenceEngine):
         :param dim: dimension of data
         :type dim: int
         """
-        mu, cov = self.host.state["belief"]["values"]
+        mu, cov = self.host.state["belief-mu"], self.host.state["belief-sigma"]
         print(mu, cov)
         if dim == 2:
             self.patch = self.confidence_ellipse(mu, cov, ax)
@@ -163,8 +185,8 @@ class LinearGaussianContinuous(BaseInferenceEngine):
         ax.plot(
             vec,
             [
-                -0.5 + 0.05 * self.host.bundle.task.round,
-                -0.5 + 0.05 * self.host.bundle.task.round,
+                -0.5 + 0.05 * self.host.bundle.round_number,
+                -0.5 + 0.05 * self.host.bundle.round_number,
             ],
             "-",
             marker="|",

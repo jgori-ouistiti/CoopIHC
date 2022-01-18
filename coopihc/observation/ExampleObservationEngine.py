@@ -1,6 +1,7 @@
 from coopihc.observation.BaseObservationEngine import BaseObservationEngine
+from coopihc.space.State import State
 
-
+# [start-obseng-subclass]
 class ExampleObservationEngine(BaseObservationEngine):
     """ExampleObservationEngine
 
@@ -14,7 +15,7 @@ class ExampleObservationEngine(BaseObservationEngine):
         super().__init__(*args, **kwargs)
         self.observable_state = observable_state
 
-    def observe(self, game_state):
+    def observe(self, game_state=None):
         """observe
 
         Select only state observable_state.
@@ -24,4 +25,8 @@ class ExampleObservationEngine(BaseObservationEngine):
         :return: (observation, obs reward)
         :rtype: tuple(`State<coopihc.space.State.State`, float)
         """
-        return game_state[self.observable_state], 0
+        game_state = super().observe(game_state=game_state)
+        return State(**{self.observable_state: game_state[self.observable_state]}), 0
+
+
+# [end-obseng-subclass]

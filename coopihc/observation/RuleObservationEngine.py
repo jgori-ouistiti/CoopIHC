@@ -5,62 +5,129 @@ import copy
 
 
 class RuleObservationEngine(BaseObservationEngine):
-    """RuleObservationEngine [summary]
+    """RuleObservationEngine
 
-    An observation engine that is specified by rules regarding each particular substate, using a so called mapping.
+
+    An observation engine that is specified by rules regarding each particular substate, using a so called mapping. Example usage is given below:
+
+    .. code-block:: python
+
+        obs_eng = RuleObservationEngine(mapping=mapping)
+        obs, reward = obs_eng.observe(game_state=example_game_state())
+
 
     A mapping is any iterable where an item is:
 
     (substate, subsubstate, _slice, _func, _args, _nfunc, _nargs)
 
-    where     observation = _nfunc(_func(state[substate][subsubstate][_slice], _args), _nargs)
+    The elements in this mapping are applied to create a particular component of the observation space, as follows
+
+    .. code-block:: python
+
+        observation_component = _nfunc(_func(state[substate][subsubstate][_slice], _args), _nargs)
+
+    For example, a valid mapping for the ``example_game_state`` mapping that states that everything should be observed except the game information is as follows:
+
+    .. code-block:: python
+
+        from coopihc.space.utils import example_game_state
+        print(example_game_state())
+
+        # Define mapping
+        mapping = [
+            ("task_state", "position", slice(0, 1, 1), None, None, None, None),
+            ("task_state", "targets", slice(0, 2, 1), None, None, None, None),
+            ("user_state", "goal", slice(0, 1, 1), None, None, None, None),
+            ("assistant_state", "beliefs", slice(0, 8, 1), None, None, None, None),
+            ("user_action", "action", slice(0, 1, 1), None, None, None, None),
+            ("assistant_action", "action", slice(0, 1, 1), None, None, None, None),
+        ]
+
+        # Apply mapping
+        obseng = RuleObservationEngine(mapping=mapping)
+        obseng.observe(example_game_state())
+
+    As a more complex example, suppose we want to have an observation engine that behaves as above, but which doubles the observation on the ("user_state", "goal") StateElement. We also want to have a noisy observation of the ("task_state", "position") StateElement. We would need the following mapping:
+
+    .. code-block:: python
+
+       def f(observation, gamestate, *args):
+            gain = args[0]
+            return gain * observation
+
+        def g(observation, gamestate, *args):
+            return random.randint(0, 1) + observation
+
+        mapping = [
+            ("task_state", "position", slice(0, 1, 1), None, None, g, ()),
+            ("task_state", "targets", slice(0, 2, 1), None, None, None, None),
+            ("user_state", "goal", slice(0, 1, 1), f, (2,), None, None),
+            ("user_action", "action", slice(0, 1, 1), None, None, None, None),
+            ("assistant_action", "action", slice(0, 1, 1), None, None, None, None),
+        ]
+
+    .. note::
+
+        It is important to respect the signature of the functions you pass in the mapping (viz. f and g's signatures).
+
+
+    Typing out a mapping may be a bit laborious and hard to comprehend for collaborators; there are some shortcuts that make defining this engine easier.
 
     Example usage:
 
     .. code-block:: python
 
-        observation_engine = RuleObservationEngine(
-            base_user_engine_specification,
+        obs_eng = RuleObservationEngine(
+            deterministic_specification=engine_specification,
+            extradeterministicrules=extradeterministicrules,
             extraprobabilisticrules=extraprobabilisticrules,
         )
 
-    There are several rules:
+    There are three types of rules:
 
     1. Deterministic rules, which specify at a high level which states are observable or not, e.g.
 
     .. code-block :: python
 
-        base_user_engine_specification = [
-                ("turn_index", "all"),
-                ("task_state", "all"),
-                ("user_state", "all"),
-                ("assistant_state", None),
-                ("user_action", "all"),
-                ("assistant_action", "all"),
-            ]
+        engine_specification = [
+            ("game_info", "all"),
+            ("task_state", "targets", slice(0, 1, 1)),
+            ("user_state", "all"),
+            ("assistant_state", None),
+            ("user_action", "all"),
+            ("assistant_action", "all"),
+        ]
 
-    2. Extra deterministic rules, which add some specific rules
+    2. Extra deterministic rules, which add some specific rules to specific substates
 
     .. code-block:: python
 
-        obs_matrix = {('task_state', 'x'): (coopihc.observation.f_obs_matrix, (C,))}
+        def f(observation, gamestate, *args):
+            gain = args[0]
+            return gain * observation
+
+        f_rule = {("user_state", "goal"): (f, (2,))}
         extradeterministicrules = {}
-        extradeterministicrules.update(obs_matrix)
+        extradeterministicrules.update(f_rule)
 
     3. Extra probabilistic rules, which are used to e.g. add noise
 
-
     .. code-block :: python
 
-        extraprobabilisticrules = {
-            ("task_state", "targets"): (self._eccentric_noise_gen, ())
-        }
+        def g(observation, gamestate, *args):
+            return random.random() + observation
+
+        g_rule = {("task_state", "position"): (g, ())}
+        extraprobabilisticrules = {}
+        extraprobabilisticrules.update(g_rule)
+
+
 
 
 
     .. warning ::
 
-        This observation engine is likely very slow, due to may copies.
+        This observation engine handles deep copies, to make sure operations based on observations don't mess up the actual states. This might be slow though.
 
 
     :param deterministic_specification: deterministic rules, defaults to base_task_engine_specification
@@ -82,23 +149,24 @@ class RuleObservationEngine(BaseObservationEngine):
         mapping=None,
         **kwargs
     ):
-
         super().__init__(*args, **kwargs)
         self.deterministic_specification = deterministic_specification
         self.extradeterministicrules = extradeterministicrules
         self.extraprobabilisticrules = extraprobabilisticrules
         self.mapping = mapping
 
-    def observe(self, game_state):
+    def observe(self, game_state=None):
         """observe
 
         Wrapper around apply_mapping for interfacing with bundle.
 
         :param game_state: game state
-        :type game_state: `State<coopihc.space.State.State`
+        :type game_state: :py:class:`State <coopihc.space.State.State>`
         :return: (observation, obs reward)
-        :rtype: tuple(`State<coopihc.space.State.State`, float)
+        :rtype: tuple(:py:class:`State <coopihc.space.State.State>`, float)
         """
+        game_state = super().observe(game_state=game_state)[0]
+
         if self.mapping is None:
             self.mapping = self.create_mapping(game_state)
         obs = self.apply_mapping(game_state)
@@ -110,9 +178,9 @@ class RuleObservationEngine(BaseObservationEngine):
         Apply the rule mapping
 
         :param game_state: game state
-        :type game_state: `State<coopihc.space.State.State`
+        :type game_state: :py:class:`State <coopihc.space.State.State>`
         :return: observation
-        :rtype: `State<coopihc.space.State.State`
+        :rtype: :py:class:`State <coopihc.space.State.State>`
         """
         observation = State()
         for (
@@ -124,9 +192,10 @@ class RuleObservationEngine(BaseObservationEngine):
             _nfunc,
             _nargs,
         ) in self.mapping:
+
             if observation.get(substate) is None:
                 observation[substate] = State()
-            _obs = copy.copy(game_state[substate][subsubstate]["values"][_slice])
+            _obs = copy.copy((game_state[substate][subsubstate][_slice]))
             if _func:
                 if _args:
                     _obs = _func(_obs, game_state, *_args)
@@ -136,9 +205,10 @@ class RuleObservationEngine(BaseObservationEngine):
                 _obs = _obs
             if _nfunc:
                 if _nargs:
-                    _obs, noise = _nfunc(_obs, game_state, *_nargs)
+                    _obs = _nfunc(_obs, game_state, *_nargs)
+
                 else:
-                    _obs, noise = _nfunc(_obs, game_state)
+                    _obs = _nfunc(_obs, game_state)
 
             else:
                 _obs = _obs
@@ -146,7 +216,7 @@ class RuleObservationEngine(BaseObservationEngine):
             observation[substate][subsubstate] = copy.copy(
                 game_state[substate][subsubstate]
             )
-            observation[substate][subsubstate]["values"] = [_obs]
+            observation[substate][subsubstate] = _obs
 
         return observation
 
@@ -156,7 +226,7 @@ class RuleObservationEngine(BaseObservationEngine):
         Create mapping from the high level rules specified in the Rule Engine.
 
         :param game_state: game state
-        :type game_state: `State<coopihc.space.State.State>`
+        :type game_state: :py:class:`State <coopihc.space.State.State>`
         :return: Mapping
         :rtype: iterable
         """
@@ -172,11 +242,10 @@ class RuleObservationEngine(BaseObservationEngine):
         mapping = []
         for substate, *rest in observation_engine_specification:
             subsubstate = rest[0]
-            if substate == "turn_index":
-                continue
+            # if substate == "turn_index":
+            #     continue
             if subsubstate == "all":
                 for key, value in game_state[substate].items():
-                    value = value["values"]
                     v = extradeterministicrules.get((substate, key))
                     if v is not None:
                         f, a = v
@@ -187,11 +256,15 @@ class RuleObservationEngine(BaseObservationEngine):
                         g, b = w
                     else:
                         g, b = None, None
-                    mapping.append((substate, key, slice(0, len(value), 1), f, a, g, b))
+                    # deal with ints
+                    try:
+                        _len = len(value)
+                    except TypeError:
+                        _len = 1
+                    mapping.append((substate, key, slice(0, _len, 1), f, a, g, b))
             elif subsubstate is None:
                 pass
             else:
-                # Outdated
                 v = extradeterministicrules.get((substate, subsubstate))
                 if v is not None:
                     f, a = v
@@ -202,7 +275,11 @@ class RuleObservationEngine(BaseObservationEngine):
                     g, b = w
                 else:
                     g, b = None, None
-                _slice = rest[1]
+                try:
+                    _slice = rest[1]
+                except IndexError:
+                    _slice = "all"
+
                 if _slice == "all":
                     mapping.append(
                         (
@@ -217,15 +294,5 @@ class RuleObservationEngine(BaseObservationEngine):
                     )
                 elif isinstance(_slice, slice):
                     mapping.append((substate, subsubstate, _slice, f, a, g, b))
+
         return mapping
-
-
-# ===================== Passing extra rules ==============
-# each rule is a dictionnary {key:value} with
-#     key = (state, substate)
-#     value = (function, args)
-#     Be careful: args has to be a tuple, so for a single argument arg, do (arg,)
-# An exemple
-# obs_matrix = {('task_state', 'x'): (coopihc.observation.f_obs_matrix, (C,))}
-# extradeterministicrules = {}
-# extradeterministicrules.update(obs_matrix)

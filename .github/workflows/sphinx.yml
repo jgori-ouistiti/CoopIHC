@@ -20,6 +20,7 @@ jobs:
     # get latex for tikz in documentation with pgf support for tikz
       - name: Install LaTex and ghostscript
         run: | 
+          sudo apt-get update
           sudo apt-get install texlive-latex-extra
           sudo apt-get install ghostscript pdf2svg pnmtopng 
      

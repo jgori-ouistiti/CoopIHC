@@ -7,13 +7,21 @@ Quick Start
 Installation
 ---------------
 
-*CoopIHC* is currently available on `TestPyPI <https://test.pypi.org/project/coopihc/>`_ You can install the package using pip with the following command:
+*CoopIHC* is currently available on `TestPyPI <https://test.pypi.org/project/coopihc/>`_, although this might not be the latest version. You can install the package using pip with the following command:
 
 .. code-block:: python
 
-    python3 -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ coopihc
+    python3 -m pip install --extra-index-url https://test.pypi.org/simple/ coopihc
 
-This will allow you to install coopihc from TestPyPI and the dependencies from PyPI.
+
+
+You can also build directly from the github repository to get the latest version. To do so, install poetry, and run 
+
+.. code-block:: shell
+
+    poetry install
+
+from within the folder. This will install *CoopIHC* in editable mode (basically equivalent to ``python3 -m pip install -e .``), together with all its dependencies.
 
 Interaction Model
 -------------------
@@ -26,7 +34,7 @@ High-level view of CoopIHC code
 
 At a high level, your CoopIHC code will usually look like this
 
-.. literalinclude:: ../../coopihc/examples/simple_examples/bundle_examples.py
+.. literalinclude:: ../../coopihc/examples/basic_examples/bundle_examples.py
    :language: python
    :linenos:
    :start-after: [start-highlevel-code]
@@ -37,189 +45,86 @@ You will usually define a task, a user, an assistant, and bundle them together. 
 
 States
 ------------
-The interaction model uses the concept of states, for which *CoopIHC* introduces the ``Space`` ``StateElement`` and ``State`` objects. In the example below, a super-state is defined by a state, which itself is defined by two substates.
+The interaction model uses the concept of states, for which *CoopIHC* introduces the ``Space`` ``StateElement`` and ``State`` objects. In the example below, a super-state is defined by a state, which itself is defined by two substates. Each of those substates holds a StateElement, which is a combination of a value and a space.
 
-.. literalinclude:: ../../coopihc/examples/simple_examples/state_examples.py
+.. literalinclude:: ../../coopihc/examples/basic_examples/state_examples.py
    :language: python
    :linenos:
    :start-after: [start-state-example]
    :end-before: [end-state-example]
 
 
-To find out more about these, go to :doc:`Space, StateElement, State<space>`.
+States, statelements subclass respectively the built-in dictionnary and the well-known NumPy arrays. This means that interacting with these objects should prove relatively familiar. To find out more about this and for extra details, go to :doc:`Space<space>`, :doc:`StateElement<stateelement>` and :doc:`State<state>`.
 
 
 Tasks
 --------
-Tasks represent whatever the user is interacting with. They are essentially characterized by:
 
-* An internal state, the **task state** which holds all the task's information.
-* A **user step (transition) function**, which describes how the task state changes based on the user action.
-* An **assistant step (transition) function**, which describes how the task state changes based on the assistant action.
+.. include:: tasks.rst
+    :start-after: .. start-quickstart-task
+    :end-before: .. end-quickstart-task
 
-As an example, let's define a simple task where the goal of the user is to drive the substate 'x' to a value of 4. Both the user and the assistant can provide three actions: -1, +0 and +1. As in most cases you will find, we define a task by inheriting from ``InteractionTask`` and redefining a few methods.
-
-.. literalinclude:: ../../coopihc/interactiontask/ExampleTask.py
-    :pyobject: ExampleTask
-    :linenos:
-
-
-
-In ``__init__``, the task states are defined ('x' in this example); the ``reset`` method fixes the initial condition ('x'=0). The user and assistant step functions define how the task state evolves with respect to incoming user or assistant actions.
-Finally, the render method is a way to display information to the screen. Here we considered a very simplistic output which prints the minimum information, but you could handles plots, animations etc.
-
-.. note::
-
-    The ``__init__`` method of a task should always be started with a call to ``super()``'s ``__init__``. This will be true for the other objects as well.
-
-.. note::
-
-    Notice how ``StateElement`` arithmetic simplifies the coding, making ``self.state['x'] += self.user_action`` possible.
-
-.. note::
-
-    Some methods have a default behavior inherited from the parent class. For example, if the ``reset()`` method is undefined in the child class, then the parent method is used, which uniformly samples a value from the states.
-
-
-
-You can verify that the task works as intended by bundling it with two ``BaseAgents`` (the simplest version of agents). Make sur that the actions spaces make sense, by specifying the policy for the two baseagents.
-
-.. literalinclude:: ../../coopihc/examples/simple_examples/interactiontask_examples.py
-   :language: python
-   :linenos:
-   :start-after: [start-check-task]
-   :end-before: [end-check-task]
 
 Agents
 ------------------
-Agents are defined by four components:
 
-* Their internal state
-* Their observation engine
-* Their inference engine
-* Their policy
-
-.. _quickstart-define-user-label:
-
-Defining a new agent is done by subclassing the ``BaseAgent`` class:
-
-.. literalinclude:: ../../coopihc/agents/ExampleUser.py
-    :linenos:
-    :pyobject: ExampleUser
-
-
-.. note::
-
-    All 4 components default to their corresponding base implementation if not provided.
-
-You can check that the user model works as intended by bundling it with the task. Below, we try it out without an assistant, so we modify the task very simply by redefining its ``assistant_step()`` method.
-
-.. literalinclude:: ../../coopihc/examples/simple_examples/bundle_examples.py
-    :language: python
-    :linenos:
-    :start-after: [start-check-taskuser]
-    :end-before: [end-check-taskuser]
+.. include:: agents.rst
+    :start-after: .. start-quickstart-agent
+    :end-before: .. end-quickstart-agent
 
 Policies
 ------------
-Defining a policy is done by subclassing the ``BasePolicy`` class and redefining the ``sample()`` method. Below, we show how ``ExamplePolicy`` used in the example before is defined.
 
-.. literalinclude:: ../../coopihc/policy/ExamplePolicy.py
-    :linenos:
-    :pyobject: ExamplePolicy
-
-
-.. note::
-
-    The action that is returned has to be a valid ``StateElement``. Inside the policy, you can directly call ``self.new_action`` which returns a valid ``StateElement`` without a value, which you can just fill in, as done in the example.
-
-.. note::
-
-    Don't forget to return a reward with the action.
-
-.. note::
-
-    You can virtually put anything inside this function: that includes the output of a neural network, of a complex simulation process, and even the output of another bundle (see :doc:`modularity` for an example.)
-
+.. include:: policy.rst
+    :start-after: .. start-quickstart-policy
+    :end-before: .. end-quickstart-policy
 
 Observation Engines
 ---------------------
-Defining an observation engine is done by subclassing the ``BaseObservationEngine`` class and redefining the ``observe()`` method. Below, we show a basic example where an instance is defined that only looks at a particular substate (the code for the default observation engine is a little too verbose to be put here).
 
-.. literalinclude:: ../../coopihc/observation/ExampleObservationEngine.py
-    :linenos:
-    :pyobject: ExampleObservationEngine
+.. include:: observation_engine.rst
+    :start-after: .. start-quickstart-obseng-intro
+    :end-before: .. end-quickstart-obseng-intro
 
-
-The effect of this engine can be tested by plugging in a simple State:
-
-.. code-block::
-
-    Game state before observation
-      Index  Label                    Value    Space
-    -------  -----------------------  -------  ----------------------------------
-          0  substate1|substate_x|0   None     Space[Continuous((1, 1)), float64]
-          1  substate1|substate_y|0   [[2]]    Space[Discrete([3]), int64]
-          2  substate_2|substate_a|0  None     Space[Discrete([3]), int8]
-    Observation
-      Index  Label         Value    Space
-    -------  ------------  -------  ----------------------------------
-          0  substate_x|0  None     Space[Continuous((1, 1)), float64]
-          1  substate_y|0  [[2]]    Space[Discrete([3]), int64]
-
-
-.. note::
-
-    Don't forget to return a reward with the observation.
-
-.. note::
-
-    You can virtually put anything inside this function: that includes the output of a neural network, of a complex simulation process, and even the output of another bundle (see :doc:`modularity` for an example.)
+.. include:: observation_engine.rst
+    :start-after: .. start-quickstart-obseng-subclass
+    :end-before: .. end-quickstart-obseng-subclass
 
 
 Inference Engines:
 --------------------
-Defining an Inference Engine is done by subclassing the ``BaseInferenceEngine`` class, and redefining the ``infer()`` method, as in previous components. Below, we define a new inference engine which has the exact same behavior as the ``BaseInferenceEngine``, for sake of illustration, and simply returns the agent's state without any modifications.
+
+.. include:: inference_engine.rst
+    :start-after: .. start-quickstart-infeng-intro
+    :end-before: .. end-quickstart-infeng-intro
 
 
-.. literalinclude:: ../../coopihc/inference/ExampleInferenceEngine.py
-    :linenos:
-    :pyobject: ExampleInferenceEngine
-
-
+.. include:: inference_engine.rst
+    :start-after: .. start-quickstart-infeng-subclass
+    :end-before: .. end-quickstart-infeng-subclass
 
 
 
 
 Bundles
 ---------------------
-Bundles are the objects that join the states of the three components (task, user and assistant) to form the joint state of the game, collect the rewards and ensure a synchronous sequential sequences of observations, inferences and actions.
 
-You have seen a couple of examples above where bundles are used, including their main methods: reset, step and render.
+.. include:: bundles.rst
+    :start-after: .. start-quickstart-bundle
+    :end-before: .. end-quickstart-bundle
 
 
 .. note::
 
-    Bundles also handle joint rendering as well as other practical things.
+    Bundles also handle joint rendering as well as other practical things. More details can be found on :doc:`Bundle's reference page <bundles>`
 
-
-
-
-.. warning::
-
-    Documentation is out of date below
 
 An overview of *CoopIHC*
 -----------------------------------------------------
 
-1. *CoopIHC* comes equipped with presently two tasks (pointing with a cursor, and a human eye-gaze selection task). Look at the list of modules [link].
-2. Several operators and assistants are provided, some generic and described in the agent sections [link], others adapted to one of the tasks, described in the modules [link]
-3. Several bundles are provided, that cover many use cases. These are described in the bundles section [link]
-4. One can define new agents by minimally writing new code, by taking advantage of the modular approach of *CoopIHC*. In particular, inference engines [link], observation engines [link], and operator models [link] can be re-used and sub-classed.
+
+1. Several implementations of user models, tasks and assistants exist in *CoopIHC*'s repository `*CoopIHC-Zoo* <https://github.com/jgori-ouistiti/CoopIHC-zoo>`_  
+2. Several worked-out examples are given in this documentation. Those should give you a good idea about what can be done with *CoopIHC*.
+ 
 
 
-What's next?
-------------------------
- 1. Build you own tasks [link]
- 2. Build you own agents [link]
- 3. Train, evaluate, simulate [link]

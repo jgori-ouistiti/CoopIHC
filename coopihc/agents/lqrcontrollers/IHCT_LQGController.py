@@ -1,13 +1,11 @@
 import numpy
 import copy
-import gym.spaces
-
+import warnings
 from coopihc.agents.BaseAgent import BaseAgent
 from coopihc.observation.RuleObservationEngine import RuleObservationEngine
-from coopihc.observation.utils import observation_linear_combination
-from coopihc.observation.utils import additive_gaussian_noise
 from coopihc.space.State import State
 from coopihc.space.StateElement import StateElement
+from coopihc.space.Space import Space
 from coopihc.policy.LinearFeedback import LinearFeedback
 from coopihc.inference.ContinuousKalmanUpdate import ContinuousKalmanUpdate
 
@@ -16,25 +14,30 @@ from coopihc.inference.ContinuousKalmanUpdate import ContinuousKalmanUpdate
 class IHCT_LQGController(BaseAgent):
     """Infinite Horizon Continuous Time LQ Gaussian Controller.
 
-    An Infinite Horizon (Steady-state) LQG controller, based on Phillis 1985 [Phillis1985]_, using notations from Qian 2013 [Qian2013]_.
+    An Infinite Horizon (Steady-state) LQG controller, based on Phillis 1985 [Phillis1985]_ and Qian 2013 [Qian2013]_.
+
+    For the a task where state 'x' follows a linear noisy dynamic:
 
     .. math::
 
         \\begin{align*}
-        dx & = (Ax + Bu)dt + Fxd \\beta + Yud \\gamma + \\Gamma d\omega \\\\
+        dx & = (Ax + Bu)dt + Fxd \\beta + G d\omega, \\\\
+        \\end{align*}
+
+    the LQG controller produces the following observations dy and commands u with cost J:
+
+    .. math::
+
+        \\begin{align*}
         dy & = Cxdt + Dd\\xi \\\\
         d\\hat{x} & = (A \\hat{x} + Bu) dt + K (dy - C\\hat{x}dt) \\\\
-        u & = -L\\hat{x} \\\\
+        u & = -\\Gamma  L\\hat{x} d\\gamma \\\\
         \\tilde{x} & = x - \\hat{x} \\\\
         J & \simeq \\mathbb{E} [\\tilde{x}^T U \\tilde{x} + x^TQx + u^TRu]
         \\end{align*}
 
-    .. [Phillis1985] Phillis, Y. "Controller design of systems with multiplicative noise." IEEE Transactions on Automatic Control 30.10 (1985): 1017-1019. `Doc here<https://ieeexplore.ieee.org/abstract/document/1103828>`
-    .. [Qian2013] Qian, Ning, et al. "Movement duration, Fitts's law, and an infinite-horizon optimal feedback control model for biological motor systems." Neural computation 25.3 (2013): 697-724. `Doc here<https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.296.4312&rep=rep1&type=pdf>`
-
-    .. warning:: 
-
-        watch out for :math:`\\gamma` and :math:`\\Gamma`
+    .. [Phillis1985] Phillis, Y. "Controller design of systems with multiplicative noise." IEEE Transactions on Automatic Control 30.10 (1985): 1017-1019. `Link <https://ieeexplore.ieee.org/abstract/document/1103828>`_
+    .. [Qian2013] Qian, Ning, et al. "Movement duration, Fitts's law, and an infinite-horizon optimal feedback control model for biological motor systems." Neural computation 25.3 (2013): 697-724. `Link <https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.296.4312&rep=rep1&type=pdf>`_
 
     :param role: "user" or "assistant"
     :type role: string
@@ -48,17 +51,82 @@ class IHCT_LQGController(BaseAgent):
     :type U: numpy.ndarray
     :param C: Observation matrix
     :type C: numpy.ndarray
-    :param Gamma: Additive independent Noise weight
-    :type Gamma: numpy.ndarray
     :param D: Observation noise matrix
     :type D: numpy.ndarray
     :param noise: whether or not to have, defaults to "on"
     :type noise: str, optional
+    :param Gamma: Additive independent Noise weight shaping matrix
+    :type Gamma: numpy.ndarray
+    :param mu: mean of :math:`d\\gamma`, defaults to 0
+    :type mu: int, optional
+    :param sigma: stdev of :math:`d\\gamma`, defaults to 0
+    :type sigma: int, optional
+    :param Acontroller: Representation of A for the agent. If None, the agent representation of A is equal to the task A, defaults to None.
+    :type Acontroller: numpy.ndarray, optional
+    :param Bcontroller: Representation of B for the agent. If None, the agent representation of B is equal to the task B, defaults to None.
+    :type Bcontroller: numpy.ndarray, optional
+    :param Ccontroller: Representation of C for the agent. If None, the agent representation of C is equal to the task C, defaults to None.
+    :type Ccontroller: numpy.ndarray, optional
+
+    
+    
+    
     """
 
     def __init__(
-        self, role, timestep, Q, R, U, C, Gamma, D, *args, noise="on", **kwargs
+        self,
+        role,
+        timestep,
+        Q,
+        R,
+        U,
+        C,
+        D,
+        *args,
+        noise="on",
+        Gamma="id",
+        mu=0,
+        sigma=0,
+        Acontroller=None,
+        Bcontroller=None,
+        Ccontroller=None,
+        **kwargs
     ):
+        """__init__ [summary]
+
+        [extended_summary]
+
+        :param role: [description]
+        :type role: [type]
+        :param timestep: [description]
+        :type timestep: [type]
+        :param Q: [description]
+        :type Q: [type]
+        :param R: [description]
+        :type R: [type]
+        :param U: [description]
+        :type U: [type]
+        :param C: [description]
+        :type C: [type]
+        :param D: [description]
+        :type D: [type]
+        :param noise: [description], defaults to "on"
+        :type noise: str, optional
+        :param Gamma: [description], defaults to "id"
+        :type Gamma: str, optional
+        :param mu: [description], defaults to 0
+        :type mu: int, optional
+        :param sigma: [description], defaults to 0
+        :type sigma: int, optional
+        :param Acontroller: [description], defaults to None
+        :type Acontroller: [type], optional
+        :param Bcontroller: [description], defaults to None
+        :type Bcontroller: [type], optional
+        :param Ccontroller: [description], defaults to None
+        :type Ccontroller: [type], optional
+        :return: [description]
+        :rtype: [type]
+        """
 
         self.C = C
         self.Gamma = numpy.array(Gamma)
@@ -68,147 +136,159 @@ class IHCT_LQGController(BaseAgent):
         self.D = D
         self.timestep = timestep
         self.role = role
-        self.timespace = "continuous"
 
         # Initialize Random Kalmain gains
         self.K = numpy.random.rand(*C.T.shape)
         self.L = numpy.random.rand(1, Q.shape[1])
+
         self.noise = noise
+        self.Gamma = Gamma
+        self.mu = mu
+        self.sigma = sigma
+
+        self.Acontroller = Acontroller
+        self.Bcontroller = Bcontroller
+        self.Ccontroller = Ccontroller
 
         # =================== Linear Feedback Policy ==========
-        self.gamma = kwargs.get("Gamma")
-        self.mu = kwargs.get("Mu")
-        self.sigma = kwargs.get("Sigma")
 
-        agent_policy = kwargs.get("agent_policy")
-        if agent_policy is None:
-            action_state = State()
-            action_state["action"] = StateElement(
-                values=[None],
-                spaces=[gym.spaces.Box(-numpy.inf, numpy.inf, shape=(1,))],
-                possible_values=[[None]],
-            )
+        action_state = State()
+        action_state["action"] = StateElement(
+            numpy.zeros((1, 1)),
+            Space([numpy.full((1, 1), -numpy.inf), numpy.full((1, 1), numpy.inf)]),
+        )
+        # Gaussian noise on action
+        def shaped_gaussian_noise(action, observation, Gamma, mu, sigma):
+            if Gamma is None:
+                return action
+            if sigma is None:
+                sigma = numpy.sqrt(self.host.timestep)  # Wiener process
+            if mu is None:
+                mu = 0
+            noisy_action = Gamma @ action * numpy.random.normal(mu, sigma)
+            return noisy_action
 
-            def shaped_gaussian_noise(self, action, observation, *args):
-                gamma, mu, sigma = args[:3]
-                if gamma is None:
-                    return 0
-                if sigma is None:
-                    sigma = numpy.sqrt(self.host.timestep)  # Wiener process
-                if mu is None:
-                    mu = 0
-                noise = gamma * numpy.random.normal(mu, sigma)
-                return noise
+        # Linear Feedback with LQ reward
+        class LFwithLQreward(LinearFeedback):
+            def __init__(self, R, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+                self.R = R
 
-            class LFwithreward(LinearFeedback):
-                def __init__(self, R, *args, **kwargs):
-                    super().__init__(*args, **kwargs)
-                    self.R = R
+            def sample(self, observation=None):
+                action, _ = super().sample(observation=observation)
+                return (
+                    action,
+                    (action.T @ self.R @ action).squeeze().tolist(),
+                )
 
-                def sample(self):
-                    action, _ = super().sample()
-                    return (
-                        action,
-                        action["values"][0].T @ action["values"][0] * 1e3,
-                    )
+        agent_policy = LFwithLQreward(
+            self.R,
+            action_state,
+            ("user_state", "xhat"),
+            noise_function=shaped_gaussian_noise,
+            noise_func_args=(self.Gamma, self.mu, self.sigma),
+        )
 
-            agent_policy = LFwithreward(
-                self.R,
-                ("user_state", "xhat"),
-                0,
-                action_state,
-                noise_function=shaped_gaussian_noise,
-                noise_function_args=(self.gamma, self.mu, self.sigma),
-            )
-
-            # agent_policy = LinearFeedback(
-            #     ('user_state','xhat'),
-            #     0,
-            #     action_state,
-            #     noise_function = shaped_gaussian_noise,
-            #     noise_function_args = (self.gamma, self.mu, self.sigma)
-            #             )
-
-        # =========== Observation Engine: Task state unobservable, internal estimates observable ============
-
-        observation_engine = kwargs.get("observation_engine")
-
+        # =========== Observation Engine ==============
+        # Rule Observation Engine with LQ reward
         class RuleObswithLQreward(RuleObservationEngine):
             def __init__(self, Q, *args, **kwargs):
                 super().__init__(*args, **kwargs)
                 self.Q = Q
 
-            def observe(self, game_state):
-                observation, _ = super().observe(game_state)
-                x = observation["task_state"]["x"]["values"][0]
+            def observe(self, game_state=None):
+                observation, _ = super().observe(game_state=game_state)
+                x = observation["task_state"]["x"]
                 reward = x.T @ self.Q @ x
                 return observation, reward
 
-        if observation_engine is None:
-            user_engine_specification = [
-                ("turn_index", "all"),
-                ("task_state", "all"),
-                ("user_state", "all"),
-                ("assistant_state", None),
-                ("user_action", "all"),
-                ("assistant_action", "all"),
-            ]
+        # Base Spec
+        user_engine_specification = [
+            ("game_info", "all"),
+            ("task_state", "x"),
+            ("user_state", "all"),
+            ("assistant_state", None),
+            ("user_action", "all"),
+            ("assistant_action", None),
+        ]
 
-            obs_matrix = {
-                ("task_state", "x"): (
-                    observation_linear_combination,
-                    (C,),
-                )
-            }
-            extradeterministicrules = {}
-            extradeterministicrules.update(obs_matrix)
+        # Add rule for matrix observation y += Cx
+        def observation_linear_combination(_obs, game_state, C):
+            return C @ _obs
 
-            # extraprobabilisticrule
-            agn_rule = {
-                ("task_state", "x"): (
-                    additive_gaussian_noise,
-                    (
-                        D,
-                        numpy.zeros((C.shape[0], 1)).reshape(
-                            -1,
-                        ),
-                        numpy.sqrt(timestep) * numpy.eye(C.shape[0]),
-                    ),
-                )
-            }
-
-            extraprobabilisticrules = {}
-            extraprobabilisticrules.update(agn_rule)
-
-            observation_engine = RuleObswithLQreward(
-                self.Q,
-                deterministic_specification=user_engine_specification,
-                extradeterministicrules=extradeterministicrules,
-                extraprobabilisticrules=extraprobabilisticrules,
+        C_rule = {
+            ("task_state", "x"): (
+                observation_linear_combination,
+                (C,),
             )
-            # observation_engine = RuleObservationEngine(deterministic_specification = user_engine_specification, extradeterministicrules = extradeterministicrules, extraprobabilisticrules = extraprobabilisticrules)
+        }
+        extradeterministicrules = {}
+        extradeterministicrules.update(C_rule)
 
-        inference_engine = kwargs.get("inference_engine")
-        if inference_engine is None:
-            inference_engine = ContinuousKalmanUpdate()
+        # Add rule for noisy observation y += D * epsilon ~ N(mu, sigma)
 
-        state = kwargs.get("state")
-        if state is None:
-            pass
+        def additive_gaussian_noise(_obs, gamestate, D, *args):
+            try:
+                mu, sigma = args
+            except ValueError:
+                mu, sigma = numpy.zeros(_obs.shape), numpy.eye(max(_obs.shape))
+            return _obs + D @ numpy.random.multivariate_normal(
+                mu, sigma, size=1
+            ).reshape(-1, 1)
+
+        # Instantiate previous rule so that epsilon ~ N(0, sqrt(dt))
+        agn_rule = {
+            ("task_state", "x"): (
+                additive_gaussian_noise,
+                (
+                    D,
+                    numpy.zeros((C.shape[0], 1)).reshape(
+                        -1,
+                    ),
+                    numpy.sqrt(timestep) * numpy.eye(C.shape[0]),
+                ),
+            )
+        }
+
+        extraprobabilisticrules = {}
+        extraprobabilisticrules.update(agn_rule)
+
+        observation_engine = RuleObswithLQreward(
+            self.Q,
+            deterministic_specification=user_engine_specification,
+            extradeterministicrules=extradeterministicrules,
+            extraprobabilisticrules=extraprobabilisticrules,
+        )
+
+        # ======================= Inference Engine
+        inference_engine = ContinuousKalmanUpdate()
+        if all(
+            [self.Acontroller, self.Bcontroller, self.Ccontroller] != [None, None, None]
+        ):
+            inference_engine.set_forward_model_dynamics(self.A_c, self.B_c, self.C)
+        else:
+            if any(
+                [self.Acontroller, self.Bcontroller, self.Ccontroller]
+                != [None, None, None]
+            ):
+                warnings.warn(
+                    Warning(
+                        "The controller matrices A, B, C you provided are not accounted for. You have to define all three of them to account for them."
+                    )
+                )
 
         super().__init__(
             "user",
-            state=state,
-            policy=agent_policy,
-            observation_engine=observation_engine,
-            inference_engine=inference_engine,
+            agent_policy=agent_policy,
+            agent_observation_engine=observation_engine,
+            agent_inference_engine=inference_engine,
         )
 
     def finit(self):
         """finit
 
         1. Create an :math:`\\hat{x}` state;
-        2. attach the model dynamics to the inference engine
+        2. attach the model dynamics to the inference engine if needed
         3. compute K and L;
         4. set K and L in inference engine and policy
         """
@@ -217,8 +297,9 @@ class IHCT_LQGController(BaseAgent):
         self.state["xhat"] = copy.deepcopy(self.bundle.task.state["x"])
 
         # ---- Attach the model dynamics to the inference engine.
-        self.A_c, self.B_c, self.G = task.A_c, task.B_c, task.G
-        self.inference_engine.set_forward_model_dynamics(self.A_c, self.B_c, self.C)
+        if not self.inference.engine.fmd_flag:
+            self.A_c, self.B_c, self.G = task.A_c, task.B_c, task.G
+            self.inference_engine.set_forward_model_dynamics(self.A_c, self.B_c, self.C)
 
         # ---- Set K and L up
         mc = self._MContainer(
@@ -235,17 +316,6 @@ class IHCT_LQGController(BaseAgent):
         self.K, self.L = self._compute_Kalman_matrices(mc.pass_args())
         self.inference_engine.set_K(self.K)
         self.policy.set_feedback_gain(self.L)
-
-    # untested
-    def reset(self):
-        pass
-
-    # def reset(self, dic=None):
-    #     if dic is None:
-    #         super().reset()
-
-    #     if dic is not None:
-    #         super().reset(dic=dic)
 
     class _MContainer:
         """Matrix container

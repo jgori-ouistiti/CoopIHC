@@ -1,4 +1,5 @@
 import copy
+import numpy
 
 
 class BaseObservationEngine:
@@ -10,8 +11,8 @@ class BaseObservationEngine:
 
     """
 
-    def __init__(self, *args, **kwargs):
-        pass
+    def __init__(self, *args, seed=None, **kwargs):
+        self.rng = numpy.random.default_rng(seed)
 
     def __content__(self):
         """__content__
@@ -30,9 +31,12 @@ class BaseObservationEngine:
         returns the last observation
 
         :return: last observation
-        :rtype: `State<coopihc.space.State.State`
+        :rtype: :py:class:`State <coopihc.space.State.State>`
         """
-        return self.host.inference_engine.buffer[-1]
+        try:
+            return self.host.inference_engine.buffer[-1]
+        except AttributeError:
+            return None
 
     @property
     def action(self):
@@ -41,15 +45,18 @@ class BaseObservationEngine:
         returns the last action
 
         :return: last action
-        :rtype: `State<coopihc.space.State.State`
+        :rtype: :py:class:`State<coopihc.space.State.State>`
         """
-        return self.host.policy.action_state["action"]
+        try:
+            return self.host.policy.action_state["action"]
+        except AttributeError:
+            return None
 
     @property
     def unwrapped(self):
         return self
 
-    def observe(self, game_state):
+    def observe(self, game_state=None):
         """observe
 
         Redefine this
@@ -59,10 +66,12 @@ class BaseObservationEngine:
             deepcopy mechanisms is extremely slow
 
         :param game_state: game state
-        :type game_state: `State<coopihc.space.State.State`
+        :type game_state: :py:class:`State<coopihc.space.State.State>`
         :return: observation, obs reward
-        :rtype: tuple(`State<coopihc.space.State.State`, float)
+        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float)
         """
+        if game_state is None:
+            game_state = self.host.bundle.game_state
         return copy.deepcopy(game_state), 0
 
     def reset(self):

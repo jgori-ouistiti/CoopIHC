@@ -6,6 +6,7 @@ import numpy
 import yaml
 from collections import OrderedDict
 import matplotlib.pyplot as plt
+import copy
 
 
 class _Bundle:
@@ -42,11 +43,19 @@ class _Bundle:
         self.game_state = State()
 
         turn_index = StateElement(
-            values=[0],
-            spaces=Space([numpy.array([0, 1, 2, 3])], dtype=numpy.int8),
+            numpy.array([0]),
+            Space(numpy.array([0, 1, 2, 3], dtype=numpy.int8), "discrete"),
+            out_of_bounds_mode="raw",
+        )
+        round_index = StateElement(
+            numpy.array([0]),
+            Space(numpy.array([0, 1], dtype=numpy.int8), "discrete"),
+            out_of_bounds_mode="raw",
         )
 
-        self.game_state["turn_index"] = turn_index
+        self.game_state["game_info"] = State()
+        self.game_state["game_info"]["turn_index"] = turn_index
+        self.game_state["game_info"]["round_index"] = round_index
         self.game_state["task_state"] = task.state
         self.game_state["user_state"] = user.state
         self.game_state["assistant_state"] = assistant.state
@@ -65,8 +74,6 @@ class _Bundle:
         self.task.finit()
         self.user.finit()
         self.assistant.finit()
-
-        self.round_number = 0
 
         # Needed for render
         self.active_render_figure = None
@@ -110,12 +117,28 @@ class _Bundle:
         :return: turn number
         :rtype: numpy.ndarray
         """
-        return self.game_state["turn_index"]["values"][0]
+        return self.game_state["game_info"]["turn_index"]
 
     @turn_number.setter
     def turn_number(self, value):
         self._turn_number = value
-        self.game_state["turn_index"]["values"] = numpy.array(value)
+        self.game_state["game_info"]["turn_index"][:] = value
+
+    @property
+    def round_number(self):
+        """round_number
+
+        The round number in the game (0 to N)
+
+        :return: turn number
+        :rtype: numpy.ndarray
+        """
+        return self.game_state["game_info"]["round_index"]
+
+    @round_number.setter
+    def round_number(self, value):
+        self._round_number = value
+        self.game_state["game_info"]["round_index"][:] = value
 
     def reset(self, turn=0, task=True, user=True, assistant=True, dic={}):
         """Reset bundle.
@@ -159,23 +182,26 @@ class _Bundle:
 
         if task:
             task_dic = dic.get("task_state")
-            task_state = self.task._base_reset(dic=task_dic)
+            self.task._base_reset(dic=task_dic)
 
         if user:
             user_dic = dic.get("user_state")
-            user_state = self.user._base_reset(dic=user_dic)
+            self.user._base_reset(dic=user_dic)
 
         if assistant:
             assistant_dic = dic.get("assistant_state")
-            assistant_state = self.assistant._base_reset(dic=assistant_dic)
+            self.assistant._base_reset(dic=assistant_dic)
 
-        self.turn_number = turn
+        self.round_number[:] = 0
+
+        self.turn_number[:] = turn
+
         if turn == 0:
             return self.game_state
         if turn >= 1:
             self._user_first_half_step()
         if turn >= 2:
-            user_action, _ = self.user.take_action()
+            user_action, _ = self.user._take_action()
             self.broadcast_action("user", user_action)
             self._user_second_half_step(user_action)
         if turn >= 3:
@@ -198,38 +224,26 @@ class _Bundle:
         :return: gamestate, reward, game finished flag
         :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, collections.OrderedDict, boolean)
         """
-        # step() was called
-        # if not args:
-        #     user_action, assistant_action = None, None
-        # elif len(args) == 1:
-        #     if self.kwargs.get("name") == "no-assistant":
-        #         user_action, assistant_action = args[0], None
-        #     elif self.kwargs.get("name") == "no-user":
-        #         user_action, assistant_action = None, args[0]
-        #     else:
-        #         raise AttributeError(
-        #             "Passing a single action is only allowed when the game is played with a single agent."
-        #         )
-        # step(user_action, None) or step(None, assistant_action) or step(user_action, assistant_action) was called
-        # else:
-        #     user_action, assistant_action = args
 
         if go_to_turn is None:
-            go_to_turn = self.turn_number
+            go_to_turn = self.turn_number.squeeze().tolist()
 
         _started = False
         rewards = {}
         rewards["user_observation_reward"] = 0
         rewards["user_inference_reward"] = 0
+        rewards["user_policy_reward"] = 0
         rewards["first_task_reward"] = 0
         rewards["assistant_observation_reward"] = 0
         rewards["assistant_inference_reward"] = 0
+        rewards["assistant_policy_reward"] = 0
         rewards["second_task_reward"] = 0
 
         while self.turn_number != go_to_turn or (not _started):
+
             _started = True
             # User observes and infers
-            if self.turn_number == 0:
+            if self.turn_number == 0 and "no-user" not in self.kwargs.get("name"):
                 (
                     user_obs_reward,
                     user_infer_reward,
@@ -240,20 +254,29 @@ class _Bundle:
                 ) = (user_obs_reward, user_infer_reward)
 
             # User takes action and receives reward from task
-            elif self.turn_number == 1:
+            elif self.turn_number == 1 and "no-user" not in self.kwargs.get("name"):
                 if user_action is None:
                     user_action, user_policy_reward = self.user._take_action()
                 else:
+                    # Convert action to stateElement
+                    if not isinstance(user_action, StateElement):
+                        se_action = copy.copy(self.user.action)
+                        se_action[:] = user_action
+                        user_action = se_action
                     user_policy_reward = 0
                 self.broadcast_action("user", user_action)
                 task_reward, is_done = self._user_second_half_step(user_action)
+                rewards["user_policy_reward"] = user_policy_reward
                 rewards["first_task_reward"] = task_reward
                 if is_done:
                     return self.game_state, rewards, is_done
 
+            elif self.turn_number == 2 and "no-assistant" in self.kwargs.get("name"):
+                self.round_number = self.round_number + 1
+
             # Assistant observes and infers
-            elif (
-                self.turn_number == 2 and not self.kwargs.get("name") == "no-assistant"
+            elif self.turn_number == 2 and "no-assistant" not in self.kwargs.get(
+                "name"
             ):
                 (
                     assistant_obs_reward,
@@ -265,8 +288,8 @@ class _Bundle:
                 ) = (assistant_obs_reward, assistant_infer_reward)
 
             # Assistant takes action and receives reward from task
-            elif (
-                self.turn_number == 3 and not self.kwargs.get("name") == "no-assistant"
+            elif self.turn_number == 3 and "no-assistant" not in self.kwargs.get(
+                "name"
             ):
                 if assistant_action is None:
                     (
@@ -274,19 +297,24 @@ class _Bundle:
                         assistant_policy_reward,
                     ) = self.assistant._take_action()
                 else:
+                    # Convert action to stateElement
+                    if not isinstance(assistant_action, StateElement):
+                        se_action = copy.copy(self.assistant.action)
+                        se_action[:] = assistant_action
+                        assistant_action = se_action
                     assistant_policy_reward = 0
                 self.broadcast_action("assistant", assistant_action)
                 task_reward, is_done = self._assistant_second_half_step(
                     assistant_action
                 )
+                rewards["assistant_policy_reward"] = assistant_policy_reward
                 rewards["second_task_reward"] = task_reward
                 if is_done:
                     return self.game_state, rewards, is_done
 
-            self.turn_number = (self.turn_number + 1) % 4
+                self.round_number = self.round_number + 1
 
-        self.round_number += 1
-        self.task.round += 1
+            self.turn_number = (self.turn_number + 1) % 4
 
         return self.game_state, rewards, False
 
@@ -303,6 +331,8 @@ class _Bundle:
 
         self.rendered_mode = mode
         if "text" in mode:
+            print("\n")
+            print("Round number {}".format(self.round_number.squeeze().tolist()))
             print("Task Render")
             self.task.render(mode="text", *args, **kwargs)
             print("User Render")
@@ -320,7 +350,7 @@ class _Bundle:
                     self.axtask,
                     self.axuser,
                     self.axassistant,
-                    mode=mode,
+                    mode="plot",
                     *args,
                     **kwargs,
                 )
@@ -391,7 +421,7 @@ class _Bundle:
 
         if self.active_render_figure:
             plt.close(self.fig)
-            self.active_render_figure = None
+            # self.active_render_figure = None
 
     def _user_first_half_step(self):
         """_user_first_half_step
@@ -433,7 +463,7 @@ class _Bundle:
         """
 
         # Play user's turn in the task
-        task_state, task_reward, is_done, _ = self.task.base_user_step(user_action)
+        task_state, task_reward, is_done = self.task.base_user_step(user_action)
 
         # update task state (likely not needed, remove ?)
         self.broadcast_state("user", "task_state", task_state)
@@ -470,7 +500,7 @@ class _Bundle:
 
         # Play assistant's turn in the task
 
-        task_state, task_reward, is_done, _ = self.task.base_assistant_step(
+        task_state, task_reward, is_done = self.task.base_assistant_step(
             assistant_action
         )
         # update task state
@@ -565,12 +595,9 @@ class _Bundle:
         :param action: action
         :type action: Any
         """
-        # update game state and observations
-        if isinstance(action, StateElement):
-            getattr(self, role).policy.action_state["action"] = action
+
+        getattr(self, role).policy.action_state["action"] = action
+        try:
             getattr(self, role).observation["{}_action".format(role)]["action"] = action
-        else:
-            getattr(self, role).policy.action_state["action"]["values"] = action
-            getattr(self, role).observation["{}_action".format(role)]["action"][
-                "values"
-            ] = action
+        except AttributeError:
+            pass

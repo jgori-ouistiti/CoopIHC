@@ -2,7 +2,25 @@
 
 Bundles
 ==================
-Bundles are the components that combine one or two agents with a task to obtain an environment that can be used to evaluate and/or train either one of the agents. There should rarely be a need to code your own bundle; usually instantiating a bundle is enough. However, some specific workings of the bundle impact the way agents are implemented e.g. with the ``finit()`` [link] method, and we will thus spend some time in this guide to understand how bundles work.
+
+.. start-quickstart-bundle
+
+Bundles are the objects that join three components (task, user and assistant) to form the joint state of the game, collect the rewards and ensure a synchronous sequential sequences of observations, inferences and actions.
+
+You have seen a couple of examples above where bundles are used, including their main methods: reset, step and render. 
+
+In most cases, there is no need to define a new Bundle, and you can straightaway use the standard existing ``Bundle``.
+
+.. end-quickstart-bundle
+
+
+
+However, some specific workings of the bundle impact the way agents are implemented e.g. with the ``finit()`` method, and we will thus spend some time in this guide to understand how bundles work.
+
+.. warning ::
+
+    doc outdated below
+
 
 The main API methods are the same as gym's:
 

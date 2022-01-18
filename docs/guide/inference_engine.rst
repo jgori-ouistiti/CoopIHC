@@ -3,68 +3,71 @@
 The Inference Engines
 ========================
 
-The internal states of users and assistants are expected to evolve over time, namely because both of them are learning from their observations during a run or several runs.
+.. start-quickstart-infeng-intro
 
-To account for this, *CoopIHC* provides an inference engine, which updates agent's internal states from their observations.
+Real-life agents have non-stationnary policies. This gives them the ability to learn (infer parameters from observed data) and to adapt (change policy parameters based on observed data). As in observation engines, there might be a cost associated with making inferences:
 
-All inference engines are obtained by subclassing the base class ``InferenceEngine``. This inference engine provides a buffer and an API used by bundles to add observations to the engine.
+    + Making an inference can be time costly
 
-
-
-
-.. _base-inference-engine-label:
-
-The ``InferenceEngine``
----------------------------
-
-The buffer that is maintained by the inference engine is a simple FIFO buffer, see below. The buffer depth parameter equals the number of observations that are stored. The example below has a ``buffer_depth=10``.
-
-.. tikz:: Inference Engine Buffer
-    :include: tikz/inference_engine.tikz
-    :xscale: 100
-    :align: center
+    + Inferring may be rewarding, e.g. because it is enjoyable.
 
 
-Observations are added to the inference engine's buffer by the bundle, who calls the engine's ``add_observation`` method.
+*CoopIHC* provides a generic object called inference engines to updating internal states from observations. Although the  name might suggest otherwise, these engines may use other mechanisms than statistical inference that update the internal state. To create a new inference engine, you can use an existing engine or subclass the ``BaseInferenceEngine``. 
 
-.. note::
-
-    The flattened observations are stored in the buffer.
-
-.. note::
-
-    Default observation values for the buffer can be indicated using the ``init_value`` parameter
-
-.. note::
-
-    not tested, I think the flattening is not performed now.
+.. end-quickstart-infeng-intro
 
 
-List of inference engines (ongoing)
-------------------------------------
+Subclassing BaseInferenceEngine
+------------------------------------------
 
-* ``GoalInferenceWithUserModelGiven`` (GIWOMG) [link]:  An Inference Engine used by an assistant to infer the goal of an assistant. It assumes that the user chooses as goal one of the targets of the task, stored in the 'Targets' substate of the task. It is also assumed that the assistant has an internal state 'Beliefs'. The inference is based on a discrete Bayes update, where the likelihood comes from an user_model which has to be provided to this engine.
+.. start-quickstart-infeng-subclass
+
+Essentially, the ``BaseInferenceEngine`` provides a simple FIFO buffer that stores observations. When subclassing ``BaseInferenceEngine``, you simply have to redefine the ``infer`` method (by default, no inference is produced). An example is provided below, where the engine stores the last 5 observations. 
+
+.. The example below has a ``buffer_depth=10``.
+
+.. .. tikz:: Inference Engine Buffer
+..     :include: tikz/inference_engine.tikz
+..     :xscale: 100
+..     :align: center
 
 
-
-* ``ContinuousGaussian`` (CG) [link]: An Inference Engine that handles a multidimensional Gaussian belief. It assumes a Gaussian prior and a Gaussian likelihood. The mean and covariance matrices of Belief are stored in the substates 'MuBelief' and 'SigmaBelief'.
-
-.. note::
-
-    Currently the covariance matrix for the likelihood is assumed to be contained by the host as self.Sigma. Change this.
-
-The following table summarizes the inference engines implemented.
+.. Observations are added to the inference engine's buffer by the bundle, who calls the engine's ``add_observation`` method.
 
 
-======= ==============  ==========  ======  ===================================
-Engine      Discrete    Continuous  Method   user model has to be provided?
-======= ==============  ==========  ======  ===================================
-GIWOMG          ✔️                   Bayes                  ✔️
-CG                          ✔️       Bayes                 (✔️)
-======= ==============  ==========  ======  ===================================
+.. literalinclude:: ../../coopihc/inference/ExampleInferenceEngine.py
+   :language: python
+   :linenos:
+   :start-after: [start-infeng-subclass]
+   :end-before: [end-infeng-subclass]
 
-``GoalInferenceWithUserModelGiven`` (GIWOMG)
-""""""""""""""""""""""""""""""""""""""""""""""""""""
+.. end-quickstart-infeng-subclass
+
+
+Combining Engines -- CascadedInferenceEngine
+----------------------------------------------
+It is sometimes useful to use several inference engine in a row (e.g. because you want to use two engines that target a different substate). 
+
+For this case, you can use the ``CascadedInferenceEngine``:
+
+.. code-block::
+
+    first_inference_engine = ProvideLikelihoodInferenceEngine(perceptualnoise)
+    second_inference_engine = LinearGaussianContinuous()
+    inference_engine = CascadedInferenceEngine(
+        [first_inference_engine, second_inference_engine]
+    )
+
+
+Available Inference Engines
+-------------------------------
+
+GoalInferenceWithUserModelGiven
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+An inference Engine used by an assistant to infer the 'goal' of a user.
+The inference is based on a model of the user policy, which has to be provided to this engine.
+
+
 Bayesian updating in the discrete case.
 Computes for each target :math:`\theta` the associated posterior probability, given an observation :math:`x` and the last user action :math:`y`:
 
@@ -72,26 +75,96 @@ Computes for each target :math:`\theta` the associated posterior probability, gi
 
     P(\Theta = \theta | X=x, Y=y) = \frac{p(Y = y | \Theta = \theta, X=x)}{\sum_{\Theta} p(Y=y|\Theta = \theta, X=x)} P(\Theta = \theta).
 
+This inference engine expects the likelihood model :math:`p(Y = y | \Theta = \theta, X=x)` to be supplied:
 
-``ContinuousGaussian`` (CG)
-"""""""""""""""""""""""""""""""
-Bayesian updating, but in the continuous multivariate case. Assumes Gaussian likelihoods and priors.
+.. code-block:: python
 
-With a likelihood of the form
+    # Define the likelihood model for the user policy
+    # user_policy_model = XXX
 
-.. math::
+    inference_engine = GoalInferenceWithUserPolicyGiven()
+    # Attach it to the engine
+    inference_engine.attach_policy(user_policy_model)
 
-    p(y|x) \sim \mathcal{N}(x, \Sigma_0)
+It also expects that the set of :math:`\theta`'s is supplied:
 
-and with a Gaussian prior
+.. code-block:: python
 
-.. math::
+    set_theta = [
+        {
+            ("user_state", "goal"): StateElement(
+                t,
+                discrete_space(numpy.array(list(range(self.bundle.task.gridsize)))),
+            )
+        }
+        for t in self.bundle.task.state["targets"]
+    ]
 
-    p(x(t-1)) \sim \mathcal{N}(\mu(t-1), \Sigma(t-1))
+    inference_engine.attach_set_theta(set_theta)
 
-computes the posterior as
+You can find a full worked-out example in CoopIHC-Zoo's pointing module.
 
-.. math::
 
-    p(x(t) | y, x(t-1)) \sim \mathcal{N}(\Sigma(t) \left[ \Sigma_0^{-1}y + \Sigma(t-1) \mu(t-1) \right], \Sigma(t)) \\
-    \Sigma(t) = (\Sigma_0^{-1} + \Sigma(t-1)^{-1})^{-1}
+LinearGaussianContinuous
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+An Inference Engine that handles a continuous Gaussian Belief. It assumes a Gaussian prior and a Gaussian likelihood.
+
+- **Expectations of the engine**
+
+    This inference engine expects the agent to have in its internal state:
+
+        + The mean matrix of the belief, stored as 'belief-mu'
+        + The covariance matrix of the belief, stored as 'belief-sigma'
+        + The new observation, stored as 'y'
+        + The covariance matrix associated with the observation, stored as 'Sigma_0'
+
+
+- **Inference**
+
+    This engine uses the observation to update the beliefs (which has been computed from previous observations).
+
+    To do so, a Gaussian noisy observation model is assumed, where x is the latest mean matrix of the belief.
+
+    .. math::
+
+        \\begin{align}
+        p(y|x) \\sim \\mathcal{N}(x, \\Sigma_0)
+        \\end{align}
+
+
+    If the initial prior (belief probability) is Gaussian as well, then the posterior will remain Gaussian (because we are only applying linear operations to Gaussians, Gaussianity is preserved). So the posterior after t-1 observations has the following form, where :math:`(\\mu(t-1), \\Sigma(t-1))` are respectively the mean and covariance matrices of the beliefs.
+
+    .. math::
+
+        \\begin{align}
+        p(x(t-1)) \\sim \mathcal{N}(\\mu(t-1), \\Sigma(t-1))
+        \\end{align}
+
+    On each new observation, the mean and covariance matrices are updated like so:
+
+    .. math::
+
+        \\begin{align}
+        p(x(t) | y, x(t-1)) \\sim \\mathcal{N}(\\Sigma(t) \\left[ \\Sigma_0^{-1}y + \\Sigma(t-1) \\mu(t-1) \\right], \\Sigma(t)) \\\\
+        \\Sigma(t) = (\\Sigma_0^{-1} + \\Sigma(t-1)^{-1})^{-1}
+        \\end{align}
+
+
+- **Render**
+
+    ---- plot mode:
+
+    This engine will plot mean beliefs on the task axis and the covariance beliefs on the agent axis, plotted as confidence intervals (bars for 1D and ellipses for 2D).
+
+
+- **Example files**
+
+    coopihczoo.eye.users
+
+
+ContinuousKalmanUpdate
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+LQG update, not documented yet, see API Reference
+
+
