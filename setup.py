@@ -7,6 +7,7 @@ packages = \
  'coopihc.agents.lqrcontrollers',
  'coopihc.bundle',
  'coopihc.bundle.wrappers',
+ 'coopihc.examples.basic_examples',
  'coopihc.examples.simple_examples',
  'coopihc.examples.worked_out_examples',
  'coopihc.examples.worked_out_examples.websockets',
@@ -32,7 +33,7 @@ install_requires = \
 
 setup_kwargs = {
     'name': 'coopihc',
-    'version': '0.0.7',
+    'version': '0.0.1',
     'description': 'Two-agent component-based interaction environments for computational HCI with Python',
     'long_description': None,
     'author': 'Julien Gori',
