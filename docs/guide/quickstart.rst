@@ -7,13 +7,17 @@ Quick Start
 Installation
 ---------------
 
-*CoopIHC* is currently available on `TestPyPI <https://test.pypi.org/project/coopihc/>`_, although this might not be the latest version. You can install the package using pip with the following command:
+.. *CoopIHC* is currently available on `TestPyPI <https://test.pypi.org/project/coopihc/>`_, although this might not be the latest version. You can install the package using pip with the following command:
+
+.. .. code-block:: python
+
+..     python3 -m pip install --extra-index-url https://test.pypi.org/simple/ coopihc
+
+*CoopIHC* is currently available on PyPI. You can install the package using pip with the following command:
 
 .. code-block:: python
 
-    python3 -m pip install --extra-index-url https://test.pypi.org/simple/ coopihc
-
-
+    python3 -m pip install coopihc
 
 You can also build directly from the github repository to get the latest version. To do so, install poetry, and run 
 
