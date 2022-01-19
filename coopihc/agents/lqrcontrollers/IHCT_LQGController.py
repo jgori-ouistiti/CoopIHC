@@ -14,15 +14,15 @@ from coopihc.inference.ContinuousKalmanUpdate import ContinuousKalmanUpdate
 class IHCT_LQGController(BaseAgent):
     """Infinite Horizon Continuous Time LQ Gaussian Controller.
 
-    An Infinite Horizon (Steady-state) LQG controller, based on Phillis 1985 [Phillis1985]_ and Qian 2013 [Qian2013]_.
+    An Infinite Horizon (Steady-state) LQG controller, based on [Phillis1985]_ and [Qian2013]_.
 
     For the a task where state 'x' follows a linear noisy dynamic:
 
     .. math::
 
-        \\begin{align*}
-        dx & = (Ax + Bu)dt + Fxd \\beta + G d\omega, \\\\
-        \\end{align*}
+        \\begin{align}
+            x(+.) = (Ax(.) + Bu(.))dt + Fx(.).d\\beta + G.d\\omega + Hu(.)d\\gamma \\\\
+        \\end{align}
 
     the LQG controller produces the following observations dy and commands u with cost J:
 
@@ -31,7 +31,7 @@ class IHCT_LQGController(BaseAgent):
         \\begin{align*}
         dy & = Cxdt + Dd\\xi \\\\
         d\\hat{x} & = (A \\hat{x} + Bu) dt + K (dy - C\\hat{x}dt) \\\\
-        u & = -\\Gamma  L\\hat{x} d\\gamma \\\\
+        u & = - L\\hat{x} \\\\
         \\tilde{x} & = x - \\hat{x} \\\\
         J & \simeq \\mathbb{E} [\\tilde{x}^T U \\tilde{x} + x^TQx + u^TRu]
         \\end{align*}
@@ -55,18 +55,16 @@ class IHCT_LQGController(BaseAgent):
     :type D: numpy.ndarray
     :param noise: whether or not to have, defaults to "on"
     :type noise: str, optional
-    :param Gamma: Additive independent Noise weight shaping matrix
-    :type Gamma: numpy.ndarray
-    :param mu: mean of :math:`d\\gamma`, defaults to 0
-    :type mu: int, optional
-    :param sigma: stdev of :math:`d\\gamma`, defaults to 0
-    :type sigma: int, optional
     :param Acontroller: Representation of A for the agent. If None, the agent representation of A is equal to the task A, defaults to None.
     :type Acontroller: numpy.ndarray, optional
     :param Bcontroller: Representation of B for the agent. If None, the agent representation of B is equal to the task B, defaults to None.
     :type Bcontroller: numpy.ndarray, optional
-    :param Ccontroller: Representation of C for the agent. If None, the agent representation of C is equal to the task C, defaults to None.
-    :type Ccontroller: numpy.ndarray, optional
+    :param Fcontroller: Representation of F for the agent. If None, the agent representation of F is equal to the task F, defaults to None.
+    :type Fcontroller: numpy.ndarray, optional
+    :param Gcontroller: Representation of G for the agent. If None, the agent representation of G is equal to the task G, defaults to None.
+    :type Gcontroller: numpy.ndarray, optional
+    :param Hcontroller: Representation of H for the agent. If None, the agent representation of H is equal to the task H, defaults to None.
+    :type Hcontroller: numpy.ndarray, optional
 
     
     
@@ -84,52 +82,14 @@ class IHCT_LQGController(BaseAgent):
         D,
         *args,
         noise="on",
-        Gamma="id",
-        mu=0,
-        sigma=0,
         Acontroller=None,
         Bcontroller=None,
-        Ccontroller=None,
+        F=None,
+        G=None,
+        H=None,
         **kwargs
     ):
-        """__init__ [summary]
-
-        [extended_summary]
-
-        :param role: [description]
-        :type role: [type]
-        :param timestep: [description]
-        :type timestep: [type]
-        :param Q: [description]
-        :type Q: [type]
-        :param R: [description]
-        :type R: [type]
-        :param U: [description]
-        :type U: [type]
-        :param C: [description]
-        :type C: [type]
-        :param D: [description]
-        :type D: [type]
-        :param noise: [description], defaults to "on"
-        :type noise: str, optional
-        :param Gamma: [description], defaults to "id"
-        :type Gamma: str, optional
-        :param mu: [description], defaults to 0
-        :type mu: int, optional
-        :param sigma: [description], defaults to 0
-        :type sigma: int, optional
-        :param Acontroller: [description], defaults to None
-        :type Acontroller: [type], optional
-        :param Bcontroller: [description], defaults to None
-        :type Bcontroller: [type], optional
-        :param Ccontroller: [description], defaults to None
-        :type Ccontroller: [type], optional
-        :return: [description]
-        :rtype: [type]
-        """
-
         self.C = C
-        self.Gamma = numpy.array(Gamma)
         self.Q = Q
         self.R = R
         self.U = U
@@ -142,31 +102,23 @@ class IHCT_LQGController(BaseAgent):
         self.L = numpy.random.rand(1, Q.shape[1])
 
         self.noise = noise
-        self.Gamma = Gamma
-        self.mu = mu
-        self.sigma = sigma
 
         self.Acontroller = Acontroller
         self.Bcontroller = Bcontroller
-        self.Ccontroller = Ccontroller
+        self.Fcontroller = F
+        self.Gcontroller = G
+        self.Hcontroller = H
 
         # =================== Linear Feedback Policy ==========
 
         action_state = State()
         action_state["action"] = StateElement(
             numpy.zeros((1, 1)),
-            Space([numpy.full((1, 1), -numpy.inf), numpy.full((1, 1), numpy.inf)]),
+            Space(
+                [numpy.full((1, 1), -numpy.inf), numpy.full((1, 1), numpy.inf)],
+                "continuous",
+            ),
         )
-        # Gaussian noise on action
-        def shaped_gaussian_noise(action, observation, Gamma, mu, sigma):
-            if Gamma is None:
-                return action
-            if sigma is None:
-                sigma = numpy.sqrt(self.host.timestep)  # Wiener process
-            if mu is None:
-                mu = 0
-            noisy_action = Gamma @ action * numpy.random.normal(mu, sigma)
-            return noisy_action
 
         # Linear Feedback with LQ reward
         class LFwithLQreward(LinearFeedback):
@@ -185,8 +137,6 @@ class IHCT_LQGController(BaseAgent):
             self.R,
             action_state,
             ("user_state", "xhat"),
-            noise_function=shaped_gaussian_noise,
-            noise_func_args=(self.Gamma, self.mu, self.sigma),
         )
 
         # =========== Observation Engine ==============
@@ -198,7 +148,7 @@ class IHCT_LQGController(BaseAgent):
 
             def observe(self, game_state=None):
                 observation, _ = super().observe(game_state=game_state)
-                x = observation["task_state"]["x"]
+                x = observation["task_state"]["x"].view(numpy.ndarray)
                 reward = x.T @ self.Q @ x
                 return observation, reward
 
@@ -262,20 +212,6 @@ class IHCT_LQGController(BaseAgent):
 
         # ======================= Inference Engine
         inference_engine = ContinuousKalmanUpdate()
-        if all(
-            [self.Acontroller, self.Bcontroller, self.Ccontroller] != [None, None, None]
-        ):
-            inference_engine.set_forward_model_dynamics(self.A_c, self.B_c, self.C)
-        else:
-            if any(
-                [self.Acontroller, self.Bcontroller, self.Ccontroller]
-                != [None, None, None]
-            ):
-                warnings.warn(
-                    Warning(
-                        "The controller matrices A, B, C you provided are not accounted for. You have to define all three of them to account for them."
-                    )
-                )
 
         super().__init__(
             "user",
@@ -285,30 +221,48 @@ class IHCT_LQGController(BaseAgent):
         )
 
     def finit(self):
-        """finit
+        """Get and compute needed matrices.
 
+        0. Take A, B, F, G, H from task if not provided by the end-user
         1. Create an :math:`\\hat{x}` state;
         2. attach the model dynamics to the inference engine if needed
         3. compute K and L;
         4. set K and L in inference engine and policy
         """
+
         task = self.bundle.task
+
+        for elem, taskelem in zip(
+            [
+                "Acontroller",
+                "Bcontroller",
+                "Fcontroller",
+                "Gcontroller",
+                "Hcontroller",
+            ],
+            [task.A, task.B, task.F, task.G, task.H],
+        ):
+            if getattr(self, elem) == None:
+                setattr(self, elem, taskelem)
+
         # ---- init xhat state
         self.state["xhat"] = copy.deepcopy(self.bundle.task.state["x"])
 
         # ---- Attach the model dynamics to the inference engine.
-        if not self.inference.engine.fmd_flag:
-            self.A_c, self.B_c, self.G = task.A_c, task.B_c, task.G
-            self.inference_engine.set_forward_model_dynamics(self.A_c, self.B_c, self.C)
+        if not self.inference_engine.fmd_flag:
+
+            self.inference_engine.set_forward_model_dynamics(
+                self.Acontroller, self.Bcontroller, self.C
+            )
 
         # ---- Set K and L up
         mc = self._MContainer(
-            self.A_c,
-            self.B_c,
+            self.Acontroller,
+            self.Bcontroller,
             self.C,
             self.D,
-            self.G,
-            self.Gamma,
+            self.Gcontroller,
+            self.Hcontroller,
             self.Q,
             self.R,
             self.U,
@@ -323,13 +277,13 @@ class IHCT_LQGController(BaseAgent):
         The purpose of this container is to facilitate common manipulations of the matrices of the LQG problem, as well as potentially storing their evolution. (not implemented yet)
         """
 
-        def __init__(self, A, B, C, D, G, Gamma, Q, R, U):
+        def __init__(self, A, B, C, D, G, H, Q, R, U):
             self.A = A
             self.B = B
             self.C = C
             self.D = D
             self.G = G
-            self.Gamma = Gamma
+            self.H = H
             self.Q = Q
             self.R = R
             self.U = U
@@ -346,7 +300,7 @@ class IHCT_LQGController(BaseAgent):
                 self.C,
                 self.D,
                 self.G,
-                self.Gamma,
+                self.H,
                 self.Q,
                 self.R,
                 self.U,
@@ -357,15 +311,15 @@ class IHCT_LQGController(BaseAgent):
 
         K and L are computed according to the algorithm described in [Qian2013]_ with some minor tweaks. K and L are obtained recursively, where more and more precise estimates are obtained. At first N iterations are performed, if that fails to converge, N is grown as :math:`N^{1.3}` and K and L are recomputed.
 
-        :param matrices: (A, B, C, D, G, Gamma, Q, R, U)
+        :param matrices: (A, B, C, D, G, H, Q, R, U)
         :type matrices: tuple(numpy.ndarray)
         :param N: max iterations of the algorithm on first try, defaults to 20
         :type N: int, optional
         :return: (K, L)
         :rtype: tuple(numpy.ndarray, numpy.ndarray)
         """
-        A, B, C, D, G, Gamma, Q, R, U = matrices
-        Y = B @ numpy.array(Gamma).reshape(1, -1)
+        A, B, C, D, G, H, Q, R, U = matrices
+        Y = B @ H.reshape(1, -1)
         Lnorm = []
         Knorm = []
         K = numpy.random.rand(*C.T.shape)

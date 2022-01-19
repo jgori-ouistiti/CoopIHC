@@ -26,7 +26,7 @@ class ClassicControlTask(InteractionTask):
     .. math ::
 
         \\begin{align}
-            x(+.) = (Ax(.) + Bu(.))dt + Fx(.).\\beta + G.\\omega \\\\
+            x(+.) = (Ax(.) + Bu(.))dt + Fx(.).\\beta + G.\\omega + Hu(.)d\\gamma \\\\
         \\end{align}
 
     for "timespace=continuous".
@@ -115,6 +115,8 @@ class ClassicControlTask(InteractionTask):
             self.G = G
         if H is None:
             self.H = numpy.zeros(B.shape)
+        else:
+            self.H = H
         # Convert dynamics between discrete and continuous.
         if discrete_dynamics:
             self.A_d = A
@@ -179,7 +181,18 @@ class ClassicControlTask(InteractionTask):
         # For readability
         A, B, F, G, H = self.A, self.B, self.F, self.G, self.H
 
-        _u = self.user_action.view(numpy.ndarray)
+        # Just to test, could be removed
+        ua = kwargs.get("user_action")
+        if ua is not None:
+            try:
+                _u = ua.view(numpy.ndarray)
+            except AttributeError:
+                _u = numpy.array(ua)
+        else:
+            _u = self.user_action.view(
+                numpy.ndarray
+            )  # If you remove this block, only keep this line
+
         _x = self.state["x"].view(numpy.ndarray)
 
         # Generate noise samples
@@ -193,8 +206,10 @@ class ClassicControlTask(InteractionTask):
         # Store last_x for render
         self.state_last_x = copy.copy(self.state["x"])
         # Deterministic update + State dependent noise + independent noise
+
         if self.timespace == "discrete":
             _x = (A @ _x + B * _u) + F @ _x * beta + G @ omega + H * _u * gamma
+
         else:
             _x += (
                 (A @ _x + B * _u) * self.timestep
