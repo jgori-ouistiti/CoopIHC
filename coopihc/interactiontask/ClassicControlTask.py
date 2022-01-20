@@ -18,7 +18,7 @@ class ClassicControlTask(InteractionTask):
     .. math ::
 
         \\begin{align}
-            x(+.) = Ax(.) + Bu(.) + Fx(.).\\beta + G.\\omega + Hu(.)d\\gamma \\\\
+            x(+.) = Ax(.) + Bu(.) + Fx(.).d\\beta + G.d\\omega + Hu(.)d\\gamma \\\\
         \\end{align}
 
     for "timespace=discrete" and
@@ -26,7 +26,7 @@ class ClassicControlTask(InteractionTask):
     .. math ::
 
         \\begin{align}
-            x(+.) = (Ax(.) + Bu(.))dt + Fx(.).\\beta + G.\\omega + Hu(.)d\\gamma \\\\
+            x(+.) = (Ax(.) + Bu(.))dt + Fx(.).d\\beta + G.d\\omega + Hu(.)d\\gamma \\\\
         \\end{align}
 
     for "timespace=continuous".
@@ -85,6 +85,7 @@ class ClassicControlTask(InteractionTask):
         discrete_dynamics=True,
         noise="on",
         timespace="discrete",
+        end="standard",
         **kwargs
     ):
 
@@ -134,6 +135,13 @@ class ClassicControlTask(InteractionTask):
         self.noise = noise
         self.timespace = timespace
 
+        if end == "standard":
+            self.end = numpy.full((self.dim, 1), 0.01)
+        else:
+            self.end = end
+
+        self.state_last_x = None
+
     def finit(self):
         """finit
 
@@ -161,8 +169,6 @@ class ClassicControlTask(InteractionTask):
             (-1, 1)
         )
 
-        self.state_last_x = copy.copy(self.state["x"])
-
     def user_step(self, *args, **kwargs):
         """user step
 
@@ -175,7 +181,6 @@ class ClassicControlTask(InteractionTask):
             \\end{align}
 
         """
-        is_done = False
         # Call super for counters
 
         # For readability
@@ -204,12 +209,11 @@ class ClassicControlTask(InteractionTask):
             omega = numpy.random.normal(0, 0, (self.dim, 1))
 
         # Store last_x for render
-        self.state_last_x = copy.copy(self.state["x"])
+        self.state_last_x = copy.copy(self.state["x"][:])
         # Deterministic update + State dependent noise + independent noise
 
         if self.timespace == "discrete":
             _x = (A @ _x + B * _u) + F @ _x * beta + G @ omega + H * _u * gamma
-
         else:
             _x += (
                 (A @ _x + B * _u) * self.timestep
@@ -219,10 +223,16 @@ class ClassicControlTask(InteractionTask):
             )
 
         self.state["x"][:] = _x
-        if abs(_x[0, 0]) <= 0.01:
-            is_done = True
+
+        is_done = self.stopping_condition()
 
         return self.state, 0, is_done
+
+    def stopping_condition(self):
+        _x = self.state["x"][:]
+        if (abs(_x[:]) <= self.end).all():
+            return True
+        return False
 
     def assistant_step(self, *args, **kwargs):
         """assistant_step"""
@@ -265,14 +275,15 @@ class ClassicControlTask(InteractionTask):
                 self.draw()
 
     def draw(self):
-        if (self.state_last_x == self.state["x"]).all():
+
+        if (self.state_last_x == self.state["x"]).all() or self.state_last_x is None:
             pass
         else:
             for i in range(self.dim):
                 self.axes[i].plot(
                     [
-                        ((self.round_number - 1) / 2 - 1) * self.timestep,
-                        (self.round_number - 1) / 2 * self.timestep,
+                        ((self.round_number - 1)) * self.timestep,
+                        (self.round_number) * self.timestep,
                     ],
                     flatten(
                         [

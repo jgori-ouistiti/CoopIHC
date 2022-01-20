@@ -7,6 +7,11 @@ import scipy.linalg
 class FHDT_LQRController(LQRController):
     """Finite Horizon Discrete Time LQR
 
+    .. warning::
+
+        outdated
+
+
     A Finite Horizon (i.e. planning for N steps) Discrete Time implementation of the LQR controller.
 
     :param N: Horizon (steps)
@@ -17,14 +22,15 @@ class FHDT_LQRController(LQRController):
     :type Q: numpy.ndarray
     :param R: see :py:class:`LQRController <coopihc.agents.lqrcontrollers.LQRController.LQRController>`
     :type R: numpy.ndarray
-    :param Gamma: see :py:class:`LQRController <coopihc.agents.lqrcontrollers.LQRController.LQRController>`
-    :type Gamma: float
+
     """
 
-    def __init__(self, N, role, Q, R, Gamma):
+    def __init__(self, N, role, Q, R, Acontroller=None, Bcontroller=None):
         self.N = N
         self.i = 0
-        super().__init__(role, Q, R, gamma=Gamma)
+        self.Acontroller = Acontroller
+        self.Bcontroller = Bcontroller
+        super().__init__(role, Q, R)
         self.timespace = "discrete"
 
     # untested, old version below
@@ -44,7 +50,11 @@ class FHDT_LQRController(LQRController):
         """
         self.K = []
         task = self.bundle.task
-        A, B = task.A, task.B
+        if self.Acontroller is None:
+            self.Acontroller = task.A
+        if self.Bcontroller is None:
+            self.Bcontroller = task.B
+        A, B = self.Acontroller, self.Bcontroller
         # Compute P(k) matrix for k in (N:-1:1)
         self.P = [self.Q]
         for k in range(self.N - 1, 0, -1):

@@ -13,17 +13,28 @@ from coopihc.observation.utils import base_task_engine_specification
 class LQRController(BaseAgent):
     """A Linear Quadratic Regulator.
 
-    Tested only on 1d output. This agent will read a state named 'x' from the task, and produce actions according to:
+    This agent will read a state named 'x' from the task, and produce actions according to:
 
     .. math::
 
-        action =  -K x + \Gamma  \mathcal{N}(\overline{\mu}, \Sigma)
+        \\text{action} =  -K X
 
     where K is the so-called feedback gain, which has to be specified externally. For an example, see the :py:class:`coopihc.agents.lqrcontrollers.FHDT_LQRController.FHDT_LQRController` source code.
+
+    The controller will also output observation rewards J, for state X and action u
+
+
+    .. math::
+
+        J = -X^t Q X - u^t R u
 
     .. note::
 
         This class is meant to be subclassed
+
+    .. warning::
+
+        Tested only on 1d output.
 
     :param role: "user" or "assistant"
     :type role: string
@@ -31,23 +42,14 @@ class LQRController(BaseAgent):
     :type Q: numpy.ndarray
     :param R: Control cost
     :type R: numpy.ndarray
-    :param Gamma: Noise weight, defaults to None
-    :type Gamma: float, optional
-    :param Mu: Noise mean, defaults to None
-    :type Mu: float, optional
-    :param sigma: Noise variance, defaults to None
-    :type sigma: float, optional
+
     """
 
-    def __init__(self, role, Q, R, *args, Gamma=None, Mu=None, Sigma=None, **kwargs):
+    def __init__(self, role, Q, R, *args, **kwargs):
 
         self.R = R
         self.Q = Q
         self.role = role
-
-        self.gamma = Gamma
-        self.mu = Mu
-        self.sigma = Sigma
 
         # ================== Policy ================
         action_state = State()
@@ -59,27 +61,46 @@ class LQRController(BaseAgent):
             ),
         )
 
-        def shaped_gaussian_noise(action, observation, *args):
-            gamma, mu, sigma = args[:3]
-            if gamma is None:
-                return action
-            if sigma is None:
-                sigma = numpy.sqrt(self.host.timestep)  # Wiener process
-            if mu is None:
-                mu = 0
-            noise = gamma * numpy.random.normal(mu, sigma)
-            return action + noise
-
         agent_policy = LinearFeedback(
             action_state,
             ("task_state", "x"),
-            noise_function=shaped_gaussian_noise,
-            noise_func_args=(self.gamma, self.mu, self.sigma),
         )
 
         # ================== Observation Engine
 
-        observation_engine = RuleObservationEngine(base_task_engine_specification)
+        class RuleObsWithRewards(RuleObservationEngine):
+            def __init__(
+                self,
+                Q,
+                R,
+                *args,
+                deterministic_specification=base_task_engine_specification,
+                extradeterministicrules={},
+                extraprobabilisticrules={},
+                mapping=None,
+                **kwargs
+            ):
+                self.R = R
+                self.Q = Q
+                super().__init__(
+                    *args,
+                    deterministic_specification=base_task_engine_specification,
+                    extradeterministicrules={},
+                    extraprobabilisticrules={},
+                    mapping=None,
+                    **kwargs
+                )
+
+            def observe(self, game_state=None):
+                obs, _ = super().observe(game_state=game_state)
+                x = obs["task_state"]["x"].view(numpy.ndarray)
+                u = obs["user_action"]["action"].view(numpy.ndarray)
+                reward = -x.T @ self.R @ x - u.T @ self.Q @ u
+                return obs, reward
+
+        observation_engine = RuleObsWithRewards(
+            self.R, self.Q, deterministic_specification=base_task_engine_specification
+        )
 
         super().__init__(
             "user",

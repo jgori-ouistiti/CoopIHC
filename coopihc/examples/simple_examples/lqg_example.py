@@ -4,7 +4,7 @@ from coopihc.bundle.Bundle import Bundle
 
 
 import numpy
-
+import matplotlib.pyplot as plt
 
 I = 0.25
 b = 0.2
@@ -45,24 +45,23 @@ task = ClassicControlTask(
     G=G,
     H=H,
     discrete_dynamics=False,
-    noise="on",
+    noise="off",
     timespace="continuous",
 )
 user = IHCT_LQGController("user", timestep, Q, R, U, C, D, noise="on")
 bundle = Bundle(task=task, user=user, onreset_deterministic_first_half_step=True)
 obs = bundle.reset(
-    turn=1,
+    turn=0,
     dic={
         "task_state": {"x": numpy.array([[0.5], [0], [0], [0]])},
         "user_state": {"xhat": numpy.array([[0.5], [0], [0], [0]])},
     },
 )
 bundle.playspeed = 0.001
-bundle.render("plot")
+# bundle.render("plot")
 for i in range(250):
     obs, rewards, is_done = bundle.step()
-    bundle.render("plot")
-    exit()
-    print(i)
-    if not i % 5:
-        bundle.render("plot")
+    if is_done:
+        break
+    # if not i % 5:
+    #     bundle.render("plot")

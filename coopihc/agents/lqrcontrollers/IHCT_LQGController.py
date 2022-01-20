@@ -24,7 +24,7 @@ class IHCT_LQGController(BaseAgent):
             x(+.) = (Ax(.) + Bu(.))dt + Fx(.).d\\beta + G.d\\omega + Hu(.)d\\gamma \\\\
         \\end{align}
 
-    the LQG controller produces the following observations dy and commands u with cost J:
+    the LQG controller produces the following observations dy and commands u minimizing cost J:
 
     .. math::
 

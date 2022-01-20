@@ -12,15 +12,15 @@ R = 1e-4 * numpy.array([[1]])
 Ac = numpy.array([[0, 1], [-k / m, -d / m]])
 
 Bc = numpy.array([[0, 1]]).reshape((-1, 1))
+
+
 task = ClassicControlTask(0.002, Ac, Bc, discrete_dynamics=False)
-user = IHDT_LQRController("user", Q, R, None)
+user = IHDT_LQRController("user", Q, R)
 bundle = Bundle(task=task, user=user)
 bundle.reset(turn=0)
 bundle.playspeed = 0.01
-# exit()
-# bundle.render('plot')
+# bundle.render("plot")
 for i in range(1500):
     bundle.step()
-    # print(i)
-    if not i % 20:
-        bundle.render("plot")
+    # if not i % 5:
+    #     bundle.render("plot")
