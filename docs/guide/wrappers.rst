@@ -3,6 +3,10 @@
 Wrappers
 ==================
 
+.. warning::
+
+    outdated
+
 Wrappers are used to transform a bundle, in the spirit of gym wrappers.
 
 List of Wrappers (ongoing):

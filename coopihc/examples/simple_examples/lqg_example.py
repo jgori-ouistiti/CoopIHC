@@ -1,10 +1,10 @@
 from coopihc.interactiontask.ClassicControlTask import ClassicControlTask
-from coopihc.agents.lqrcontrollers.IHDT_LQRController import IHDT_LQRController
+from coopihc.agents.lqrcontrollers.IHCT_LQGController import IHCT_LQGController
 from coopihc.bundle.Bundle import Bundle
 
 
 import numpy
-
+import matplotlib.pyplot as plt
 
 I = 0.25
 b = 0.2
@@ -29,7 +29,7 @@ G = 0.03 * numpy.diag([1, 1, 0, 0])
 C = numpy.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 0]])
 
 # Motor and observation noise
-Gamma = numpy.array(0.08)
+H = numpy.array(0.08)
 D = numpy.array([[0.01, 0, 0, 0], [0, 0.01, 0, 0], [0, 0, 0.05, 0], [0, 0, 0, 0]])
 
 # Cost matrices
@@ -43,24 +43,25 @@ task = ClassicControlTask(
     Bc,
     F=F,
     G=G,
+    H=H,
     discrete_dynamics=False,
-    noise="on",
+    noise="off",
     timespace="continuous",
 )
-user = IHCT_LQGController("user", timestep, Q, R, U, C, Gamma, D, noise="on")
+user = IHCT_LQGController("user", timestep, Q, R, U, C, D, noise="on")
 bundle = Bundle(task=task, user=user, onreset_deterministic_first_half_step=True)
 obs = bundle.reset(
-    turn=1,
+    turn=0,
     dic={
         "task_state": {"x": numpy.array([[0.5], [0], [0], [0]])},
         "user_state": {"xhat": numpy.array([[0.5], [0], [0], [0]])},
     },
 )
 bundle.playspeed = 0.001
-bundle.render("plot")
+# bundle.render("plot")
 for i in range(250):
-    obs, rewards, is_done, reward_list = bundle.step()
-    print(reward_list)
-    print(i)
-    if not i % 5:
-        bundle.render("plot")
+    obs, rewards, is_done = bundle.step()
+    if is_done:
+        break
+    # if not i % 5:
+    #     bundle.render("plot")

@@ -148,7 +148,6 @@ class LinearGaussianContinuous(BaseInferenceEngine):
         :type dim: int
         """
         mu, cov = self.host.state["belief-mu"], self.host.state["belief-sigma"]
-        print(mu, cov)
         if dim == 2:
             self.patch = self.confidence_ellipse(mu, cov, ax)
         else:

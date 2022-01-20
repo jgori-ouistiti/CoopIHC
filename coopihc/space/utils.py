@@ -662,16 +662,12 @@ class GymForceConvertor(RLConvertor):
             super().__init__(env)
 
         def action(self, action):
-            print("\n====AW")
-            print(action)
-            print(self.round_list)
             _action = []
             for a, rl in zip(action, self.round_list):
                 if rl is True:
                     _action.append(numpy.round(a))
                 else:
                     _action.append(a)
-            print(_action)
             return _action
 
     class _ChangeLayoutObservation(gym.ObservationWrapper):
@@ -731,8 +727,6 @@ class GymForceConvertor(RLConvertor):
                 lower_bound.append(hard_flatten(space.low))
                 upper_bound.append(hard_flatten(space.high))
                 slice_list.append(slice(k, k + numpy.prod(space.shape)))
-                print(round_list)
-                print([False for i in range(numpy.prod(space.shape))])
                 round_list.extend([False for i in range(numpy.prod(space.shape))])
 
                 k += numpy.prod(space.shape)

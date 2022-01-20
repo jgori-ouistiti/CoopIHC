@@ -11,6 +11,11 @@ def test_basic_examples():
     import coopihc.examples.basic_examples.interactiontask_examples
 
 
+def test_simple_examples():
+    import coopihc.examples.simple_examples.lqr_example
+    import coopihc.examples.simple_examples.lqg_example
+
+
 @pytest.mark.timeout(3)
 def test_bundle_examples():
     import coopihc.examples.basic_examples.bundle_examples
@@ -18,6 +23,7 @@ def test_bundle_examples():
 
 def test_all_examples():
     test_basic_examples()
+    test_simple_examples()
     test_bundle_examples()
 
 

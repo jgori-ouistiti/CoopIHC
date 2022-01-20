@@ -92,6 +92,11 @@ class LinearFeedback(BasePolicy):
                 self.feedback_gain = -numpy.eye(max(output.shape))
 
         noiseless_feedback = -self.feedback_gain @ output.reshape((-1, 1))
+        if self.noise_function is None:
+            action = self.action
+            action[:] = noiseless_feedback
+            return action, 0
+
         noisy_action = self.noise_function(
             noiseless_feedback, observation, *self.noise_args
         )

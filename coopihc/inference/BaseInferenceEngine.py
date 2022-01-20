@@ -95,8 +95,7 @@ class BaseInferenceEngine:
         :return: bound method
         :rtype: method
         """
-        # print("\n")
-        # print(func, as_name)
+
         if as_name is None:
             as_name = func.__name__
         bound_method = func.__get__(self, self.__class__)

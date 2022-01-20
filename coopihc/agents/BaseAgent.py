@@ -1,5 +1,3 @@
-from abc import ABC
-
 from coopihc.space.State import State
 from coopihc.space.StateElement import StateElement
 from coopihc.policy.BasePolicy import BasePolicy
@@ -8,8 +6,10 @@ from coopihc.observation.utils import base_user_engine_specification
 from coopihc.observation.utils import base_assistant_engine_specification
 from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 
+import numpy
 
-class BaseAgent(ABC):
+
+class BaseAgent:
     """Instantiate or subclass this class to define an agent that can be used in a Bundle.
 
 
@@ -298,19 +298,25 @@ class BaseAgent(ABC):
 
         if not dic:
             self.state.reset()
-            # self.reset(dic=dic)   # Check but this should not be needed
             self.reset()
 
             return
 
-        # self.reset(dic=dic)   # Check but this should not be needed
         self.reset()  # Reset all states before, just in case the reset dic does not specify a reset value for each substate.
+
+        # forced reset with dic
         for key in list(self.state.keys()):
             value = dic.get(key)
             if isinstance(value, StateElement):
-                value = value["values"]
-            if value is not None:
-                self.state[key]["values"] = value
+                self.state[key] = value
+                continue
+            elif isinstance(value, numpy.ndarray):
+                self.state[key][:] = value
+
+            elif value is None:
+                continue
+            else:
+                raise NotImplementedError
 
     def reset(self):
         """Initialize the agent before each new game.
