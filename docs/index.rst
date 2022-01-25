@@ -50,6 +50,8 @@ and **bundling** them back together using a so-called :py:mod:`Bundle <../coopih
     guide/quickstart
     guide/more_complex_example
     guide/modularity
+    guide/learning
+    guide/realuser
 
 .. toctree::
     :maxdepth: 1

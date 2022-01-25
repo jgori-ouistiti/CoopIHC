@@ -3,223 +3,202 @@
 Modularity
 ===============
 
-.. warning::
 
-    All examples outdated
 
-The API used in *CoopIHC* being straightforward, one can create new classes from scratch, by subclassing one of the coopihc classes, adding a few methods, and adhering to a few conventions.
+As we have seen, you can create new classes from scratch, by subclassing one of the coopihc classes, adding a few methods, and adhering to a few conventions.
 
-Another way in which one can create new classes, which we explain now, is by re-using existing classes, and wrapping them appropriately.
-We present a fully worked example where a complex sequence of interactions is described in a relatively simple manner using relatively few lines of code, and by maximally re-using existing code.
+Another way in which one can create new classes is by re-using existing models or components and wrapping them appropriately.
+In this example we present a fully worked example where a complex sequence of interactions is described in a relatively simple manner using relatively few lines of code, and by maximally re-using existing code.
 
 
 
 Description of the example
 ------------------------------
 
-In the :doc:`quickstart <quickstart>`, we presented a BIG assistant which would assist a user in selecting a target. While proving more efficient than the unassisted version, that evaluation might have been biased: since the user cannot predict the next position of the cursor when using the BIG assistant, it needs to locate the target which is costly. This has not been accounted for. In this example, we re-use an existing bundle that was made to model eye movements, and incorporate it to our user model, to simulate the time it takes to find the cursor.
+In the :doc:`previous example <more_complex_example>`, we presented a BIG assistant which would assist a user in selecting a target. While proving more efficient than the unassisted version, that evaluation might have been biased: since the user cannot predict the next position of the cursor when using the BIG assistant, it needs to locate the target which is costly. This cost had not been accounted for, which somewhat inflates our evaluation of BIGGain. In this example, we re-use an existing bundle that was made to model eye movements, and incorporate it to our user model, to simulate the time it takes to find the cursor.
 
 
 Eye-movement model
 --------------------
 
-The eye-movement model is explained in the :doc:`User Modeling Failitation <user_modeling>` page. It is loaded simply by the following lines:
+We start off from a model of foveal vision which specifies how the eye can locate a target through displacement of the fovea. This model is adapted from [Chen2021]_ and is available in the CoopIHC-zoo `eye-repository <https://github.com/jgori-ouistiti/CoopIHC-zoo/tree/main/coopihczoo/eye>`_.
+
+Without going in to the details, the model explains how beliefs about where the target might be is refined by successive jumps from the fovea.
+
+1. The controller of the fovea holds a belief regarding where the target might be located in the space.
+2. A target outside of the foveal area (a small ellipsis) is visible but through noisy observations, where the further away from that ellipsis the noisier it is.
+3. Based on that information, the controller decides on the new foveal position. However, when moving, signal-dependent motor noise affects the actual position (the higher the amplitude of foveal movement, the higher the amplitude of the noise).
+
+As usual, we define a bundle by pairing the user model with a task.
 
 .. code-block:: python
 
+    from coopihczoo.eye.envs import ChenEyePointingTask
+    from coopihczoo.eye.users import ChenEye
+
+    from coopihc.bundle.Bundle import Bundle
+
+    # Parameters tuned on empirical data
     fitts_W = 4e-2
     fitts_D = 0.8
-    perceptualnoise = 0.09
-    oculomotornoise = 0.09
-    task = ChenEyePointingTask(fitts_W, fitts_D, dimension = 1)
-    user = ChenEye( perceptualnoise, oculomotornoise, dimension = 1)
-    obs_bundle = SinglePlayUserAuto(task, user, start_at_action = True)
+    perceptualnoise = 0.2
+    oculomotornoise = 0.2
+
+    # Models and tasks
+    task = ChenEyePointingTask(fitts_W, fitts_D, dimension=1)
+    user = ChenEye(perceptualnoise, oculomotornoise, dimension=1)
+    obs_bundle = Bundle(task=task, user=user)
+
+A render of the various states is shown below (for the 2D version, more easily interpretable), where the red circle is the target, the green circle the current position of the fovea and the red start the current mean belief about target location. The user render also shows the beliefs confidence ellipses. 
+
+.. image:: images/cheneye2d_0.png
+    :width: 49%
+
+.. image:: images/cheneye2d_1.png
+    :width: 49%
+
+.. image:: images/cheneye2d_2.png
+    :width: 49%
+
+.. image:: images/cheneye2d_3.png
+    :width: 49%
 
 
-The task that is solved by this bundle is to position the eye (fixation) on top of the target. The user is in charge of choosing the next fixation, based on noisy information it gets from the target location. We will consider that the target is the cursor, while the initial eye fixation is the last position of the cursor. We will then let the bundle play out in time, finding the cursor in a given number of steps.
 
+Adapating the existing task
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The task that is solved by the bundle just above is to position the eye on top of the target. Basically, the cursor position before assistance provides the starting point, while the cursor position after assistance (and potentially a jump) provides the target. 
+We will then let the bundle play out in time, finding the cursor in some number of steps.
 
-This bundle, like any other, can be reset to a given state via a reset dictionary (see :py:mod:`Bundle <coopihc.bundle>`), for example
-
-
-.. code-block:: python
-
-    reset_dic = {'task_state':
-                                {   'Targets': .5,
-                                    'Fixation': -.5    }
-                            }
-
-    obs_bundle.reset(reset_dic)
-    >>> print(obs_bundle.game_state)
-      Index  Label                      Value     Space        Possible Value
-    -------  -------------------------  --------  -----------  ----------------
-          0  turn_index|0               0         Discrete(2)  None
-          1  task_state|Targets|0       [0.5]     Box(1,)      None
-          2  task_state|Fixation|0      [-0.5]    Box(1,)      None
-          3  user_state|belief|0    [0]       Box(1,)      [None]
-          4  user_state|belief|1    [[1000]]  Box(1, 1)    [None]
-          5  user_action|action|0   None      Box(1,)      None
-          6  assistant_action|action|0  None      None         [None]
-
-Adapting the task
-----------------------
-
-
-To simulate tracking the cursor, we can reset the bundle by passing the new cursor location as a target and the old cursor location as the current fixation. Then, playing the bundle will result in several steps until the fixation reaches the target. To do so, we need to have the old position of the cursor as part of the task state. Let us subclass the existing pointing task described in :doc:`the quickstart <quickstart>` to add an ``OldPosition`` state:
+We therefore add a state to the task for the old position of the cursor, leaving the rest of the logic unchanged
 
 .. code-block:: python
 
-    class OldPositionMemorizedSimplePointingTask(SimplePointingTask):
+    class oldpositionMemorizedSimplePointingTask(SimplePointingTask):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.memorized = None
 
-        def reset(self, reset_dic = None):
-            super().reset(reset_dic)
-            self.state['OldPosition'] = copy.deepcopy(self.state['Position'])
+        def reset(self, dic={}):
+            super().reset(dic=dic)
+            self.state["oldposition"] = copy.deepcopy(self.state["position"])
 
         def user_step(self, *args, **kwargs):
-            self.memorized = copy.deepcopy(self.state['Position'])
-            obs, rewards, is_done, _doc = super().user_step(*args, **kwargs)
-            obs['OldPosition'] = self.memorized
-            return obs, rewards, is_done, _doc
+            self.memorized = copy.deepcopy(self.state["position"])
+            obs, rewards, is_done = super().user_step(*args, **kwargs)
+            obs["oldposition"] = self.memorized
+            return obs, rewards, is_done
 
         def assistant_step(self, *args, **kwargs):
-            self.memorized = copy.deepcopy(self.state['Position'])
-            obs, rewards, is_done, _doc = super().assistant_step(*args, **kwargs)
-            obs['OldPosition'] = self.memorized
-            return obs, rewards, is_done, _doc
+            self.memorized = copy.deepcopy(self.state["position"])
+            obs, rewards, is_done = super().assistant_step(*args, **kwargs)
+            obs["oldposition"] = self.memorized
+            return obs, rewards, is_done
 
 
-    pointing_task = OldPositionMemorizedSimplePointingTask(gridsize = 31, number_of_targets = 8, mode = 'position')
-    bundle = _DevelopTask(pointing_task)
-    bundle.reset()
-    >>> print(bundle.game_state)
-      Index  Label                      Value    Space         Possible Value
-    -------  -------------------------  -------  ------------  ----------------
-          0  turn_index|0               0        Discrete(2)   None
-          1  task_state|Position|0      18       Discrete(31)  [None]
-          2  task_state|Targets|0       7        Discrete(31)  [None]
-          3  task_state|Targets|1       9        Discrete(31)  [None]
-          4  task_state|Targets|2       10       Discrete(31)  [None]
-          5  task_state|Targets|3       12       Discrete(31)  [None]
-          6  task_state|Targets|4       16       Discrete(31)  [None]
-          7  task_state|Targets|5       17       Discrete(31)  [None]
-          8  task_state|Targets|6       19       Discrete(31)  [None]
-          9  task_state|Targets|7       26       Discrete(31)  [None]
-         10  task_state|OldPosition|0   18       Discrete(31)  [None]
-         11  user_action|action|0   None     None          [None]
-         12  assistant_action|action|0  None     None          [None]
+    pointing_task = oldpositionMemorizedSimplePointingTask(
+        gridsize=31, number_of_targets=8, mode="position"
+    )
 
 
-Our custom observation Engine
---------------------------------
-
-We can now wrap our bundle for the eye-movement model into an observation engine. First we must notice that the states are not compatible: the eye-movement model is expressed in a [-1,1] Box, while the pointing model is in a {0,1,2,...,29,30} grid. The :py:mod:`StateElement <coopihc.space.StateElement.StateElement>` object has a ``cast`` method that allows one to cast states from one space to another, see e.g. below
+The Observation Engine
+^^^^^^^^^^^^^^^^^^^^^^^
+The crux of the method here is to wrap the bundle previously defined into an observation engine. As explained in :doc:`observation_engine`, the only constraint for an observation engine is that it subclasses an existing ``ObservationEngine`` and defines an ``observe`` method with the right signature. Here we subclass from ``WrapAsObservationEngine``, which is exactly made for this purpose (i.e. when you need to define an observation engine from a bundle).
 
 .. code-block:: python
 
-    x = StateElement(   values = [4],
-            spaces = [gym.spaces.Discrete(9)],
-            possible_values = [[None]])
-
-    y = StateElement(   values = [None],
-                    spaces = [gym.spaces.Box(-1, 1, shape = (1,))],
-                    possible_values = [None]
-                    )
-
-    ret = x.cast(y, inplace = False)
-    print(ret)
-    >>> 
-    value:	[array([0.], dtype=float32)]
-    spaces:	[Box(1,)]
-    possible values:	[None]
+    from coopihc import WrapAsObservationEngine
 
 
-Casting can be done in place or not, and works from several spaces to several other spaces, see :py:mod:`StateElement <coopihc.space.StateElement.StateElement>` for more information.
-
-
-
-We are now set to wrap the bundle into an observation engine. To do so, we simply define an observe method, which does the following:
-
-* Gets the current an old cursor positions and casts them to targets and fixations.
-* reset the observation bundle so that targets and fixations match the cursor positions.
-* Let the bundle play, collect rewards
-* cast the fixation and targets back to cursor positions.
-* return the new state and rewards
-
-.. code-block:: python
-
-    class ChenEyeObservationEngineWrapper(ObservationEngine):
-
+    class ChenEyeObservationEngineWrapper(WrapAsObservationEngine):
         def __init__(self, obs_bundle):
-            super().__init__()
-            self.type = 'process'
-            self.obs_bundle = obs_bundle
-            self.obs_bundle.reset()
+            super().__init__(obs_bundle)
 
         def observe(self, game_state):
-            # Cast to the box of the obs bundle
-            target = game_state['task_state']['Position'].cast(self.obs_bundle.game_state['task_state']['Targets'], inplace = False)
-            fixation = game_state['task_state']['OldPosition'].cast(self.obs_bundle.game_state['task_state']['Fixation'], inplace = False)
-            reset_dic = {'task_state':
-                            {   'Targets': target,
-                                'Fixation': fixation    }
-                        }
 
-            self.obs_bundle.reset(reset_dic)
+            # Deal with the case where the cursor is in the same position as the target. While this would never happen with a continuous model like in the eye model, the discrete pointing model here can lead to distance of zero, which leads to singular matrices later on. 
+            if (
+                game_state["task_state"]["position"]
+                == game_state["task_state"]["oldposition"]
+            ):
+                return game_state, -1 
+
+            # set observation bundle to the right state and cast it to the right space. See the StateElement entry in the API Reference to read more about cast
+            target = game_state["task_state"]["position"].cast(
+                self.game_state["task_state"]["target"]
+            )
+            fixation = game_state["task_state"]["oldposition"].cast(
+                self.game_state["task_state"]["fixation"]
+            )
+
+            # Now that the target and initial fixation have been determined, we can reset the eye bundle to that specific situation, via a forced reset
+            reset_dic = {"task_state": {"target": target, "fixation": fixation}}
+            self.reset(dic=reset_dic, turn=0)
+
+            # Actually play the eye game
             is_done = False
             rewards = 0
             while True:
-                obs, reward, is_done, _doc = self.obs_bundle.step()
-                rewards += reward
+                obs, reward_dic, is_done = self.step()
+                rewards += sum(reward_dic.values())
                 if is_done:
                     break
-            obs['task_state']['Fixation'].cast(game_state['task_state']['OldPosition'], inplace = True)
-            obs['task_state']['Targets'].cast(game_state['task_state']['Position'], inplace = True)
+
+            # cast back to initial space and return
+            obs["task_state"]["fixation"].cast(game_state["task_state"]["oldposition"])
+            obs["task_state"]["target"].cast(game_state["task_state"]["position"])
+
             return game_state, rewards
 
 
-Cascading Observation Engines
-----------------------------------
+.. note::
 
-This observation engine can now be used by an agent. Now, it might be that different bundles be used to produce an observation, e.g. if I want to add noise to some other substate. Several observation engines can be combined via the ``CascadedObservationEngine``. Below, we combine our newly defined observation engine with the original one:
+    Notice the use of the cast and forced reset mechanisms, which are documented in the API Reference, and should prove very useful.
+
+
+This engine specifically attributes a cost to observing the cursor. To combine it with the existing observation engine (which observes the targets etc.), we use another observation engine specifically made to combine other observation engines serially, namely a ``CascadedObservationEngine``.
+
 
 .. code-block:: python
 
+    from coopihc.observation.RuleObservationEngine import RuleObservationEngine
+    from coopihc.observation.CascadedObservationEngine import CascadedObservationEngine
+    from coopihc.observation.utils import base_user_engine_specification
+
+    # Define cascaded observation engine
     cursor_tracker = ChenEyeObservationEngineWrapper(obs_bundle)
-    base_user_engine_specification  =    [ ('turn_index', 'all'),
-                                        ('task_state', 'all'),
-                                        ('user_state', 'all'),
-                                        ('assistant_state', None),
-                                        ('user_action', 'all'),
-                                        ('assistant_action', 'all')
-                                        ]
+
     default_observation_engine = RuleObservationEngine(
-            deterministic_specification = base_user_engine_specification,
-            )
+        deterministic_specification=base_user_engine_specification,
+    )
+    new_observation_engine = CascadedObservationEngine(
+        [cursor_tracker, default_observation_engine]
+    )
 
-    observation_engine = CascadedObservationEngine([cursor_tracker, default_observation_engine])
 
-With ``CascadedObservationEngine``, each observation engine is applied in the order it is mentioned in the list. Here, the observation will first be produced by ``cursor_tracker``. That observation will then be passed to ``default_observation_engine``, which will return the true final observation used by the agent.
-
-Now, simply continue as usual, e.g. to evaluate the setup:
+Assembling everything
+^^^^^^^^^^^^^^^^^^^^^^^^^
+We can now assemble everything: First, we reload the user model, but plug in our new observation_engine. Then, we repeat the same process as before, bundling the user model with BIGGain and playing an episode of the game.
 
 .. code-block:: python
 
-    binary_user = CarefulPointer(observation_engine = observation_engine)
+    from coopihczoo.pointing.users import CarefulPointer
+    from coopihczoo.pointing.assistants import BIGGain
+
+    binary_user = CarefulPointer(override_observation_engine=(new_observation_engine, {})) # Override the old observation engine and plug in our new one.
     BIGpointer = BIGGain()
 
-
-    bundle = PlayNone(pointing_task, binary_user, BIGpointer)
-    game_state = bundle.reset()
-    bundle.render('plotext')
-    rewards = []
+    bundle = Bundle(task=pointing_task, user=binary_user, assistant=BIGpointer)
+    game_state = bundle.reset(turn=1)
+    bundle.render("plotext")
+    reward_list = []
     while True:
-    reward, is_done, reward_list = bundle.step()
-    rewards.append(reward_list)
-    bundle.render('plotext')
-    if is_done:
-        break
+        obs, rewards, is_done = bundle.step()
+        reward_list.append(rewards)
+        bundle.render("plotext")
+        if is_done:
+            break
 
-The full code for this example is found :download:`here<code/modularity.py>`
+
+
+.. [Chen2021] Chen, Xiuli, et al. "An adaptive model of gaze-based selection." Proceedings of the 2021 CHI Conference on Human Factors in Computing Systems. 2021.

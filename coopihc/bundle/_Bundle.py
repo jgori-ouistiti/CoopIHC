@@ -243,7 +243,7 @@ class _Bundle:
 
             _started = True
             # User observes and infers
-            if self.turn_number == 0 and "no-user" not in self.kwargs.get("name"):
+            if self.turn_number == 0 and "no-user" != self.kwargs.get("name"):
                 (
                     user_obs_reward,
                     user_infer_reward,
@@ -254,7 +254,7 @@ class _Bundle:
                 ) = (user_obs_reward, user_infer_reward)
 
             # User takes action and receives reward from task
-            elif self.turn_number == 1 and "no-user" not in self.kwargs.get("name"):
+            elif self.turn_number == 1 and "no-user" != self.kwargs.get("name"):
                 if user_action is None:
                     user_action, user_policy_reward = self.user._take_action()
                 else:
@@ -271,13 +271,11 @@ class _Bundle:
                 if is_done:
                     return self.game_state, rewards, is_done
 
-            elif self.turn_number == 2 and "no-assistant" in self.kwargs.get("name"):
+            elif self.turn_number == 2 and "no-assistant" == self.kwargs.get("name"):
                 self.round_number = self.round_number + 1
 
             # Assistant observes and infers
-            elif self.turn_number == 2 and "no-assistant" not in self.kwargs.get(
-                "name"
-            ):
+            elif self.turn_number == 2 and "no-assistant" != self.kwargs.get("name"):
                 (
                     assistant_obs_reward,
                     assistant_infer_reward,
@@ -288,9 +286,7 @@ class _Bundle:
                 ) = (assistant_obs_reward, assistant_infer_reward)
 
             # Assistant takes action and receives reward from task
-            elif self.turn_number == 3 and "no-assistant" not in self.kwargs.get(
-                "name"
-            ):
+            elif self.turn_number == 3 and "no-assistant" != self.kwargs.get("name"):
                 if assistant_action is None:
                     (
                         assistant_action,
