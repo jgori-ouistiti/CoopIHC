@@ -5,14 +5,14 @@ The Inference Engines
 
 .. start-quickstart-infeng-intro
 
-Real-life agents have non-stationnary policies. This gives them the ability to learn (infer parameters from observed data) and to adapt (change policy parameters based on observed data). As in observation engines, there might be a cost associated with making inferences:
+Real-life agents have non-stationary policies. This gives them the ability to learn (infer parameters from observed data) and to adapt (change policy parameters based on observed data). As in observation engines, there might be a cost associated with making inferences:
 
-    + Making an inference can be time costly
+    + Making an inference can be time costly.
 
-    + Inferring may be rewarding, e.g. because it is enjoyable.
+    + Inferring may be rewarding; for example, because it is enjoyable.
 
 
-*CoopIHC* provides a generic object called inference engines to updating internal states from observations. Although the  name might suggest otherwise, these engines may use other mechanisms than statistical inference that update the internal state. To create a new inference engine, you can use an existing engine or subclass the ``BaseInferenceEngine``. 
+*CoopIHC* provides a generic object called inference engines to updating internal states from observations. Although the name might suggest otherwise, these engines may use other mechanisms than statistical inference that update the internal state. To create a new inference engine, you can base it off an existing engine or subclass the ``BaseInferenceEngine``. 
 
 .. end-quickstart-infeng-intro
 
@@ -22,7 +22,7 @@ Subclassing BaseInferenceEngine
 
 .. start-quickstart-infeng-subclass
 
-Essentially, the ``BaseInferenceEngine`` provides a simple FIFO buffer that stores observations. When subclassing ``BaseInferenceEngine``, you simply have to redefine the ``infer`` method (by default, no inference is produced). An example is provided below, where the engine stores the last 5 observations. 
+Essentially, the ``BaseInferenceEngine`` provides a simple first-in-first-out (FIFO) buffer that stores observations. When subclassing ``BaseInferenceEngine``, you simply have to redefine the ``infer`` method (by default, no inference is produced). An example is provided below, where the engine stores the last 5 observations. 
 
 .. The example below has a ``buffer_depth=10``.
 

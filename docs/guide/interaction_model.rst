@@ -11,18 +11,18 @@ In designing the library, we made the following theoretical commitments:
 
 * Users go through states, which represent a given user context (e.g. a set of preferences or abilities that may evolve over time);
 
-* User observations can be incomplete, noisy;
+* User observations can be incomplete and noisy;
 
-* Users are (imperfectly) rational, meaning they are assumed to be maximizing a utility functions under certain constraints. In particular, user behavior is driven by scalar reward maximization;
+* Users are (imperfectly) rational, meaning they are assumed to be maximizing a utility function under certain constraints. In particular, user behavior is driven by scalar reward maximization;
 
 
 * Users may maintain internal models of their environment;
 
-* Systems may also, and will usually benefit from maintaining internal models of the user;
+* Systems may also, and will usually, benefit from maintaining internal models of the user;
 
 * Users and systems may adapt to each other;
 
-* Efficient system behavior can be attained by maximizing scalar rewards
+* Efficient system behavior can be attained by maximizing scalar rewards.
 
 The result is a symmetric, stateful characterization of models of both users and artificial systems which have the ability to make observations, perform inferences and produce actions as a result.
 
@@ -30,11 +30,11 @@ The result is a symmetric, stateful characterization of models of both users and
 User Assistance Model
 -----------------------
 
-At a high level, *CoopIHC* builds on a model of user assistance (`See Figure <interaction_model_fig_label_>`_), where a user and an assistant work together to drive the task toward a goal state:
+At a high level, *CoopIHC* builds on a model of user assistance (`See Figure <interaction_model_fig_label_>`_), where a user and an assistant work together to drive a task toward a goal state:
 
 * A task is represented by a state :math:`s_T`. Accomplishing that task usually means driving the task state to a goal state.
-* An user, who wants to drive the task to a goal state, and can issue some actions.
-* An assistant, who is here to help (assist) the user drive the task state to a goal state, and can issue actions as well
+* A user, who wants to drive the task to a goal state, and can issue some actions.
+* An assistant, who is here to help (assist) the user drive the task state to a goal state, and can issue actions as well.
 
 The model further assumes that the user and assistant act sequentially (one after the other).
 
@@ -53,9 +53,9 @@ The model further assumes that the user and assistant act sequentially (one afte
 
 Both the user and assistant (generically referred to as **agents**) are fundamentally described by their ability to produce observations, make inferences and take actions:
 
-1. They have an internal state (:math:`s_U` and :math:`s_A` for respectively the user and the assistant), which may be used to store e.g. goals, preferences, model parameters.
-2. They observe (perfectly or partially) the various states of the  interaction model. When making an observation, the agents may receive a reward to model some positive or negative effects of observation e.g. observations may take some time to be created (negative reward), or may satisfy a curiosity (positive reward).
-3. Based on these observations, agents make inferences that change their internal states. The agents again may receive a reward, to account for situations where there is a cost to inferring (e.g. mental effort, computational resources) or a benefit (e.g. satisfaction).
+1. They have an internal state (:math:`s_U` and :math:`s_A` for the user and assistant respectively), which may be used to store, for example, goals, preferences, model parameters.
+2. They observe (perfectly or partially) the various states of the  interaction model. When making an observation, the agents may receive a reward to model some positive or negative effects of observation; for example, observations may take some time to be created (negative reward) or may satisfy a curiosity (positive reward).
+3. Based on these observations, agents make inferences that change their internal states. The agents again may receive a reward to account for situations where there is a cost (e.g. mental effort, computational resources) or a benefit (e.g. satisfaction) to inferring.
 4. Based on their internal states and their observations, agents take actions as dictated by a policy. Those actions may have an effect on the other states (e.g. the task state) of the interaction model.
 
 
