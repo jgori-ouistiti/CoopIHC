@@ -5,7 +5,7 @@ Bundles
 
 .. start-quickstart-bundle
 
-Bundles are the objects that join three components (task, user and assistant) to form the joint state of the game, collect the rewards and ensure a synchronous sequential sequences of observations, inferences and actions.
+Bundles are the objects that join the three main components (task, user and assistant) to form the joint state of the game, collect the rewards and ensure synchronous sequential sequences of observations, inferences and actions.
 
 You have seen a couple of examples above where bundles are used, including their main methods: reset, step and render. 
 
@@ -32,7 +32,7 @@ The main API methods are the same as gym's:
 The arguments of the step method depend on each bundle, see [link].
 
 
-A bundle can be itinialized simply from a task and two compatible agents:
+A bundle can be initialized simply from a task and two compatible agents:
 
 .. code-block:: python
 

@@ -7,15 +7,15 @@ The Observation Engines
 In an interactive setting, states are rarely perfectly observable by the various agents:
 
     * the other agent's internal states are unknown,
-    * the task's state may be partially observable; e.g. a human observer is imperfect and produces noisy observations,
-    * an agent's own internal state may be partially observable; e.g. a human observer with decaying memory
+    * the task's state may be partially observable; for example, a human observer is imperfect and produces noisy observations,
+    * an agent's own internal state may be partially observable; for example, a human observer might have decaying memory.
 
 Furthermore, there might be a cost associated with making observations:
 
-    * For example, there can be a tradeoff between the time needed to produce an observation and its quality: Precise observations may be costly (in terms of time).
+    * There can be a tradeoff between the time needed to produce an observation and its quality; for example, precise observations may be costly (in terms of time).
     * A human observer may enjoy making observations which are very different (according to some criterion) to the previous ones, in which case it would be rewarded for differing observations, satisfying its curiosity.
 
-*CoopIHC* provides a generic object called an observation engine which specifies how an observation is created from the game state. To create a new observation engine, you can use an existing observation engine or subclass the ``BaseObservationEngine``.
+*CoopIHC* provides a generic object called an observation engine which specifies how an observation is created from the game state. To create a new observation engine, you can base it off an existing observation engine or subclass the ``BaseObservationEngine``.
 
 .. end-quickstart-obseng-intro
 
@@ -24,7 +24,7 @@ Subclassing ``BaseObservationEngine``
 --------------------------------------
 .. start-quickstart-obseng-subclass
 
-To create a new engine by subclassing the ``BaseObservationEngine`` class, you simply have to redefine the ``observe()`` method. You can virtually put anything inside this function: that includes the output of a neural network, of a complex simulation process, and even the output of another bundle (see :doc:`modularity` for an example). Below, we show a basic example we define an engine that only looks at a particular substate.
+To create a new engine by subclassing the ``BaseObservationEngine`` class, you simply have to redefine the ``observe()`` method. You can virtually put anything inside this function: that includes the output of a neural network, of a complex simulation process, and even the output of another bundle (see :doc:`modularity` for an example). Below, we show a basic example where we define an engine that only looks at a particular substate.
 
 .. literalinclude:: ../../coopihc/observation/ExampleObservationEngine.py
     :linenos:
@@ -41,7 +41,7 @@ Don't forget to return a reward with the observation. The effect of this engine 
 
 .. note::
 
-    The signature ``observe(self, game_state=None)`` is expected. When called with ``game_state = None``, the engine will fetch the agent's observation. If the game state is actually passed, it will user the input state as basis to produce the observation. This is useful e.g. when testing your engine and you want to control the input.
+    The signature ``observe(self, game_state=None)`` is expected. When called with ``game_state = None``, the engine will fetch the agent's observation. If the game state is actually passed, it will use the input state as basis to produce the observation. This is useful, for example, when testing your engine and you want to control the input.
 
 .. end-quickstart-obseng-subclass
 

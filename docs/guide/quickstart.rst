@@ -49,7 +49,7 @@ You will usually define a task, a user, an assistant, and bundle them together. 
 
 States
 ------------
-The interaction model uses the concept of states, for which *CoopIHC* introduces the ``Space`` ``StateElement`` and ``State`` objects. In the example below, a super-state is defined by a state, which itself is defined by two substates. Each of those substates holds a StateElement, which is a combination of a value and a space.
+The interaction model uses the concept of states, for which *CoopIHC* introduces the ``Space`` ``StateElement`` and ``State`` objects. States can hold StateElements and can be nested. In the example below, a super-state is defined using a State. This super-state is itself defined by two substates. Each of those two substates holds a StateElement, which is a combination of a value and a space.
 
 .. literalinclude:: ../../coopihc/examples/basic_examples/state_examples.py
    :language: python
@@ -58,7 +58,7 @@ The interaction model uses the concept of states, for which *CoopIHC* introduces
    :end-before: [end-state-example]
 
 
-States, statelements subclass respectively the built-in dictionnary and the well-known NumPy arrays. This means that interacting with these objects should prove relatively familiar. To find out more about this and for extra details, go to :doc:`Space<space>`, :doc:`StateElement<stateelement>` and :doc:`State<state>`.
+States and StatElements subclass the built-in dictionary and the well-known NumPy arrays respectively. This means that interacting with these objects should prove relatively familiar. To find out more about this and for extra details, go to :doc:`Space<space>`, :doc:`StateElement<stateelement>` and :doc:`State<state>`.
 
 
 Tasks
@@ -95,7 +95,7 @@ Observation Engines
     :end-before: .. end-quickstart-obseng-subclass
 
 
-Inference Engines:
+Inference Engines
 --------------------
 
 .. include:: inference_engine.rst
@@ -120,14 +120,14 @@ Bundles
 
 .. note::
 
-    Bundles also handle joint rendering as well as other practical things. More details can be found on :doc:`Bundle's reference page <bundles>`
+    Bundles also handle joint rendering as well as other practical things. More details can be found on :doc:`Bundle's reference page <bundles>`.
 
 
 An overview of *CoopIHC*
 -----------------------------------------------------
 
 
-1. Several implementations of user models, tasks and assistants exist in *CoopIHC*'s repository `*CoopIHC-Zoo* <https://github.com/jgori-ouistiti/CoopIHC-zoo>`_  
+1. Several implementations of user models, tasks and assistants exist in *CoopIHC*'s repository `CoopIHC-Zoo <https://github.com/jgori-ouistiti/CoopIHC-zoo>`_  
 2. Several worked-out examples are given in this documentation. Those should give you a good idea about what can be done with *CoopIHC*.
  
 
