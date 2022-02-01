@@ -7,7 +7,7 @@ _CoopIHC_, pronounced 'kopik', is a Python module that provides a common basis f
 
 ## Requirements
 
-CoopIHC is known to work with Python 3.6.9 and above.
+CoopIHC is known to work with Python 3.8.0 and above.
 
 ## Resources
 

@@ -18,6 +18,13 @@ Description of the example
 In the :doc:`previous example <more_complex_example>`, we presented a BIG assistant which would assist a user in selecting a target. While proving more efficient than the unassisted version, that evaluation might have been biased: since the user cannot predict the next position of the cursor when using the BIG assistant, it needs to locate the target which is costly. This cost had not been accounted for, which somewhat inflates our evaluation of BIGGain. In this example, we re-use an existing bundle that was made to model eye movements, and incorporate it to our user model, to simulate the time it takes to find the cursor.
 
 
+The steps in this example are:
+
+1. Definition of a Bundle that describes how the eye displaces its fovea to locate a target
+2. After each assistant intervention, the cursor jumps to a new unexpected location. We are going to use the foveal vision bundle to simulate the time it takes to relocate the cursor, by resetting the foveal vision to the state after the intervention, and wrap it up into an observation engine.
+3. The previous observation engine only deals with cursor information, but not the other information. We are going to cascade the old default engine and the new observation engine into a single one.
+4. This new cascaded observation engine is used instead of the old one in the user model.
+
 Eye-movement model
 --------------------
 
@@ -65,7 +72,7 @@ A render of the various states is shown below (for the 2D version, more easily i
 
 
 
-Adapating the existing task
+Adapting the existing task
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The task that is solved by the bundle just above is to position the eye on top of the target. Basically, the cursor position before assistance provides the starting point, while the cursor position after assistance (and potentially a jump) provides the target. 
 We will then let the bundle play out in time, finding the cursor in some number of steps.
@@ -178,7 +185,7 @@ This engine specifically attributes a cost to observing the cursor. To combine i
 
 Assembling everything
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-We can now assemble everything: First, we reload the user model, but plug in our new observation_engine. Then, we repeat the same process as before, bundling the user model with BIGGain and playing an episode of the game.
+We can now assemble everything: First, we reload the user model, but plug in our new observation engine. Then, we repeat the same process as before, bundling the user model with BIGGain and playing an episode of the game.
 
 .. code-block:: python
 

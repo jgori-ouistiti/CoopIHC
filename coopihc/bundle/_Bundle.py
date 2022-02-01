@@ -49,7 +49,7 @@ class _Bundle:
         )
         round_index = StateElement(
             numpy.array([0]),
-            Space(numpy.array([0, 1], dtype=numpy.int8), "discrete"),
+            Space(numpy.array([0], dtype=numpy.int8), "discrete"),
             out_of_bounds_mode="raw",
         )
 

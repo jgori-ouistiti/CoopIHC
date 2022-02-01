@@ -25,6 +25,13 @@ poetry install
 
 to install the dependencies. More information on (poetry's website)[https://python-poetry.org/].
 
+Use the --extras flag to install Deep RL dependencies:
+
+```shell
+poetry install --extras "rl"
+```
+
+
 When new dependencies are added (even dev dependencies), make sure to update not only the TOML file (`poetry add package`) but also the `requirements.txt`to make sure that the automatic PR checks pass (`poetry export -f requirements.txt --output requirements.txt --dev --without-hashes`).
 Finally, run `poetry build` copy the `setup.py` to the root since those will be used by the VMs to install the necessary dependencies.
 
