@@ -75,7 +75,7 @@ Both the user and assistant (generically referred to as **agents**) are fundamen
 Library Architecture
 ------------------------
 
-The model presented before rests on the ideas of agents with states, with abilities to make observations, perform inferences and take actions. The library integrates these ideas by giving and providing a simple and normalized way of expressing each of those components. The result is that various components can be used interchangeably.
+The model presented before rests on the ideas of agents with states, with abilities to make observations, perform inferences and take actions. The library integrates these ideas by giving and providing a simple and normalized way of expressing each of those components so that various components can be used interchangeably.
 The resulting architecture of the library is displayed below.
 
 
@@ -97,6 +97,8 @@ Key components of the library are the following:
 * User and assistant actions make the task state transition to a new state. If the goal state is reached, the task finishes.
 
 * All these components may issue rewards, which are collected by both agents.
+
+* User, assistants and tasks are combined to a single object by a ``Bundle``. The interface of that object depends on how the bundle is instantiated (see below).
 
 
 When using the library, you will need to specify states as well as observation engines, inference engines and policies. You can reuse existing components if available or implement your own.
