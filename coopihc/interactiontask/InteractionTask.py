@@ -160,7 +160,11 @@ class InteractionTask(ABC):
             elif value is None:
                 continue
             else:
-                raise NotImplementedError
+                raise NotImplementedError(
+                    "Values in the reset dictionnary should be of type StateElement or numpy.ndarray, but you provided values of type {} ({})".format(
+                        value.__class__.__name__, str(value)
+                    )
+                )
 
     def base_user_step(self, *args, **kwargs):
         """base user step

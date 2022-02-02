@@ -113,6 +113,8 @@ def test_filter():
     # print(f_state)
     f_state = state.filter(mode="array")
     # print(f_state)
+    f_state = state.filter(mode="array-Gym")
+    # print(f_state)
 
 
 def test_serialize():

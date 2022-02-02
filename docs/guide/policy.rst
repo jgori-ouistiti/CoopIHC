@@ -123,6 +123,9 @@ LinearFeedback
 RLPolicy
 ---------
 
+The RLPolicy is a wrapper for a neural network trained via Deep Reinforcement Learning. For an example, head over to :ref:`Using Reinforcement Learning`.
+
+
 WrapAsPolicy
 -------------
 

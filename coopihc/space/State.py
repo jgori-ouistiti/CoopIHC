@@ -198,6 +198,16 @@ class State(dict):
                         new_state[key] = _SEspace[values]
                 elif mode == "array":
                     new_state[key] = (self[key][values]).view(numpy.ndarray)
+                elif mode == "array-Gym":
+                    if self[key].spaces.space_type == "discrete":
+                        new_state[key] = int((self[key][values]).view(numpy.ndarray)[0])
+                    elif self[key].spaces.space_type == "multidiscrete":
+                        new_state[key] = (
+                            (self[key][values]).view(numpy.ndarray).reshape(-1)
+                        )
+                    else:
+                        new_state[key] = (self[key][values]).view(numpy.ndarray)
+
                 elif mode == "stateelement":
                     new_state[key] = self[key][values, {"spaces": True}]
             else:
