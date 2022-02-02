@@ -89,7 +89,41 @@ We are now ready to train the policy. Here, we use PPO with 4 vectorized environ
    :end-before: [end-train]
 
 
-..note ::
+A tensorboard excerpt shows that training is successful and rather quick, at 10 minutes of wall training time on a regular laptop.
 
-    still to come: Wrapping the trained policy in a Policy Object
+.. figure:: images/rewards_rl.png
+   :width: 800
+
+   Average rewards per episode plotted against wall time. Less than 10 minutes are needed to train this simple policy.
+
+Loading the Trained Policy in CoopIHC
+----------------------------------------
+
+To load the trained policy in CoopIHC, a special policy object called ``RLPolicy`` exists. It works by passing the agent's observation as input to the trained neural net and gathers the output action.
+
+.. literalinclude:: ../../coopihc/examples/simple_examples/exploit_rlnet.py
+   :language: python
+   :linenos:
+   :start-after: [start-load-policy]
+   :end-before: [end-load-policy]
+
+The policy can be visualized, which confirms training was successful:
     
+.. literalinclude:: ../../coopihc/examples/simple_examples/exploit_rlnet.py
+   :language: python
+   :linenos:
+   :start-after: [start-viz-policy]
+   :end-before: [end-viz-policy]
+
+.. figure:: images/trained_policy.png
+   :width: 800
+
+   Trained policy. As expected, the policy is the identity operator for the admissible actions, and otherwise it saturates at the edge admissible actions.
+
+Finally, you can plug that policy back into the user and play with your bundle.
+
+.. literalinclude:: ../../coopihc/examples/simple_examples/exploit_rlnet.py
+   :language: python
+   :linenos:
+   :start-after: [start-play-policy]
+   :end-before: [end-play-policy]

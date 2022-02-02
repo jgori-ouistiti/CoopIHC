@@ -1,4 +1,3 @@
-from operator import mod
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import SubprocVecEnv
 from stable_baselines3.common.env_util import make_vec_env
@@ -14,7 +13,7 @@ import gym
 from coopihczoo import SimplePointingTask, ConstantCDGain, CarefulPointer
 
 task = SimplePointingTask(gridsize=31, number_of_targets=8)
-unitcdgain = ConstantCDGain(2)
+unitcdgain = ConstantCDGain(1)
 
 # The policy to be trained has the simple action set [-5,-4,-3,-2,-1,0,1,2,3,,4,5]
 action_state = State()
@@ -24,31 +23,33 @@ action_state["action"] = StateElement(0, autospace([-5 + i for i in range(11)]))
 user = CarefulPointer(override_policy=(BasePolicy, {"action_state": action_state}))
 bundle = Bundle(task=task, user=user, assistant=unitcdgain)
 observation = bundle.reset(turn=1)
-# print(observation)
-# >>>
+
+
+# >>> print(observation)
 # ----------------  -----------  -------------------------  ------------------------------------------
-# game_info         turn_index   0                          Discr(4)
+# game_info         turn_index   1                          Discr(4)
 #                   round_index  0                          Discr(1)
-# task_state        position     16                         Discr(31)
-#                   targets      [ 4  9 10 15 17 19 22 27]  MultiDiscr[31, 31, 31, 31, 31, 31, 31, 31]
-# user_state        goal         10                         Discr(31)
+# task_state        position     24                         Discr(31)
+#                   targets      [ 4 12 13 16 20 21 23 25]  MultiDiscr[31, 31, 31, 31, 31, 31, 31, 31]
+# user_state        goal         4                          Discr(31)
 # user_action       action       -4                         Discr(11)
-# assistant_action  action       [[2.]]                     Cont(1, 1)
+# assistant_action  action       [[1.]]                     Cont(1, 1)
 # ----------------  -----------  -------------------------  ------------------------------------------
+
 # [end-define-bundle]
 
 # [start-define-traingym]
+
 env = TrainGym(
     bundle,
     train_user=True,
     train_assistant=False,
-    reset_turn=1,
 )
 obs = env.reset()
-# print(env.action_space)
-# >>> Dict(user_action:Discrete(11), assistant_action:Box(2.0, 2.0, (1, 1), float32))
-# print(env.observation_space)
-# >>> Dict(turn_index:Discrete(4), round_index:Discrete(1000), position:Discrete(31), targets:MultiDiscrete([31 31 31 31 31 31 31 31]), goal:Discrete(31), user_action:Discrete(11), assistant_action:Box(2.0, 2.0, (1, 1), float32))
+# >>> print(env.action_space)
+# Dict(user_action:Discrete(3))
+# >>> print(env.observation_space)
+# Dict(turn_index:Discrete(4), round_index:Discrete(1000), position:Discrete(31), targets:MultiDiscrete([31 31 31 31 31 31 31 31]), goal:Discrete(31), user_action:Discrete(3), assistant_action:Box(1.0, 1.0, (1, 1), float32))
 env.step({"user_action": 1})
 
 # Use env_checker from stable_baselines3 to verify that the env adheres to the Gym API
@@ -60,7 +61,7 @@ check_env(env, warn=False)
 
 # [start-define-mywrappers]
 
-EPSILON32 = 10 * numpy.finfo(numpy.float32).eps
+TEN_EPSILON32 = 10 * numpy.finfo(numpy.float32).eps
 
 
 class MyActionWrapper(gym.ActionWrapper):
@@ -68,29 +69,31 @@ class MyActionWrapper(gym.ActionWrapper):
         super().__init__(env_action_dict)
 
         self.action_space = gym.spaces.Box(
-            low=(-0.5 + EPSILON32 - 5) / 11,
-            high=(10.5 - EPSILON32 - 5) / 11,
+            low=(-0.5 + TEN_EPSILON32 - 5) / 11 * 2,
+            high=(10.5 - TEN_EPSILON32 - 5) / 11 * 2,
             shape=(1,),
             dtype=numpy.float32,
         )
 
     def action(self, action):
-        # print("\n=========")
-        # print(action, int(numpy.around(action * 11 - EPSILON32, decimals=0)) + 5)
-
         return {
-            "user_action": int(numpy.around(action * 11 - EPSILON32, decimals=0)) + 5
+            "user_action": int(
+                numpy.around(action * 11 / 2 - TEN_EPSILON32, decimals=0)
+            )
+            + 5
         }
 
     def reverse_action(self, action):
-        return numpy.array((action["user_action"] - 5.0) / 11.0).astype(numpy.float32)
+        return numpy.array((action["user_action"] - 5.0) / 11.0 * 2).astype(
+            numpy.float32
+        )
 
 
 class MyObservationWrapper(gym.ObservationWrapper):
     def __init__(self, env, *args, **kwargs):
         super().__init__(env, *args, **kwargs)
         self.observation_space = gym.spaces.Box(
-            low=-0.5 + EPSILON32, high=30.5 - EPSILON32, shape=(2,)
+            low=-0.5 + TEN_EPSILON32, high=30.5 - TEN_EPSILON32, shape=(2,)
         )
 
     def observation(self, observation):
@@ -110,46 +113,50 @@ from gym.wrappers import FilterObservation
 modified_env = FilterObservation(env, ("position", "goal"))
 modified_env = MyObservationWrapper(modified_env)
 modified_env = MyActionWrapper(modified_env)
-print(modified_env.action_space)
-print(modified_env.observation_space)
+# >>> print(modified_env.action_space)
+# Box(-0.9999997615814209, 0.9999997615814209, (1,), float32)
+
+# >>> print(modified_env.observation_space)
+# Box(-0.4999988079071045, 30.499998092651367, (2,), float32)
+
+
 check_env(modified_env, warn=True)
-modified_env.reset()
-# >>> array([22., 17.], dtype=float32)
+
+# >>> modified_env.reset()
+# array([ 2., 27.], dtype=float32)
+# Check that modified_env and the bundle game state concord
 # >>> print(modified_env.unwrapped.bundle.game_state)
 # ----------------  -----------  -------------------------  ------------------------------------------
 # game_info         turn_index   1                          Discr(4)
 #                   round_index  0                          Discr(1)
-# task_state        position     22                         Discr(31)
-#                   targets      [ 0  6 12 16 17 27 28 30]  MultiDiscr[31, 31, 31, 31, 31, 31, 31, 31]
-# user_state        goal         17                         Discr(31)
-# user_action       action       -5                         Discr(11)
-# assistant_action  action       [[2.]]                     Cont(1, 1)
+# task_state        position     2                          Discr(31)
+#                   targets      [ 6  8 11 14 15 24 27 30]  MultiDiscr[31, 31, 31, 31, 31, 31, 31, 31]
+# user_state        goal         27                         Discr(31)
+# user_action       action       -2                         Discr(11)
+# assistant_action  action       [[1.]]                     Cont(1, 1)
 # ----------------  -----------  -------------------------  ------------------------------------------
+
+
 modified_env.step(
-    0.49
-)  # 0.49 is cast to +5, multiplied by CD gain of 2 = + 10 increment (clipped to 30 by the bundle)
+    0.99
+)  # 0.99 is cast to +5, multiplied by CD gain of 1 = + 5 increment
 
-# k = 0
-# while True:
-#     k += 1
-#     print(k)
-#     action = modified_env.action_space.sample()
-#     obs, rewards, is_done, _ = modified_env.step(action)
-#     print(obs, is_done)
-#     if is_done:
-#         break
+# >>> modified_env.step(
+# ...     0.99
+# ... )
+# (array([ 7., 27.], dtype=float32), -1.0, False, {'name': 'CoopIHC Bundle Bundle\nAssistant:\n  Inference Engine: BaseInferenceEngine\n  Name: ConstantCDGain\n  Observation Engine: RuleObservationEngine\n  Policy: BasePolicy\n  State: []\nTask:\n  Name: SimplePointingTask\n  State:\n  - position\n  - targets\nUser:\n  Inference Engine: BaseInferenceEngine\n  Name: CarefulPointer\n  Observation Engine: RuleObservationEngine\n  Policy: BasePolicy\n  State:\n  - goal\n'})
 
-# >>> (array([30., 17.], dtype=float32), -1.0, False, {'name': 'CoopIHC Bundle Bundle\nAssistant:\n  Inference Engine: BaseInferenceEngine\n  Name: ConstantCDGain\n  Observation Engine: RuleObservationEngine\n  Policy: BasePolicy\n  State: []\nTask:\n  Name: SimplePointingTask\n  State:\n  - position\n  - targets\nUser:\n  Inference Engine: BaseInferenceEngine\n  Name: CarefulPointer\n  Observation Engine: RuleObservationEngine\n  Policy: BasePolicy\n  State:\n  - goal\n'})
 # >>> print(modified_env.unwrapped.bundle.game_state)
 # ----------------  -----------  -------------------------  ------------------------------------------
 # game_info         turn_index   1                          Discr(4)
 #                   round_index  1                          Discr(1)
-# task_state        position     30                         Discr(31)
-#                   targets      [ 0  6 12 16 17 27 28 30]  MultiDiscr[31, 31, 31, 31, 31, 31, 31, 31]
-# user_state        goal         17                         Discr(31)
+# task_state        position     7                          Discr(31)
+#                   targets      [ 6  8 11 14 15 24 27 30]  MultiDiscr[31, 31, 31, 31, 31, 31, 31, 31]
+# user_state        goal         27                         Discr(31)
 # user_action       action       5                          Discr(11)
-# assistant_action  action       [[2.]]                     Cont(1, 1)
+# assistant_action  action       [[1.]]                     Cont(1, 1)
 # ----------------  -----------  -------------------------  ------------------------------------------
+
 
 # [end-define-mywrappers]
 
@@ -182,7 +189,6 @@ def make_env():
             bundle,
             train_user=True,
             train_assistant=False,
-            reset_turn=1,
         )
 
         modified_env = FilterObservation(env, ("position", "goal"))
@@ -195,16 +201,14 @@ def make_env():
 
 # [end-make-env]
 # =============
-
 # [start-train]
 if __name__ == "__main__":
-    print("\n======= Making // ENVS")
     env = SubprocVecEnv([make_env() for i in range(4)])
+    # to track rewards on tensorboard
     from stable_baselines3.common.vec_env import VecMonitor
 
     env = VecMonitor(env, filename="tmp/log")
     model = PPO("MlpPolicy", env, verbose=1, tensorboard_log="./tb/")
-    print("\n=========start training")
     model.learn(total_timesteps=1e6)
     model.save("saved_model")
 # [end-train]
