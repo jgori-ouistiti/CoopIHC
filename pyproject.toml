@@ -6,7 +6,7 @@ authors = ["Julien Gori"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.11"
+python = ">=3.8,<3.10"
 tabulate = '*'
 numpy = '^1'
 matplotlib ='^3'

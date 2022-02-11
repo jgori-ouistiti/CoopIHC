@@ -138,3 +138,8 @@ Pipfile.lock
 
 # Benchmarks
 .benchmarks/
+
+# DeepRL
+coopihc/examples/simple_examples/tmp
+coopihc/examples/simple_examples/tb
+

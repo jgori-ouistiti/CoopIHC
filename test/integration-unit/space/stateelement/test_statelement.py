@@ -534,6 +534,15 @@ def test__iter__continuous():
     global cont_space
     x = StateElement(numpy.zeros((2, 2)), cont_space)
     for _x in x:
+        assert isinstance(_x, StateElement)
+        assert (
+            _x.equals(
+                StateElement(
+                    numpy.array([[0], [0]]), autospace([[-1], [-1]], [[1], [1]])
+                ),
+                mode="hard",
+            )
+        ).all()
         for __x in _x:
             assert isinstance(__x, StateElement)
             assert __x.equals(
@@ -897,21 +906,29 @@ def test_cast():
     test_cast_discr_to_discr()
 
 
-if __name__ == "__main__":
+def test_bug_teaching():
+    stateelement = StateElement(
+        numpy.zeros((5, 1)),
+        spaces=autospace(numpy.zeros((5, 1)), numpy.full((5, 1), numpy.inf)),
+    )
+    assert stateelement[0].spaces.shape == (1, 1)
 
+
+if __name__ == "__main__":
+    pass
     test_array_init()
-    # test_array_init_error()
-    # test_array_init_warning()
-    # test_array_init_clip()
-    # test_array_init_dtype()
-    # test__array_ufunc__()
-    # test__array_function__()
-    # test_equals()
-    # test__iter__()
-    # test__repr__()
-    # test_serialize()
-    # test_reset()
-    # test__setitem__()
-    # test__getitem__()
-    # test_tabulate()
+    test_array_init_error()
+    test_array_init_warning()
+    test_array_init_clip()
+    test_array_init_dtype()
+    test__array_ufunc__()
+    test__array_function__()
+    test_equals()
+    test__iter__()
+    test__repr__()
+    test_serialize()
+    test_reset()
+    test__setitem__()
+    test__getitem__()
+    test_tabulate()
     test_cast()

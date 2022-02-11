@@ -282,10 +282,10 @@ class StateElement(numpy.ndarray):
         :param value: [description]
         :type value: [type]
         """
-
-        value = StateElement._process_input_values(
-            value, self.spaces, self.out_of_bounds_mode
-        )
+        if not isinstance(key, tuple):  # Hack
+            value = StateElement._process_input_values(
+                value, self.spaces, self.out_of_bounds_mode
+            )
         super().__setitem__(key, value)
 
     def __str__(self):
