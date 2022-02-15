@@ -7,6 +7,7 @@ from coopihc.observation.utils import base_assistant_engine_specification
 from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 
 import numpy
+import copy
 
 
 class BaseAgent:
@@ -372,7 +373,7 @@ class BaseAgent:
         agent_observation, agent_obs_reward = self._observe(self.bundle.game_state)
 
         # Pass observation to InferenceEngine Buffer
-        self.inference_engine.add_observation(agent_observation)
+        self.inference_engine.add_observation(copy.deepcopy(agent_observation))
         # Infer the new user state
         if infer:
 
