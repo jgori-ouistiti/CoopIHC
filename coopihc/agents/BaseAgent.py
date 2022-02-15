@@ -373,7 +373,7 @@ class BaseAgent:
         agent_observation, agent_obs_reward = self._observe(self.bundle.game_state)
 
         # Pass observation to InferenceEngine Buffer
-        self.inference_engine.add_observation(copy.deepcopy(agent_observation))
+        self.inference_engine.add_observation(agent_observation)
         # Infer the new user state
         if infer:
 
@@ -381,16 +381,15 @@ class BaseAgent:
             # Broadcast new agent_state
             self.state.update(agent_state)
 
-            # test aurélien
-            # # Update agent observation
-            # if self.role == "user":
-            #     if self.inference_engine.buffer[-1].get("user_state") is not None:
-            #         self.inference_engine.buffer[-1]["user_state"].update(agent_state)
-            # elif self.role == "assistant":
-            #     if self.inference_engine.buffer[-1].get("assistant_state") is not None:
-            #         self.inference_engine.buffer[-1]["assistant_state"].update(
-            #             agent_state
-            #         )
+            # Update agent observation
+            if self.role == "user":
+                if self.inference_engine.buffer[-1].get("user_state") is not None:
+                    self.inference_engine.buffer[-1]["user_state"].update(agent_state)
+            elif self.role == "assistant":
+                if self.inference_engine.buffer[-1].get("assistant_state") is not None:
+                    self.inference_engine.buffer[-1]["assistant_state"].update(
+                        agent_state
+                    )
         else:
             agent_infer_reward = 0
         return agent_obs_reward, agent_infer_reward
