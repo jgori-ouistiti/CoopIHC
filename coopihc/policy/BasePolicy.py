@@ -40,6 +40,10 @@ class BasePolicy:
         return self.__class__.__name__
 
     @property
+    def state(self):
+        return self.host.state
+
+    @property
     def observation(self):
         """observation
 
