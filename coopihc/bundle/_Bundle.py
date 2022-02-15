@@ -140,7 +140,9 @@ class _Bundle:
         self._round_number = value
         self.game_state["game_info"]["round_index"][:] = value
 
-    def reset(self, turn=0, task=True, user=True, assistant=True, dic={}):
+    def reset(
+        self, turn=0, task=True, user=True, assistant=True, dic={}, skip_user_step=False
+    ):
         """Reset bundle.
 
         1. Reset the game and start at a specific turn number.
@@ -198,9 +200,9 @@ class _Bundle:
 
         if turn == 0:
             return self.game_state
-        if turn >= 1:
+        if turn >= 1 and not skip_user_step:
             self._user_first_half_step()
-        if turn >= 2:
+        if turn >= 2 and not skip_user_step:
             user_action, _ = self.user._take_action()
             self.broadcast_action("user", user_action)
             self._user_second_half_step(user_action)
