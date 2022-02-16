@@ -786,12 +786,12 @@ def num_element(*args, **kwargs):
 def array_element(shape=None, init=0.0, low=None, high=None):
     if shape is None:
         if isinstance(init, numpy.ndarray):
-            shape = init.shape
+            shape = numpy.atleast_2d(init).shape
         else:
             init = numpy.asarray(init).reshape(-1, 1)
-            shape = (-1, 1)
+            shape = init.shape
 
-    else:
+    elif isinstance(shape, tuple):
         if isinstance(init, numpy.ndarray):
             if init.shape == shape:
                 pass
@@ -803,6 +803,11 @@ def array_element(shape=None, init=0.0, low=None, high=None):
                 )
         else:
             init = numpy.full(shape, init)
+    elif isinstance(shape, (int, float)):
+        shape = (int(shape), 1)
+        init = numpy.full(shape, init)
+    else:
+        raise NotImplementedError
 
     if low is None:
         low = numpy.full(init.shape, -numpy.inf)
