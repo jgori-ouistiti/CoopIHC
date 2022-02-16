@@ -806,13 +806,13 @@ def array_element(shape=None, init=0.0, low=None, high=None):
 
     if low is None:
         low = numpy.full(init.shape, -numpy.inf)
-    elif low is isinstance(numpy.ndarray):
+    elif isinstance(low, numpy.ndarray):
         low = low.reshape(shape)
     else:
         low = numpy.full(shape, low)
     if high is None:
         high = numpy.full(init.shape, numpy.inf)
-    elif high is isinstance(numpy.ndarray):
+    elif isinstance(high, numpy.ndarray):
         high = high.reshape(shape)
     else:
         high = numpy.full(shape, high)
