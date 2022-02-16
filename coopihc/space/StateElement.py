@@ -774,3 +774,36 @@ class StateElement(numpy.ndarray):
             return [nip.astype(common_dtype) for nip in numpy_input_array]
         else:
             return numpy_input_array[0].astype(common_dtype)
+
+
+# ========================= StateElement shortcuts =================== #
+
+
+def num_element(*args, **kwargs):
+    return array_element(*args, **kwargs)
+
+
+def array_element(init=0.0, low=None, high=None):
+    init = numpy.asarray(init).reshape(-1, 1)
+    if low is None:
+        low = numpy.full(init.shape, -numpy.inf)
+    else:
+        low = numpy.asarray(low)
+    if high is None:
+        high = numpy.full(init.shape, numpy.inf)
+    else:
+        high = numpy.asarray(low)
+
+    return StateElement(init.reshape(-1, 1), Space([low, high], "continuous"))
+
+
+def cat_element(max=None, range=None, init=0, min=0):
+    if max is None and range is None:
+        raise ValueError("'max' and 'range' arguments cannot be both defined as None.")
+
+    init = numpy.asarray(init).reshape(-1)
+    if range is None:
+        input_array = numpy.arange(min, max)
+        return StateElement(init, Space(input_array, "discrete"))
+
+    return StateElement(init, Space(numpy.asarray(range).reshape(-1), "discrete"))
