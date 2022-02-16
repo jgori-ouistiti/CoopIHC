@@ -783,8 +783,27 @@ def num_element(*args, **kwargs):
     return array_element(*args, **kwargs)
 
 
-def array_element(init=0.0, low=None, high=None):
-    init = numpy.asarray(init).reshape(-1, 1)
+def array_element(shape=None, init=0.0, low=None, high=None):
+    if shape is None:
+        if isinstance(init, numpy.ndarray):
+            shape = init.shape
+        else:
+            init = numpy.asarray(init).reshape(-1, 1)
+            shape = (-1, 1)
+
+    else:
+        if isinstance(init, numpy.ndarray):
+            if init.shape == shape:
+                pass
+            else:
+                raise ValueError(
+                    "shape arg {} inconsistent with init shape {}".format(
+                        shape, init.shape
+                    )
+                )
+        else:
+            init = numpy.full(shape, init)
+
     if low is None:
         low = numpy.full(init.shape, -numpy.inf)
     else:
@@ -797,7 +816,15 @@ def array_element(init=0.0, low=None, high=None):
     return StateElement(init.reshape(-1, 1), Space([low, high], "continuous"))
 
 
-def cat_element(max=None, range=None, init=0, min=0):
+def cat_element(N=None, max=None, range=None, init=0, min=0):
+    """cat_element
+
+    TODO:
+    """
+
+    if N is not None:
+        return StateElement(init, Space(numpy.arange(N).reshape(-1), "discrete"))
+
     if max is None and range is None:
         raise ValueError("'max' and 'range' arguments cannot be both defined as None.")
 
