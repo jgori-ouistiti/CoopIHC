@@ -299,7 +299,7 @@ class BaseAgent:
         if not dic:
             if random:
                 self.state.reset()
-                self.reset()
+            self.reset()
 
             return
 
