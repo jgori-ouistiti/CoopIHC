@@ -60,6 +60,10 @@ class _Bundle:
         self.game_state["user_state"] = user.state
         self.game_state["assistant_state"] = assistant.state
 
+        self.task.finit()
+        self.user.finit()
+        self.assistant.finit()
+
         if user.policy is not None:
             self.game_state["user_action"] = user.policy.action_state
         else:
@@ -70,10 +74,6 @@ class _Bundle:
         else:
             self.game_state["assistant_action"] = State()
             self.game_state["assistant_action"]["action"] = StateElement()
-
-        self.task.finit()
-        self.user.finit()
-        self.assistant.finit()
 
         # Needed for render
         self.active_render_figure = None
@@ -599,8 +599,9 @@ class _Bundle:
         :param action: action
         :type action: Any
         """
-
-        getattr(self, role).policy.action_state["action"] = action
+        getattr(self, role).policy.action_state["action"][:] = action.view(
+            numpy.ndarray
+        )
         try:
             getattr(self, role).observation["{}_action".format(role)]["action"] = action
         except AttributeError:
