@@ -277,7 +277,7 @@ class BaseAgent:
 
         self.inference_engine.host = self
 
-    def _base_reset(self, all=True, dic=None):
+    def _base_reset(self, all=True, dic=None, random=True):
         """Reset function called by the Bundle.
 
         This method is called by the bundle to reset the agent. It defines a bunch of actions that should be performed upon each reset. It namely calls the reset method that can be modified by the end-user of the library.
@@ -291,19 +291,17 @@ class BaseAgent:
 
         :meta private:
         """
-
         if all:
-            self.policy.reset()
-            self.inference_engine.reset()
-            self.observation_engine.reset()
+            self.policy.reset(random=random)
+            self.inference_engine.reset(random=random)
+            self.observation_engine.reset(random=random)
 
         if not dic:
-            self.state.reset()
-            self.reset()
+            if random:
+                self.state.reset()
+                self.reset()
 
             return
-
-        self.reset()  # Reset all states before, just in case the reset dic does not specify a reset value for each substate.
 
         # forced reset with dic
         for key in list(self.state.keys()):

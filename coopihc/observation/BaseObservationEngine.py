@@ -74,7 +74,7 @@ class BaseObservationEngine:
             game_state = self.host.bundle.game_state
         return copy.deepcopy(game_state), 0
 
-    def reset(self):
+    def reset(self, random=True):
         """reset
 
         Empty by default.

@@ -125,7 +125,7 @@ class BaseInferenceEngine:
             except KeyError:
                 return {}, 0
 
-    def reset(self):
+    def reset(self, random=True):
         """reset
 
         Reset the engine (clear buffer)

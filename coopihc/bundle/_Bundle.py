@@ -184,15 +184,21 @@ class _Bundle:
 
         if task:
             task_dic = dic.get("task_state")
-            self.task._base_reset(dic=task_dic)
+            self.task._base_reset(
+                dic=task_dic, random=self.kwargs.get("random_reset", False)
+            )
 
         if user:
             user_dic = dic.get("user_state")
-            self.user._base_reset(dic=user_dic)
+            self.user._base_reset(
+                dic=user_dic, random=self.kwargs.get("random_reset", False)
+            )
 
         if assistant:
             assistant_dic = dic.get("assistant_state")
-            self.assistant._base_reset(dic=assistant_dic)
+            self.assistant._base_reset(
+                dic=assistant_dic, random=self.kwargs.get("random_reset", False)
+            )
 
         self.round_number[:] = 0
 
