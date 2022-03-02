@@ -822,7 +822,10 @@ def array_element(shape=None, init=0.0, low=None, high=None):
     else:
         high = numpy.full(shape, high)
 
-    return StateElement(init.reshape(-1, 1), Space([low, high], "continuous"))
+    if init.shape[0] == 1:
+        init.reshape(-1, 1)
+
+    return StateElement(init, Space([low, high], "continuous"))
 
 
 def cat_element(n=None, max=None, range=None, init=0, min=0):
