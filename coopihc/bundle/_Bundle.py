@@ -183,6 +183,7 @@ class _Bundle:
         """
         # ============= Passing via bundles
         turn = self.kwargs.get("reset_turn", turn)
+        skip_user_step = self.kwargs.get("reset_skip_user_step", skip_user_step)
         # =============
 
         if task:
