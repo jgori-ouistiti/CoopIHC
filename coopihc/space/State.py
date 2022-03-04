@@ -86,6 +86,9 @@ class State(dict):
                 return False
         return True
 
+    def __getattr__(self, name):
+        return self[name]
+
     def reset(self, dic={}):
         """Initialize the state. See StateElement
 
