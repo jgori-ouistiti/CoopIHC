@@ -181,6 +181,9 @@ class _Bundle:
         :return: new game state
         :rtype: :py:class:`State<coopihc.space.State.State>`
         """
+        # ============= Passing via bundles
+        turn = self.kwargs.get("reset_turn", turn)
+        # =============
 
         if task:
             task_dic = dic.get("task_state")
