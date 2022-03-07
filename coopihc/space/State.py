@@ -90,7 +90,7 @@ class State(dict):
         try:
             return self[name]
         except KeyError:
-            raise AttributeError
+            raise AttributeError(name)
 
     def reset(self, dic={}):
         """Initialize the state. See StateElement
