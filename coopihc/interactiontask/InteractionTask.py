@@ -140,8 +140,8 @@ class InteractionTask(ABC):
         :type dic: dictionary, optional
         """
 
-        # Reset everything randomly before  starting
         if random:
+            # Reset everything randomly before  starting
             self.state.reset(dic={})
         # Apply end-user defined reset
         self.reset(dic=dic)

@@ -4,10 +4,13 @@ from coopihc.space.State import State
 from coopihc.space.StateElement import StateElement
 from coopihc.space.Space import Space
 from coopihc.policy.BasePolicy import BasePolicy
-from coopihc.policy import ExamplePolicy
+from coopihc.policy.ExamplePolicy import CoordinatedPolicy, CoordinatedPolicyWithParams
 from coopihc.observation.RuleObservationEngine import RuleObservationEngine
 from coopihc.observation.utils import base_user_engine_specification
 from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
+from coopihc.inference.ExampleInferenceEngine import CoordinatedInferenceEngine
+from coopihc.bundle.Bundle import Bundle
+import copy
 
 
 class ExampleAssistant(BaseAgent):
@@ -40,3 +43,63 @@ class ExampleAssistant(BaseAgent):
             agent_inference_engine=inference_engine,
             **kwargs
         )
+
+
+class CoordinatedAssistant(BaseAgent):
+    def __init__(self, user_model=None, *args, **kwargs):
+
+        self.user_model = user_model
+
+        # Call the policy defined above
+        action_state = State()
+        action_state["action"] = StateElement(
+            0, Space(numpy.arange(10, dtype=numpy.int16), "discrete")
+        )
+
+        # Use default observation and inference engines
+        observation_engine = None
+        inference_engine = None
+
+        super().__init__(
+            "assistant",
+            *args,
+            agent_policy=CoordinatedPolicy(action_state=action_state),
+            agent_observation_engine=observation_engine,
+            agent_inference_engine=inference_engine,
+            **kwargs
+        )
+
+    def finit(self):
+        copy_task = copy.deepcopy(self.bundle.task)
+        self.simulation_bundle = Bundle(task=copy_task, user=self.user_model)
+
+
+class CoordinatedAssistantWithInference(BaseAgent):
+    def __init__(self, user_model=None, *args, **kwargs):
+
+        self.user_model = user_model
+        state = State()
+        state["user_p0"] = copy.deepcopy(user_model.state.p0)
+        # Call the policy defined above
+        action_state = State()
+        action_state["action"] = StateElement(
+            0, Space(numpy.arange(10, dtype=numpy.int16), "discrete")
+        )
+
+        # Use default observation and inference engines
+        observation_engine = None
+        inference_engine = CoordinatedInferenceEngine
+
+        super().__init__(
+            "assistant",
+            *args,
+            agent_state=state,
+            agent_policy=CoordinatedPolicyWithParams(action_state=action_state),
+            agent_observation_engine=observation_engine,
+            agent_inference_engine=inference_engine,
+            **kwargs
+        )
+
+    def finit(self):
+        copy_task = copy.deepcopy(self.bundle.task)
+        self.simulation_bundle = Bundle(task=copy_task, user=self.user_model)
