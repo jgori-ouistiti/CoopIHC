@@ -4,11 +4,17 @@ from coopihc.space.State import State
 from coopihc.space.StateElement import StateElement
 from coopihc.space.Space import Space
 from coopihc.policy.BasePolicy import BasePolicy
-from coopihc.policy.ExamplePolicy import CoordinatedPolicy, CoordinatedPolicyWithParams
+from coopihc.policy.ExamplePolicy import (
+    CoordinatedPolicy,
+    CoordinatedPolicyWithParams,
+)
 from coopihc.observation.RuleObservationEngine import RuleObservationEngine
 from coopihc.observation.utils import base_user_engine_specification
 from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
-from coopihc.inference.ExampleInferenceEngine import CoordinatedInferenceEngine
+from coopihc.inference.ExampleInferenceEngine import (
+    CoordinatedInferenceEngine,
+    RolloutCoordinatedInferenceEngine,
+)
 from coopihc.bundle.Bundle import Bundle
 import copy
 
@@ -88,7 +94,7 @@ class CoordinatedAssistantWithInference(BaseAgent):
 
         # Use default observation and inference engines
         observation_engine = None
-        inference_engine = CoordinatedInferenceEngine
+        inference_engine = CoordinatedInferenceEngine()
 
         super().__init__(
             "assistant",
@@ -103,3 +109,33 @@ class CoordinatedAssistantWithInference(BaseAgent):
     def finit(self):
         copy_task = copy.deepcopy(self.bundle.task)
         self.simulation_bundle = Bundle(task=copy_task, user=self.user_model)
+
+
+class CoordinatedAssistantWithRollout(BaseAgent):
+    def __init__(self, simulation_bundle, **kwargs):
+
+        self.simulation_bundle = simulation_bundle
+
+        state = State()
+        state["user_p0"] = copy.deepcopy(simulation_bundle.user.state.p0)
+        state["user_p1"] = copy.deepcopy(simulation_bundle.user.state.p1)
+        state["user_p2"] = copy.deepcopy(simulation_bundle.user.state.p2)
+
+        # Call the policy defined above
+        action_state = State()
+        action_state["action"] = StateElement(
+            0, Space(numpy.arange(10, dtype=numpy.int16), "discrete")
+        )
+
+        # Use default observation and inference engines
+        observation_engine = None
+        inference_engine = RolloutCoordinatedInferenceEngine()
+
+        super().__init__(
+            "assistant",
+            agent_state=state,
+            agent_policy=BasePolicy,
+            agent_observation_engine=observation_engine,
+            agent_inference_engine=inference_engine,
+            **kwargs
+        )

@@ -65,7 +65,7 @@ At each turn, the assistant takes the same action as the user model. If we provi
 Single-shot predictions and inference
 ----------------------------------------
 
-Usually, it is impossible to specify the true user model. In this coordination task, a mismatch between the true user and the user model crashes the performance of the assistant. To see this, run the following code, where ``PseudoRandomUserWithParams(p=[1, 5, 7])`` is the pseudorandom user where the parameters of its policy are specified during initialization (here :math:`p_0 = 1`, :math:`p_1 = 5`, :math:`p_2 = 7``).
+Usually, it is impossible to specify the true user model. In this coordination task, a mismatch between the true user and the user model crashes the performance of the assistant. To see this, run the following code, where ``PseudoRandomUserWithParams(p=[1, 5, 7])`` is the pseudorandom user where the parameters of its policy are specified during initialization (here :math:`p_0 = 1`, :math:`p_1 = 5`, :math:`p_2 = 7`).
 
 .. literalinclude:: ../../coopihc/examples/simple_examples/assistant_has_user_model.py
     :linenos:
@@ -110,3 +110,40 @@ You can check that the performance is as good as the first case where the true m
 
 Rollouts
 -----------
+
+
+Example not finished. There are several ways of doing this.  One of them is something like:
+
+.. code-block:: python
+
+    # Define a simulation bundle that is passed to a CoopIHC component e.g. an inference engine
+    simulation_bundle = Bundle(
+        task=task_model, user=user_model, assistant=assistant_simulation
+    )
+
+    # Inside the inference engine, plug in the observed states inside the bundle and run it. Then do something based on that information.
+    reset_dic = copy.deepcopy(self.observation)
+    del reset_dic["assistant_state"]
+
+    reset_dic = {
+        **reset_dic,
+        **{
+            "user_state": {
+                "p0": numpy.array([[i]]),
+                "p1": self.state.user_p1[:],
+                "p2": self.state.user_p2[:],
+            }
+        },
+    }
+
+    self.simulation_bundle.reset(turn=0, dic=reset_dic)
+    while True:
+        state, rewards, is_done = self.simulation_bundle.step()
+        rew[i] += sum(rewards.values())
+        if is_done:
+            break
+
+
+
+
+

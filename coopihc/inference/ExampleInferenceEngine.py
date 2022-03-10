@@ -1,4 +1,6 @@
 from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
+import numpy
+import copy
 
 # [start-infeng-subclass]
 class ExampleInferenceEngine(BaseInferenceEngine):
@@ -64,3 +66,47 @@ class CoordinatedInferenceEngine(BaseInferenceEngine):
         reward = 0
 
         return self.state, reward
+
+
+class RolloutCoordinatedInferenceEngine(BaseInferenceEngine):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    @property
+    def simulation_bundle(self):
+        return self.host.simulation_bundle
+
+    def infer(self, agent_state=None):
+        if agent_state is None:
+            agent_state = self.state
+
+        rew = [0 for i in range(10)]
+        for i in range(10):
+            print(i)
+
+            # load the simulation with the right parameters
+            reset_dic = copy.deepcopy(self.observation)
+            del reset_dic["assistant_state"]
+
+            reset_dic = {
+                **reset_dic,
+                **{
+                    "user_state": {
+                        "p0": numpy.array([[i]]),
+                        "p1": self.state.user_p1[:],
+                        "p2": self.state.user_p2[:],
+                    }
+                },
+            }
+
+            self.simulation_bundle.reset(turn=0, dic=reset_dic)
+            while True:
+                state, rewards, is_done = self.simulation_bundle.step()
+                rew[i] += sum(rewards.values())
+                if is_done:
+                    break
+
+        index = numpy.argmax(rew)
+        self.state["user_p0"][:] = index
+
+        return self.state, 0

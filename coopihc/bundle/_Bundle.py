@@ -297,6 +297,28 @@ class _Bundle:
                     rewards["assistant_inference_reward"],
                 ) = (assistant_obs_reward, assistant_infer_reward)
 
+            elif (
+                self.turn_number == 3
+                and "no-assistant" == self.kwargs.get("name")
+                and self.kwargs.get("feed_assistant_action") is True
+            ):
+
+                if not isinstance(assistant_action, StateElement):
+                    se_action = copy.copy(self.assistant.action)
+                    se_action[:] = assistant_action
+                    assistant_action = se_action
+                assistant_policy_reward = 0
+                self.broadcast_action("assistant", assistant_action)
+                task_reward, is_done = self._assistant_second_half_step(
+                    assistant_action
+                )
+                rewards["assistant_policy_reward"] = assistant_policy_reward
+                rewards["second_task_reward"] = task_reward
+                if is_done:
+                    return self.game_state, rewards, is_done
+
+                self.round_number = self.round_number + 1
+
             # Assistant takes action and receives reward from task
             elif self.turn_number == 3 and "no-assistant" != self.kwargs.get("name"):
                 if assistant_action is None:
