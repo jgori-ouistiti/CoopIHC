@@ -138,6 +138,8 @@ class InteractionTask(ABC):
 
         :param dic: reset dictionary (passed by bundle),
         :type dic: dictionary, optional
+        :param random: whether to randomize task states, defaults to True
+        :type random: boolean, optional
         """
 
         if random:

@@ -168,7 +168,7 @@ class _Bundle:
             If subclassing _Bundle, make sure to call super().reset() in the new reset method.
 
 
-        :param turn: game turn number, defaults to 0
+        :param turn: game turn number. Can also be set globally at the bundle level by passing the "reset_turn" keyword argument, defaults to 0
         :type turn: int, optional
         :param task: reset task?, defaults to True
         :type task: bool, optional
@@ -178,6 +178,8 @@ class _Bundle:
         :type assistant: bool, optional
         :param dic: reset_dic, defaults to {}
         :type dic: dict, optional
+        :param skip_user_step: do you want to skip user steps on reset?, defaults to False. Usually you want to have this set to False if the user starts playing but true if the assistant starts playing. Can also be set globally at the bundle level with the keyword argument "reset_skip_user_step".
+        :type skip_user_step: bool, optional
         :return: new game state
         :rtype: :py:class:`State<coopihc.space.State.State>`
         """
@@ -296,28 +298,6 @@ class _Bundle:
                     rewards["assistant_observation_reward"],
                     rewards["assistant_inference_reward"],
                 ) = (assistant_obs_reward, assistant_infer_reward)
-
-            elif (
-                self.turn_number == 3
-                and "no-assistant" == self.kwargs.get("name")
-                and self.kwargs.get("feed_assistant_action") is True
-            ):
-
-                if not isinstance(assistant_action, StateElement):
-                    se_action = copy.copy(self.assistant.action)
-                    se_action[:] = assistant_action
-                    assistant_action = se_action
-                assistant_policy_reward = 0
-                self.broadcast_action("assistant", assistant_action)
-                task_reward, is_done = self._assistant_second_half_step(
-                    assistant_action
-                )
-                rewards["assistant_policy_reward"] = assistant_policy_reward
-                rewards["second_task_reward"] = task_reward
-                if is_done:
-                    return self.game_state, rewards, is_done
-
-                self.round_number = self.round_number + 1
 
             # Assistant takes action and receives reward from task
             elif self.turn_number == 3 and "no-assistant" != self.kwargs.get("name"):

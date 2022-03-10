@@ -75,8 +75,11 @@ class BaseObservationEngine:
         return copy.deepcopy(game_state), 0
 
     def reset(self, random=True):
-        """reset
+        """reset _summary_
 
         Empty by default.
+
+        :param random: whether states internal to the observation engine are reset randomly, defaults to True. Useful in case of subclassing the Observation Engine.
+        :type random: bool, optional
         """
         return

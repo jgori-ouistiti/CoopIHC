@@ -81,6 +81,13 @@ class BasePolicy:
         return self
 
     def reset(self, random=True):
+        """reset
+
+        Reset the policy
+
+        :param random: reset the policy, defaults to True. Here in case of subclassing BasePolicy.
+        :type random: bool, optional
+        """
         if random:
             self.action_state.reset()
 
