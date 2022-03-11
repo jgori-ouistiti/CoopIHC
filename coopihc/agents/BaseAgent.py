@@ -7,6 +7,7 @@ from coopihc.observation.utils import base_assistant_engine_specification
 from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 
 import numpy
+import copy
 
 
 class BaseAgent:
@@ -88,9 +89,9 @@ class BaseAgent:
 
         # Init state
         if agent_state is None:
-            self.state = State(**state_kwargs)
+            self._state = State(**state_kwargs)
         else:
-            self.state = agent_state
+            self._state = agent_state
 
         # Define observation engine
         self.attach_observation_engine(
@@ -127,7 +128,7 @@ class BaseAgent:
         # Override agent state
         agent_state = init_kwargs.get("override_state", None)
         if agent_state is not None:
-            self.state = agent_state
+            self._state = agent_state
 
         # Override agent observation engine
         agent_obseng, agent_obseng_kwargs = init_kwargs.get(
@@ -160,6 +161,22 @@ class BaseAgent:
             "Inference Engine": self.inference_engine.__content__(),
             "Policy": self.policy.__content__(),
         }
+
+    @property
+    def policy(self):
+        return self._policy
+
+    @property
+    def inference_engine(self):
+        return self._inference_engine
+
+    @property
+    def observation_engine(self):
+        return self._observation_engine
+
+    @property
+    def state(self):
+        return self._state
 
     @property
     def observation(self):
@@ -207,15 +224,15 @@ class BaseAgent:
             policy = BasePolicy
 
         if type(policy).__name__ == "type":
-            self.policy = policy(**kwargs)
+            self._policy = policy(**kwargs)
         else:
-            self.policy = policy
+            self._policy = policy
             if kwargs != {}:
                 raise AttributeError(
                     "Can't input an instantiated policy and associated keyword arguments. Either pass the policy class, or fully instantiate that policy before passing it."
                 )
 
-        self.policy.host = self
+        self._policy.host = self
 
     def attach_observation_engine(self, observation_engine, **kwargs):
         """Attach an observation engine
@@ -240,15 +257,15 @@ class BaseAgent:
                 raise NotImplementedError
 
         if type(observation_engine).__name__ == "type":
-            self.observation_engine = observation_engine(**kwargs)
+            self._observation_engine = observation_engine(**kwargs)
         else:
-            self.observation_engine = observation_engine
+            self._observation_engine = observation_engine
             if kwargs != {}:
                 raise AttributeError(
                     "Can't input an instantiated observation engine and associated keyword arguments. Either pass the observation engine class, or fully instantiate that policy before passing it."
                 )
 
-        self.observation_engine.host = self
+        self._observation_engine.host = self
 
     def attach_inference_engine(self, inference_engine, **kwargs):
         """Attach an inference engine
@@ -266,17 +283,17 @@ class BaseAgent:
             inference_engine = inference_engine
 
         if type(inference_engine).__name__ == "type":
-            self.inference_engine = inference_engine(**kwargs)
+            self._inference_engine = inference_engine(**kwargs)
         else:
-            self.inference_engine = inference_engine
+            self._inference_engine = inference_engine
             if kwargs != {}:
                 raise AttributeError(
                     "Can't input an instantiated inference engine and associated keyword arguments. Either pass the inference engine class, or fully instantiate that policy before passing it."
                 )
 
-        self.inference_engine.host = self
+        self._inference_engine.host = self
 
-    def _base_reset(self, all=True, dic=None):
+    def _base_reset(self, all=True, dic=None, random=True):
         """Reset function called by the Bundle.
 
         This method is called by the bundle to reset the agent. It defines a bunch of actions that should be performed upon each reset. It namely calls the reset method that can be modified by the end-user of the library.
@@ -290,19 +307,17 @@ class BaseAgent:
 
         :meta private:
         """
-
         if all:
-            self.policy.reset()
-            self.inference_engine.reset()
-            self.observation_engine.reset()
+            self.policy.reset(random=random)
+            self.inference_engine.reset(random=random)
+            self.observation_engine.reset(random=random)
 
         if not dic:
-            self.state.reset()
+            if random:
+                self.state.reset()
             self.reset()
 
             return
-
-        self.reset()  # Reset all states before, just in case the reset dic does not specify a reset value for each substate.
 
         # forced reset with dic
         for key in list(self.state.keys()):

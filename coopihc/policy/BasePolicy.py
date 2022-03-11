@@ -40,6 +40,10 @@ class BasePolicy:
         return self.__class__.__name__
 
     @property
+    def state(self):
+        return self.host.state
+
+    @property
     def observation(self):
         """observation
 
@@ -76,8 +80,16 @@ class BasePolicy:
     def unwrapped(self):
         return self
 
-    def reset(self):
-        self.action.reset()
+    def reset(self, random=True):
+        """reset
+
+        Reset the policy
+
+        :param random: reset the policy, defaults to True. Here in case of subclassing BasePolicy.
+        :type random: bool, optional
+        """
+        if random:
+            self.action_state.reset()
 
     def sample(self, observation=None):
         """sample
