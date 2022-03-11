@@ -130,7 +130,7 @@ class InteractionTask(ABC):
         :meta public:
         """
 
-    def _base_reset(self, dic=None):
+    def _base_reset(self, dic=None, random=True):
         """base reset
 
         Method that wraps the user defined reset() method. Takes care of the
@@ -138,10 +138,13 @@ class InteractionTask(ABC):
 
         :param dic: reset dictionary (passed by bundle),
         :type dic: dictionary, optional
+        :param random: whether to randomize task states, defaults to True
+        :type random: boolean, optional
         """
 
-        # Reset everything randomly before  starting
-        self.state.reset(dic={})
+        if random:
+            # Reset everything randomly before  starting
+            self.state.reset(dic={})
         # Apply end-user defined reset
         self.reset(dic=dic)
 
