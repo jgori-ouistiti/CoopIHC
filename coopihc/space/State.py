@@ -86,12 +86,6 @@ class State(dict):
                 return False
         return True
 
-    def __getattr__(self, name):
-        try:
-            return self[name]
-        except KeyError:
-            raise AttributeError(name)
-
     def reset(self, dic={}):
         """Initialize the state. See StateElement
 

@@ -60,10 +60,6 @@ class _Bundle:
         self.game_state["user_state"] = user.state
         self.game_state["assistant_state"] = assistant.state
 
-        self.task.finit()
-        self.user.finit()
-        self.assistant.finit()
-
         if user.policy is not None:
             self.game_state["user_action"] = user.policy.action_state
         else:
@@ -74,6 +70,10 @@ class _Bundle:
         else:
             self.game_state["assistant_action"] = State()
             self.game_state["assistant_action"]["action"] = StateElement()
+
+        self.task.finit()
+        self.user.finit()
+        self.assistant.finit()
 
         # Needed for render
         self.active_render_figure = None
@@ -140,9 +140,7 @@ class _Bundle:
         self._round_number = value
         self.game_state["game_info"]["round_index"][:] = value
 
-    def reset(
-        self, turn=0, task=True, user=True, assistant=True, dic={}, skip_user_step=False
-    ):
+    def reset(self, turn=0, task=True, user=True, assistant=True, dic={}):
         """Reset bundle.
 
         1. Reset the game and start at a specific turn number.
@@ -168,7 +166,7 @@ class _Bundle:
             If subclassing _Bundle, make sure to call super().reset() in the new reset method.
 
 
-        :param turn: game turn number. Can also be set globally at the bundle level by passing the "reset_turn" keyword argument, defaults to 0
+        :param turn: game turn number, defaults to 0
         :type turn: int, optional
         :param task: reset task?, defaults to True
         :type task: bool, optional
@@ -178,33 +176,21 @@ class _Bundle:
         :type assistant: bool, optional
         :param dic: reset_dic, defaults to {}
         :type dic: dict, optional
-        :param skip_user_step: do you want to skip user steps on reset?, defaults to False. Usually you want to have this set to False if the user starts playing but true if the assistant starts playing. Can also be set globally at the bundle level with the keyword argument "reset_skip_user_step".
-        :type skip_user_step: bool, optional
         :return: new game state
         :rtype: :py:class:`State<coopihc.space.State.State>`
         """
-        # ============= Passing via bundles
-        turn = self.kwargs.get("reset_turn", turn)
-        skip_user_step = self.kwargs.get("reset_skip_user_step", skip_user_step)
-        # =============
 
         if task:
             task_dic = dic.get("task_state")
-            self.task._base_reset(
-                dic=task_dic, random=self.kwargs.get("random_reset", False)
-            )
+            self.task._base_reset(dic=task_dic)
 
         if user:
             user_dic = dic.get("user_state")
-            self.user._base_reset(
-                dic=user_dic, random=self.kwargs.get("random_reset", False)
-            )
+            self.user._base_reset(dic=user_dic)
 
         if assistant:
             assistant_dic = dic.get("assistant_state")
-            self.assistant._base_reset(
-                dic=assistant_dic, random=self.kwargs.get("random_reset", False)
-            )
+            self.assistant._base_reset(dic=assistant_dic)
 
         self.round_number[:] = 0
 
@@ -212,9 +198,9 @@ class _Bundle:
 
         if turn == 0:
             return self.game_state
-        if turn >= 1 and not skip_user_step:
+        if turn >= 1:
             self._user_first_half_step()
-        if turn >= 2 and not skip_user_step:
+        if turn >= 2:
             user_action, _ = self.user._take_action()
             self.broadcast_action("user", user_action)
             self._user_second_half_step(user_action)
@@ -605,9 +591,8 @@ class _Bundle:
         :param action: action
         :type action: Any
         """
-        getattr(self, role).policy.action_state["action"][:] = action.view(
-            numpy.ndarray
-        )
+
+        getattr(self, role).policy.action_state["action"] = action
         try:
             getattr(self, role).observation["{}_action".format(role)]["action"] = action
         except AttributeError:
