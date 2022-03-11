@@ -62,16 +62,6 @@ from .space.utils import autospace
 from .space.utils import discrete_space
 from .space.utils import continuous_space
 from .space.utils import multidiscrete_space
-from .space.StateElement import num_element
-from .space.StateElement import array_element
-from .space.StateElement import cat_element
-
-from .observation.utils import oracle_engine_specification
-from .observation.utils import blind_engine_specification
-from .observation.utils import base_task_engine_specification
-from .observation.utils import base_user_engine_specification
-from .observation.utils import base_assistant_engine_specification
-
 
 # ------------------ convertors
 from .space.utils import GymConvertor

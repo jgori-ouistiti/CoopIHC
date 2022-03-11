@@ -906,6 +906,14 @@ def test_cast():
     test_cast_discr_to_discr()
 
 
+def test_bug_teaching():
+    stateelement = StateElement(
+        numpy.zeros((5, 1)),
+        spaces=autospace(numpy.zeros((5, 1)), numpy.full((5, 1), numpy.inf)),
+    )
+    assert stateelement[0].spaces.shape == (1, 1)
+
+
 if __name__ == "__main__":
     pass
     test_array_init()

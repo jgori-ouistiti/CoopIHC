@@ -191,11 +191,7 @@ class TrainGym(gym.Env):
             )
 
     def step(self, action):
-        ## Hack for now
-        # action = self._convertor.adapt_discrete_and_multidiscrete_action(
-        #     self._convertor, action, self
-        # )
-        action = GymConvertor.adapt_discrete_and_multidiscrete_action(
+        action = self._convertor.adapt_discrete_and_multidiscrete_action(
             self._convertor, action, self
         )
         user_action = action.get("user_action", None)
@@ -348,7 +344,6 @@ class GymConvertor(RLConvertor):
         Transforms a Gym action to a CoopIHC valid action.
 
         """
-
         for key, value in action.items():
             if isinstance(traingym.action_space.spaces[key], gym.spaces.Box):
                 pass

@@ -37,8 +37,3 @@ States are the higher level containers used in *CoopIHC*, that can contain eithe
    :start-after: [start-state-serialize]
    :end-before: [end-state-serialize]
 
-+ States can also be accessed with the dot notation:
-
-.. code-block:: python
-
-   state["sub1"] == state.sub1

@@ -52,7 +52,6 @@ and **bundling** them back together using a so-called :py:mod:`Bundle <../coopih
     guide/modularity
     guide/learning
     guide/realuser
-    guide/simulating_rollouts
 
 .. toctree::
     :maxdepth: 1

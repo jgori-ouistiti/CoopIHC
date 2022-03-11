@@ -125,15 +125,11 @@ class BaseInferenceEngine:
             except KeyError:
                 return {}, 0
 
-    def reset(self, random=True):
-        """reset _summary_
+    def reset(self):
+        """reset
 
-        Empty the buffer
-
-        :param random: whether to randomize parameters internal to the inference engine. This is provided in case of subclass the BaseInferenceEngine, defaults to True.
-        :type random: bool, optional
+        Reset the engine (clear buffer)
         """
-
         self.buffer = None
 
     def render(self, *args, **kwargs):

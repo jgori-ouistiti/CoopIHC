@@ -74,12 +74,9 @@ class BaseObservationEngine:
             game_state = self.host.bundle.game_state
         return copy.deepcopy(game_state), 0
 
-    def reset(self, random=True):
-        """reset _summary_
+    def reset(self):
+        """reset
 
         Empty by default.
-
-        :param random: whether states internal to the observation engine are reset randomly, defaults to True. Useful in case of subclassing the Observation Engine.
-        :type random: bool, optional
         """
         return

@@ -70,38 +70,3 @@ class ExampleTask(InteractionTask):
             print("\n")
         else:
             raise NotImplementedError("Only 'text' mode implemented for this task")
-
-
-class CoordinatedTask(InteractionTask):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.state["x"] = StateElement(
-            0,
-            discrete_space(numpy.arange(10, dtype=numpy.int16)),
-            out_of_bounds_mode="warning",
-        )
-
-    def reset(self, dic=None):
-        self.state["x"][:] = 0
-        return
-
-    def user_step(self, *args, **kwargs):
-        is_done = False
-
-        if self.state["x"] == 9:
-            is_done = True
-
-        if self.round_number == 100:
-            is_done = True
-
-        reward = -1
-        return self.state, reward, is_done
-
-    def assistant_step(self, *args, **kwargs):
-        is_done = False
-
-        if self.user_action == self.assistant_action:
-            self.state["x"][:] = self.state["x"] + 1
-
-        reward = -1
-        return self.state, reward, is_done

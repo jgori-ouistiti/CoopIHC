@@ -3,10 +3,9 @@
 Modularity
 ===============
 
-.. figure:: images/modules.png
+.. image:: images/modules.png
     :width: 800
-    
-    Constructing a complex user model: An model of foveal vision and motor control is used to respectively define part of an observation engine and a policy
+    :caption: Constructing a complex user model: An model of foveal vision and motor control is used to respectively define part of an observation engine and a policy
 
 As we have seen, you can create new classes from scratch, by subclassing one of the coopihc classes, adding a few methods, and adhering to a few conventions.
 
