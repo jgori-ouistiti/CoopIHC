@@ -133,6 +133,4 @@ class RLPolicy(BasePolicy):
             ).values()
         )
 
-        new_action = self.new_action
-        new_action[:] = action
-        return new_action, 0
+        return action, 0

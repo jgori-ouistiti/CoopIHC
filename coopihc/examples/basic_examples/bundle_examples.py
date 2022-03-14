@@ -41,14 +41,11 @@ state, rewards, is_done = bundle.step(user_action=1, assistant_action=0)
 bundle.reset()
 while True:
     game_state, rewards, is_done = bundle.step(user_action=None, assistant_action=None)
-    # Equivalent to:
-    # game_state, rewards, is_done = bundle.step(
-    #     bundle.user.policy.sample()[0], bundle.assistant.policy.sample()[0]
-    # )
-
     if is_done:
         break
 # [end-check-task]
+
+
 # [start-check-taskuser]
 
 
@@ -65,7 +62,6 @@ bundle.reset(turn=1)
 
 while 1:
     state, rewards, is_done = bundle.step(user_action=None)
-
     if is_done:
         break
 # [end-check-taskuser]

@@ -60,7 +60,7 @@ class BaseInferenceEngine:
         :return: agent action
         :rtype: :py:class:`State<coopihc.space.State.State>`
         """
-        return self.host.policy.action_state["action"]
+        return tuple(self.host.policy.action_state.values())
 
     @property
     def unwrapped(self):

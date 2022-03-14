@@ -216,7 +216,8 @@ class _Bundle:
             self._user_first_half_step()
         if turn >= 2 and not skip_user_step:
             user_action, _ = self.user._take_action()
-            self.broadcast_action("user", user_action)
+            self.user.action = user_action
+            # self.broadcast_action("user", user_action)
             self._user_second_half_step(user_action)
         if turn >= 3:
             self._assistant_first_half_step()
@@ -272,13 +273,9 @@ class _Bundle:
                 if user_action is None:
                     user_action, user_policy_reward = self.user._take_action()
                 else:
-                    # Convert action to stateElement
-                    if not isinstance(user_action, StateElement):
-                        se_action = copy.copy(self.user.action)
-                        se_action[:] = user_action
-                        user_action = se_action
+                    self.user.action = user_action
                     user_policy_reward = 0
-                self.broadcast_action("user", user_action)
+
                 task_reward, is_done = self._user_second_half_step(user_action)
                 rewards["user_policy_reward"] = user_policy_reward
                 rewards["first_task_reward"] = task_reward
@@ -307,13 +304,9 @@ class _Bundle:
                         assistant_policy_reward,
                     ) = self.assistant._take_action()
                 else:
-                    # Convert action to stateElement
-                    if not isinstance(assistant_action, StateElement):
-                        se_action = copy.copy(self.assistant.action)
-                        se_action[:] = assistant_action
-                        assistant_action = se_action
+                    self.assistant.action = assistant_action
                     assistant_policy_reward = 0
-                self.broadcast_action("assistant", assistant_action)
+
                 task_reward, is_done = self._assistant_second_half_step(
                     assistant_action
                 )
@@ -534,7 +527,8 @@ class _Bundle:
             # else sample from policy
             user_action, user_policy_reward = self.user.take_action()
 
-        self.broadcast_action("user", user_action)
+        # self.broadcast_action("user", user_action)
+        self.user.action = user_action
 
         task_reward, is_done = self._user_second_half_step(user_action)
 
@@ -569,7 +563,8 @@ class _Bundle:
                 assistant_policy_reward,
             ) = self.assistant.take_action()
 
-        self.broadcast_action("assistant", assistant_action)
+        # self.broadcast_action("assistant", assistant_action)
+        self.assistant.action = assistant_action
 
         task_reward, is_done = self._assistant_second_half_step(assistant_action)
         return (
@@ -595,20 +590,24 @@ class _Bundle:
         self.game_state[state_key] = state
         getattr(self, role).observation[state_key] = state
 
-    def broadcast_action(self, role, action):
-        """broadcast action
+    # def broadcast_action(self, role, action):
+    #     """broadcast action
 
-        Broadcast an action to the gamestate and update the agent's policy.
+    #     Broadcast an action to the gamestate and update the agent's policy.
 
-        :param role: "user" or "assistant"
-        :type role: string
-        :param action: action
-        :type action: Any
-        """
-        getattr(self, role).policy.action_state["action"][:] = action.view(
-            numpy.ndarray
-        )
-        try:
-            getattr(self, role).observation["{}_action".format(role)]["action"] = action
-        except AttributeError:
-            pass
+    #     :param role: "user" or "assistant"
+    #     :type role: string
+    #     :param action: action
+    #     :type action: Any
+    #     """
+    #     agent = getattr(self, role)
+    #     for label, _action in zip(
+    #         actionstate, action
+    #     ):  # iterate over dict === iter over labels
+    #         actionstate[label][:] = _action.view(numpy.ndarray)
+    #         try:
+    #             getattr(self, role).observation["{}_action".format(role)][
+    #                 label
+    #             ] = _action
+    #         except AttributeError:
+    #             pass

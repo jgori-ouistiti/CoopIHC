@@ -208,7 +208,11 @@ class BaseAgent:
 
         :meta private:
         """
-        return self.policy.action_state["action"]
+        return tuple(self.policy.action_state.values())
+
+    @action.setter
+    def action(self, item):
+        self.policy.action = item
 
     def attach_policy(self, policy, **kwargs):
         """Attach a policy
@@ -369,7 +373,7 @@ class BaseAgent:
 
         :meta private:
         """
-        return self.policy.sample()
+        return self.policy._base_sample()
 
     def _agent_step(self, infer=True):
         """Play an agent's turn.

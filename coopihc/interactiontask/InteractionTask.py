@@ -93,7 +93,7 @@ class InteractionTask(ABC):
         :rtype: :py:class:`State<coopihc.space.State.State>`
         """
         if self.bundle:
-            return self.bundle.game_state["user_action"]["action"]
+            return tuple(self.bundle.game_state["user_action"].values())
 
     @property
     def assistant_action(self):
@@ -105,7 +105,7 @@ class InteractionTask(ABC):
         :rtype: :py:class:`State<coopihc.space.State.State>`
         """
         if self.bundle:
-            return self.bundle.game_state["assistant_action"]["action"]
+            return tuple(self.bundle.game_state["assistant_action"].values())
 
     def __content__(self):
         """Custom class representation.

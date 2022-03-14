@@ -48,7 +48,7 @@ class BaseObservationEngine:
         :rtype: :py:class:`State<coopihc.space.State.State>`
         """
         try:
-            return self.host.policy.action_state["action"]
+            return tuple(self.host.policy.action_state.values())
         except AttributeError:
             return None
 

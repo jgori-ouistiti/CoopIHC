@@ -17,10 +17,6 @@ You can define a new policy by subclassing the ``BasePolicy`` class and redefini
 
 .. note::
 
-    The action that is returned by the sample method has to be a valid ``StateElement``. To create such a ``StateElement``, you can directly call ``self.new_action`` inside the policy. This returns a valid ``StateElement`` without a value, which you can just fill in, as done in the example.
-
-.. note::
-
     Don't forget to return a reward with the action.
 
 .. note::

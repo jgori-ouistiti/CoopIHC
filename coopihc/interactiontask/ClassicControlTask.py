@@ -73,6 +73,10 @@ class ClassicControlTask(InteractionTask):
     :type noise: str, optional
     """
 
+    @property
+    def user_action(self):
+        return super().user_action[0]
+
     def __init__(
         self,
         timestep,

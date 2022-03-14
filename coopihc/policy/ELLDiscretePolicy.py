@@ -87,8 +87,8 @@ class ELLDiscretePolicy(BasePolicy):
             observation = self.host.inference_engine.buffer[-1]
         actions, llh = self.forward_summary(observation)
         action = actions[self.rng.choice(len(llh), p=llh)]
-        self.action_state["action"][:] = action
-        return self.action_state["action"], 0
+
+        return action, 0
 
     def forward_summary(self, observation):
         """forward_summary

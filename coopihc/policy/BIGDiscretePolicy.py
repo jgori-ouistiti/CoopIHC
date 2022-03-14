@@ -216,7 +216,5 @@ class BIGDiscretePolicy(BasePolicy):
         :rtype: tuple(`StateElement<coopihc.space.StateElement.StateElement>`, float)
         """
         self._actions, self._IG = self.find_best_action()
-        new_action = self.new_action
-        new_action[:] = self._actions[0]
 
-        return new_action, 0
+        return self._actions[0], 0

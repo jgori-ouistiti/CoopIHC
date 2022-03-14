@@ -18,6 +18,14 @@ class ExampleTask(InteractionTask):
 
     """
 
+    @property
+    def user_action(self):
+        return super().user_action[0]
+
+    @property
+    def assistant_action(self):
+        return super().assistant_action[0]
+
     def __init__(self, *args, **kwargs):
 
         # Call super().__init__() beofre anything else, which initializes some useful attributes, including a State (self.state) for the task

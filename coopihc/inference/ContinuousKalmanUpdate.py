@@ -9,6 +9,10 @@ class ContinuousKalmanUpdate(BaseInferenceEngine):
 
     """
 
+    @property
+    def action(self):
+        return super().action[0]
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fmd_flag = False
