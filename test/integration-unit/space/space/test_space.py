@@ -1,28 +1,21 @@
-from coopihc.space.Space import Space
-from coopihc.space.utils import discrete_space, continuous_space, multidiscrete_space
+from coopihc.space.Space import Interval, CatSet, space
+from coopihc.space.Space import cartesian_product
 from coopihc.helpers import flatten
 import numpy
 import json
 import pytest
 
 
-def test_init_discrete():
-    # Discrete
-    s = Space(numpy.array([1, 2, 3], dtype=numpy.int16), "discrete")
+def test_init_CatSet():
+    s = space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
     # prop and attributes
     assert s.dtype == numpy.int16
-    assert s.space_type == "discrete"
     assert s.N == 3
-    assert s.high == 3
-    assert s.low == 1
-    assert s.shape == (1,)
-    # __ methods
-    # __len__
-    assert len(s) == 1
+    assert s.shape == ()
 
 
-def test_contains_soft_discrete():
-    s = Space(numpy.array([1, 2, 3], dtype=numpy.int16), "discrete", contains="soft")
+def test_contains_CatSet():
+    s = space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
     assert 1 in s
     assert [1] in s
     assert [[1]] in s
@@ -33,158 +26,35 @@ def test_contains_soft_discrete():
     assert numpy.array([2]) in s
     assert numpy.array([3]) in s
 
-    assert numpy.array([1.0]) not in s
-    assert numpy.array([2], dtype=numpy.float32) not in s
-
-
-def test_contains_hard_discrete():
-    s = Space(numpy.array([1, 2, 3], dtype=numpy.int16), "discrete", contains="hard")
-    assert 1 not in s
-    assert [1] not in s
-    assert [[1]] not in s
-    assert numpy.array(1) not in s
-    assert numpy.array([1]) in s
-    assert numpy.array([[1]]) not in s
-
+    assert numpy.array([1.0]) in s
     assert numpy.array([2]) in s
-    assert numpy.array([3]) in s
-
-    assert numpy.array([2.0]) not in s
-    assert numpy.array([2], dtype=numpy.float32) not in s
 
 
-def test_discrete():
-    test_init_discrete()
-    test_contains_soft_discrete()
-    test_contains_hard_discrete()
+def test_CatSet():
+    test_init_CatSet()
+    test_contains_CatSet()
 
 
-def test_init_multidiscrete():
-    # Discrete
-    s = Space(
-        [
-            numpy.array([1, 2, 3], dtype=numpy.int16),
-            numpy.array([1, 2, 3, 4, 5], dtype=numpy.int16),
-        ],
-        "multidiscrete",
-        contains="soft",
-    )
-    # prop and attributes
-    assert s.dtype == numpy.int16
-    assert s.space_type == "multidiscrete"
-    assert s.N == [3, 5]
-    assert (s.high == numpy.array([3, 5])).all()
-    assert (s.low == numpy.array([1, 1])).all()
-    assert s.shape == (2, 1)
-    # __ methods
-    # __len__
-    assert len(s) == 2
-
-
-def test_contains_soft_multidiscrete():
-    s = Space(
-        [
-            numpy.array([1, 2, 3], dtype=numpy.int16),
-            numpy.array([1, 2, 3, 4, 5], dtype=numpy.int16),
-        ],
-        "multidiscrete",
-        contains="soft",
-    )
-    assert [1, 1] in s
-    assert [[1], [1]] in s
-    assert [[1, 1]] in s
-    assert numpy.array([1, 1]) in s
-    assert numpy.array([[1], [1]]) in s
-    assert numpy.array([[1, 1]]) in s
-
-    assert numpy.array([[2], [5]]) in s
-    assert numpy.array([[3], [3]]) in s
-
-    assert numpy.array([[2.0], [5.0]]) not in s
-    assert numpy.array([[2, 5]], dtype=numpy.float32) not in s
-    assert numpy.array([[2], [5.0]]) not in s
-
-
-def test_contains_hard_multidiscrete():
-    s = Space(
-        [
-            numpy.array([1, 2, 3], dtype=numpy.int16),
-            numpy.array([1, 2, 3, 4, 5], dtype=numpy.int16),
-        ],
-        "multidiscrete",
-        contains="hard",
-    )
-    assert [1, 1] not in s
-    assert [[1], [1]] not in s
-    assert [[1, 1]] not in s
-    assert numpy.array([1, 1]) not in s
-    assert numpy.array([[1], [1]]) in s
-    assert numpy.array([[1, 1]]) not in s
-
-    assert numpy.array([[2], [5]]) in s
-    assert numpy.array([[3], [3]]) in s
-
-    assert numpy.array([[2.0], [5.0]]) not in s
-    assert numpy.array([[2, 5]], dtype=numpy.float32) not in s
-    assert numpy.array([[2], [5.0]]) not in s
-
-
-def test_multidiscrete():
-    test_init_multidiscrete()
-    test_contains_soft_multidiscrete()
-    test_contains_hard_multidiscrete()
-
-
-def test_init_continuous():
-    s = Space(
-        [
-            -numpy.ones((2, 2), dtype=numpy.float32),
-            numpy.ones((2, 2), dtype=numpy.float32),
-        ],
-        "continuous",
-        contains="hard",
+def test_init_Interval():
+    s = space(
+        low=-numpy.ones((2, 2), dtype=numpy.float32),
+        high=numpy.ones((2, 2), dtype=numpy.float32),
     )
     # prop and attributes
     assert s.dtype == numpy.float32
-    assert s.space_type == "continuous"
-    assert s.N == None
-    assert (s.high == numpy.ones((2, 2), dtype=numpy.float32)).all()
-    assert (s.low == -numpy.ones((2, 2), dtype=numpy.float32)).all()
+    assert (s.high == numpy.ones((2, 2))).all()
+    assert (s.low == -numpy.ones((2, 2))).all()
     assert s.shape == (2, 2)
-    assert len(s) == 4
 
 
-def test_contains_soft_continuous():
-    s = Space(
-        [
-            -numpy.ones((2, 2), dtype=numpy.float32),
-            numpy.ones((2, 2), dtype=numpy.float32),
-        ],
-        "continuous",
-        contains="soft",
+def test_contains_Interval():
+    s = space(
+        low=-numpy.ones((2, 2)),
+        high=numpy.ones((2, 2)),
     )
-    assert [0.0, 0.0, 0.0, 0.0] in s
-    assert [[0.0, 0.0], [0.0, 0.0]] in s
-    assert numpy.array([0.0, 0.0, 0.0, 0.0]) in s
-    assert numpy.array([[0.0, 0.0], [0.0, 0.0]]) in s
 
-    assert 1.0 * numpy.ones((2, 2)) in s
-    assert -1.0 * numpy.ones((2, 2)) in s
-
-    assert numpy.ones((2, 2), dtype=numpy.int16) in s
-
-
-def test_contains_hard_continuous():
-    s = Space(
-        [
-            -numpy.ones((2, 2), dtype=numpy.float32),
-            numpy.ones((2, 2), dtype=numpy.float32),
-        ],
-        "continuous",
-        contains="hard",
-    )
     assert [0.0, 0.0, 0.0, 0.0] not in s
-    assert [[0.0, 0.0], [0.0, 0.0]] not in s
+    assert [[0.0, 0.0], [0.0, 0.0]] in s
     assert numpy.array([0.0, 0.0, 0.0, 0.0]) not in s
     assert numpy.array([[0.0, 0.0], [0.0, 0.0]]) in s
 
@@ -194,352 +64,40 @@ def test_contains_hard_continuous():
     assert numpy.ones((2, 2), dtype=numpy.int16) in s
 
 
-def test_continuous():
-    test_init_continuous()
-    test_contains_soft_continuous()
-    test_contains_hard_continuous()
+def test_Interval():
+    test_init_Interval()
+    test_contains_Interval()
 
 
-def test_dtype_discrete():
-    s = Space(numpy.array([1, 2, 3], dtype=numpy.int16), "discrete")
-    assert s.dtype == numpy.int16
-    s = Space(numpy.array([1, 2, 3], dtype=numpy.int16), "discrete", dtype=numpy.int64)
-    assert s.dtype == numpy.int64
-
-
-def test_dtype_continuous():
-    s = Space(
-        [
-            -numpy.ones((2, 2), dtype=numpy.float32),
-            numpy.ones((2, 2), dtype=numpy.float32),
-        ],
-        "continuous",
-    )
-    assert s.dtype == numpy.float32
-    s = Space(
-        [
-            -numpy.ones((2, 2), dtype=numpy.float64),
-            numpy.ones((2, 2), dtype=numpy.float32),
-        ],
-        "continuous",
-    )
-    assert s.dtype == numpy.float64
-    s = Space(
-        [
-            -numpy.ones((2, 2), dtype=numpy.float32),
-            numpy.ones((2, 2), dtype=numpy.float32),
-        ],
-        "continuous",
-        dtype=numpy.float64,
-    )
-    assert s.dtype == numpy.float64
-    s = Space(
-        [
-            -numpy.ones((2, 2), dtype=numpy.float64),
-            numpy.ones((2, 2), dtype=numpy.float64),
-        ],
-        "continuous",
-        dtype=numpy.int16,
-    )
-    assert s.dtype == numpy.int16
-
-
-def test_dtype_multidiscrete():
-    s = Space(
-        [
-            numpy.array([1, 2, 3], dtype=numpy.int16),
-            numpy.array([1, 2, 3, 4, 5], dtype=numpy.int16),
-        ],
-        "multidiscrete",
-        contains="hard",
-    )
-    assert s.dtype == numpy.int16
-    s = Space(
-        [
-            numpy.array([1, 2, 3], dtype=numpy.int16),
-            numpy.array([1, 2, 3, 4, 5], dtype=numpy.int64),
-        ],
-        "multidiscrete",
-        contains="hard",
-    )
-    assert s.dtype == numpy.int64
-    s = Space(
-        [
-            numpy.array([1, 2, 3], dtype=numpy.int16),
-            numpy.array([1, 2, 3, 4, 5], dtype=numpy.int16),
-        ],
-        "multidiscrete",
-        contains="hard",
-        dtype=numpy.int64,
-    )
-    assert s.dtype == numpy.int64
-
-
-def test_dtype():
-    test_dtype_discrete()
-    test_dtype_continuous()
-    test_dtype_multidiscrete()
-
-
-def test_equal_discrete():
-    s = Space(numpy.array([1, 2, 3], dtype=numpy.int16), "discrete")
-    assert s == Space(numpy.array([1, 2, 3], dtype=numpy.int16), "discrete")
-    assert s == numpy.array([1, 2, 3], dtype=numpy.int16)
-    assert s != Space(numpy.array([1, 2, 3, 4], dtype=numpy.int16), "discrete")
-    assert s == numpy.array([[1, 2, 3]], dtype=numpy.int16)
-    assert s == numpy.array([[1, 2, 3]], dtype=numpy.float32)
-
-
-def test_equal_multidiscrete():
-    s = Space(
-        [
-            numpy.array([1, 2, 3], dtype=numpy.int16),
-            numpy.array([1, 2, 3, 4, 5], dtype=numpy.int16),
-        ],
-        "multidiscrete",
-        contains="soft",
-    )
-    assert s == Space(
-        [
-            numpy.array([1, 2, 3], dtype=numpy.int16),
-            numpy.array([1, 2, 3, 4, 5], dtype=numpy.int16),
-        ],
-        "multidiscrete",
-        contains="soft",
-    )
-    assert s == [
-        numpy.array([1, 2, 3], dtype=numpy.int16),
-        numpy.array([1, 2, 3, 4, 5], dtype=numpy.int16),
-    ]
-    assert s != [numpy.array([1, 2, 3], dtype=numpy.int16)]
-    assert s != Space(
-        [
-            numpy.array([1, 2, 3, 5], dtype=numpy.int16),
-            numpy.array([1, 2, 3, 4, 5], dtype=numpy.int16),
-        ],
-        "multidiscrete",
-        contains="soft",
-    )
-    assert s != Space(
-        [
-            numpy.array([1, 2, 3], dtype=numpy.int16),
-            numpy.array([1, 2, 3, 5], dtype=numpy.int16),
-        ],
-        "multidiscrete",
-        contains="soft",
-    )
-
-
-def test_equal_continuous():
-    s = Space(
-        [
-            -numpy.ones((2, 2), dtype=numpy.float32),
-            numpy.ones((2, 2), dtype=numpy.float32),
-        ],
-        "continuous",
-        contains="soft",
-    )
-    assert s == Space(
-        [
-            -numpy.ones((2, 2), dtype=numpy.float32),
-            numpy.ones((2, 2), dtype=numpy.float32),
-        ],
-        "continuous",
-        contains="soft",
-    )
-    assert s == [
-        -numpy.ones((2, 2), dtype=numpy.float32),
-        numpy.ones((2, 2), dtype=numpy.float32),
-    ]
-    assert s != [
-        -1.05 * numpy.ones((2, 2), dtype=numpy.float32),
-        numpy.ones((2, 2), dtype=numpy.float32),
-    ]
-    assert s != Space(
-        [
-            -numpy.ones((2, 2), dtype=numpy.float32),
-            1.05 * numpy.ones((2, 2), dtype=numpy.float32),
-        ],
-        "continuous",
-        contains="soft",
-    )
-    assert s != Space(
-        [
-            -numpy.ones((3, 2), dtype=numpy.float32),
-            numpy.ones((3, 2), dtype=numpy.float32),
-        ],
-        "continuous",
-        contains="soft",
-    )
-
-
-def test_equal():
-    test_equal_discrete()
-    test_equal_multidiscrete()
-    test_equal_continuous()
-
-
-def test_iter_discrete():
-    s = Space(numpy.array([1, 2, 3], dtype=numpy.int16), "discrete")
-    assert iter(s).__next__() == s
-
-
-def test_iter_continuous():
-    s = Space(
-        [
-            -numpy.ones((2, 2), dtype=numpy.float32),
-            numpy.ones((2, 2), dtype=numpy.float32),
-        ],
-        "continuous",
-        contains="soft",
-    )
-    for _space in s:
-        assert _space == Space(
-            [
-                -numpy.ones((1, 2), dtype=numpy.float32),
-                numpy.ones((1, 2), dtype=numpy.float32),
-            ],
-            "continuous",
-            contains="soft",
-        )
-        for __space in _space:
-            assert __space == Space(
-                [
-                    -numpy.ones((1, 1), dtype=numpy.float32),
-                    numpy.ones((1, 1), dtype=numpy.float32),
-                ],
-                "continuous",
-                contains="soft",
-            )
-
-
-def test_iter_multidiscrete():
-    s = Space(
-        [
-            numpy.array([1, 2, 3], dtype=numpy.int16),
-            numpy.array([1, 2, 3, 4, 5], dtype=numpy.int16),
-        ],
-        "multidiscrete",
-        contains="soft",
-    )
-    iterator = iter(s)
-    assert iterator.__next__() == Space(
-        numpy.array([1, 2, 3], dtype=numpy.int16), "discrete", contains="soft"
-    )
-    assert s.n == 1
-    assert iterator.__next__() == Space(
-        numpy.array([1, 2, 3, 4, 5], dtype=numpy.int16), "discrete", contains="soft"
-    )
-
-
-def test_iter():
-    test_iter_discrete()
-    test_iter_continuous()
-    test_iter_multidiscrete()
-
-
-def test_sample_discrete():
-    s = Space(
-        numpy.array([i for i in range(1000)], dtype=numpy.int16),
-        "discrete",
-        contains="hard",
-        seed=123,
-    )
-    q = Space(
-        numpy.array([i for i in range(1000)], dtype=numpy.int16),
-        "discrete",
-        contains="soft",
-        seed=123,
-    )
-    r = Space(
-        numpy.array([i for i in range(1000)], dtype=numpy.int16),
-        "discrete",
-        contains="hard",
-        seed=12,
-    )
+def test_sample_CatSet():
+    s = space(array=numpy.arange(1000), seed=123)
+    q = space(array=numpy.arange(1000), seed=123)
+    r = space(array=numpy.arange(1000), seed=12)
     _s, _q, _r = s.sample(), q.sample(), r.sample()
+    assert _s in s
+    assert _q in q
+    assert _r in r
     assert _s == _q
     assert _s != _r
 
-    s = Space(
-        numpy.array([1, 2, 3], dtype=numpy.int16),
-        "discrete",
-        contains="hard",
-        seed=123,
-    )
+    s = space(array=numpy.arange(4), seed=123)
     scont = {}
     for i in range(1000):
         _s = s.sample()
         scont.update({str(_s): _s})
         assert _s in s
-    assert sorted(scont.values()) == [1, 2, 3]
+    assert sorted(scont.values()) == [0, 1, 2, 3]
 
 
-def test_sample_continuous():
-    s = Space(
-        [
-            -numpy.ones((2, 2), dtype=numpy.float32),
-            numpy.ones((2, 2), dtype=numpy.float32),
-        ],
-        "continuous",
-        contains="hard",
-        seed=456,
-    )
-    q = Space(
-        [
-            -numpy.ones((2, 2), dtype=numpy.float32),
-            numpy.ones((2, 2), dtype=numpy.float32),
-        ],
-        "continuous",
-        contains="soft",
-        seed=456,
-    )
-    r = Space(
-        [
-            -numpy.ones((2, 2), dtype=numpy.float32),
-            numpy.ones((2, 2), dtype=numpy.float32),
-        ],
-        "continuous",
-        contains="hard",
-        seed=111,
-    )
+def test_sample_Interval():
+    s = space(low=-numpy.ones((2, 2)), high=numpy.ones((2, 2)), seed=123)
+    q = space(low=-numpy.ones((2, 2)), high=numpy.ones((2, 2)), seed=123)
+    r = space(low=-numpy.ones((2, 2)), high=numpy.ones((2, 2)), seed=12)
 
     _s, _q, _r = s.sample(), q.sample(), r.sample()
-    assert (_s == _q).all()
-    assert (_s != _r).any()
-    for i in range(1000):
-        assert s.sample() in s
-
-
-def test_sample_multidiscrete():
-    s = Space(
-        [
-            numpy.array([i for i in range(100)], dtype=numpy.int16),
-            numpy.array([i for i in range(100)], dtype=numpy.int16),
-        ],
-        "multidiscrete",
-        contains="hard",
-        seed=789,
-    )
-    q = Space(
-        [
-            numpy.array([i for i in range(100)], dtype=numpy.int16),
-            numpy.array([i for i in range(100)], dtype=numpy.int16),
-        ],
-        "multidiscrete",
-        contains="soft",
-        seed=789,
-    )
-    r = Space(
-        [
-            numpy.array([i for i in range(100)], dtype=numpy.int16),
-            numpy.array([i for i in range(100)], dtype=numpy.int16),
-        ],
-        "multidiscrete",
-        contains="hard",
-        seed=123,
-    )
-    _s, _q, _r = s.sample(), q.sample(), r.sample()
+    assert _s in s
+    assert _q in q
+    assert _r in r
     assert (_s == _q).all()
     assert (_s != _r).any()
     for i in range(1000):
@@ -547,364 +105,258 @@ def test_sample_multidiscrete():
 
 
 def test_sample():
-    test_sample_discrete()
-    test_sample_continuous()
-    test_sample_multidiscrete()
+    test_sample_CatSet()
+    test_sample_Interval()
 
 
-def test_serialize_discrete():
-    s = Space(
-        numpy.array([i for i in range(10)], dtype=numpy.int16),
-        "discrete",
-        contains="hard",
-        seed=123,
+def test_dtype_CatSet():
+    s = space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
+    assert s.dtype == numpy.int16
+    assert s.sample().dtype == numpy.int16
+    s = space(array=numpy.array([1, 2, 3], dtype=numpy.int16), dtype=numpy.int64)
+    assert s.dtype == numpy.int64
+    assert s.sample().dtype == numpy.int64
+
+
+def test_dtype_Interval():
+    s = space(
+        low=-numpy.ones((2, 2)),
+        high=numpy.ones((2, 2)),
+    )
+    assert s.dtype == numpy.float64
+    assert s.sample().dtype == numpy.float64
+
+    s = space(
+        low=-numpy.ones((2, 2), dtype=numpy.float32),
+        high=numpy.ones((2, 2), dtype=numpy.float32),
+    )
+    assert s.dtype == numpy.float32
+    assert s.sample().dtype == numpy.float32
+
+    s = space(
+        low=-numpy.ones((2, 2)),
+        high=numpy.ones((2, 2)),
+        dtype=numpy.float32,
+    )
+    assert s.dtype == numpy.float32
+    assert s.sample().dtype == numpy.float32
+    s = space(
+        low=-numpy.ones((2, 2)),
+        high=numpy.ones((2, 2)),
+        dtype=numpy.int16,
+    )
+    assert s.dtype == numpy.int16
+    assert s.sample().dtype == numpy.int16
+
+
+def test_dtype():
+    test_dtype_CatSet()
+    test_dtype_Interval()
+
+
+# def test_equal_CatSet():
+#     s = space(numpy.array([1, 2, 3], dtype=numpy.int16), "CatSet")
+#     assert s == space(numpy.array([1, 2, 3], dtype=numpy.int16), "CatSet")
+#     assert s == numpy.array([1, 2, 3], dtype=numpy.int16)
+#     assert s != space(numpy.array([1, 2, 3, 4], dtype=numpy.int16), "CatSet")
+#     assert s == numpy.array([[1, 2, 3]], dtype=numpy.int16)
+#     assert s == numpy.array([[1, 2, 3]])
+
+
+# def test_equal_multiCatSet():
+#     s = space(
+#         [
+#             numpy.array([1, 2, 3], dtype=numpy.int16),
+#             numpy.array([1, 2, 3, 4, 5], dtype=numpy.int16),
+#         ],
+#         "multiCatSet",
+#         contains="soft",
+#     )
+#     assert s == space(
+#         [
+#             numpy.array([1, 2, 3], dtype=numpy.int16),
+#             numpy.array([1, 2, 3, 4, 5], dtype=numpy.int16),
+#         ],
+#         "multiCatSet",
+#         contains="soft",
+#     )
+#     assert s == [
+#         numpy.array([1, 2, 3], dtype=numpy.int16),
+#         numpy.array([1, 2, 3, 4, 5], dtype=numpy.int16),
+#     ]
+#     assert s != [numpy.array([1, 2, 3], dtype=numpy.int16)]
+#     assert s != space(
+#         [
+#             numpy.array([1, 2, 3, 5], dtype=numpy.int16),
+#             numpy.array([1, 2, 3, 4, 5], dtype=numpy.int16),
+#         ],
+#         "multiCatSet",
+#         contains="soft",
+#     )
+#     assert s != space(
+#         [
+#             numpy.array([1, 2, 3], dtype=numpy.int16),
+#             numpy.array([1, 2, 3, 5], dtype=numpy.int16),
+#         ],
+#         "multiCatSet",
+#         contains="soft",
+#     )
+
+
+# def test_equal_Interval():
+#     s = space(
+#         [
+#             -numpy.ones((2, 2)),
+#             numpy.ones((2, 2)),
+#         ],
+#         "Interval",
+#         contains="soft",
+#     )
+#     assert s == space(
+#         [
+#             -numpy.ones((2, 2)),
+#             numpy.ones((2, 2)),
+#         ],
+#         "Interval",
+#         contains="soft",
+#     )
+#     assert s == [
+#         -numpy.ones((2, 2)),
+#         numpy.ones((2, 2)),
+#     ]
+#     assert s != [
+#         -1.05 * numpy.ones((2, 2)),
+#         numpy.ones((2, 2)),
+#     ]
+#     assert s != space(
+#         [
+#             -numpy.ones((2, 2)),
+#             1.05 * numpy.ones((2, 2)),
+#         ],
+#         "Interval",
+#         contains="soft",
+#     )
+#     assert s != space(
+#         [
+#             -numpy.ones((3, 2)),
+#             numpy.ones((3, 2)),
+#         ],
+#         "Interval",
+#         contains="soft",
+#     )
+
+
+# def test_equal():
+#     test_equal_CatSet()
+#     test_equal_multiCatSet()
+#     test_equal_Interval()
+
+
+def test_serialize_CatSet():
+    s = space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
+    assert (
+        json.dumps(s.serialize())
+        == '{"space": "CatSet", "seed": null, "array": [1, 2, 3], "dtype": "dtype[int16]"}'
+    )
+
+
+def test_serialize_Interval():
+    s = space(
+        low=-numpy.ones((2, 2)),
+        high=numpy.ones((2, 2)),
     )
     assert (
         json.dumps(s.serialize())
-        == '{"array_list": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "space_type": "discrete", "seed": 123, "contains": "hard"}'
-    )
-
-
-def test_serialize_continuous():
-    s = Space(
-        [
-            -numpy.ones((2, 2), dtype=numpy.float32),
-            numpy.ones((2, 2), dtype=numpy.float32),
-        ],
-        "continuous",
-        contains="hard",
-        seed=456,
-    )
-    assert (
-        json.dumps(s.serialize())
-        == '{"array_list": [[[-1.0, -1.0], [-1.0, -1.0]], [[1.0, 1.0], [1.0, 1.0]]], "space_type": "continuous", "seed": 456, "contains": "hard"}'
-    )
-
-
-def test_serialize_multidiscrete():
-    s = Space(
-        [
-            numpy.array([i for i in range(10)], dtype=numpy.int16),
-            numpy.array([i for i in range(10)], dtype=numpy.int16),
-        ],
-        "multidiscrete",
-        contains="hard",
-        seed=789,
-    )
-    assert (
-        json.dumps(s.serialize())
-        == '{"array_list": [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]], "space_type": "multidiscrete", "seed": 789, "contains": "hard"}'
+        == '{"space": "Interval", "seed": null, "low,high": [[[-1.0, -1.0], [-1.0, -1.0]], [[1.0, 1.0], [1.0, 1.0]]], "shape": [2, 2], "dtype": "type"}'
     )
 
 
 def test_serialize():
-    test_serialize_discrete()
-    test_serialize_continuous()
-    test_serialize_multidiscrete()
+    test_serialize_CatSet()
+    test_serialize_Interval()
 
 
-def test_cartesian_product_discrete():
-    s = Space(
-        numpy.array([i for i in range(3)], dtype=numpy.int16),
-        "discrete",
-        contains="hard",
-        seed=123,
-    )
-    q = Space(
-        numpy.array([-i for i in range(3)], dtype=numpy.int16),
-        "discrete",
-        contains="hard",
-        seed=123,
-    )
-    cp, _ = Space.cartesian_product(s, q)
+def test_cartesian_product_CatSet():
+    s = space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
+    q = space(array=numpy.array([-3, -2, -1], dtype=numpy.int16))
+    cp, _ = cartesian_product(s, q)
     assert (
         cp
         == numpy.array(
             [
-                [0, 0],
-                [0, -1],
-                [0, -2],
-                [1, 0],
-                [1, -1],
+                [1, -3],
                 [1, -2],
-                [2, 0],
-                [2, -1],
+                [1, -1],
+                [2, -3],
                 [2, -2],
+                [2, -1],
+                [3, -3],
+                [3, -2],
+                [3, -1],
             ]
         )
     ).all()
 
 
-def test_cartesian_product_continuous():
-    s = Space(
-        [
-            -numpy.ones((2, 2), dtype=numpy.float32),
-            numpy.ones((2, 2), dtype=numpy.float32),
-        ],
-        "continuous",
-        contains="hard",
-        seed=456,
+def test_cartesian_product_Interval():
+    s = space(
+        low=-numpy.ones((2, 2)),
+        high=numpy.ones((2, 2)),
     )
-    q = Space(
-        [
-            -2 * numpy.ones((2, 2), dtype=numpy.float32),
-            2 * numpy.ones((2, 2), dtype=numpy.float32),
-        ],
-        "continuous",
-        contains="hard",
-        seed=456,
+    q = space(
+        low=-numpy.ones((2, 2)),
+        high=numpy.ones((2, 2)),
     )
-    cp, _shape = Space.cartesian_product(s, q)
-    assert len(cp) == 1
-
-
-def test_cartesian_product_multidiscrete():
-    s = Space(
-        [
-            numpy.array([i for i in range(2)], dtype=numpy.int16),
-            numpy.array([i for i in range(2)], dtype=numpy.int16),
-        ],
-        "multidiscrete",
-        contains="hard",
-        seed=789,
-    )
-    cp, _ = Space.cartesian_product(s)
-    assert (cp == numpy.array([[0, 0], [0, 1], [1, 0], [1, 1]])).all()
-
-    q = Space(
-        [
-            numpy.array([i + 6 for i in range(2)], dtype=numpy.int16),
-            numpy.array([i + 6 for i in range(2)], dtype=numpy.int16),
-        ],
-        "multidiscrete",
-        contains="hard",
-        seed=789,
-    )
-    cp, shape = Space.cartesian_product(s, q)
-    assert (
-        cp
-        == numpy.array(
-            [
-                [0, 0, 6, 6],
-                [0, 0, 6, 7],
-                [0, 0, 7, 6],
-                [0, 0, 7, 7],
-                [0, 1, 6, 6],
-                [0, 1, 6, 7],
-                [0, 1, 7, 6],
-                [0, 1, 7, 7],
-                [1, 0, 6, 6],
-                [1, 0, 6, 7],
-                [1, 0, 7, 6],
-                [1, 0, 7, 7],
-                [1, 1, 6, 6],
-                [1, 1, 6, 7],
-                [1, 1, 7, 6],
-                [1, 1, 7, 7],
-            ]
-        )
-    ).all()
+    cp, _shape = cartesian_product(s, q)
+    assert (cp == numpy.array([[None, None]])).all()
 
 
 def test_cartesian_product_mix():
-    s = Space(
-        numpy.array([i for i in range(3)], dtype=numpy.int16),
-        "discrete",
-        contains="hard",
-        seed=123,
+    s = space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
+    q = Interval(
+        low=-numpy.ones((2, 2)),
+        high=numpy.ones((2, 2)),
     )
-    q = Space(
-        [
-            numpy.array([i + 6 for i in range(2)], dtype=numpy.int16),
-            numpy.array([i + 6 for i in range(2)], dtype=numpy.int16),
-        ],
-        "multidiscrete",
-        contains="hard",
-        seed=789,
-    )
-    r = Space(
-        [
-            -numpy.ones((2, 2), dtype=numpy.float32),
-            numpy.ones((2, 2), dtype=numpy.float32),
-        ],
-        "continuous",
-        contains="hard",
-        seed=456,
-    )
-    cp, shape = Space.cartesian_product(s, q, r)
+    r = space(array=numpy.array([5, 6, 7], dtype=numpy.int16))
+    cp, shape = cartesian_product(s, q, r)
     assert (
         cp
         == numpy.array(
             [
-                [0, 6, 6, None],
-                [0, 6, 7, None],
-                [0, 7, 6, None],
-                [0, 7, 7, None],
-                [1, 6, 6, None],
-                [1, 6, 7, None],
-                [1, 7, 6, None],
-                [1, 7, 7, None],
-                [2, 6, 6, None],
-                [2, 6, 7, None],
-                [2, 7, 6, None],
-                [2, 7, 7, None],
+                [1, None, 5],
+                [1, None, 6],
+                [1, None, 7],
+                [2, None, 5],
+                [2, None, 6],
+                [2, None, 7],
+                [3, None, 5],
+                [3, None, 6],
+                [3, None, 7],
             ]
         )
     ).all()
-    assert shape == [(1,), (2, 1), (2, 2)]
+    assert shape == [(), (2, 2), ()]
 
 
 def test_cartesian_product_single():
-    s = Space(
-        numpy.array([0, 1, 2, 3, 4, 5, 6], dtype=numpy.int16),
-        "discrete",
-        contains="soft",
-    )
-    cp, shape = Space.cartesian_product(s)
-    assert (cp == numpy.array([[0], [1], [2], [3], [4], [5], [6]])).all()
-    assert shape == [(1,)]
+    s = space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
+    cp, shape = cartesian_product(s)
+    assert (cp == numpy.array([[1], [2], [3]])).all()
+    assert shape == [()]
 
 
 def test_cartesian_product():
-    test_cartesian_product_discrete()
-    test_cartesian_product_continuous()
-    test_cartesian_product_multidiscrete()
+    test_cartesian_product_CatSet()
+    test_cartesian_product_Interval()
     test_cartesian_product_mix()
     test_cartesian_product_single()
 
 
-def test__getitem__discrete():
-    s = Space(numpy.array([1, 2, 3], dtype=numpy.int16), "discrete", contains="hard")
-    with pytest.raises(TypeError):
-        s[0]
-
-
-def test__getitem__int_continuous():
-    s = Space(
-        [
-            -numpy.ones((2, 2), dtype=numpy.float32),
-            numpy.ones((2, 2), dtype=numpy.float32),
-        ],
-        "continuous",
-        contains="hard",
-        seed=456,
-    )
-    assert s[0] == Space(
-        [
-            -numpy.ones((1, 1), dtype=numpy.float32),
-            numpy.ones((1, 1), dtype=numpy.float32),
-        ],
-        "continuous",
-        contains="hard",
-        seed=456,
-    )
-
-
-def test__getitem__slice_continuous():
-    s = Space(
-        [
-            -numpy.ones((2, 2), dtype=numpy.float32),
-            numpy.ones((2, 2), dtype=numpy.float32),
-        ],
-        "continuous",
-        contains="hard",
-        seed=456,
-    )
-    assert s[:, 0] == Space(
-        [
-            -numpy.ones((2, 1), dtype=numpy.float32),
-            numpy.ones((2, 1), dtype=numpy.float32),
-        ],
-        "continuous",
-        contains="hard",
-        seed=456,
-    )
-    assert s[0, :] == Space(
-        [
-            -numpy.ones((1, 2), dtype=numpy.float32),
-            numpy.ones((1, 2), dtype=numpy.float32),
-        ],
-        "continuous",
-        contains="hard",
-        seed=456,
-    )
-    assert s[:, :] == s
-
-
-def test__getitem__int_multidiscrete():
-    q = Space(
-        [
-            numpy.array([i + 6 for i in range(2)], dtype=numpy.int16),
-            numpy.array([i for i in range(2)], dtype=numpy.int16),
-        ],
-        "multidiscrete",
-        contains="hard",
-        seed=789,
-    )
-    assert q[0] == Space(
-        numpy.array([i + 6 for i in range(2)]), "discrete", contains="hard", seed=789
-    )
-    assert q[1] == Space(
-        numpy.array([i for i in range(2)]), "discrete", contains="hard", seed=789
-    )
-
-
-def test__getitem__slice_multidiscrete():
-    q = Space(
-        [
-            numpy.array([i + 6 for i in range(2)], dtype=numpy.int16),
-            numpy.array([i for i in range(4)], dtype=numpy.int16),
-            numpy.array([i - 2 for i in range(2)], dtype=numpy.int16),
-            numpy.array([i + 2 for i in range(4)], dtype=numpy.int16),
-        ],
-        "multidiscrete",
-        contains="hard",
-        seed=789,
-    )
-    assert q[:2] == Space(
-        [
-            numpy.array([i + 6 for i in range(2)], dtype=numpy.int16),
-            numpy.array([i for i in range(4)], dtype=numpy.int16),
-        ],
-        "multidiscrete",
-        contains="hard",
-        seed=789,
-    )
-    assert q[2:] == Space(
-        [
-            numpy.array([i - 2 for i in range(2)], dtype=numpy.int16),
-            numpy.array([i + 2 for i in range(4)], dtype=numpy.int16),
-        ],
-        "multidiscrete",
-        contains="hard",
-        seed=789,
-    )
-    # assert q[slice(0, 1, 1)] == Space(
-    #     [
-    #         numpy.array([i + 6 for i in range(2)], dtype=numpy.int16),
-    #     ],
-    #     "discrete",
-    #     contains="hard",
-    #     seed=789,
-    # )
-
-
-def test__getitem__():
-    test__getitem__discrete()
-    test__getitem__int_continuous()
-    test__getitem__int_multidiscrete()
-    test__getitem__slice_continuous()
-    test__getitem__slice_multidiscrete()
-
-
 if __name__ == "__main__":
-    test_discrete()
-    test_multidiscrete()
-    test_continuous()
-    test_dtype()
-    test_equal()
-    test_iter()
+    test_CatSet()
+    test_Interval()
     test_sample()
+    test_dtype()
+    # test_equal()
     test_serialize()
     test_cartesian_product()
-    test__getitem__()

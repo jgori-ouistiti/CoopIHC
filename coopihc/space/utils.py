@@ -1,10 +1,26 @@
-from coopihc.space.Space import Space
+from coopihc.space.Space import CatSet, Space, Interval
 
 import numpy
 import functools
 import warnings
 import gym
 from coopihc.helpers import hard_flatten
+
+
+def autospace():
+    pass
+
+
+def discrete_space():
+    pass
+
+
+def multidiscrete_space():
+    pass
+
+
+def continuous_space():
+    pass
 
 
 # ======================== Warnings ========================
@@ -72,294 +88,112 @@ class NotASpaceError(Exception):
 
 
 # ======================== Shortcuts ========================
+def lin_space(num=50, start=0, stop=None, endpoint=False, dtype=numpy.int64):
+    if stop is None:
+        stop = num + start
+    return space(
+        array=numpy.linspace(start, stop, num=num, endpoint=endpoint, dtype=dtype)
+    )
 
 
-def autospace(*input_array, seed=None, contains="soft", dtype=None):
-    """Wrapper to Space
+def integer_space(N, **kwargs):
+    return lin_space(num=N, **kwargs)
 
-    A function that makes instantiating Space less cumbersome.
 
-    :param seed: seed for the rng (useful when sampling from the Space)
-    :type seed: int, optional
-    :param contains: "hard" or "soft", defaults to "soft". Changes how the Space checks whether a value belong to the space or not. See `Space<coopihc.space.Space.Space>` documentation for more information.
-    :type contains: str, optional
-    :param dtype: numpy dtype, defaults to None
-    :type dtype: numpy.dtype, optional
+def box_space(high=numpy.ones((1, 1)), low=None, dtype=None):
+    if low is None:
+        low = -high
+    return space(low=low, high=high, dtype=dtype)
 
-    :return: A continuous, discrete, or multidiscrete space
-    :rtype: `Space<coopihc.space.Space.Space>`
 
-    Some examples:
+def space(low=None, high=None, array=None, N=None, _function=None, **kwargs):
+    if low is not None and high is not None:
+        return Interval(low=low, high=high, **kwargs)
+    if array is not None:
+        return CatSet(array=array, **kwargs)
+    if N is not None and _function is not None:
+        raise NotImplementedError
+    raise ValueError(
+        "You have to specify either low and high, or a set, or N and function, but you provided low = {}, high = {}, set = {}, N = {}, function = {}".format(
+            low, high, array, N, _function
+        )
+    )
+
+
+def cartesian_product(*spaces):
+    """cartesian_product
+
+    Realizes the cartesian product of the spaces provided in input. For this method, continuous spaces are treated as singletons {None}.
 
     .. code-block:: python
 
-        # Discrete
-        assert autospace([1, 2, 3]) == Space(numpy.array([1, 2, 3]), "discrete")
-        assert autospace([[1, 2, 3]]) == Space(numpy.array([1, 2, 3]), "discrete")
-        assert autospace(numpy.array([1, 2, 3])) == Space(
-            numpy.array([1, 2, 3]), "discrete"
+        s = Space(
+            numpy.array([i for i in range(3)], dtype=numpy.int16),
+            "discrete",
+            contains="hard",
+            seed=123,
         )
-        assert autospace(numpy.array([[1, 2, 3]])) == Space(
-            numpy.array([1, 2, 3]), "discrete"
+        q = Space(
+            [
+                numpy.array([i + 6 for i in range(2)], dtype=numpy.int16),
+                numpy.array([i + 6 for i in range(2)], dtype=numpy.int16),
+            ],
+            "multidiscrete",
+            contains="hard",
+            seed=789,
         )
-        assert autospace([numpy.array([1, 2, 3])]) == Space(
-            numpy.array([1, 2, 3]), "discrete"
+        r = Space(
+            [
+                -numpy.ones((2, 2), dtype=numpy.float32),
+                numpy.ones((2, 2), dtype=numpy.float32),
+            ],
+            "continuous",
+            contains="hard",
+            seed=456,
         )
-        assert autospace([numpy.array([[1, 2, 3]])]) == Space(
-            numpy.array([1, 2, 3]), "discrete"
-        )
-
-
-        # Multidiscrete
-        assert autospace(numpy.array([[1, 2, 3], [4, 5, 6]])) == Space(
-        [numpy.array([1, 2, 3]), numpy.array([4, 5, 6])], "multidiscrete"
-        )
-        assert autospace([1, 2, 3], [1, 2, 3, 4, 5]) == Space(
-            [numpy.array([1, 2, 3]), numpy.array([1, 2, 3, 4, 5])], "multidiscrete"
-        )
-
-        assert autospace([numpy.array([1, 2, 3])], [numpy.array([1, 2, 3, 4, 5])]) == Space(
-            [numpy.array([1, 2, 3]), numpy.array([1, 2, 3, 4, 5])], "multidiscrete"
-        )
-        assert autospace(numpy.array([1, 2, 3]), numpy.array([1, 2, 3, 4, 5])) == Space(
-            [numpy.array([1, 2, 3]), numpy.array([1, 2, 3, 4, 5])], "multidiscrete"
-        )
-        assert autospace([numpy.array([1, 2, 3]), numpy.array([1, 2, 3, 4, 5])]) == Space(
-            [numpy.array([1, 2, 3]), numpy.array([1, 2, 3, 4, 5])], "multidiscrete"
-        )
-        assert autospace(
-            [numpy.array([[1, 2, 3]]), numpy.array([[1, 2, 3, 4, 5]])]
-        ) == Space([numpy.array([1, 2, 3]), numpy.array([1, 2, 3, 4, 5])], "multidiscrete")
-
-
-        # Continuous
-        assert autospace(
-            -numpy.array([[1, 1], [1, 1]]), numpy.array([[1, 1], [1, 1]])
-        ) == Space([-numpy.ones((2, 2)), numpy.ones((2, 2))], "continuous")
-        assert autospace(
-            [-numpy.array([[1, 1], [1, 1]]), numpy.array([[1, 1], [1, 1]])]
-        ) == Space([-numpy.ones((2, 2)), numpy.ones((2, 2))], "continuous")
-        assert autospace([[-1, -1], [-1, -1]], [[1, 1], [1, 1]]) == Space(
-            [-numpy.ones((2, 2)), numpy.ones((2, 2))], "continuous"
-        )
-        assert autospace([[[-1, -1], [-1, -1]], [[1, 1], [1, 1]]]) == Space(
-            [-numpy.ones((2, 2)), numpy.ones((2, 2))], "continuous"
-        )
-    """
-    k = 0
-    while k < 5:
-        k += 1
-        if k == 5:
-            raise AttributeError(
-                "Input could not be interpreted by autospace. Please conform to one of the expected input forms"
+        cp, shape = Space.cartesian_product(s, q, r)
+        assert (
+            cp
+            == numpy.array(
+                [
+                    [0, 6, 6, None],
+                    [0, 6, 7, None],
+                    [0, 7, 6, None],
+                    [0, 7, 7, None],
+                    [1, 6, 6, None],
+                    [1, 6, 7, None],
+                    [1, 7, 6, None],
+                    [1, 7, 7, None],
+                    [2, 6, 6, None],
+                    [2, 6, 7, None],
+                    [2, 7, 6, None],
+                    [2, 7, 7, None],
+                ]
             )
-        # autospace(numpy.array(XXX))
-        if len(input_array) == 1 and isinstance(input_array[0], numpy.ndarray):
-            # autospace(numpy.array(1))
-            if len(input_array[0].shape) == 0:
-                raise AttributeError(
-                    "Input array {} should be of dim > 0, but has shape {}".format(
-                        input_array[0], input_array[0].shape
-                    )
-                )
-            # autospace(numpy.array([1,2,3]))
-            elif len(input_array[0].shape) == 1:
-                if dtype is None:
-                    dtype = numpy.int16
-                return Space(
-                    input_array[0].astype(dtype),
-                    "discrete",
-                    seed=seed,
-                    contains=contains,
-                )
-
-            # autospace(numpy.array([[1,2,3]]))
-            # autospace(numpy.array([[1,2,3],[1,2,3]]))
-            elif len(input_array[0].shape) == 2:
-                if min(input_array[0].shape) == 1:  # discrete
-                    if dtype is None:
-                        dtype = numpy.int16
-                    return Space(
-                        input_array[0].squeeze().astype(dtype),
-                        "discrete",
-                        seed=seed,
-                        contains=contains,
-                    )
-                else:  # multidiscrete
-                    if dtype is None:
-                        dtype = numpy.int16
-                    return Space(
-                        [i.astype(dtype) for i in input_array[0]],
-                        "multidiscrete",
-                        seed=seed,
-                        contains=contains,
-                    )
-        # autospace([X])
-        elif len(input_array) == 1 and isinstance(input_array[0], list):
-            input_array = input_array[0]
-            # autospace([1,2,3])
-            if isinstance(input_array[0], (float, int, numpy.number)):  # discrete
-                if dtype is None:
-                    dtype = numpy.int16
-                return Space(
-                    numpy.array(input_array, dtype=dtype),
-                    "discrete",
-                    seed=seed,
-                    contains=contains,
-                )
-            # autospace([[1,2,3]])
-            elif isinstance(input_array[0], list):
-                continue
-            # autospace([numpy.array(X)])
-            elif isinstance(input_array[0], numpy.ndarray):
-                continue
-        # autospace(X, Y)
-        elif len(input_array) == 2:
-            low, high = input_array
-            # autospace(array(X), array(Y))
-            if isinstance(low, numpy.ndarray):
-                if len(low.shape) == 2:
-                    if dtype is None:
-                        dtype = numpy.float32
-                    return Space(
-                        [low.astype(dtype), high.astype(dtype)],
-                        "continuous",
-                        seed=seed,
-                        contains=contains,
-                    )
-                else:
-                    if dtype is None:
-                        dtype = numpy.int16
-                    return Space(
-                        [low.astype(dtype).squeeze(), high.astype(dtype).squeeze()],
-                        "multidiscrete",
-                        seed=seed,
-                        contains=contains,
-                    )
-            elif isinstance(low, list):
-                if isinstance(low[0], (float, int, numpy.number)):
-                    if dtype is None:
-                        dtype = numpy.int16
-                    return Space(
-                        [numpy.array(low, dtype=dtype), numpy.array(high, dtype=dtype)],
-                        "multidiscrete",
-                        seed=seed,
-                        contains=contains,
-                    )
-                elif isinstance(low[0], numpy.ndarray):
-                    if dtype is None:
-                        dtype = numpy.int16
-                    return Space(
-                        [low[0].astype(dtype), high[0].astype(dtype)],
-                        "multidiscrete",
-                        seed=seed,
-                        contains=contains,
-                    )
-                elif isinstance(low[0], list):
-                    if dtype is None:
-                        dtype = numpy.float32
-                    return Space(
-                        [numpy.array(low, dtype=dtype), numpy.array(high, dtype=dtype)],
-                        "continuous",
-                        seed=seed,
-                        contains=contains,
-                    )
-                else:
-                    raise NotImplementedError
-        # autospace(X, Y, Z)
-        elif len(input_array) > 2:
-            _arr_sample = input_array[0]
-            if isinstance(_arr_sample, numpy.ndarray):
-                if dtype is None:
-                    dtype = numpy.int16
-                return Space(
-                    [_arr.astype(dtype).squeeze() for _arr in input_array],
-                    "multidiscrete",
-                    seed=seed,
-                    contains=contains,
-                )
-            elif isinstance(_arr_sample, list):
-                if isinstance(_arr_sample[0], (float, int, numpy.number)):
-                    if dtype is None:
-                        dtype = numpy.int16
-                    return Space(
-                        [numpy.array(_arr, dtype=dtype) for _arr in input_array],
-                        "multidiscrete",
-                        seed=seed,
-                        contains=contains,
-                    )
-                elif isinstance(_arr_sample[0], numpy.ndarray):
-                    if dtype is None:
-                        dtype = numpy.int16
-                    return Space(
-                        [_arr.astype(dtype) for _arr in input_array],
-                        "multidiscrete",
-                        seed=seed,
-                        contains=contains,
-                    )
+        ).all()
+        assert shape == [(1,), (2, 1), (2, 2)]
 
 
-def discrete_space(array, dtype=numpy.int16, **kwargs):
-    """discrete
-
-    Shortcut. If not successful, forwards to autospace
-
-    .. code-block:: python
-
-        discrete_space(numpy.array([1,2,3]))
-
-    :param array: 1d numpy array
-    :type array: numpy.ndarray
-    :return: discrete Space
-    :rtype: `Space<coopihc.space.Space.Space>`
+    :return: cartesian product and shape of associated spaces
+    :rtype: tuple(numpy.ndarray, list(tuples))
     """
-    try:
-        return Space(array, "discrete", dtype=dtype, **kwargs)
-    except:
-        return autospace(array, dtype=dtype, **kwargs)
+    arrays = []
+    shape = []
+    for space in spaces:
+        shape.append(space.shape)
+        if isinstance(space, CatSet):
+            arrays.append(space.array)
+        elif isinstance(
+            space, Interval
+        ):  # Does not deal with case when the Interval is discrete dtype.
+            arrays.append(numpy.array([None]))
 
-
-def continuous_space(low, high, dtype=numpy.float32, **kwargs):
-    """continuous
-
-    Shortcut. If not successful, forwards to autospace
-
-    .. code-block:: python
-
-        continuous_space(-numpy.ones((2,2)), numpy.ones((2,2)))
-
-    :param low: 2d numpy array
-    :type low: numpy.ndarray
-    :param high: 2d numpy array
-    :type high: numpy.ndarray
-    :return: continuous Space
-    :rtype: `Space<coopihc.space.Space.Space>`
-    """
-    try:
-        return Space([low, high], "continuous", dtype=dtype, **kwargs)
-    except:
-        return autospace(low, high, dtype=dtype, **kwargs)
-
-
-def multidiscrete_space(array_list, dtype=numpy.int16, **kwargs):
-    """multidiscrete
-
-    Shortcut. If not successful, forwards to autospace
-
-    .. code-block:: python
-
-        multidiscrete_space([numpy.array([1,2,3]), numpy.array([1,2,3,4,5])])
-
-
-    :param array_list: list of 1d numpy arrays
-    :type array_list: list
-    :return: multidiscrete Space
-    :rtype: `Space<coopihc.space.Space.Space>`
-    """
-    try:
-        return Space(array_list, "multidiscrete", dtype=dtype, **kwargs)
-    except:
-        return autospace(array_list, dtype=dtype, **kwargs)
+    la = len(arrays)
+    dtype = numpy.result_type(*arrays)
+    arr = numpy.empty([len(a) for a in arrays] + [la], dtype=dtype)
+    for i, a in enumerate(numpy.ix_(*arrays)):
+        arr[..., i] = a
+    return arr.reshape(-1, la), shape
 
 
 # ======================== Convertors ========================

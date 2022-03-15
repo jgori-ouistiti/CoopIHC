@@ -39,7 +39,7 @@ from .policy.WrapAsPolicy import WrapAsPolicy
 from .policy.ExamplePolicy import ExamplePolicy
 
 
-from .space.Space import Space
+from .space.Space import space
 from .space.State import State
 from .space.StateElement import StateElement
 

@@ -1,14 +1,12 @@
-from sre_parse import State
-from coopihc.space.Space import Space
+from coopihc.space.Space import space
 from coopihc.space.StateElement import StateElement
 from coopihc.space.utils import (
     StateNotContainedError,
     StateNotContainedWarning,
     NumpyFunctionNotHandledWarning,
-    discrete_space,
-    continuous_space,
-    multidiscrete_space,
-    autospace,
+    integer_space,
+    lin_space,
+    box_space,
 )
 
 import numpy
@@ -17,172 +15,103 @@ import json
 import copy
 from tabulate import tabulate
 
-cont_space = None
-discr_space = None
-multidiscr_space = None
+
+def test_array_init_integer():
+    x = StateElement(2, integer_space(3), out_of_bounds_mode="error")
+    assert hasattr(x, "space")
+    assert x.shape == ()
+    assert x == 2
 
 
-def test_array_init_discrete():
-    global discr_space
-    discr_space = discrete_space([1, 2, 3])
-
-    x = StateElement([2], discr_space, out_of_bounds_mode="error")
-    assert hasattr(x, "spaces")
-    assert isinstance(x.spaces, Space)
-    assert x.shape == (1,)
-    assert x == numpy.array([2], dtype=numpy.int16)
-
-
-def test_array_init_continuous():
-    global cont_space
-    cont_space = continuous_space(-numpy.ones((2, 2)), numpy.ones((2, 2)))
+def test_array_init_interval():
     x = StateElement(
-        numpy.array([[0, 0], [0, 0]]), cont_space, out_of_bounds_mode="error"
+        numpy.zeros((2, 2)), box_space(numpy.ones((2, 2))), out_of_bounds_mode="error"
     )
-    assert hasattr(x, "spaces")
-    assert isinstance(x.spaces, Space)
+    assert hasattr(x, "space")
     assert x.shape == (2, 2)
-    assert (x == numpy.zeros((2, 2), dtype=numpy.float32)).all()
-
-
-def test_array_init_cont_extra():
-    s = StateElement(
-        numpy.array([1 / 8 for i in range(8)]),
-        autospace(
-            numpy.zeros((1, 8)),
-            numpy.ones((1, 8)),
-        ),
-        out_of_bounds_mode="error",
-    )
-
-
-def test_array_init_multidiscrete():
-    global multidiscr_space
-    multidiscr_space = multidiscrete_space(
-        [
-            numpy.array([1, 2, 3]),
-            numpy.array([1, 2, 3, 4, 5]),
-            numpy.array([1, 3, 5, 8]),
-        ]
-    )
-    x = StateElement([1, 5, 3], multidiscr_space, out_of_bounds_mode="error")
-    assert hasattr(x, "spaces")
-    assert isinstance(x.spaces, Space)
-    assert x.shape == (3, 1)
-    assert (x == numpy.array([[1], [5], [3]], dtype=numpy.int16)).all()
-
-
-def test_array_short():
-    global multidiscr_space
-    multidiscr_space = multidiscrete_space(
-        [
-            numpy.array([1, 2, 3]),
-            numpy.array([1, 2, 3, 4, 5]),
-            numpy.array([1, 3, 5, 8]),
-        ]
-    )
-    with pytest.raises(StateNotContainedError):
-        x = StateElement([1, 5], multidiscr_space, out_of_bounds_mode="error")
+    assert (x == numpy.zeros((2, 2))).all()
 
 
 def test_array_init():
-    test_array_init_discrete()
-    test_array_init_continuous()
-    test_array_init_multidiscrete()
-    test_array_short()
-    test_array_init_cont_extra()
+    test_array_init_integer()
+    test_array_init_interval()
 
 
-def test_array_init_error_discrete():
-    global discr_space
-    x = StateElement(2, discr_space, out_of_bounds_mode="error")
+def test_array_init_error_integer():
+    x = StateElement(2, integer_space(3), out_of_bounds_mode="error")
     with pytest.raises(StateNotContainedError):
-        x = StateElement(4, discr_space, out_of_bounds_mode="error")
+        x = StateElement(4, integer_space(3), out_of_bounds_mode="error")
     with pytest.raises(StateNotContainedError):
-        x = StateElement(-3, discr_space, out_of_bounds_mode="error")
+        x = StateElement(-3, integer_space(3), out_of_bounds_mode="error")
 
 
-def test_array_init_error_continuous():
-    global cont_space
-    x = StateElement(numpy.zeros((2, 2)), cont_space, out_of_bounds_mode="error")
-    with pytest.raises(StateNotContainedError):
-        x = StateElement(2 * numpy.ones((2, 2)), cont_space, out_of_bounds_mode="error")
+def test_array_init_error_interval():
+    x = StateElement(
+        numpy.zeros((2, 2)), box_space(numpy.ones((2, 2))), out_of_bounds_mode="error"
+    )
     with pytest.raises(StateNotContainedError):
         x = StateElement(
-            -2 * numpy.ones((2, 2)), cont_space, out_of_bounds_mode="error"
+            2 * numpy.ones((2, 2)),
+            box_space(numpy.ones((2, 2))),
+            out_of_bounds_mode="error",
         )
-
-
-def test_array_init_error_multidiscrete():
-    global multidiscr_space
-
-    x = StateElement([1, 2, 8], multidiscr_space, out_of_bounds_mode="error")
-
     with pytest.raises(StateNotContainedError):
-        x = StateElement([0, 2, 8], multidiscr_space, out_of_bounds_mode="error")
+        x = StateElement(
+            -2 * numpy.ones((2, 2)),
+            box_space(numpy.ones((2, 2))),
+            out_of_bounds_mode="error",
+        )
     with pytest.raises(StateNotContainedError):
-        x = StateElement([4, 2, 8], multidiscr_space, out_of_bounds_mode="error")
-    with pytest.raises(StateNotContainedError):
-        x = StateElement([1, -1, 8], multidiscr_space, out_of_bounds_mode="error")
-    with pytest.raises(StateNotContainedError):
-        x = StateElement([1, 6, 8], multidiscr_space, out_of_bounds_mode="error")
-    with pytest.raises(StateNotContainedError):
-        x = StateElement([1, 1, 2], multidiscr_space, out_of_bounds_mode="error")
-    with pytest.raises(StateNotContainedError):
-        x = StateElement([1, 1, 7], multidiscr_space, out_of_bounds_mode="error")
+        x = StateElement(
+            numpy.array([[0, 0], [-2, 0]]),
+            box_space(numpy.ones((2, 2))),
+            out_of_bounds_mode="error",
+        )
 
 
 def test_array_init_error():
-    test_array_init_error_discrete()
-    test_array_init_error_continuous()
-    test_array_init_error_multidiscrete()
+    test_array_init_error_integer()
+    test_array_init_error_interval()
 
 
-def test_array_init_warning_discrete():
-    global discr_space
-    x = StateElement(2, discr_space, out_of_bounds_mode="warning")
-    with pytest.warns(StateNotContainedWarning):
-        x = StateElement(4, discr_space, out_of_bounds_mode="warning")
-    with pytest.warns(StateNotContainedWarning):
-        x = StateElement(-3, discr_space, out_of_bounds_mode="warning")
+def test_array_init_warning_integer():
+    x = StateElement(2, integer_space(3), out_of_bounds_mode="warning")
+    with pytest.raises(StateNotContainedError):
+        x = StateElement(4, integer_space(3), out_of_bounds_mode="warning")
+    with pytest.raises(StateNotContainedError):
+        x = StateElement(-3, integer_space(3), out_of_bounds_mode="warning")
 
 
-def test_array_init_warning_continuous():
-    global cont_space
-    x = StateElement(numpy.zeros((2, 2)), cont_space, out_of_bounds_mode="warning")
-    with pytest.warns(StateNotContainedWarning):
+def test_array_init_warning_interval():
+    x = StateElement(
+        numpy.zeros((2, 2)), box_space(numpy.ones((2, 2))), out_of_bounds_mode="warning"
+    )
+    with pytest.raises(StateNotContainedError):
         x = StateElement(
-            2 * numpy.ones((2, 2)), cont_space, out_of_bounds_mode="warning"
+            2 * numpy.ones((2, 2)),
+            box_space(numpy.ones((2, 2))),
+            out_of_bounds_mode="warning",
         )
-    with pytest.warns(StateNotContainedWarning):
+    with pytest.raises(StateNotContainedError):
         x = StateElement(
-            -2 * numpy.ones((2, 2)), cont_space, out_of_bounds_mode="warning"
+            -2 * numpy.ones((2, 2)),
+            box_space(numpy.ones((2, 2))),
+            out_of_bounds_mode="warning",
         )
-
-
-def test_array_init_warning_multidiscrete():
-    global multidiscr_space
-
-    x = StateElement([1, 2, 8], multidiscr_space, out_of_bounds_mode="warning")
-
-    with pytest.warns(StateNotContainedWarning):
-        x = StateElement([0, 2, 8], multidiscr_space, out_of_bounds_mode="warning")
-    with pytest.warns(StateNotContainedWarning):
-        x = StateElement([4, 2, 8], multidiscr_space, out_of_bounds_mode="warning")
-    with pytest.warns(StateNotContainedWarning):
-        x = StateElement([1, -1, 8], multidiscr_space, out_of_bounds_mode="warning")
-    with pytest.warns(StateNotContainedWarning):
-        x = StateElement([1, 6, 8], multidiscr_space, out_of_bounds_mode="warning")
-    with pytest.warns(StateNotContainedWarning):
-        x = StateElement([1, 1, 2], multidiscr_space, out_of_bounds_mode="warning")
-    with pytest.warns(StateNotContainedWarning):
-        x = StateElement([1, 1, 7], multidiscr_space, out_of_bounds_mode="warning")
+    with pytest.raises(StateNotContainedError):
+        x = StateElement(
+            numpy.array([[0, 0], [-2, 0]]),
+            box_space(numpy.ones((2, 2))),
+            out_of_bounds_mode="warning",
+        )
 
 
 def test_array_init_warning():
-    test_array_init_warning_discrete()
-    test_array_init_warning_continuous()
-    test_array_init_warning_multidiscrete()
+    test_array_init_warning_integer()
+    test_array_init_warning_interval()
+
+
+##################################################################
 
 
 def test_array_init_clip_discrete():
@@ -397,7 +326,7 @@ def test_amax_nothandled():
     assert isinstance(y, numpy.ndarray)
     assert not isinstance(y, StateElement)
     assert y == 0.8
-    assert not hasattr(y, "spaces")
+    assert not hasattr(y, "space")
     assert not hasattr(y, "out_of_bounds_mode")
 
 
@@ -411,20 +340,20 @@ def test_amax_implements_decorator():
 
     @StateElement.implements(numpy.amax)
     def amax(arr, **keywordargs):
-        spaces, out_of_bounds_mode, kwargs = (
-            arr.spaces,
+        space, out_of_bounds_mode, kwargs = (
+            arr.space,
             arr.out_of_bounds_mode,
             arr.kwargs,
         )
         obj = arr.view(numpy.ndarray)
         argmax = numpy.argmax(obj, **keywordargs)
-        index = numpy.unravel_index(argmax, arr.spaces.shape)
+        index = numpy.unravel_index(argmax, arr.space.shape)
         obj = numpy.amax(obj, **keywordargs)
         obj = numpy.asarray(obj).view(StateElement)
-        if arr.spaces.space_type == "continuous":
-            obj.spaces = autospace(
-                numpy.atleast_2d(arr.spaces.low[index[0], index[1]]),
-                numpy.atleast_2d(arr.spaces.high[index[0], index[1]]),
+        if arr.space.space_type == "continuous":
+            obj.space = autospace(
+                numpy.atleast_2d(arr.space.low[index[0], index[1]]),
+                numpy.atleast_2d(arr.space.high[index[0], index[1]]),
             )
         else:
             raise NotImplementedError
@@ -438,10 +367,10 @@ def test_amax_implements_decorator():
     assert x.HANDLED_FUNCTIONS.get(numpy.amax) is not None
     assert y.shape == ()
     assert y == 0.8
-    assert y.spaces.space_type == "continuous"
-    assert y.spaces.shape == (1, 1)
-    assert y.spaces.low == numpy.array([[-2]])
-    assert y.spaces.high == numpy.array([[3]])
+    assert y.space.space_type == "continuous"
+    assert y.space.shape == (1, 1)
+    assert y.space.low == numpy.array([[-2]])
+    assert y.space.high == numpy.array([[3]])
 
 
 def test_array_function_simple():
@@ -526,7 +455,7 @@ def test__iter__discrete():
         assert isinstance(_x, StateElement)
         assert _x == 2
         assert _x == x
-        assert _x.spaces == x.spaces
+        assert _x.space == x.space
         assert _x.out_of_bounds_mode == x.out_of_bounds_mode
 
 
@@ -611,7 +540,7 @@ def test_serialize_discrete():
     x = StateElement(numpy.array([2]), discr_space)
     assert x.serialize() == {
         "values": [2],
-        "spaces": {
+        "space": {
             "array_list": [1, 2, 3],
             "space_type": "discrete",
             "seed": None,
@@ -626,7 +555,7 @@ def test_serialize_continuous():
     x = StateElement(numpy.zeros((2, 2)), cont_space)
     assert x.serialize() == {
         "values": [[0.0, 0.0], [0.0, 0.0]],
-        "spaces": {
+        "space": {
             "array_list": [[[-1.0, -1.0], [-1.0, -1.0]], [[1.0, 1.0], [1.0, 1.0]]],
             "space_type": "continuous",
             "seed": None,
@@ -641,7 +570,7 @@ def test_serialize_multidiscrete():
     x = StateElement(numpy.array([[1], [1], [8]]), multidiscr_space)
     assert x.serialize() == {
         "values": [[1], [1], [8]],
-        "spaces": {
+        "space": {
             "array_list": [[1, 2], [1, 2, 3, 4, 5], [1, 3, 5, 8]],
             "space_type": "multidiscrete",
             "seed": None,
@@ -723,8 +652,8 @@ def test__setitem__():
 def test__getitem__discrete():
     global discr_space
     x = StateElement(1, discr_space)
-    assert x[0, {"spaces": True}] == x
-    assert x[0, {"spaces": True}] is not x
+    assert x[0, {"space": True}] == x
+    assert x[0, {"space": True}] is not x
     assert x[0] == x
 
 
@@ -732,21 +661,21 @@ def test__getitem__continuous():
     global cont_space
     x = StateElement(numpy.array([[0.0, 0.1], [0.2, 0.3]]), cont_space)
     assert x[0, 0] == 0.0
-    assert x[0, 0, {"spaces": True}] == StateElement(
+    assert x[0, 0, {"space": True}] == StateElement(
         numpy.array([[0.0]]), autospace(numpy.array([[-1]]), numpy.array([[1]]))
     )
-    assert x[0, 1, {"spaces": True}] == StateElement(
+    assert x[0, 1, {"space": True}] == StateElement(
         numpy.array([[0.1]]), autospace(numpy.array([[-1]]), numpy.array([[1]]))
     )
-    assert x[1, 0, {"spaces": True}] == StateElement(
+    assert x[1, 0, {"space": True}] == StateElement(
         numpy.array([[0.2]]), autospace(numpy.array([[-1]]), numpy.array([[1]]))
     )
-    assert x[1, 1, {"spaces": True}] == StateElement(
+    assert x[1, 1, {"space": True}] == StateElement(
         numpy.array([[0.3]]), autospace(numpy.array([[-1]]), numpy.array([[1]]))
     )
     assert (x[:, 1] == numpy.array([0.1, 0.3], dtype=numpy.float32)).all()
     assert (
-        x[:, 1, {"spaces": True}]
+        x[:, 1, {"space": True}]
         == StateElement(
             numpy.array([0.1, 0.3], dtype=numpy.float32),
             autospace(numpy.array([[-1], [-1]]), numpy.array([[1], [1]])),
@@ -907,20 +836,19 @@ def test_cast():
 
 
 if __name__ == "__main__":
-    pass
     test_array_init()
     test_array_init_error()
     test_array_init_warning()
     test_array_init_clip()
-    test_array_init_dtype()
-    test__array_ufunc__()
-    test__array_function__()
-    test_equals()
-    test__iter__()
-    test__repr__()
-    test_serialize()
-    test_reset()
-    test__setitem__()
-    test__getitem__()
-    test_tabulate()
-    test_cast()
+    # test_array_init_dtype()
+    # test__array_ufunc__()
+    # test__array_function__()
+    # test_equals()
+    # test__iter__()
+    # test__repr__()
+    # test_serialize()
+    # test_reset()
+    # test__setitem__()
+    # test__getitem__()
+    # test_tabulate()
+    # test_cast()
