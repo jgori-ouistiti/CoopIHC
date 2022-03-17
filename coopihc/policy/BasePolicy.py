@@ -1,9 +1,8 @@
 import numpy
 import copy
 
-from coopihc.space.State import State
-from coopihc.space.StateElement import StateElement
-from coopihc.space.Space import Space
+from coopihc.base.State import State
+from coopihc.base.StateElement import StateElement
 
 
 # ============== General Policies ===============
@@ -52,7 +51,7 @@ class BasePolicy:
         Return the last observation.
 
         :return: last observation
-        :rtype: `State<coopihc.space.State.State>`
+        :rtype: `State<coopihc.base.State.State>`
         """
         return self.host.inference_engine.buffer[-1]
 
@@ -70,7 +69,7 @@ class BasePolicy:
         Return the last action.
 
         :return: last action
-        :rtype: `State<coopihc.space.StateElement.StateElement>`
+        :rtype: `State<coopihc.base.StateElement.StateElement>`
         """
         actions = tuple(self.action_state.values())
         # if len(actions) == 1:
@@ -93,7 +92,7 @@ class BasePolicy:
     #     Return a copy of the last action.
 
     #     :return: last action
-    #     :rtype: `StateElement<coopihc.space.StateElement.StateElement>`
+    #     :rtype: `StateElement<coopihc.base.StateElement.StateElement>`
     #     """
     #     return copy.deepcopy(self.action_state)
 
@@ -123,7 +122,7 @@ class BasePolicy:
         (Randomly) Sample from the policy
 
         :return: (action, action reward)
-        :rtype: (StateElement<coopihc.space.StateElement.StateElement>, float)
+        :rtype: (StateElement<coopihc.base.StateElement.StateElement>, float)
         """
         _ = [_action.reset() for _action in self.action]
         return self.action, 0

@@ -11,7 +11,7 @@ class WrapAsPolicy(BasePolicy):
     :param action_bundle: bundle to wrap
     :type action_bundle: `Bundle<coopihc.bundle>`
     :param action_state: which bundle game state should serve as action state
-    :type action_state: `State<coopihc.space.State.State>`
+    :type action_state: `State<coopihc.base.State.State>`
     """
 
     def __init__(self, action_bundle, action_state, *args, **kwargs):

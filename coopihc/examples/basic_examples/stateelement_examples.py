@@ -1,7 +1,7 @@
 import numpy
-from coopihc.space.Space import Space
-from coopihc.space.StateElement import StateElement
-from coopihc.space.utils import (
+from coopihc.base.utils import space
+from coopihc.base.StateElement import StateElement
+from coopihc.base.utils import (
     continuous_space,
     discrete_space,
     multidiscrete_space,

@@ -1,5 +1,5 @@
 import numpy
-from coopihc.space.utils import lin_space, box_space, integer_space
+from coopihc.base.utils import lin_space, box_space, integer_space
 
 
 def test_lin_space():

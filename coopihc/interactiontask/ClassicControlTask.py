@@ -2,9 +2,8 @@ import numpy
 import copy
 
 from coopihc.helpers import flatten
-from coopihc.space.State import State
-from coopihc.space.StateElement import StateElement
-from coopihc.space.Space import Space
+from coopihc.base.State import State
+from coopihc.base.StateElement import StateElement
 from coopihc.interactiontask.InteractionTask import InteractionTask
 
 

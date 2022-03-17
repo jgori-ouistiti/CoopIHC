@@ -20,7 +20,7 @@ class ExamplePolicy(BasePolicy):
         Compares 'x' to goal and issues +-1 accordingly.
 
         :return: action, reward
-        :rtype: tuple(`StateElement<coopihc.space.StateElement.StateElement>`, float)
+        :rtype: tuple(`StateElement<coopihc.base.StateElement.StateElement>`, float)
         """
 
         if observation is None:

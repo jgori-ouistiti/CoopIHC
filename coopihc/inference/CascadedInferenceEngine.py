@@ -38,7 +38,7 @@ class CascadedInferenceEngine(BaseInferenceEngine):
         Add an observation to a buffer. If the buffer does not exist, create a naive buffer. The buffer has a size given by buffer length
 
         :param observation: observation produced by an engine
-        :type observation: :py:class:`State<coopihc.space.State.State>`
+        :type observation: :py:class:`State<coopihc.base.State.State>`
         """
 
         if self.buffer is None:

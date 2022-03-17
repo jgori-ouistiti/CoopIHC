@@ -3,8 +3,8 @@ coopihc package."""
 
 
 from coopihc.interactiontask.ClassicControlTask import ClassicControlTask
-from coopihc.space.StateElement import StateElement
-from coopihc.space.utils import autospace
+from coopihc.base.StateElement import StateElement
+from coopihc.base.utils import autospace
 
 import pytest
 import numpy

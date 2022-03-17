@@ -3,9 +3,8 @@ import copy
 import warnings
 from coopihc.agents.BaseAgent import BaseAgent
 from coopihc.observation.RuleObservationEngine import RuleObservationEngine
-from coopihc.space.State import State
-from coopihc.space.StateElement import StateElement
-from coopihc.space.Space import Space
+from coopihc.base.State import State
+from coopihc.base.StateElement import StateElement
 from coopihc.policy.LinearFeedback import LinearFeedback
 from coopihc.inference.ContinuousKalmanUpdate import ContinuousKalmanUpdate
 

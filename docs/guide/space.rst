@@ -3,7 +3,7 @@
 
 Space
 ---------------
-``Space`` s are used by ``StateElement`` s, to specify in which domain a substate can live. Space ranges are defined by NumPy arrays. The complete interface is explained in the :py:class:`API Reference<coopihc.space.Space.Space>`.
+``Space`` s are used by ``StateElement`` s, to specify in which domain a substate can live. Space ranges are defined by NumPy arrays. The complete interface is explained in the :py:class:`API Reference<coopihc.base.Space.Space>`.
 
 Defining spaces
 ^^^^^^^^^^^^^^^^^
@@ -55,7 +55,7 @@ Notice that whether a value is in the space or not also depends on its data type
 
 .. note::
 
-   ``Space`` has a ``contains`` keyword argument, which can be set to 'hard'. In the default 'soft' case, Space will try to broadcast or viewcast the input to match with the space arrays, but not in 'hard' mode. Examples can be found :py:class:`here<coopihc.space.Space.Space>`.
+   ``Space`` has a ``contains`` keyword argument, which can be set to 'hard'. In the default 'soft' case, Space will try to broadcast or viewcast the input to match with the space arrays, but not in 'hard' mode. Examples can be found :py:class:`here<coopihc.base.Space.Space>`.
 
 Sampling from spaces
 **************************

@@ -1,10 +1,8 @@
-from coopihc.space.Space import Space
-from coopihc.space.State import State
-from coopihc.space.StateElement import StateElement
+from coopihc.base.State import State
+from coopihc.base.StateElement import StateElement
 
 import numpy
 import yaml
-from collections import OrderedDict
 import matplotlib.pyplot as plt
 import copy
 
@@ -181,7 +179,7 @@ class _Bundle:
         :param skip_user_step: do you want to skip user steps on reset?, defaults to False. Usually you want to have this set to False if the user starts playing but true if the assistant starts playing. Can also be set globally at the bundle level with the keyword argument "reset_skip_user_step".
         :type skip_user_step: bool, optional
         :return: new game state
-        :rtype: :py:class:`State<coopihc.space.State.State>`
+        :rtype: :py:class:`State<coopihc.base.State.State>`
         """
         # ============= Passing via bundles
         turn = self.kwargs.get("reset_turn", turn)
@@ -237,7 +235,7 @@ class _Bundle:
         :param go_to_turn: turn at which round stops, defaults to None
         :type go_to_turn: int, optional
         :return: gamestate, reward, game finished flag
-        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, collections.OrderedDict, boolean)
+        :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, collections.OrderedDict, boolean)
         """
 
         if go_to_turn is None:
@@ -585,7 +583,7 @@ class _Bundle:
         :param state_key: state key in gamestate
         :type state_key: string
         :param state: new state value
-        :type state: :py:class:`State<coopihc.space.State.State>`
+        :type state: :py:class:`State<coopihc.base.State.State>`
         """
         self.game_state[state_key] = state
         getattr(self, role).observation[state_key] = state

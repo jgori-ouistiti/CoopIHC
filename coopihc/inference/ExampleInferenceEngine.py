@@ -19,7 +19,7 @@ class ExampleInferenceEngine(BaseInferenceEngine):
         Do nothing. Same behavior as parent ``BaseInferenceEngine``
 
         :return: (new internal state, reward)
-        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float)
+        :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, float)
         """
         if agent_state is None:
             agent_state = self.state

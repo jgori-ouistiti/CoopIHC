@@ -6,8 +6,8 @@ import warnings
 import itertools
 
 from coopihc.helpers import flatten
-from coopihc.space.StateElement import StateElement
-from coopihc.space.utils import NotKnownSerializationWarning
+from coopihc.base.StateElement import StateElement
+from coopihc.base.utils import NotKnownSerializationWarning
 
 
 class State(dict):

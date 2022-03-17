@@ -1,8 +1,8 @@
 import coopihc
-from coopihc.space.Space import Space
-from coopihc.space.StateElement import StateElement
-from coopihc.space.State import State
-from coopihc.space.utils import (
+from coopihc.base.utils import space
+from coopihc.base.StateElement import StateElement
+from coopihc.base.State import State
+from coopihc.base.utils import (
     StateNotContainedError,
     autospace,
     discrete_space,

@@ -2,9 +2,8 @@ import numpy
 
 
 from coopihc.agents.BaseAgent import BaseAgent
-from coopihc.space.State import State
-from coopihc.space.StateElement import StateElement
-from coopihc.space.Space import Space
+from coopihc.base.State import State
+from coopihc.base.StateElement import StateElement
 from coopihc.policy.LinearFeedback import LinearFeedback
 from coopihc.observation.RuleObservationEngine import RuleObservationEngine
 from coopihc.observation.utils import base_task_engine_specification

@@ -1,7 +1,7 @@
 import numpy
 import copy
 
-from coopihc.space.State import State
+from coopihc.base.State import State
 from coopihc.helpers import hard_flatten
 from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 
@@ -205,7 +205,7 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
         Update the substate 'beliefs' from the internal state. Generate candidate observations for each potential target, evaluate its likelihood and update the prior to form the posterior. Normalize the posterior and return the new state.
 
         :return: (new internal state, reward)
-        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float)
+        :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, float)
         """
 
         if self.user_policy_model is None:

@@ -1,9 +1,9 @@
 import numpy
 
 from coopihc.interactiontask.ExampleTask import ExampleTask
-from coopihc.space.State import State
-from coopihc.space.Space import Space
-from coopihc.space.StateElement import StateElement
+from coopihc.base.State import State
+from coopihc.base.utils import space
+from coopihc.base.StateElement import StateElement
 from coopihc.bundle.Bundle import Bundle
 from coopihc.agents.BaseAgent import BaseAgent
 from coopihc.policy.BasePolicy import BasePolicy

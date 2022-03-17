@@ -1,7 +1,7 @@
-from coopihc.space.State import State
-from coopihc.space.StateElement import StateElement
-from coopihc.space.Space import Space
-from coopihc.space.utils import continuous_space
+from coopihc.base.State import State
+from coopihc.base.StateElement import StateElement
+from coopihc.base.utils import space
+from coopihc.base.utils import continuous_space
 
 from coopihc.interactiontask.ExampleTask import ExampleTask
 

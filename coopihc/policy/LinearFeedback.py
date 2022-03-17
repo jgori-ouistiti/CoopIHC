@@ -29,7 +29,7 @@ class LinearFeedback(BasePolicy):
 
 
     :param action_state: see `BasePolicy<coopihc.policy.BasePolicy.BasePolicy`
-    :type action_state: `State<coopihc.space.State.State`
+    :type action_state: `State<coopihc.base.State.State`
     :param state_indicator: specifies which component is used as feedback information e.g. ``('user_state', 'substate1', slice(0,2,1))``
     :type state_indicator: iterable
     :param feedback_gain: Feedback gain matrix, defaults to "identity", which creates a negative identity matrix.
@@ -74,7 +74,7 @@ class LinearFeedback(BasePolicy):
         Applies the gain.
 
         :return: action, reward
-        :rtype: tuple(`StateElement<coopihc.space.StateElement.StateElement>`, float)
+        :rtype: tuple(`StateElement<coopihc.base.StateElement.StateElement>`, float)
         """
         if observation is None:
             observation = self.observation

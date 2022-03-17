@@ -1,202 +1,10 @@
-from coopihc.space.Space import CatSet, Space, Interval
+from coopihc.base.Space import CatSet, Numeric
+from coopihc.base.StateElement import StateElement
 
 import numpy
 import functools
-import warnings
 import gym
 from coopihc.helpers import hard_flatten
-
-
-def autospace():
-    pass
-
-
-def discrete_space():
-    pass
-
-
-def multidiscrete_space():
-    pass
-
-
-def continuous_space():
-    pass
-
-
-# ======================== Warnings ========================
-class StateNotContainedWarning(Warning):
-    """Warning raised when the value is not contained in the space."""
-
-    __module__ = Warning.__module__
-
-
-class NotKnownSerializationWarning(Warning):
-    """Warning raised when the State tries to serialize an item which does not have a serialize method."""
-
-    __module__ = Warning.__module__
-
-
-class ContinuousSpaceIntIndexingWarning(Warning):
-    """Warning raised when the State tries to serialize an item which does not have a serialize method."""
-
-    __module__ = Warning.__module__
-
-
-class NumpyFunctionNotHandledWarning(Warning):
-    """Warning raised when the numpy function is not handled yet by the StateElement."""
-
-    __module__ = Warning.__module__
-
-
-class RedefiningHandledFunctionWarning(Warning):
-    """Warning raised when the numpy function is already handled by the StateElement and is going to be redefined."""
-
-    __module__ = Warning.__module__
-
-
-class WrongConvertorWarning(Warning):
-    """Warning raised when the value is not contained in the space."""
-
-    __module__ = Warning.__module__
-
-
-# ======================== Errors ========================
-
-
-class SpaceLengthError(Exception):
-    """Error raised when the space length does not match the value length."""
-
-    __module__ = Exception.__module__
-
-
-class StateNotContainedError(Exception):
-    """Error raised when the value is not contained in the space."""
-
-    __module__ = Exception.__module__
-
-
-class SpacesNotIdenticalError(Exception):
-    """Error raised when the value is not contained in the space."""
-
-    __module__ = Exception.__module__
-
-
-class NotASpaceError(Exception):
-    """Error raised when the object is not a space."""
-
-    __module__ = Exception.__module__
-
-
-# ======================== Shortcuts ========================
-def lin_space(num=50, start=0, stop=None, endpoint=False, dtype=numpy.int64):
-    if stop is None:
-        stop = num + start
-    return space(
-        array=numpy.linspace(start, stop, num=num, endpoint=endpoint, dtype=dtype)
-    )
-
-
-def integer_space(N, **kwargs):
-    return lin_space(num=N, **kwargs)
-
-
-def box_space(high=numpy.ones((1, 1)), low=None, dtype=None):
-    if low is None:
-        low = -high
-    return space(low=low, high=high, dtype=dtype)
-
-
-def space(low=None, high=None, array=None, N=None, _function=None, **kwargs):
-    if low is not None and high is not None:
-        return Interval(low=low, high=high, **kwargs)
-    if array is not None:
-        return CatSet(array=array, **kwargs)
-    if N is not None and _function is not None:
-        raise NotImplementedError
-    raise ValueError(
-        "You have to specify either low and high, or a set, or N and function, but you provided low = {}, high = {}, set = {}, N = {}, function = {}".format(
-            low, high, array, N, _function
-        )
-    )
-
-
-def cartesian_product(*spaces):
-    """cartesian_product
-
-    Realizes the cartesian product of the spaces provided in input. For this method, continuous spaces are treated as singletons {None}.
-
-    .. code-block:: python
-
-        s = Space(
-            numpy.array([i for i in range(3)], dtype=numpy.int16),
-            "discrete",
-            contains="hard",
-            seed=123,
-        )
-        q = Space(
-            [
-                numpy.array([i + 6 for i in range(2)], dtype=numpy.int16),
-                numpy.array([i + 6 for i in range(2)], dtype=numpy.int16),
-            ],
-            "multidiscrete",
-            contains="hard",
-            seed=789,
-        )
-        r = Space(
-            [
-                -numpy.ones((2, 2), dtype=numpy.float32),
-                numpy.ones((2, 2), dtype=numpy.float32),
-            ],
-            "continuous",
-            contains="hard",
-            seed=456,
-        )
-        cp, shape = Space.cartesian_product(s, q, r)
-        assert (
-            cp
-            == numpy.array(
-                [
-                    [0, 6, 6, None],
-                    [0, 6, 7, None],
-                    [0, 7, 6, None],
-                    [0, 7, 7, None],
-                    [1, 6, 6, None],
-                    [1, 6, 7, None],
-                    [1, 7, 6, None],
-                    [1, 7, 7, None],
-                    [2, 6, 6, None],
-                    [2, 6, 7, None],
-                    [2, 7, 6, None],
-                    [2, 7, 7, None],
-                ]
-            )
-        ).all()
-        assert shape == [(1,), (2, 1), (2, 2)]
-
-
-    :return: cartesian product and shape of associated spaces
-    :rtype: tuple(numpy.ndarray, list(tuples))
-    """
-    arrays = []
-    shape = []
-    for space in spaces:
-        shape.append(space.shape)
-        if isinstance(space, CatSet):
-            arrays.append(space.array)
-        elif isinstance(
-            space, Interval
-        ):  # Does not deal with case when the Interval is discrete dtype.
-            arrays.append(numpy.array([None]))
-
-    la = len(arrays)
-    dtype = numpy.result_type(*arrays)
-    arr = numpy.empty([len(a) for a in arrays] + [la], dtype=dtype)
-    for i, a in enumerate(numpy.ix_(*arrays)):
-        arr[..., i] = a
-    return arr.reshape(-1, la), shape
-
-
-# ======================== Convertors ========================
 
 
 def _partialclass(cls, *args):
@@ -224,7 +32,7 @@ class RLConvertor:
     :param interface: name of the API to which bundles is converted to, defaults to "gym"
     :type interface: str, optional
     :param bundle_action_spaces: the bundle action_spaces, defaults to None
-    :type bundle_action_spaces: `State<coopihc.space.State.State>`, optional
+    :type bundle_action_spaces: `State<coopihc.base.State.State>`, optional
     """
 
     def __init__(self, interface="gym", bundle_action_spaces=None, **kwargs):
@@ -245,7 +53,7 @@ class RLConvertor:
         Return converted spaces, a potential wrapper and wrapper flags (True if space needs wrapper component). Currently, the only space that needs a wrapper potentially is DIscrete Space (when the start action is not 0 and actions not equally unit-spaced)
 
         :param spaces: bundle spaces
-        :type spaces: list(Spaces`coopihc.spaces.Space.Space`)
+        :type spaces: list(Spaces`coopihc.bases.Space.Space`)
         :param mode: 'action' or 'observation'
         :type mode: string
         :return: spaces, wrapper, wrapperflag
@@ -264,7 +72,7 @@ class RLConvertor:
         gather intel on bundle spaces, mainly whether the spaces are continuous or discrete.
 
         :param spaces: bundle spaces
-        :type spaces: list(Spaces`coopihc.spaces.Space.Space`)
+        :type spaces: list(Spaces`coopihc.bases.Space.Space`)
 
         """
         # Check what mix spaces is
@@ -619,8 +427,8 @@ class GymForceConvertor(RLConvertor):
 
 
 def example_state():
-    from coopihc.space.State import State
-    from coopihc.space.StateElement import StateElement
+    from coopihc.base.State import State
+    from coopihc.base.StateElement import StateElement
 
     state = State()
     substate = State()
@@ -668,8 +476,8 @@ def example_state():
 
 
 def example_game_state():
-    from coopihc.space.State import State
-    from coopihc.space.StateElement import StateElement
+    from coopihc.base.State import State
+    from coopihc.base.StateElement import StateElement
 
     return State(
         game_info=State(

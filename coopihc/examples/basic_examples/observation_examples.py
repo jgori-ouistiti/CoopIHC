@@ -1,8 +1,8 @@
 import numpy
-from coopihc.space.State import State
-from coopihc.space.StateElement import StateElement
-from coopihc.space.Space import Space
-from coopihc.space.utils import autospace
+from coopihc.base.State import State
+from coopihc.base.StateElement import StateElement
+from coopihc.base.utils import space
+from coopihc.base.utils import autospace
 from coopihc.observation.ExampleObservationEngine import ExampleObservationEngine
 
 import numpy

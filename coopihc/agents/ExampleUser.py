@@ -1,14 +1,8 @@
 import numpy
 from coopihc.agents.BaseAgent import BaseAgent
-from coopihc.space.State import State
-from coopihc.space.StateElement import StateElement
-from coopihc.space.Space import Space
-from coopihc.policy.BasePolicy import BasePolicy
+from coopihc.base.State import State
+from coopihc.base.StateElement import StateElement
 from coopihc.policy.ExamplePolicy import ExamplePolicy, PseudoRandomPolicy
-from coopihc.observation.RuleObservationEngine import RuleObservationEngine
-from coopihc.observation.utils import base_user_engine_specification
-from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
-from coopihc.space.utils import autospace
 
 
 class ExampleUser(BaseAgent):

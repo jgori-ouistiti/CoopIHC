@@ -1,5 +1,5 @@
 from coopihc.interactiontask import InteractionTask
-from coopihc.space import StateElement
+from coopihc.base import StateElement
 import gym
 import numpy
 

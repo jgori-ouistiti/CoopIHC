@@ -1,6 +1,6 @@
 from coopihc.helpers import hard_flatten
-from coopihc.space.utils import GymConvertor, GymForceConvertor
-from coopihc.space.StateElement import StateElement
+from coopihc.base.convertor import GymConvertor, GymForceConvertor
+from coopihc.base.StateElement import StateElement
 
 import gym
 import numpy
@@ -289,7 +289,7 @@ class GymConvertor(RLConvertor):
         CoopIHC continuous spaces are simply cast to Gym boxes. CoopIHC Discrete and Multidiscrete are cast to Gym Discrete and Multidiscrete, with a transformation of the arrays (since in Gym, discrete values live in :math:`\mathbb{N}`)
 
         :param space: CoopIHC space to convert
-        :type space: `Space <coopihc.space.Space.Space>`
+        :type space: `Space <coopihc.base.Space.Space>`
         :return: (Gym space, conversion_list)
         :rtype: tuple(gym.spaces, list)
         """

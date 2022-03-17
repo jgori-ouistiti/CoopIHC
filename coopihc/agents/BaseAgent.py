@@ -1,5 +1,5 @@
-from coopihc.space.State import State
-from coopihc.space.StateElement import StateElement
+from coopihc.base.State import State
+from coopihc.base.StateElement import StateElement
 from coopihc.policy.BasePolicy import BasePolicy
 from coopihc.observation.RuleObservationEngine import RuleObservationEngine
 from coopihc.observation.utils import base_user_engine_specification
@@ -186,7 +186,7 @@ class BaseAgent:
 
 
         :return: Last observation
-        :rtype: coopihc.space.State.State
+        :rtype: coopihc.base.State.State
 
         :meta private:
         """
@@ -204,7 +204,7 @@ class BaseAgent:
 
 
         :return: Last action
-        :rtype: coopihc.space.State.State
+        :rtype: coopihc.base.State.State
 
         :meta private:
         """
@@ -369,7 +369,7 @@ class BaseAgent:
         What the agent should do when the Bundle expects it to take an action.
 
         :return: return action and reward
-        :rtype: tuple(coopihc.space.State.State, float)
+        :rtype: tuple(coopihc.base.State.State, float)
 
         :meta private:
         """
@@ -418,9 +418,9 @@ class BaseAgent:
         Observe the gamestate by calling to the observation engine.
 
         :param game_state: current game state
-        :type game_state: coopihc.space.State.State
+        :type game_state: coopihc.base.State.State
         :return: return observation and associated reward
-        :rtype: tuple(coopihc.space.State.State, float)
+        :rtype: tuple(coopihc.base.State.State, float)
 
         :meta private:
         """

@@ -5,9 +5,7 @@ the InteractionTask class.
 
 
 import numpy
-from coopihc.space.Space import Space
-from coopihc.space.utils import discrete_space
-from coopihc.space.StateElement import StateElement
+from coopihc.base.StateElement import StateElement
 from coopihc.interactiontask.InteractionTask import InteractionTask
 
 

@@ -1,6 +1,5 @@
 import numpy
 from coopihc.policy.BasePolicy import BasePolicy
-from coopihc.space.Space import Space
 
 
 class BadlyDefinedLikelihoodError(Exception):
@@ -78,9 +77,9 @@ class ELLDiscretePolicy(BasePolicy):
         Select an action according to its probability as defined by the likelihood model. You can pass an observation as well, in which case the policy will not look up he actual observation but use the observation you passed. This is useful e.g. when debugging the policy.
 
         :param observation: if passed, this is the observation upon which action selection is based upon. Otherwise, the policy will look at the actual agent observation, defaults to None
-        :type observation: `State<coopihc.space.State.State>`, optional
+        :type observation: `State<coopihc.base.State.State>`, optional
         :return: action, reward
-        :rtype: tuple(`StateElement<coopihc.space.StateElement.StateElement>`, float)
+        :rtype: tuple(`StateElement<coopihc.base.StateElement.StateElement>`, float)
         """
 
         if observation is None:
@@ -96,7 +95,7 @@ class ELLDiscretePolicy(BasePolicy):
         Compute the likelihood of each action, given the current observation
 
         :param observation: current agent observation
-        :type observation: `State<coopihc.space.State.State>`
+        :type observation: `State<coopihc.base.State.State>`
         :return: [description]
         :rtype: [type]
         """

@@ -89,7 +89,7 @@ which are then collected to form an observed state. For example, a valid mapping
 
 .. code-block:: python
 
-    from coopihc.space.utils import example_game_state
+    from coopihc.base.utils import example_game_state
     print(example_game_state())
 
     # Define mapping

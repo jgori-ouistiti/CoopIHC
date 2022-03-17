@@ -4,7 +4,7 @@ coopihc package."""
 
 import numpy
 from coopihc import InteractionTask, StateElement, Space, discrete_space
-from coopihc.space.utils import StateNotContainedWarning, StateNotContainedError
+from coopihc.base.utils import StateNotContainedWarning, StateNotContainedError
 import pytest
 
 

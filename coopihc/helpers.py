@@ -4,7 +4,7 @@ import collections
 
 def hard_flatten(l):
     # hack for circular import
-    from coopihc.space.Space import Space
+    from coopihc.base.utils import space
 
     out = []
     # tentative

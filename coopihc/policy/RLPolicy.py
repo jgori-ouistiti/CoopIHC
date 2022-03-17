@@ -1,6 +1,6 @@
 import copy
 
-from coopihc.space.State import State
+from coopihc.base.State import State
 from coopihc.policy.BasePolicy import BasePolicy
 from coopihc.bundle.wrappers.Train import TrainGym
 

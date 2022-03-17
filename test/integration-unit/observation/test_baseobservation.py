@@ -78,7 +78,7 @@ def test_observe():
     obseng = BaseObservationEngine()
     with pytest.raises(AttributeError):
         obseng.observe()
-    from coopihc.space.utils import example_state
+    from coopihc.base.utils import example_state
 
     _example_state = example_state()
     obs = obseng.observe(_example_state)

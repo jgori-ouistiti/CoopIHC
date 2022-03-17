@@ -1,4 +1,4 @@
-from coopihc.space.utils import (
+from coopihc.base.utils import (
     GymConvertor,
     discrete_space,
     continuous_space,

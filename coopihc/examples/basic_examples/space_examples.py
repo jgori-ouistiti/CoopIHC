@@ -1,7 +1,7 @@
 import numpy
 from coopihc.helpers import flatten
-from coopihc.space.Space import Space
-from coopihc.space.utils import (
+from coopihc.base.utils import space
+from coopihc.base.utils import (
     discrete_space,
     continuous_space,
     multidiscrete_space,
