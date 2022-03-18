@@ -1,14 +1,18 @@
 import numpy
-from coopihc.base.utils import lin_space, box_space, integer_space
+from coopihc.base.elements import lin_space, box_space, integer_space, integer_set
 
 
 def test_lin_space():
-    space = lin_space(10, dtype=numpy.int16)
-    space = lin_space(num=11, start=-5)
+    space = lin_space(0, 10, num=11, dtype=numpy.int16)
+    space = lin_space(-5, 5, num=11)
 
 
 def test_integer():
     space = integer_space(10, dtype=numpy.int16)
+
+
+def test_integer():
+    space = integer_set(10, dtype=numpy.int16)
 
 
 def test_box():

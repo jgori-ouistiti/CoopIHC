@@ -29,6 +29,90 @@ class BaseSpace:
         self._shape = None
 
 
+class Space:
+    """_summary_
+
+    :param low: see `Numeric<coopihc.base.Space.Numeric>`, defaults to None
+    :type low: see `Numeric<coopihc.base.Space.Numeric>`, optional
+    :param high: see `Numeric<coopihc.base.Space.Numeric>`, defaults to None
+    :type high: see `Numeric<coopihc.base.Space.Numeric>`, optional
+    :param array: see `CatSet<coopihc.base.Space.CatSet>`, defaults to None
+    :type array: see `CatSet<coopihc.base.Space.CatSet>`, optional
+    :param N: for future, defaults to None
+    :type N: for future, optional
+    :param _function: for future, defaults to None
+    :type _function: for future, optional
+
+    :return: A CoopIHC space
+    :rtype: `Numeric<coopihc.base.Space.Numeric>` or `CatSet<coopihc.base.Space.CatSet>`
+    """
+
+    def __new__(
+        self, low=None, high=None, array=None, N=None, _function=None, **kwargs
+    ):
+        if low is not None and high is not None:
+            return Numeric(low=low, high=high, **kwargs)
+        if array is not None:
+            return CatSet(array=array, **kwargs)
+        if N is not None and _function is not None:
+            raise NotImplementedError
+        raise ValueError(
+            "You have to specify either low and high, or a set, or N and function, but you provided low = {}, high = {}, set = {}, N = {}, function = {}".format(
+                low, high, array, N, _function
+            )
+        )
+
+    @staticmethod
+    def cartesian_product(*spaces):
+        """cartesian_product
+
+        Computes the cartesian product of the spaces provided in input. For this method, continuous spaces are treated as singletons {None}.
+
+        .. code-block:: python
+
+            s = space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
+            q = space(array=numpy.array([-3, -2, -1], dtype=numpy.int16))
+            cp, shape = cartesian_product(s, q)
+            assert (
+                cp
+                == numpy.array(
+                    [
+                        [1, -3],
+                        [1, -2],
+                        [1, -1],
+                        [2, -3],
+                        [2, -2],
+                        [2, -1],
+                        [3, -3],
+                        [3, -2],
+                        [3, -1],
+                    ]
+                )
+            ).all()
+
+
+        :return: cartesian product and shape of associated spaces
+        :rtype: tuple(numpy.ndarray, list(tuples))
+        """
+        arrays = []
+        shape = []
+        for space in spaces:
+            shape.append(space.shape)
+            if isinstance(space, CatSet):
+                arrays.append(space.array)
+            elif isinstance(
+                space, Numeric
+            ):  # Does not deal with case when the Numeric is discrete dtype.
+                arrays.append(numpy.array([None]))
+
+        la = len(arrays)
+        dtype = numpy.result_type(*arrays)
+        arr = numpy.empty([len(a) for a in arrays] + [la], dtype=dtype)
+        for i, a in enumerate(numpy.ix_(*arrays)):
+            arr[..., i] = a
+        return arr.reshape(-1, la), shape
+
+
 class Numeric(BaseSpace):
     """Numeric
 
@@ -464,53 +548,3 @@ class CatSet(BaseSpace):
             "array": self.array.tolist(),
             "dtype": self.dtype.__class__.__name__,
         }
-
-    @staticmethod
-    def cartesian_product(*spaces):
-        """cartesian_product
-
-        Computes the cartesian product of the spaces provided in input. For this method, continuous spaces are treated as singletons {None}.
-
-        .. code-block:: python
-
-            s = space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
-            q = space(array=numpy.array([-3, -2, -1], dtype=numpy.int16))
-            cp, shape = cartesian_product(s, q)
-            assert (
-                cp
-                == numpy.array(
-                    [
-                        [1, -3],
-                        [1, -2],
-                        [1, -1],
-                        [2, -3],
-                        [2, -2],
-                        [2, -1],
-                        [3, -3],
-                        [3, -2],
-                        [3, -1],
-                    ]
-                )
-            ).all()
-
-
-        :return: cartesian product and shape of associated spaces
-        :rtype: tuple(numpy.ndarray, list(tuples))
-        """
-        arrays = []
-        shape = []
-        for space in spaces:
-            shape.append(space.shape)
-            if isinstance(space, CatSet):
-                arrays.append(space.array)
-            elif isinstance(
-                space, Numeric
-            ):  # Does not deal with case when the Numeric is discrete dtype.
-                arrays.append(numpy.array([None]))
-
-        la = len(arrays)
-        dtype = numpy.result_type(*arrays)
-        arr = numpy.empty([len(a) for a in arrays] + [la], dtype=dtype)
-        for i, a in enumerate(numpy.ix_(*arrays)):
-            arr[..., i] = a
-        return arr.reshape(-1, la), shape

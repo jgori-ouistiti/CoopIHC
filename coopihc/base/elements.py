@@ -1,4 +1,4 @@
-from coopihc.base.Space import CatSet, Numeric
+from coopihc.base.Space import Space
 from coopihc.base.StateElement import StateElement
 
 import numpy
@@ -17,33 +17,33 @@ def lin_space(start, stop, num=50, endpoint=True, dtype=numpy.int64):
     """
     if stop is None:
         stop = num + start
-    return space(
+    return Space(
         array=numpy.linspace(start, stop, num=num, endpoint=endpoint, dtype=dtype)
     )
 
 
 def integer_set(N, **kwargs):
-    """{0, 1, ... , N-1, N} Set
+    """{0, 1, ... , N-1} Set
 
     Wrapper around lin_space.
 
-    :param N: _description_
-    :type N: _type_
-    :return: _description_
-    :rtype: _type_
+    :param N: cardinality of set
+    :type N: int
+    :return: Integer Set
+    :rtype: CatSet
     """
     return lin_space(0, None, num=N, endpoint=False, **kwargs)
 
 
 def integer_space(N, **kwargs):
-    """{0, 1, ... , N-1, N} Set
+    """[0, 1, ... , N-1, N]
 
-    Wrapper around lin_space.
+    Wrapper around box_space
 
-    :param N: _description_
-    :type N: _type_
-    :return: _description_
-    :rtype: _type_
+    :param N: upper bound of discrete interval
+    :type N: integer
+    :return: Integer Space
+    :rtype: Numeric
     """
     return box_space(
         low=numpy.array(0, dtype=numpy.int64),
@@ -66,21 +66,7 @@ def box_space(high=numpy.ones((1, 1)), low=None, **kwargs):
     """
     if low is None:
         low = -high
-    return space(low=low, high=high, **kwargs)
-
-
-def space(low=None, high=None, array=None, N=None, _function=None, **kwargs):
-    if low is not None and high is not None:
-        return Numeric(low=low, high=high, **kwargs)
-    if array is not None:
-        return CatSet(array=array, **kwargs)
-    if N is not None and _function is not None:
-        raise NotImplementedError
-    raise ValueError(
-        "You have to specify either low and high, or a set, or N and function, but you provided low = {}, high = {}, set = {}, N = {}, function = {}".format(
-            low, high, array, N, _function
-        )
-    )
+    return Space(low=low, high=high, **kwargs)
 
 
 # ======================== StateElement Shortcuts ========================
@@ -120,7 +106,7 @@ def discrete_array_element(N, shape=None, init=0, low=None, **kwargs):
     out_of_bounds_mode = kwargs.pop("out_of_bounds_mode", "warning")
 
     return StateElement(
-        init, space(low=low, high=high, **kwargs), out_of_bounds_mode=out_of_bounds_mode
+        init, Space(low=low, high=high, **kwargs), out_of_bounds_mode=out_of_bounds_mode
     )
 
 
@@ -166,7 +152,7 @@ def array_element(shape=None, init=0, low=None, high=None, **kwargs):
     out_of_bounds_mode = kwargs.pop("out_of_bounds_mode", "warning")
 
     return StateElement(
-        init, space(low=low, high=high, **kwargs), out_of_bounds_mode=out_of_bounds_mode
+        init, Space(low=low, high=high, **kwargs), out_of_bounds_mode=out_of_bounds_mode
     )
 
 

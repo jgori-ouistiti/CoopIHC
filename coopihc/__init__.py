@@ -42,6 +42,7 @@ from .policy.ExamplePolicy import ExamplePolicy
 from .base.Space import BaseSpace
 from .base.Space import Numeric
 from .base.Space import CatSet
+from .base.Space import Space
 
 from .base.State import State
 from .base.StateElement import StateElement
@@ -65,7 +66,6 @@ from .base.elements import lin_space
 from .base.elements import integer_set
 from .base.elements import integer_space
 from .base.elements import box_space
-from .base.elements import space
 from .base.elements import array_element
 from .base.elements import cat_element
 

@@ -49,7 +49,9 @@ You will usually define a task, a user, an assistant, and bundle them together. 
 
 States
 ------------
-The interaction model uses the concept of states, for which *CoopIHC* introduces the ``Space`` ``StateElement`` and ``State`` objects. States can hold StateElements and can be nested. In the example below, a super-state is defined using a State. This super-state is itself defined by two substates. Each of those two substates holds a StateElement, which is a combination of a value and a space.
+The interaction model uses the concept of states. States are a collection of useful variables for the system. In *CoopIHC* they are defined via a ``State`` object. The states are containers that hold elements called ``StateElement``. A ``StateElement`` is a collection of a value and a ``Space``. Note that a ``State`` may also contain another ``State``.
+
+In the example below, a super-state is defined using a State. This super-state is itself defined by two substates. Each of those two substates holds a ``StateElement``, which is a combination of a value and a ``Space``.
 
 .. literalinclude:: ../../coopihc/examples/basic_examples/state_examples.py
    :language: python
@@ -58,7 +60,7 @@ The interaction model uses the concept of states, for which *CoopIHC* introduces
    :end-before: [end-state-example]
 
 
-States and StatElements subclass the built-in dictionary and the well-known NumPy arrays respectively. This means that interacting with these objects should prove relatively familiar. To find out more about this and for extra details, go to :doc:`Space<space>`, :doc:`StateElement<stateelement>` and :doc:`State<state>`.
+States and StatElements subclass the built-in dictionary and the well-known NumPy arrays respectively. This means that interacting with these objects should prove relatively familiar to most Python users. To find out more about this and for extra details, go to :doc:`Space<space>`, :doc:`StateElement<stateelement>` and :doc:`State<state>`.
 
 
 Tasks

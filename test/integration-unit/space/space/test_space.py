@@ -1,5 +1,5 @@
-from coopihc.base.Space import Numeric, CatSet
-from coopihc.base.utils import cartesian_product, space, SpaceNotSeparableError
+from coopihc.base.Space import Space
+from coopihc.base.utils import SpaceNotSeparableError
 from coopihc.helpers import flatten
 import numpy
 import json
@@ -7,7 +7,7 @@ import pytest
 
 
 def test_init_CatSet():
-    s = space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
+    s = Space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
     # prop and attributes
     assert s.dtype == numpy.int16
     assert s.N == 3
@@ -15,7 +15,7 @@ def test_init_CatSet():
 
 
 def test_contains_CatSet():
-    s = space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
+    s = Space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
     assert 1 in s
     assert [1] in s
     assert [[1]] in s
@@ -23,11 +23,13 @@ def test_contains_CatSet():
     assert numpy.array([1]) in s
     assert numpy.array([[1]]) in s
 
-    assert numpy.array([2]) in s
-    assert numpy.array([3]) in s
+    assert numpy.array(2) in s
+    assert numpy.array(3) in s
 
     assert numpy.array([1.0]) in s
     assert numpy.array([2]) in s
+    assert 4 not in s
+    assert -1 not in s
 
 
 def test_CatSet():
@@ -36,7 +38,7 @@ def test_CatSet():
 
 
 def test_init_Numeric():
-    s = space(
+    s = Space(
         low=-numpy.ones((2, 2), dtype=numpy.float32),
         high=numpy.ones((2, 2), dtype=numpy.float32),
     )
@@ -46,11 +48,11 @@ def test_init_Numeric():
     assert (s.low == -numpy.ones((2, 2))).all()
     assert s.shape == (2, 2)
 
-    s = space(low=-numpy.float64(1), high=numpy.float64(1))
+    s = Space(low=-numpy.float64(1), high=numpy.float64(1))
 
 
 def test_contains_Numeric():
-    s = space(
+    s = Space(
         low=-numpy.ones((2, 2)),
         high=numpy.ones((2, 2)),
     )
@@ -72,9 +74,9 @@ def test_Numeric():
 
 
 def test_sample_CatSet():
-    s = space(array=numpy.arange(1000), seed=123)
-    q = space(array=numpy.arange(1000), seed=123)
-    r = space(array=numpy.arange(1000), seed=12)
+    s = Space(array=numpy.arange(1000), seed=123)
+    q = Space(array=numpy.arange(1000), seed=123)
+    r = Space(array=numpy.arange(1000), seed=12)
     _s, _q, _r = s.sample(), q.sample(), r.sample()
     assert _s in s
     assert _q in q
@@ -82,7 +84,7 @@ def test_sample_CatSet():
     assert _s == _q
     assert _s != _r
 
-    s = space(array=numpy.arange(4), seed=123)
+    s = Space(array=numpy.arange(4), seed=123)
     scont = {}
     for i in range(1000):
         _s = s.sample()
@@ -92,9 +94,9 @@ def test_sample_CatSet():
 
 
 def test_sample_Numeric():
-    s = space(low=-numpy.ones((2, 2)), high=numpy.ones((2, 2)), seed=123)
-    q = space(low=-numpy.ones((2, 2)), high=numpy.ones((2, 2)), seed=123)
-    r = space(low=-numpy.ones((2, 2)), high=numpy.ones((2, 2)), seed=12)
+    s = Space(low=-numpy.ones((2, 2)), high=numpy.ones((2, 2)), seed=123)
+    q = Space(low=-numpy.ones((2, 2)), high=numpy.ones((2, 2)), seed=123)
+    r = Space(low=-numpy.ones((2, 2)), high=numpy.ones((2, 2)), seed=12)
 
     _s, _q, _r = s.sample(), q.sample(), r.sample()
     assert _s in s
@@ -112,37 +114,37 @@ def test_sample():
 
 
 def test_dtype_CatSet():
-    s = space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
+    s = Space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
     assert s.dtype == numpy.int16
     assert s.sample().dtype == numpy.int16
-    s = space(array=numpy.array([1, 2, 3], dtype=numpy.int16), dtype=numpy.int64)
+    s = Space(array=numpy.array([1, 2, 3], dtype=numpy.int16), dtype=numpy.int64)
     assert s.dtype == numpy.int64
     assert s.sample().dtype == numpy.int64
 
 
 def test_dtype_Numeric():
-    s = space(
+    s = Space(
         low=-numpy.ones((2, 2)),
         high=numpy.ones((2, 2)),
     )
     assert s.dtype == numpy.float64
     assert s.sample().dtype == numpy.float64
 
-    s = space(
+    s = Space(
         low=-numpy.ones((2, 2), dtype=numpy.float32),
         high=numpy.ones((2, 2), dtype=numpy.float32),
     )
     assert s.dtype == numpy.float32
     assert s.sample().dtype == numpy.float32
 
-    s = space(
+    s = Space(
         low=-numpy.ones((2, 2)),
         high=numpy.ones((2, 2)),
         dtype=numpy.float32,
     )
     assert s.dtype == numpy.float32
     assert s.sample().dtype == numpy.float32
-    s = space(
+    s = Space(
         low=-numpy.ones((2, 2)),
         high=numpy.ones((2, 2)),
         dtype=numpy.int16,
@@ -157,16 +159,16 @@ def test_dtype():
 
 
 def test_equal_CatSet():
-    s = space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
-    assert s == space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
-    assert s != space(array=numpy.array([1, 2, 3, 4], dtype=numpy.int16))
+    s = Space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
+    assert s == Space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
+    assert s != Space(array=numpy.array([1, 2, 3, 4], dtype=numpy.int16))
 
 
 def test_equal_Numeric():
-    s = space(low=-numpy.ones((2, 2)), high=numpy.ones((2, 2)))
-    assert s == space(low=-numpy.ones((2, 2)), high=numpy.ones((2, 2)))
-    assert s != space(low=-1.5 * numpy.ones((2, 2)), high=2 * numpy.ones((2, 2)))
-    assert s != space(low=-numpy.ones((1,)), high=numpy.ones((1,)))
+    s = Space(low=-numpy.ones((2, 2)), high=numpy.ones((2, 2)))
+    assert s == Space(low=-numpy.ones((2, 2)), high=numpy.ones((2, 2)))
+    assert s != Space(low=-1.5 * numpy.ones((2, 2)), high=2 * numpy.ones((2, 2)))
+    assert s != Space(low=-numpy.ones((1,)), high=numpy.ones((1,)))
 
 
 def test_equal():
@@ -175,7 +177,7 @@ def test_equal():
 
 
 def test_serialize_CatSet():
-    s = space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
+    s = Space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
     assert (
         json.dumps(s.serialize())
         == '{"space": "CatSet", "seed": null, "array": [1, 2, 3], "dtype": "dtype[int16]"}'
@@ -183,7 +185,7 @@ def test_serialize_CatSet():
 
 
 def test_serialize_Numeric():
-    s = space(
+    s = Space(
         low=-numpy.ones((2, 2)),
         high=numpy.ones((2, 2)),
     )
@@ -203,21 +205,21 @@ def test_iter_CatSet():
 
 
 def test_iter_Numeric():
-    s = space(low=numpy.array([[-1, -2], [-3, -4]]), high=numpy.array([[1, 2], [3, 4]]))
+    s = Space(low=numpy.array([[-1, -2], [-3, -4]]), high=numpy.array([[1, 2], [3, 4]]))
     for i, _s in enumerate(s):
         if i == 0:
-            assert _s == space(low=numpy.array([-1, -2]), high=-numpy.array([-1, -2]))
+            assert _s == Space(low=numpy.array([-1, -2]), high=-numpy.array([-1, -2]))
         if i == 1:
-            assert _s == space(low=numpy.array([-3, -4]), high=-numpy.array([-3, -4]))
+            assert _s == Space(low=numpy.array([-3, -4]), high=-numpy.array([-3, -4]))
         for j, _ss in enumerate(_s):
             if i == 0 and j == 0:
-                assert _ss == space(low=-numpy.int64(1), high=numpy.int64(1))
+                assert _ss == Space(low=-numpy.int64(1), high=numpy.int64(1))
             elif i == 0 and j == 1:
-                assert _ss == space(low=-numpy.int64(2), high=numpy.int64(2))
+                assert _ss == Space(low=-numpy.int64(2), high=numpy.int64(2))
             elif i == 1 and j == 0:
-                assert _ss == space(low=-numpy.int64(3), high=numpy.int64(3))
+                assert _ss == Space(low=-numpy.int64(3), high=numpy.int64(3))
             elif i == 1 and j == 1:
-                assert _ss == space(low=-numpy.int64(4), high=numpy.int64(4))
+                assert _ss == Space(low=-numpy.int64(4), high=numpy.int64(4))
 
 
 def test_iter():
@@ -226,9 +228,9 @@ def test_iter():
 
 
 def test_cartesian_product_CatSet():
-    s = space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
-    q = space(array=numpy.array([-3, -2, -1], dtype=numpy.int16))
-    cp, _ = cartesian_product(s, q)
+    s = Space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
+    q = Space(array=numpy.array([-3, -2, -1], dtype=numpy.int16))
+    cp, shape = Space.cartesian_product(s, q)
     assert (
         cp
         == numpy.array(
@@ -248,26 +250,26 @@ def test_cartesian_product_CatSet():
 
 
 def test_cartesian_product_Numeric():
-    s = space(
+    s = Space(
         low=-numpy.ones((2, 2)),
         high=numpy.ones((2, 2)),
     )
-    q = space(
+    q = Space(
         low=-numpy.ones((2, 2)),
         high=numpy.ones((2, 2)),
     )
-    cp, _shape = cartesian_product(s, q)
+    cp, _shape = Space.cartesian_product(s, q)
     assert (cp == numpy.array([[None, None]])).all()
 
 
 def test_cartesian_product_mix():
-    s = space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
-    q = Numeric(
+    s = Space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
+    q = Space(
         low=-numpy.ones((2, 2)),
         high=numpy.ones((2, 2)),
     )
-    r = space(array=numpy.array([5, 6, 7], dtype=numpy.int16))
-    cp, shape = cartesian_product(s, q, r)
+    r = Space(array=numpy.array([5, 6, 7], dtype=numpy.int16))
+    cp, shape = Space.cartesian_product(s, q, r)
     assert (
         cp
         == numpy.array(
@@ -288,8 +290,8 @@ def test_cartesian_product_mix():
 
 
 def test_cartesian_product_single():
-    s = space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
-    cp, shape = cartesian_product(s)
+    s = Space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
+    cp, shape = Space.cartesian_product(s)
     assert (cp == numpy.array([[1], [2], [3]])).all()
     assert shape == [()]
 
@@ -302,7 +304,7 @@ def test_cartesian_product():
 
 
 def test__getitem__CatSet():
-    s = space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
+    s = Space(array=numpy.array([1, 2, 3], dtype=numpy.int16))
     with pytest.raises(SpaceNotSeparableError):
         s[0]
     assert s[...] == s
@@ -310,26 +312,26 @@ def test__getitem__CatSet():
 
 
 def test__getitem__int_interval():
-    s = space(
+    s = Space(
         low=-numpy.ones((2, 2), dtype=numpy.float32),
         high=numpy.ones((2, 2), dtype=numpy.float32),
     )
-    assert s[0] == space(
+    assert s[0] == Space(
         low=-numpy.ones((2,), dtype=numpy.float32),
         high=numpy.ones((2,), dtype=numpy.float32),
     )
 
 
 def test__getitem__slice_interval():
-    s = space(
+    s = Space(
         low=-numpy.ones((2, 2), dtype=numpy.float32),
         high=numpy.ones((2, 2), dtype=numpy.float32),
     )
-    assert s[:, 0] == space(
+    assert s[:, 0] == Space(
         low=-numpy.ones((2,), dtype=numpy.float32),
         high=numpy.ones((2,), dtype=numpy.float32),
     )
-    assert s[0, :] == space(
+    assert s[0, :] == Space(
         low=-numpy.ones((2,), dtype=numpy.float32),
         high=numpy.ones((2,), dtype=numpy.float32),
     )
@@ -344,12 +346,12 @@ def test__getitem__():
 
 
 def test_N_Numeric():
-    s = Numeric(low=numpy.array(-2), high=numpy.array(3), dtype=numpy.int8)
+    s = Space(low=numpy.array(-2), high=numpy.array(3), dtype=numpy.int8)
     assert s.N == 6
 
 
 def test_array_Numeric():
-    s = Numeric(low=numpy.array(-2), high=numpy.array(3), dtype=numpy.int8)
+    s = Space(low=numpy.array(-2), high=numpy.array(3), dtype=numpy.int8)
     assert (s.array == numpy.array([-2, -1, 0, 1, 2, 3])).all()
     assert s.dtype == s.array.dtype
 
