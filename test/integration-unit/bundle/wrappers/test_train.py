@@ -1,21 +1,21 @@
-from coopihc.base.State import State
-from coopihc.base.StateElement import StateElement
-from coopihc.base.utils import space
-from coopihc.base.utils import continuous_space
+# from coopihc.base.State import State
+# from coopihc.base.elements import discrete_array_element, array_element, cat_element
+# from coopihc.base.utils import space
+# from coopihc.base.utils import continuous_space
 
-from coopihc.interactiontask.ExampleTask import ExampleTask
+# from coopihc.interactiontask.ExampleTask import ExampleTask
 
-from coopihc.policy.BasePolicy import BasePolicy
+# from coopihc.policy.BasePolicy import BasePolicy
 
-from coopihc.agents.ExampleUser import ExampleUser
+# from coopihc.agents.ExampleUser import ExampleUser
 
-from coopihc.bundle.Bundle import Bundle
-from coopihc.bundle.wrappers.Train import TrainGym
+# from coopihc.bundle.Bundle import Bundle
+# from coopihc.bundle.wrappers.Train import TrainGym
 
-import gym
-from collections import OrderedDict
-import numpy
-import pytest
+# import gym
+# from collections import OrderedDict
+# import numpy
+# import pytest
 
 
 # def test_init():

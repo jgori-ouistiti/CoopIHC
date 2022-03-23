@@ -1,6 +1,7 @@
 from coopihc.base.Space import Space
 from coopihc.base.utils import SpaceNotSeparableError
 from coopihc.helpers import flatten
+from coopihc.base.elements import integer_space, integer_set
 import numpy
 import json
 import pytest
@@ -93,6 +94,13 @@ def test_sample_CatSet():
     assert sorted(scont.values()) == [0, 1, 2, 3]
 
 
+def test_sample_shortcuts():
+    s = integer_space(N=3, start=-1)
+    s.sample()
+    q = integer_set(2)
+    q.sample()
+
+
 def test_sample_Numeric():
     s = Space(low=-numpy.ones((2, 2)), high=numpy.ones((2, 2)), seed=123)
     q = Space(low=-numpy.ones((2, 2)), high=numpy.ones((2, 2)), seed=123)
@@ -110,6 +118,7 @@ def test_sample_Numeric():
 
 def test_sample():
     test_sample_CatSet()
+    test_sample_shortcuts()
     test_sample_Numeric()
 
 

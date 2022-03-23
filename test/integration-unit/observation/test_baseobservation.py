@@ -78,9 +78,9 @@ def test_observe():
     obseng = BaseObservationEngine()
     with pytest.raises(AttributeError):
         obseng.observe()
-    from coopihc.base.utils import example_state
+    from coopihc.base.elements import example_game_state
 
-    _example_state = example_state()
+    _example_state = example_game_state()
     obs = obseng.observe(_example_state)
     # Check equality on repr --- imperfect
     assert obs[0].__repr__() == _example_state.__repr__()

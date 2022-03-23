@@ -2,8 +2,7 @@ import numpy
 
 from coopihc.agents.BaseAgent import BaseAgent
 from coopihc.base.State import State
-from coopihc.base.StateElement import StateElement
-from coopihc.base.utils import space
+from coopihc.base.elements import discrete_array_element, array_element, cat_element
 from coopihc.policy.BasePolicy import BasePolicy
 from coopihc.observation.RuleObservationEngine import RuleObservationEngine
 from coopihc.observation.utils import base_user_engine_specification
@@ -14,16 +13,12 @@ from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 
 # Define a state
 state = State()
-state["goalstate"] = StateElement(
-    4,
-    Space(numpy.array([-4, -3, -2, -1, 0, 1, 2, 3, 4], dtype=numpy.int16), "discrete"),
-)
+state["goalstate"] = discrete_array_element(init=4, low=-4, high=4)
 
 # Define a policy (random policy)
 action_state = State()
-action_state["action"] = StateElement(
-    0, Space(numpy.array([-1, 0, 1], dtype=numpy.int16), "discrete")
-)
+action_state["action"] = discrete_array_element(low=-1, high=1)
+
 agent_policy = BasePolicy(action_state)
 
 # Explicitly use default observation and inference engines (default behavior is triggered when keyword argument is not provided or keyword value is None)

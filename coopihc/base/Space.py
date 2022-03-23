@@ -51,9 +51,9 @@ class Space:
         self, low=None, high=None, array=None, N=None, _function=None, **kwargs
     ):
         if low is not None and high is not None:
-            return Numeric(low=low, high=high, **kwargs)
+            return Numeric(low=numpy.asarray(low), high=numpy.asarray(high), **kwargs)
         if array is not None:
-            return CatSet(array=array, **kwargs)
+            return CatSet(array=numpy.asarray(array), **kwargs)
         if N is not None and _function is not None:
             raise NotImplementedError
         raise ValueError(
@@ -354,9 +354,21 @@ class Numeric(BaseSpace):
 
         """
         if numpy.issubdtype(self.dtype, numpy.integer):
-            return self.rng.integers(
-                low=self.low, high=self.high, endpoint=True, dtype=self.dtype
-            )
+            try:
+                return self.rng.integers(
+                    low=self.low,
+                    high=self.high,
+                    endpoint=True,
+                    dtype=self.dtype,
+                )
+            # Sometimes self.dtype is numpy.dtype[int64] and not dtype('int64'). While this remains, this hack is needed.
+            except TypeError:
+                return self.rng.integers(
+                    low=self.low,
+                    high=self.high,
+                    endpoint=True,
+                    dtype=self.dtype.type,
+                )
         else:
             return numpy.nan_to_num(
                 (self.high - self.low), nan=1, posinf=1

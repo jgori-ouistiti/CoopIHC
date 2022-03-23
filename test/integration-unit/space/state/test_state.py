@@ -1,14 +1,14 @@
 import coopihc
-from coopihc.base.utils import space
-from coopihc.base.StateElement import StateElement
-from coopihc.base.State import State
-from coopihc.base.utils import (
-    StateNotContainedError,
-    autospace,
-    discrete_space,
-    multidiscrete_space,
-    continuous_space,
+from coopihc.base.elements import (
+    discrete_array_element,
+    array_element,
+    cat_element,
+    integer_space,
+    box_space,
 )
+from coopihc.base.State import State
+from coopihc.base.Space import Space
+from coopihc.base.utils import StateNotContainedError
 import numpy
 from tabulate import tabulate
 
@@ -17,13 +17,11 @@ s = 0
 
 def test__init__():
     global s
-    x = StateElement(1, autospace([1, 2, 3]))
+    x = discrete_array_element(init=1, low=1, high=3)
     s = State()
     s["x"] = x
     assert State(x=x) == s
-    s["y"] = StateElement(
-        0 * numpy.ones((2, 2)), autospace(-numpy.ones((2, 2)), numpy.ones((2, 2)))
-    )
+    s["y"] = array_element(low=-numpy.ones((2, 2)), high=numpy.ones((2, 2)))
     assert "x" in s.keys()
     assert "y" in s.keys()
 
@@ -31,85 +29,51 @@ def test__init__():
 def test_reset_small():
     global s
     s.reset()
-    assert s["x"] in autospace([1, 2, 3])
-    assert s["y"] in autospace(-numpy.ones((2, 2)), numpy.ones((2, 2)))
-    reset_dic = {"x": 3, "y": numpy.zeros((2, 2))}
-    s.reset(reset_dic)
+    assert s["x"] in integer_space(start=1, stop=3)
+    assert s["y"] in box_space(low=-numpy.ones((2, 2)), high=numpy.ones((2, 2)))
+    reset_dic = {"x": 3, "y": numpy.ones((2, 2))}
+    s.reset(dic=reset_dic)
     assert s["x"] == 3
-    assert (s["y"] == numpy.zeros((2, 2))).all()
+    assert (s["y"] == numpy.ones((2, 2))).all()
 
 
 state = State()
 substate = State()
-substate["x1"] = StateElement(1, discrete_space([1, 2, 3]))
-substate["x2"] = StateElement(
-    [1, 2, 3],
-    multidiscrete_space(
-        [
-            [0, 1, 2],
-            [1, 2, 3],
-            [
-                0,
-                1,
-                2,
-                3,
-            ],
-        ]
-    ),
-)
-substate["x3"] = StateElement(
-    1.5 * numpy.ones((3, 3)),
-    continuous_space(numpy.ones((3, 3)), 2 * numpy.ones((3, 3))),
+substate["x1"] = discrete_array_element(init=1, low=1, high=3)
+substate["x3"] = array_element(
+    init=1.5 * numpy.ones((2, 2)), low=numpy.ones((2, 2)), high=2 * numpy.ones((2, 2))
 )
 
 substate2 = State()
-substate2["y1"] = StateElement(1, discrete_space([1, 2, 3]))
-substate2["y2"] = StateElement(
-    [1, 2, 3],
-    multidiscrete_space(
-        [
-            [0, 1, 2],
-            [1, 2, 3],
-            [
-                0,
-                1,
-                2,
-                3,
-            ],
-        ]
-    ),
-)
+substate2["y1"] = discrete_array_element(init=1, low=1, high=3)
+
 state["sub1"] = substate
 state["sub2"] = substate2
 
 filterdict = dict(
     {
-        "sub1": dict({"x1": 0, "x2": slice(0, 2)}),
-        "sub2": dict({"y2": 2}),
+        "sub1": dict({"x1": 0, "x3": slice(0, 1)}),
+        "sub2": dict({"y1": 0}),
     }
 )
 
 
 def test_filter():
     global filterdict, state
-    f_state = state.filter(mode="spaces", filterdict=filterdict)
+    f_state = state.filter(mode="space", filterdict=filterdict)
     assert f_state == {
         "sub1": {
-            "x1": Space(numpy.array([1, 2, 3]), "discrete", contains="soft"),
-            "x2": Space(
-                [numpy.array([0, 1, 2]), numpy.array([1, 2, 3])],
-                "multidiscrete",
-                contains="soft",
-            ),
+            "x1": Space(low=1, high=3),
+            "x3": Space(low=numpy.ones((2, 2)), high=2 * numpy.ones((2, 2))),
         },
-        "sub2": {"y2": Space(numpy.array([0, 1, 2, 3]), "discrete", contains="soft")},
+        "sub2": {"y1": Space(low=1, high=3)},
     }
 
     f_state = state.filter(mode="array", filterdict=filterdict)
     # print(f_state)
     f_state = state.filter(mode="stateelement", filterdict=filterdict)
     # print(f_state)
-    f_state = state.filter(mode="spaces")
+    f_state = state.filter(mode="space")
     # print(f_state)
     f_state = state.filter(mode="array")
     # print(f_state)
@@ -119,87 +83,31 @@ def test_filter():
 
 def test_serialize():
     global state
-    assert state.serialize() == {
-        "sub1": {
-            "x1": {
-                "values": [1],
-                "spaces": {
-                    "array_list": [1, 2, 3],
-                    "space_type": "discrete",
-                    "seed": None,
-                    "contains": "soft",
-                },
-            },
-            "x2": {
-                "values": [[1], [2], [3]],
-                "spaces": {
-                    "array_list": [[0, 1, 2], [1, 2, 3], [0, 1, 2, 3]],
-                    "space_type": "multidiscrete",
-                    "seed": None,
-                    "contains": "soft",
-                },
-            },
-            "x3": {
-                "values": [[1.5, 1.5, 1.5], [1.5, 1.5, 1.5], [1.5, 1.5, 1.5]],
-                "spaces": {
-                    "array_list": [
-                        [[1.0, 1.0, 1.0], [1.0, 1.0, 1.0], [1.0, 1.0, 1.0]],
-                        [[2.0, 2.0, 2.0], [2.0, 2.0, 2.0], [2.0, 2.0, 2.0]],
-                    ],
-                    "space_type": "continuous",
-                    "seed": None,
-                    "contains": "soft",
-                },
-            },
-        },
-        "sub2": {
-            "y1": {
-                "values": [1],
-                "spaces": {
-                    "array_list": [1, 2, 3],
-                    "space_type": "discrete",
-                    "seed": None,
-                    "contains": "soft",
-                },
-            },
-            "y2": {
-                "values": [[1], [2], [3]],
-                "spaces": {
-                    "array_list": [[0, 1, 2], [1, 2, 3], [0, 1, 2, 3]],
-                    "space_type": "multidiscrete",
-                    "seed": None,
-                    "contains": "soft",
-                },
-            },
-        },
-    }
+    state.serialize()
 
 
 def test_reset_full():
     reset_dic = {
-        "sub1": {"x1": 3, "x2": numpy.array([0, 1, 0]).reshape(3, 1)},
+        "sub1": {"x1": 3},
         "sub2": {"y1": 3},
     }
     state.reset(reset_dic)
     assert state["sub1"]["x1"] == 3
-    assert (state["sub1"]["x2"] == numpy.array([0, 1, 0]).reshape(3, 1)).all()
     assert state["sub2"]["y1"] == 3
 
 
 def test_tabulate_small():
-    x = StateElement(1, autospace([1, 2, 3]))
+    x = discrete_array_element(init=1, low=1, high=3)
     s = State()
     s["x"] = x
-    s["y"] = StateElement(
-        0 * numpy.ones((2, 2)), autospace(-numpy.ones((2, 2)), numpy.ones((2, 2)))
-    )
+    s["y"] = array_element(low=-numpy.ones((2, 2)), high=numpy.ones((2, 2)))
     print(s._tabulate())
     print(tabulate(s._tabulate()[0]))
 
 
 def test_tabulate_full():
     global state
-    state["sub3"] = StateElement(0, autospace([0, 1, 2]))
+    state["sub3"] = cat_element(N=3)
     print(state._tabulate())
     print(tabulate(state._tabulate()[0]))
 

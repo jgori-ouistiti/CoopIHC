@@ -1,7 +1,8 @@
 import numpy
 from coopihc.agents.BaseAgent import BaseAgent
 from coopihc.base.State import State
-from coopihc.base.StateElement import StateElement
+from coopihc.base.elements import discrete_array_element, array_element, cat_element
+from coopihc.base.elements import discrete_array_element, cat_element
 from coopihc.policy.BasePolicy import BasePolicy
 from coopihc.policy.ExamplePolicy import (
     CoordinatedPolicy,
@@ -27,9 +28,7 @@ class ExampleAssistant(BaseAgent):
 
         # Call the policy defined above
         action_state = State()
-        action_state["action"] = StateElement(
-            0, Space(numpy.array([0], dtype=numpy.int16), "discrete")
-        )
+        action_state["action"] = cat_element(N=0, init=0)
 
         # Use default observation and inference engines
         observation_engine = None
@@ -53,9 +52,7 @@ class CoordinatedAssistant(BaseAgent):
 
         # Call the policy defined above
         action_state = State()
-        action_state["action"] = StateElement(
-            0, Space(numpy.arange(10, dtype=numpy.int16), "discrete")
-        )
+        action_state["action"] = cat_element(N=10, init=0)
 
         # Use default observation and inference engines
         observation_engine = None

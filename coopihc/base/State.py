@@ -188,34 +188,31 @@ class State(dict):
         new_state = {}
         if filterdict is None:
             filterdict = self
-        for key, values in filterdict.items():
+        for key, value in filterdict.items():
             if isinstance(self[key], State):
-                new_state[key] = self[key].filter(mode, values)
+                new_state[key] = self[key].filter(mode, filterdict=value)
             elif isinstance(self[key], StateElement):
                 # to make S.filter("values", S) possible.
                 # Warning: values == filterdict[key] != self[key]
-                if isinstance(values, StateElement):
-                    values = slice(0, len(values), 1)
-                if mode == "spaces":
-                    _SEspace = self[key].spaces
-                    if _SEspace.space_type == "discrete":
-                        new_state[key] = _SEspace
-                    else:
-                        new_state[key] = _SEspace[values]
+                if isinstance(value, StateElement):
+                    try:
+                        value = slice(0, len(value), 1)
+                    except TypeError:  # Deal with 0-D arrays
+                        value = slice(0, 1, 1)
+                if mode == "space":
+                    _SEspace = self[key].space
+                    new_state[key] = _SEspace
                 elif mode == "array":
-                    new_state[key] = (self[key][values]).view(numpy.ndarray)
+                    new_state[key] = (self[key][value]).view(numpy.ndarray)
                 elif mode == "array-Gym":
-                    if self[key].spaces.space_type == "discrete":
-                        new_state[key] = int((self[key][values]).view(numpy.ndarray)[0])
-                    elif self[key].spaces.space_type == "multidiscrete":
-                        new_state[key] = (
-                            (self[key][values]).view(numpy.ndarray).reshape(-1)
-                        )
+                    v = (self[key][value]).view(numpy.ndarray)
+                    if v.shape == ():
+                        new_state[key] = int(v)
                     else:
-                        new_state[key] = (self[key][values]).view(numpy.ndarray)
+                        new_state[key] = v
 
                 elif mode == "stateelement":
-                    new_state[key] = self[key][values, {"spaces": True}]
+                    new_state[key] = self[key][value, {"spaces": True}]
             else:
                 new_state[key] = self[key]
 

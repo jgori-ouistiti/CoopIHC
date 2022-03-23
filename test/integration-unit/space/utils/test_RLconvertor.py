@@ -1,9 +1,3 @@
-from coopihc.base.utils import (
-    GymConvertor,
-    discrete_space,
-    continuous_space,
-    multidiscrete_space,
-)
 import numpy
 import gym
 

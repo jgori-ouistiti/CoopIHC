@@ -3,7 +3,8 @@ import copy
 
 from coopihc.helpers import flatten
 from coopihc.base.State import State
-from coopihc.base.StateElement import StateElement
+from coopihc.base.elements import discrete_array_element, array_element, cat_element
+from coopihc.base.elements import array_element
 from coopihc.interactiontask.InteractionTask import InteractionTask
 
 
@@ -96,16 +97,11 @@ class ClassicControlTask(InteractionTask):
 
         self.dim = max(A.shape)
         self.state = State()
-        self.state["x"] = StateElement(
-            numpy.zeros((self.dim, 1)),
-            Space(
-                [
-                    -numpy.ones((self.dim, 1)) * numpy.inf,
-                    numpy.ones((self.dim, 1)) * numpy.inf,
-                ],
-                "continuous",
-            ),
+        self.state["x"] = array_element(
+            low=numpy.full((self.dim,), -numpy.inf),
+            high=numpy.full((self.dim,), numpy.inf),
         )
+
         self.state_last_x = copy.copy(self.state["x"])
         self.timestep = timestep
 
@@ -139,7 +135,7 @@ class ClassicControlTask(InteractionTask):
         self.timespace = timespace
 
         if end == "standard":
-            self.end = numpy.full((self.dim, 1), 0.01)
+            self.end = numpy.full((self.dim,), 0.01)
         else:
             self.end = end
 
@@ -168,9 +164,7 @@ class ClassicControlTask(InteractionTask):
         """
         # Force zero velocity
 
-        self.state["x"] *= numpy.array([1] + [0 for i in range(self.dim - 1)]).reshape(
-            (-1, 1)
-        )
+        self.state["x"] *= numpy.array([1] + [0 for i in range(self.dim - 1)])
 
     def user_step(self, *args, **kwargs):
         """user step
@@ -225,14 +219,14 @@ class ClassicControlTask(InteractionTask):
                 + H * _u * gamma
             )
 
-        self.state["x"][:] = _x
+        self.state["x"][...] = _x
 
         is_done = self.stopping_condition()
 
         return self.state, 0, is_done
 
     def stopping_condition(self):
-        _x = self.state["x"][:]
+        _x = self.state["x"][...]
         if (abs(_x[:]) <= self.end).all():
             return True
         return False

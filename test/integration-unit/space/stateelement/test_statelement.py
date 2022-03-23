@@ -2,12 +2,8 @@ from coopihc.base.StateElement import StateElement
 from coopihc.base.utils import (
     StateNotContainedError,
     StateNotContainedWarning,
-    NumpyFunctionNotHandledWarning,
-    integer_set,
-    lin_space,
-    box_space,
-    space,
 )
+from coopihc.base.elements import integer_set, box_space
 
 import numpy
 import pytest
@@ -412,6 +408,7 @@ def test__iter__numeric():
                 _x == StateElement(numpy.array([0.4, 0.5]), box_space(numpy.ones((2,))))
             ).all()
         for j, _xx in enumerate(_x):
+            print(i, j)
             if i == 0 and j == 0:
                 assert _xx == StateElement(
                     numpy.array(0.2), box_space(numpy.float64(1))

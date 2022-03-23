@@ -3,7 +3,13 @@ from coopihc.interactiontask.ExampleTask import ExampleTask
 from coopihc.base.State import State
 from coopihc.base.utils import space
 from coopihc.base.utils import discrete_space, autospace
-from coopihc.base.StateElement import StateElement
+from coopihc.base.elements import (
+    discrete_array_element,
+    array_element,
+    cat_element,
+    integer_space,
+    integer_set,
+)
 from coopihc.bundle.Bundle import Bundle
 from coopihc.agents.BaseAgent import BaseAgent
 from coopihc.policy.BasePolicy import BasePolicy
@@ -12,12 +18,12 @@ from coopihc.agents.ExampleAssistant import ExampleAssistant
 import copy
 
 user_action_state = State()
-user_action_state["action1"] = StateElement(0, discrete_space([-1, 0, 1]))
-user_action_state["action2"] = StateElement(0, discrete_space([0, 1]))
+user_action_state["action1"] = discrete_array_element(low=-1, high=1)
+user_action_state["action2"] = cat_element(N=2)
 
 assistant_action_state = State()
-assistant_action_state["action1"] = StateElement(0, discrete_space([0, 1]))
-assistant_action_state["action2"] = StateElement(2, discrete_space([2, 3, 4]))
+assistant_action_state["action1"] = cat_element(N=2)
+assistant_action_state["action2"] = discrete_array_element(low=2, high=4, init=2)
 
 
 class MultiActionTask(ExampleTask):
@@ -35,7 +41,9 @@ class MultiActionTask(ExampleTask):
         # Modify the state in place, adding the user action
         is_done = False
 
-        self.state["x"][:] = self.state["x"] + self.user_action[0] * self.user_action[1]
+        self.state["x"][...] = (
+            self.state["x"] + self.user_action[0] * self.user_action[1]
+        )
 
         # Stopping condition, return is_done boolean floag
         if self.state["x"] == 4:
@@ -48,7 +56,7 @@ class MultiActionTask(ExampleTask):
         is_done = False
         # Modify the state in place, adding the assistant action
         if self.assistant_action[1] == 2:
-            self.state["x"][:] = self.state["x"] + self.assistant_action[0]
+            self.state["x"][...] = self.state["x"] + self.assistant_action[0]
 
         # Stopping condition, return is_done boolean floag
         if self.state["x"] == 4:
@@ -71,16 +79,16 @@ bundle = Bundle(
 
 # ============== Helpers =============
 def assert_action_states(bundle):
-    user_flag = bundle.user.policy.action_state["action1"].spaces == discrete_space(
-        [-1, 0, 1]
-    ) and bundle.user.policy.action_state["action2"].spaces == discrete_space([0, 1])
+    user_flag = bundle.user.policy.action_state["action1"].space == integer_space(
+        N=3, start=-1
+    ) and bundle.user.policy.action_state["action2"].space == integer_set(2)
 
     assistant_flag = bundle.assistant.policy.action_state[
         "action1"
-    ].spaces == discrete_space([0, 1]) and bundle.assistant.policy.action_state[
+    ].space == integer_set(2) and bundle.assistant.policy.action_state[
         "action2"
-    ].spaces == discrete_space(
-        [2, 3, 4]
+    ].space == integer_space(
+        N=3, start=2
     )
     return user_flag and assistant_flag
 
@@ -311,17 +319,17 @@ def user_step_useronly(bundle, task_state_value):
 def test_step_useronly():
     global bundle
     bundle.reset(turn=1)
-    x = bundle.game_state["task_state"]["x"].squeeze().tolist()
+    x = bundle.game_state["task_state"]["x"].tolist()
     assert null_step_useronly(bundle, x)
     bundle.reset(turn=1)
-    x = bundle.game_state["task_state"]["x"].squeeze().tolist()
+    x = bundle.game_state["task_state"]["x"].tolist()
     assert user_step_useronly(bundle, x)
 
 
 def test_multistep_both():
     global bundle
     bundle.reset(turn=1)
-    x = bundle.game_state["task_state"]["x"].squeeze().tolist()
+    x = bundle.game_state["task_state"]["x"].tolist()
     while True:
         state, rewards, is_done = bundle.step(
             user_action=(1, 1), assistant_action=(1, 3)
@@ -333,13 +341,13 @@ def test_multistep_both():
             assert is_done == False
 
         assert state["task_state"]["x"] == x + 1
-        x = state["task_state"]["x"].squeeze().tolist()
+        x = state["task_state"]["x"].tolist()
 
 
 def test_multistep_single():
     global bundle
     bundle.reset(turn=1)
-    x = bundle.game_state["task_state"]["x"].squeeze().tolist()
+    x = bundle.game_state["task_state"]["x"].tolist()
     while True:
         state, rewards, is_done = bundle.step(user_action=(1, 1))
         assistant_action_one = state["assistant_action"]["action1"]
@@ -356,13 +364,13 @@ def test_multistep_single():
             assert is_done == False
 
         assert state["task_state"]["x"] == new_value
-        x = state["task_state"]["x"].squeeze().tolist()
+        x = state["task_state"]["x"].tolist()
 
 
 def test_multistep_none():
     global bundle
     bundle.reset(turn=1)
-    x = bundle.game_state["task_state"]["x"].squeeze().tolist()
+    x = bundle.game_state["task_state"]["x"].tolist()
     while True:
         state, rewards, is_done = bundle.step()
         user_action_one = state["user_action"]["action1"]
@@ -383,7 +391,7 @@ def test_multistep_none():
             assert is_done == False
 
         assert state["task_state"]["x"] == new_value
-        x = state["task_state"]["x"].squeeze().tolist()
+        x = state["task_state"]["x"].tolist()
 
 
 def test_multistep():

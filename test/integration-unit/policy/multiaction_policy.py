@@ -3,20 +3,15 @@ from coopihc.policy.ELLDiscretePolicy import ELLDiscretePolicy
 from coopihc.policy.BasePolicy import BasePolicy
 
 from coopihc.base.State import State
+from coopihc.base.elements import discrete_array_element, cat_element
 from coopihc.base.StateElement import StateElement
-from coopihc.base.utils import space
-from coopihc.base.utils import autospace
 
 
 def test_init():
     action_state = State(
         **{
-            "action1": StateElement(
-                0, Space(numpy.array([0, 1], dtype=numpy.int16), "discrete")
-            ),
-            "action2": StateElement(
-                3, Space(numpy.array([3, 4, 5], dtype=numpy.int16), "discrete")
-            ),
+            "action1": cat_element(2),
+            "action2": discrete_array_element(init=3, low=3, high=5),
         }
     )
     policy = BasePolicy(action_state=action_state)
@@ -25,12 +20,8 @@ def test_init():
 
 action_state = State(
     **{
-        "action1": StateElement(
-            0, Space(numpy.array([0, 1], dtype=numpy.int16), "discrete")
-        ),
-        "action2": StateElement(
-            3, Space(numpy.array([3, 4, 5], dtype=numpy.int16), "discrete")
-        ),
+        "action1": cat_element(2),
+        "action2": discrete_array_element(init=3, low=3, high=5),
     }
 )
 policy = BasePolicy(action_state=action_state)

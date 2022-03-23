@@ -1,5 +1,5 @@
 from coopihc.base.State import State
-from coopihc.base.StateElement import StateElement
+from coopihc.base.elements import discrete_array_element, array_element, cat_element
 from coopihc.policy.BasePolicy import BasePolicy
 from coopihc.observation.RuleObservationEngine import RuleObservationEngine
 from coopihc.observation.utils import base_user_engine_specification
@@ -330,7 +330,7 @@ class BaseAgent:
                 self.state[key] = value
                 continue
             elif isinstance(value, numpy.ndarray):
-                self.state[key][:] = value
+                self.state[key][...] = value
 
             elif value is None:
                 continue
@@ -401,13 +401,11 @@ class BaseAgent:
 
             # Update agent observation
             if self.role == "user":
-                if self.inference_engine.buffer[-1].get("user_state") is not None:
-                    self.inference_engine.buffer[-1]["user_state"].update(agent_state)
+                if self.observation.get("user_state") is not None:
+                    self.observation["user_state"].update(agent_state)
             elif self.role == "assistant":
-                if self.inference_engine.buffer[-1].get("assistant_state") is not None:
-                    self.inference_engine.buffer[-1]["assistant_state"].update(
-                        agent_state
-                    )
+                if self.observation.get("assistant_state") is not None:
+                    self.observation["assistant_state"].update(agent_state)
         else:
             agent_infer_reward = 0
         return agent_obs_reward, agent_infer_reward

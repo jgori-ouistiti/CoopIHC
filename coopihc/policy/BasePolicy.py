@@ -2,7 +2,8 @@ import numpy
 import copy
 
 from coopihc.base.State import State
-from coopihc.base.StateElement import StateElement
+from coopihc.base.elements import discrete_array_element, array_element, cat_element
+from coopihc.base.elements import cat_element
 
 
 # ============== General Policies ===============
@@ -22,9 +23,7 @@ class BasePolicy:
 
         if action_state is None:
             action_state = State()
-            action_state["action"] = StateElement(
-                0, Space(numpy.array([0, 1], dtype=numpy.int16), "discrete")
-            )
+            action_state["action"] = cat_element(N=2, init=0)
 
         self.action_state = action_state
         self.host = None
@@ -83,7 +82,7 @@ class BasePolicy:
         except TypeError:
             item = (item,)
         for _action, key in zip(item, self.action_keys):
-            self.action_state[key][:] = _action
+            self.action_state[key][...] = _action
 
     # @property
     # def new_action(self):

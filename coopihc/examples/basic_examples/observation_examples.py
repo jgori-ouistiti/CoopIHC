@@ -1,23 +1,15 @@
 import numpy
 from coopihc.base.State import State
-from coopihc.base.StateElement import StateElement
-from coopihc.base.utils import space
-from coopihc.base.utils import autospace
+from coopihc.base.elements import discrete_array_element, array_element, cat_element
 from coopihc.observation.ExampleObservationEngine import ExampleObservationEngine
 
 import numpy
 
 
-x = StateElement(
-    numpy.array([0]).reshape(1, 1),
-    autospace(
-        numpy.array([-1.0]).reshape(1, 1),
-        numpy.array([1.0]).reshape(1, 1),
-    ),
-)
-y = StateElement(2, autospace([1, 2, 3]))
+x = array_element(low=-1, high=1)
+y = discrete_array_element(low=1, high=3, init=2)
 s1 = State(substate_x=x, substate_y=y)
-a = StateElement(0, autospace([0, 1, 2]))
+a = cat_element(3)
 s2 = State(substate_a=a)
 S = State()
 S["substate1"] = s1

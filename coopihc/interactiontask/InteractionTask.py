@@ -158,7 +158,7 @@ class InteractionTask(ABC):
                 self.state[key] = value
                 continue
             elif isinstance(value, numpy.ndarray):
-                self.state[key][:] = value
+                self.state[key][...] = value
 
             elif value is None:
                 continue

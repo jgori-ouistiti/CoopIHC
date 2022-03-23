@@ -1,6 +1,6 @@
 from coopihc.helpers import hard_flatten
 from coopihc.base.convertor import GymConvertor, GymForceConvertor
-from coopihc.base.StateElement import StateElement
+from coopihc.base.elements import discrete_array_element, array_element, cat_element
 
 import gym
 import numpy

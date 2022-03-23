@@ -1,12 +1,9 @@
 import numpy
 from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 from coopihc.inference.CascadedInferenceEngine import CascadedInferenceEngine
-from coopihc.base.State import State
-from coopihc.base.StateElement import StateElement
-from coopihc.base.utils import space
 
 
-from coopihc.base.utils import example_game_state
+from coopihc.base.elements import example_game_state
 
 egstate = example_game_state()["user_state"]
 

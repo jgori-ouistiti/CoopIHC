@@ -1,5 +1,6 @@
 import numpy
 from coopihc.policy.BasePolicy import BasePolicy
+from coopihc.base.Space import Space
 
 
 class BadlyDefinedLikelihoodError(Exception):
@@ -101,7 +102,7 @@ class ELLDiscretePolicy(BasePolicy):
         """
         llh, actions = [], []
         action_stateelement = self.action_state["action"]
-        action_space = action_stateelement.spaces
+        action_space = action_stateelement.space
 
         for action in Space.cartesian_product(action_space)[0]:
             llh.append(self.compute_likelihood(action, observation))

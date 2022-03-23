@@ -7,11 +7,14 @@ def test_lin_space():
     space = lin_space(-5, 5, num=11)
 
 
-def test_integer():
+def test_integer_space():
     space = integer_space(10, dtype=numpy.int16)
+    space = integer_space(N=3, start=-1)
+    assert space.low == -1
+    assert space.high == 1
 
 
-def test_integer():
+def test_integer_set():
     space = integer_set(10, dtype=numpy.int16)
 
 
@@ -22,6 +25,8 @@ def test_box():
 
 def test_base_init():
     test_lin_space()
+    test_integer_space()
+    test_integer_set()
     test_box()
 
 

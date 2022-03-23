@@ -59,7 +59,7 @@ class CoordinatedInferenceEngine(BaseInferenceEngine):
             # Compare prediction with observation
             if user_action != usermodel_action:
                 # If different, increment parameter by 1 and apply modulo 10. This works because we assumed we knew everything except the value of this parameter.
-                agent_state["user_p0"][:] = (agent_state["user_p0"] + 1) % 10
+                agent_state["user_p0"][...] = (agent_state["user_p0"] + 1) % 10
             else:
                 break
 
@@ -92,9 +92,9 @@ class RolloutCoordinatedInferenceEngine(BaseInferenceEngine):
                 **reset_dic,
                 **{
                     "user_state": {
-                        "p0": numpy.array([[i]]),
-                        "p1": self.state.user_p1[:],
-                        "p2": self.state.user_p2[:],
+                        "p0": i,
+                        "p1": self.state.user_p1[...],
+                        "p2": self.state.user_p2[...],
                     }
                 },
             }
@@ -107,6 +107,6 @@ class RolloutCoordinatedInferenceEngine(BaseInferenceEngine):
                     break
 
         index = numpy.argmax(rew)
-        self.state["user_p0"][:] = index
+        self.state["user_p0"][...] = index
 
         return self.state, 0

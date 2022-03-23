@@ -1,5 +1,6 @@
 from coopihc.base.State import State
-from coopihc.base.StateElement import StateElement
+from coopihc.base.elements import discrete_array_element, array_element, cat_element
+from coopihc.base.elements import discrete_array_element, cat_element
 
 import numpy
 import yaml
@@ -40,16 +41,10 @@ class _Bundle:
         # Form complete game state
         self.game_state = State()
 
-        turn_index = StateElement(
-            numpy.array([0]),
-            Space(numpy.array([0, 1, 2, 3], dtype=numpy.int8), "discrete"),
-            out_of_bounds_mode="raw",
+        turn_index = cat_element(
+            N=4, init=0, out_of_bounds_mode="raw", dtype=numpy.int8
         )
-        round_index = StateElement(
-            numpy.array([0]),
-            Space(numpy.array([0], dtype=numpy.int8), "discrete"),
-            out_of_bounds_mode="raw",
-        )
+        round_index = discrete_array_element(init=0, out_of_bounds_mode="raw")
 
         self.game_state["game_info"] = State()
         self.game_state["game_info"]["turn_index"] = turn_index
@@ -120,7 +115,7 @@ class _Bundle:
     @turn_number.setter
     def turn_number(self, value):
         self._turn_number = value
-        self.game_state["game_info"]["turn_index"][:] = value
+        self.game_state["game_info"]["turn_index"][...] = value
 
     @property
     def round_number(self):
@@ -136,7 +131,7 @@ class _Bundle:
     @round_number.setter
     def round_number(self, value):
         self._round_number = value
-        self.game_state["game_info"]["round_index"][:] = value
+        self.game_state["game_info"]["round_index"][...] = value
 
     def reset(
         self, turn=0, task=True, user=True, assistant=True, dic={}, skip_user_step=False
@@ -204,9 +199,9 @@ class _Bundle:
                 dic=assistant_dic, random=self.kwargs.get("random_reset", False)
             )
 
-        self.round_number[:] = 0
+        self.round_number[...] = 0
 
-        self.turn_number[:] = turn
+        self.turn_number[...] = turn
 
         if turn == 0:
             return self.game_state
@@ -333,7 +328,7 @@ class _Bundle:
         self.rendered_mode = mode
         if "text" in mode:
             print("\n")
-            print("Round number {}".format(self.round_number.squeeze().tolist()))
+            print("Round number {}".format(self.round_number.tolist()))
             print("Task Render")
             self.task.render(mode="text", *args, **kwargs)
             print("User Render")

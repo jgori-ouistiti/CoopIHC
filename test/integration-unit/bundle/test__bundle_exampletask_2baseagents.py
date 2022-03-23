@@ -1,9 +1,13 @@
 import numpy
 from coopihc.interactiontask.ExampleTask import ExampleTask
 from coopihc.base.State import State
-from coopihc.base.utils import space
-from coopihc.base.utils import discrete_space
-from coopihc.base.StateElement import StateElement
+from coopihc.base.elements import (
+    discrete_array_element,
+    array_element,
+    cat_element,
+    integer_space,
+    integer_set,
+)
 from coopihc.bundle.Bundle import Bundle
 from coopihc.agents.BaseAgent import BaseAgent
 from coopihc.policy.BasePolicy import BasePolicy
@@ -12,10 +16,10 @@ from coopihc.agents.ExampleAssistant import ExampleAssistant
 import copy
 
 user_action_state = State()
-user_action_state["action"] = StateElement(0, discrete_space([-1, 0, 1]))
+user_action_state["action"] = discrete_array_element(low=-1, high=1)
 
 assistant_action_state = State()
-assistant_action_state["action"] = StateElement(0, discrete_space([0, 1]))
+assistant_action_state["action"] = cat_element(N=2)
 
 bundle = Bundle(
     task=ExampleTask(),
@@ -30,13 +34,13 @@ bundle = Bundle(
 
 # ============== Helpers =============
 def assert_action_states(bundle):
-    user_flag = bundle.user.policy.action_state["action"].spaces == discrete_space(
-        [-1, 0, 1]
+    user_flag = bundle.user.policy.action_state["action"].space == integer_space(
+        N=3, start=-1
     )
 
     assistant_flag = bundle.assistant.policy.action_state[
         "action"
-    ].spaces == discrete_space([0, 1])
+    ].space == integer_set(2)
     return user_flag and assistant_flag
 
 
@@ -211,13 +215,13 @@ def assistant_step(bundle, task_state_value):
 def test_step_both():
     global bundle
     bundle.reset(turn=1)
-    x = bundle.game_state["task_state"]["x"].squeeze().tolist()
+    x = bundle.game_state["task_state"]["x"].tolist()
     assert null_step(bundle, x)
     bundle.reset(turn=1)
-    x = bundle.game_state["task_state"]["x"].squeeze().tolist()
+    x = bundle.game_state["task_state"]["x"].tolist()
     assert user_step(bundle, x)
     bundle.reset(turn=1)
-    x = bundle.game_state["task_state"]["x"].squeeze().tolist()
+    x = bundle.game_state["task_state"]["x"].tolist()
     assert assistant_step(bundle, x)
 
 

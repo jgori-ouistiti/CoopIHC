@@ -93,12 +93,13 @@ class StateElement(numpy.ndarray):
     ):
         """__new__, see https://numpy.org/doc/stable/user/basics.subclassing.html"""
 
-        input_object = StateElement._process_input_values(
-            input_object,
-            space,
-            out_of_bounds_mode,
+        input_object = numpy.asarray(
+            StateElement._process_input_values(
+                input_object,
+                space,
+                out_of_bounds_mode,
+            )
         )
-
         obj = input_object.view(cls)
         obj.space = space
         obj.out_of_bounds_mode = out_of_bounds_mode
@@ -240,7 +241,15 @@ class StateElement(numpy.ndarray):
                 **self.kwargs,
             )
         else:
-            return self.view(numpy.ndarray)[key]
+            try:
+                return self.view(numpy.ndarray)[key]
+            except IndexError:
+                # If one-element slice
+                try:
+                    if key.start == 0 and key.stop == 1 and self.shape == ():
+                        return self.view(numpy.ndarray)
+                except AttributeError:
+                    return self.view(numpy.ndarray)[...]
 
     def __setitem__(self, key, value):
         """__setitem__
@@ -256,7 +265,6 @@ class StateElement(numpy.ndarray):
                 x[...] = 4
 
         """
-
         value = StateElement._process_input_values(
             value, self.space[key], self.out_of_bounds_mode
         )
@@ -282,10 +290,13 @@ class StateElement(numpy.ndarray):
         :return: _description_
         :rtype: _type_
         """
-
+        space = (
+            self._iterable_space.__next__()
+        )  # make sure that space is called before so that it can raise StopIteration before having an IndexError on the values
+        value = self._iterable_value.__next__()
         return StateElement(
-            self._iterable_value.__next__(),
-            self._iterable_space.__next__(),
+            value,
+            space,
             out_of_bounds_mode=self.out_of_bounds_mode,
             **self.kwargs,
         )

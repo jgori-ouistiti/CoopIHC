@@ -3,7 +3,7 @@ import numpy
 
 from coopihc.agents.BaseAgent import BaseAgent
 from coopihc.base.State import State
-from coopihc.base.StateElement import StateElement
+from coopihc.base.elements import discrete_array_element, array_element, cat_element
 from coopihc.policy.LinearFeedback import LinearFeedback
 from coopihc.observation.RuleObservationEngine import RuleObservationEngine
 from coopihc.observation.utils import base_task_engine_specification

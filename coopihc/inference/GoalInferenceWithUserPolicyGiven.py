@@ -216,7 +216,7 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
             observation = self.buffer[-1]
             user_state = observation["assistant_state"]
 
-        old_beliefs = user_state["beliefs"].squeeze().tolist()
+        old_beliefs = user_state["beliefs"].tolist()
         user_action = observation["user_action"]["action"]
 
         for nt, t in enumerate(self.set_theta):
@@ -240,5 +240,5 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
             )
             old_beliefs = [1 for i in old_beliefs]
         new_beliefs = [i / sum(old_beliefs) for i in old_beliefs]
-        user_state["beliefs"][:] = numpy.array(new_beliefs)
+        user_state["beliefs"][...] = numpy.array(new_beliefs)
         return user_state, 0

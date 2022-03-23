@@ -1,9 +1,7 @@
 import numpy
 from coopihc.interactiontask.ExampleTask import ExampleTask
 from coopihc.base.State import State
-from coopihc.base.utils import space
-from coopihc.base.utils import discrete_space
-from coopihc.base.StateElement import StateElement
+from coopihc.base.elements import discrete_array_element, array_element, cat_element
 from coopihc.bundle.Bundle import Bundle
 from coopihc.agents.BaseAgent import BaseAgent
 from coopihc.policy.BasePolicy import BasePolicy
@@ -14,10 +12,11 @@ from coopihc.agents.ExampleAssistant import ExampleAssistant
 # [start-check-task]
 # Define agent action states (what actions they can take)
 user_action_state = State()
-user_action_state["action"] = StateElement(0, discrete_space([-1, 0, 1]))
+user_action_state["action"] = discrete_array_element(low=-1, high=1)
 
 assistant_action_state = State()
-assistant_action_state["action"] = StateElement(0, discrete_space([-1, 0, 1]))
+assistant_action_state["action"] = discrete_array_element(low=-1, high=1)
+
 
 # Bundle a task together with two BaseAgents
 bundle = Bundle(

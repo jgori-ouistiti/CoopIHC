@@ -2,9 +2,11 @@ import copy
 import math
 import copy
 
+from coopihc.base.Space import Space
 from coopihc.base.State import State
 from coopihc.helpers import sort_two_lists
 from coopihc.policy.BasePolicy import BasePolicy
+
 
 import numpy
 
@@ -48,12 +50,12 @@ class BIGDiscretePolicy(BasePolicy):
         super().__init__(*args, action_state=assistant_action_state, **kwargs)
 
         self.assistant_action_set = Space.cartesian_product(
-            self.action_state["action"].spaces
+            self.action_state["action"].space
         )[0]
 
         self.user_policy_model = user_policy_model
         self.user_action_set = Space.cartesian_product(
-            user_policy_model.action_state["action"].spaces
+            user_policy_model.action_state["action"].space
         )[0]
 
         self.user_policy_likelihood_function = user_policy_model.compute_likelihood

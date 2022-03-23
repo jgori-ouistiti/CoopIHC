@@ -2,7 +2,7 @@
 coopihc package."""
 
 from coopihc.observation.RuleObservationEngine import RuleObservationEngine
-from coopihc.base.utils import example_game_state
+from coopihc.base.elements import example_game_state
 import random
 import pytest
 
@@ -466,7 +466,6 @@ def test_observe():
     obseng = RuleObservationEngine()
     with pytest.raises(AttributeError):
         obseng.observe()
-    from coopihc.base.utils import example_game_state
 
     _example_state = example_game_state()
     obs = obseng.observe(_example_state)[0]  # remove reward

@@ -9,6 +9,7 @@ def test_init():
         5,
         init=0,
     )
+    discrete_array_element(init=-4, low=-4, high=4)
 
 
 if __name__ == "__main__":
