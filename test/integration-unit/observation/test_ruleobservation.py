@@ -320,7 +320,7 @@ def test_apply_deterministic_all_mapping_remove_subsubstate_slice():
     del egs["game_info"]
     del egs["assistant_state"]
     del egs["task_state"]["position"]
-    egs["task_state"]["targets"] = egs["task_state"]["targets"][0]
+    egs["task_state"]["targets"] = egs["task_state"]["targets"][0, {"space": True}]
     assert egs == obs
 
 
@@ -472,7 +472,7 @@ def test_observe():
     del _example_state["user_state"]
     del _example_state["assistant_state"]
 
-    assert obs == _example_state
+    assert _example_state.equals(obs, mode="hard")
 
 
 # +----------------------+

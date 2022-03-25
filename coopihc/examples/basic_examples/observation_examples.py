@@ -19,12 +19,13 @@ S["substate_2"] = s2
 obs_engine = ExampleObservationEngine("substate1")
 # Game state before observation
 # >>> print(S)
-# ----------  ----------  -  ----------
-# substate1   substate_x  0  Cont(1, 1)
-#             substate_y  2  Discr(3)
-# substate_2  substate_a  0  Discr(3)
-# ----------  ----------  -  ----------
+# ----------  ----------  -  ---------
+# substate1   substate_x  0  Numeric()
+#             substate_y  2  Numeric()
+# substate_2  substate_a  0  CatSet(3)
+# ----------  ----------  -  ---------
 
+print(obs_engine.observe(game_state=S)[0])
 # Produced Observation
 # >>> print(obs_engine.observe(S)[0])
 # ---------  ----------  -  ----------

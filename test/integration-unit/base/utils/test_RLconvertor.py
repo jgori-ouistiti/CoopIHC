@@ -2,18 +2,18 @@ import numpy
 import gym
 
 
-# class CustomEnv(gym.Env):
-#     """Custom Environment that follows gym interface"""
+class CustomEnv(gym.Env):
+    """Custom Environment that follows gym interface"""
 
-#     metadata = {"render.modes": ["human"]}
+    metadata = {"render.modes": ["human"]}
 
-#     def __init__(self, *args, **kwargs):
-#         super().__init__()  # Define action and observation space
-#         # They must be gym.spaces objects    # Example when using discrete actions:
-#         self.action_space = gym.spaces.Discrete(1)  # Example for using image as input:
-#         self.observation_space = gym.spaces.Box(
-#             low=numpy.ones((2, 2)), high=numpy.ones((2, 2)), dtype=numpy.float32
-#         )
+    def __init__(self, *args, **kwargs):
+        super().__init__()  # Define action and observation space
+        # They must be gym.spaces objects    # Example when using discrete actions:
+        self.action_space = gym.spaces.Discrete(1)  # Example for using image as input:
+        self.observation_space = gym.spaces.Box(
+            low=numpy.ones((2, 2)), high=numpy.ones((2, 2)), dtype=numpy.float32
+        )
 
 
 # def test_gymconvertor(capsys):

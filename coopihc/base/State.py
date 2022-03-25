@@ -8,6 +8,7 @@ import itertools
 from coopihc.helpers import flatten
 from coopihc.base.StateElement import StateElement
 from coopihc.base.utils import NotKnownSerializationWarning
+from coopihc.base.Space import CatSet
 
 
 class State(dict):
@@ -21,62 +22,70 @@ class State(dict):
 
     Initializing a State is straightforward:
 
-    .. code:block:: python
+    .. code-block:: python
 
         state = State()
         substate = State()
-
-        substate["x1"] = StateElement(1, discrete_space([1, 2, 3]))
-        substate["x2"] = StateElement(
-            [1, 2, 3],
-            multidiscrete_space(
-                [
-                    [0, 1, 2],
-                    [1, 2, 3],
-                    [
-                        0,
-                        1,
-                        2,
-                        3,
-                    ],
-                ]
-            ),
-        )
-        substate["x3"] = StateElement(
-            1.5 * numpy.ones((3, 3)),
-            continuous_space(numpy.ones((3, 3)), 2 * numpy.ones((3, 3))),
+        substate["x1"] = discrete_array_element(init=1, low=1, high=3)
+        substate["x3"] = array_element(
+            init=1.5 * numpy.ones((2, 2)), low=numpy.ones((2, 2)), high=2 * numpy.ones((2, 2))
         )
 
         substate2 = State()
-        substate2["y1"] = StateElement(1, discrete_space([1, 2, 3]))
-        substate2["y2"] = StateElement(
-            [1, 2, 3],
-            multidiscrete_space(
-                [
-                    [0, 1, 2],
-                    [1, 2, 3],
-                    [
-                        0,
-                        1,
-                        2,
-                        3,
-                    ],
-                ]
-            ),
-        )
+        substate2["y1"] = discrete_array_element(init=1, low=1, high=3)
+
         state["sub1"] = substate
         state["sub2"] = substate2
-
     """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def __eq__(self, other):
+        """__eq__
+
+        equality checks on arrays (soft) à la Numpy
+
+        .. code-block:: python
+
+            _example_state = example_game_state()
+            obs = {
+                "game_info": {"turn_index": numpy.array(0), "round_index": numpy.array(0)},
+                "task_state": {"position": numpy.array(2), "targets": numpy.array([0, 1])},
+                "user_action": {"action": numpy.array(0)},
+                "assistant_action": {"action": numpy.array(2)},
+            }
+            del _example_state["user_state"]
+            del _example_state["assistant_state"]
+            assert _example_state == obs
+            assert _example_state.equals(obs, mode="soft")
+
+        """
+        return self.equals(other, mode="soft")
+
+    def equals(self, other, mode="hard"):
+        """equals
+
+        equality checks that also checks for spaces (hard).
+
+        .. code-block:: python
+
+            _example_state = example_game_state()
+            obs = {
+                "game_info": {"turn_index": numpy.array(0), "round_index": numpy.array(0)},
+                "task_state": {"position": numpy.array(2), "targets": numpy.array([0, 1])},
+                "user_action": {"action": numpy.array(0)},
+                "assistant_action": {"action": numpy.array(2)},
+            }
+            del _example_state["user_state"]
+            del _example_state["assistant_state"]
+            assert not _example_state.equals(obs, mode="hard")
+
+        """
         for (key, value), (okey, ovalue) in itertools.zip_longest(
             self.items(), other.items()
         ):
-            cond = value == ovalue
+            cond = value.equals(ovalue, mode=mode)
             if not isinstance(cond, bool):
                 try:
                     cond = cond.all()
@@ -99,22 +108,16 @@ class State(dict):
 
         .. code-block:: python
 
-        s = State()
-        s["x"] = StateElement(1, autospace([1, 2, 3]))
-        s["y"] = StateElement(
-            0 * numpy.ones((2, 2)), autospace(-numpy.ones((2, 2)), numpy.ones((2, 2)))
-        )
+            # Normal reset
+            state.reset()
 
-        # Normal reset
-        s.reset()
-        assert s["x"] in autospace([1, 2, 3])
-        assert s["y"] in autospace(-numpy.ones((2, 2)), numpy.ones((2, 2)))
 
-        # Forced reset
-        reset_dic = {"x": 3, "y": numpy.zeros((2, 2))}
-        s.reset(reset_dic)
-        assert s["x"] == 3
-        assert (s["y"] == numpy.zeros((2, 2))).all()
+            # Forced reset
+            reset_dic = {
+                "sub1": {"x1": 3},
+                "sub2": {"y1": 3},
+            }
+            state.reset(dic=reset_dic)
 
 
         """
@@ -131,50 +134,39 @@ class State(dict):
 
             filterdict = dict(
                 {
-                    "sub1": dict({"x1": 0, "x2": slice(0, 2)}),
-                    "sub2": dict({"y2": 2}),
+                    "sub1": dict({"x1": 0, "x3": slice(0, 1)}),
+                    "sub2": dict({"y1": 0}),
                 }
             )
 
         This will filter out
 
             * the first component (index 0) for subsubstate x1 in substate sub1,
-            * the first and second components for subsubstate x2 in substate sub1,
-            * the third component for subsubstate y2 in substate sub2.
+            * the first and second components for subsubstate x3 in substate sub1,
+            * the first component for subsubstate y1 in substate sub2.
 
 
         Example usage:
 
         .. code-block:: python
 
-            # Filter out the spaces
-
-            f_state = state.filter(mode="spaces", filterdict=filterdict)
-            assert f_state == {
-                "sub1": {
-                    "x1": Space(numpy.array([1, 2, 3]), "discrete", contains="soft"),
-                    "x2": Space(
-                        [numpy.array([0, 1, 2]), numpy.array([1, 2, 3])],
-                        "multidiscrete",
-                        contains="soft",
-                    ),
-                },
-                "sub2": {"y2": Space(numpy.array([0, 1, 2, 3]), "discrete", contains="soft")},
-            }
+            # Filter out spaces
+            f_state = state.filter(mode="space", filterdict=filterdict)
 
             # Filter out as arrays
-
             f_state = state.filter(mode="array", filterdict=filterdict)
 
-            # Filter out as StateElements
-
+            # Filter out as StateElement
             f_state = state.filter(mode="stateelement", filterdict=filterdict)
 
-            # Extract spaces for all components
-            f_state = state.filter(mode="spaces")
+            # Get spaces
+            f_state = state.filter(mode="space")
 
-            # Extract arrays for all components
+            # Get arrays
             f_state = state.filter(mode="array")
+
+            # Get Gym Compatible arrays
+            f_state = state.filter(mode="array-Gym")
 
 
         :param mode: "array" or "spaces" or "stateelement", defaults to "array". If "stateelement", returns a dictionnary with the selected stateelements. If "spaces", returns the same dictionnary, but with only the spaces (no array information). If "array", returns the same dictionnary, but with only the value arrays (no space information).
@@ -206,7 +198,7 @@ class State(dict):
                     new_state[key] = (self[key][value]).view(numpy.ndarray)
                 elif mode == "array-Gym":
                     v = (self[key][value]).view(numpy.ndarray)
-                    if v.shape == ():
+                    if isinstance(self[key].space, CatSet):
                         new_state[key] = int(v)
                     else:
                         new_state[key] = v
@@ -243,60 +235,7 @@ class State(dict):
 
         .. code-block:: python
 
-            assert state.serialize() == {
-                "sub1": {
-                    "x1": {
-                        "values": [1],
-                        "spaces": {
-                            "array_list": [1, 2, 3],
-                            "space_type": "discrete",
-                            "seed": None,
-                            "contains": "soft",
-                        },
-                    },
-                    "x2": {
-                        "values": [[1], [2], [3]],
-                        "spaces": {
-                            "array_list": [[0, 1, 2], [1, 2, 3], [0, 1, 2, 3]],
-                            "space_type": "multidiscrete",
-                            "seed": None,
-                            "contains": "soft",
-                        },
-                    },
-                    "x3": {
-                        "values": [[1.5, 1.5, 1.5], [1.5, 1.5, 1.5], [1.5, 1.5, 1.5]],
-                        "spaces": {
-                            "array_list": [
-                                [[1.0, 1.0, 1.0], [1.0, 1.0, 1.0], [1.0, 1.0, 1.0]],
-                                [[2.0, 2.0, 2.0], [2.0, 2.0, 2.0], [2.0, 2.0, 2.0]],
-                            ],
-                            "space_type": "continuous",
-                            "seed": None,
-                            "contains": "soft",
-                        },
-                    },
-                },
-                "sub2": {
-                    "y1": {
-                        "values": [1],
-                        "spaces": {
-                            "array_list": [1, 2, 3],
-                            "space_type": "discrete",
-                            "seed": None,
-                            "contains": "soft",
-                        },
-                    },
-                    "y2": {
-                        "values": [[1], [2], [3]],
-                        "spaces": {
-                            "array_list": [[0, 1, 2], [1, 2, 3], [0, 1, 2, 3]],
-                            "space_type": "multidiscrete",
-                            "seed": None,
-                            "contains": "soft",
-                        },
-                    },
-                },
-            }
+            state.serialize()
 
         :return: serializable dictionnary
         :rtype: dict

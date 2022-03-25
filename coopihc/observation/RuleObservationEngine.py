@@ -195,8 +195,15 @@ class RuleObservationEngine(BaseObservationEngine):
 
             if observation.get(substate) is None:
                 observation[substate] = State()
-            _obs = copy.copy((game_state[substate][subsubstate][_slice]))
+            try:
+                _obs = game_state[substate][subsubstate][_slice, {"space": True}]
+            except IndexError:  # 0-D arrays
+                _obs = game_state[substate][subsubstate][..., {"space": True}]
+
+            copied = False
             if _func:
+                _obs = copy.copy(_obs)
+                copied = True
                 if _args:
                     _obs = _func(_obs, game_state, *_args)
                 else:
@@ -204,6 +211,8 @@ class RuleObservationEngine(BaseObservationEngine):
             else:
                 _obs = _obs
             if _nfunc:
+                if copied == False:
+                    _obs = copy.copy(_obs)
                 if _nargs:
                     _obs = _nfunc(_obs, game_state, *_nargs)
 
@@ -213,9 +222,9 @@ class RuleObservationEngine(BaseObservationEngine):
             else:
                 _obs = _obs
 
-            observation[substate][subsubstate] = copy.copy(
-                game_state[substate][subsubstate]
-            )
+            # observation[substate][subsubstate] = copy.copy(
+            #     game_state[substate][subsubstate]
+            # ) # probably useless
             observation[substate][subsubstate] = _obs
 
         return observation

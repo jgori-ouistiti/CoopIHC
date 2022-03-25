@@ -25,8 +25,11 @@ class ExampleObservationEngine(BaseObservationEngine):
         :return: (observation, obs reward)
         :rtype: tuple(`State<coopihc.base.State.State`, float)
         """
-        game_state = super().observe(game_state=game_state)
-        return State(**{self.observable_state: game_state[self.observable_state]}), 0
+        game_state, reward = super().observe(game_state=game_state)
+        return (
+            State(**{self.observable_state: game_state[self.observable_state]}),
+            reward,
+        )
 
 
 # [end-obseng-subclass]

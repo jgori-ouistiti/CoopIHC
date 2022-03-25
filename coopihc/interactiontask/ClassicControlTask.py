@@ -98,8 +98,8 @@ class ClassicControlTask(InteractionTask):
         self.dim = max(A.shape)
         self.state = State()
         self.state["x"] = array_element(
-            low=numpy.full((self.dim,), -numpy.inf),
-            high=numpy.full((self.dim,), numpy.inf),
+            low=numpy.full((self.dim, 1), -numpy.inf),
+            high=numpy.full((self.dim, 1), numpy.inf),
         )
 
         self.state_last_x = copy.copy(self.state["x"])
@@ -135,7 +135,7 @@ class ClassicControlTask(InteractionTask):
         self.timespace = timespace
 
         if end == "standard":
-            self.end = numpy.full((self.dim,), 0.01)
+            self.end = numpy.full((self.dim, 1), 0.01)
         else:
             self.end = end
 
@@ -164,9 +164,12 @@ class ClassicControlTask(InteractionTask):
         """
         # Force zero velocity
 
-        self.state["x"] *= numpy.array([1] + [0 for i in range(self.dim - 1)])
+        self.state["x"][0, 0] = 1
+        print(self.state.x)
+        print(self.state.x.shape)
+        self.state["x"][1:, 0] = 0
 
-    def user_step(self, *args, **kwargs):
+    def user_step(self, *args, user_action=None, **kwargs):
         """user step
 
         Takes the state from x(.) to x(+.) according to
@@ -184,16 +187,16 @@ class ClassicControlTask(InteractionTask):
         A, B, F, G, H = self.A, self.B, self.F, self.G, self.H
 
         # Just to test, could be removed
-        ua = kwargs.get("user_action")
-        if ua is not None:
-            try:
-                _u = ua.view(numpy.ndarray)
-            except AttributeError:
-                _u = numpy.array(ua)
-        else:
-            _u = self.user_action.view(
-                numpy.ndarray
-            )  # If you remove this block, only keep this line
+        # ua = kwargs.get("user_action")
+        # if ua is not None:
+        #     try:
+        #         _u = ua.view(numpy.ndarray)
+        #     except AttributeError:
+        #         _u = numpy.array(ua)
+        # else:
+        _u = self.user_action.view(
+            numpy.ndarray
+        )  # If you remove this block, only keep this line
 
         _x = self.state["x"].view(numpy.ndarray)
 
@@ -206,7 +209,7 @@ class ClassicControlTask(InteractionTask):
             omega = numpy.random.normal(0, 0, (self.dim, 1))
 
         # Store last_x for render
-        self.state_last_x = copy.copy(self.state["x"][:])
+        self.state_last_x = copy.copy(_x)
         # Deterministic update + State dependent noise + independent noise
 
         if self.timespace == "discrete":

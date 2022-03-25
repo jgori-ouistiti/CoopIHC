@@ -44,7 +44,9 @@ class _Bundle:
         turn_index = cat_element(
             N=4, init=0, out_of_bounds_mode="raw", dtype=numpy.int8
         )
-        round_index = discrete_array_element(init=0, out_of_bounds_mode="raw")
+        round_index = discrete_array_element(
+            init=0, low=0, high=numpy.iinfo(numpy.int64).max, out_of_bounds_mode="raw"
+        )
 
         self.game_state["game_info"] = State()
         self.game_state["game_info"]["turn_index"] = turn_index
@@ -61,12 +63,12 @@ class _Bundle:
             self.game_state["user_action"] = user.policy.action_state
         else:
             self.game_state["user_action"] = State()
-            self.game_state["user_action"]["action"] = StateElement()
+            self.game_state["user_action"]["action"] = array_element()
         if assistant.policy is not None:
             self.game_state["assistant_action"] = assistant.policy.action_state
         else:
             self.game_state["assistant_action"] = State()
-            self.game_state["assistant_action"]["action"] = StateElement()
+            self.game_state["assistant_action"]["action"] = array_element()
 
         # Needed for render
         self.active_render_figure = None
@@ -132,6 +134,10 @@ class _Bundle:
     def round_number(self, value):
         self._round_number = value
         self.game_state["game_info"]["round_index"][...] = value
+
+    @property
+    def state(self):
+        return self.game_state
 
     def reset(
         self, turn=0, task=True, user=True, assistant=True, dic={}, skip_user_step=False

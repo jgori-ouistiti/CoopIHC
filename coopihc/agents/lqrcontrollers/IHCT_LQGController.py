@@ -111,13 +111,15 @@ class IHCT_LQGController(BaseAgent):
         # =================== Linear Feedback Policy ==========
 
         action_state = State()
-        action_state["action"] = StateElement(
-            numpy.zeros((1, 1)),
-            Space(
-                [numpy.full((1, 1), -numpy.inf), numpy.full((1, 1), numpy.inf)],
-                "continuous",
-            ),
-        )
+        action_state["action"] = array_element(shape=(1, 1))
+
+        # StateElement(
+        #     numpy.zeros((1, 1)),
+        #     Space(
+        #         [numpy.full((1, 1), -numpy.inf), numpy.full((1, 1), numpy.inf)],
+        #         "continuous",
+        #     ),
+        # )
 
         # Linear Feedback with LQ reward
         class LFwithLQreward(LinearFeedback):

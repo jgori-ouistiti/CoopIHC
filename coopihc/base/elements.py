@@ -1,3 +1,4 @@
+from xml.dom.minidom import Attr
 from coopihc.base.Space import Space
 from coopihc.base.StateElement import StateElement
 from coopihc.base.State import State
@@ -88,47 +89,34 @@ def box_space(high=numpy.ones((1, 1)), low=None, **kwargs):
 # ======================== StateElement Shortcuts ========================
 
 
-def discrete_array_element(N=None, shape=None, init=0, low=None, high=None, **kwargs):
-    if shape is None:
-        if isinstance(init, numpy.ndarray):
-            shape = init.shape
-        else:
-            init = numpy.asarray(init)
-            shape = init.shape
-
-    elif isinstance(shape, tuple):
-        if isinstance(init, numpy.ndarray):
-            if init.shape == shape:
-                pass
-            else:
-                raise ValueError(
-                    "shape arg {} inconsistent with init shape {}".format(
-                        shape, init.shape
-                    )
-                )
-        else:
-            init = numpy.full(shape, init)
-    elif isinstance(shape, (int, float)):
-        shape = (int(shape),)
-        init = numpy.full(shape, init)
-    else:
-        raise NotImplementedError
-
-    if low is None:
-        low = numpy.full(shape, 0)
-
-    if high is not None:
+def _get_shape_from_objects(shape, *obj):
+    _shape = [shape]
+    for _o in obj:
         try:
-            if high.shape != shape:
-                high = numpy.full(shape, high)
-        except AttributeError:
-            high = numpy.full(shape, high)
-    else:
-        if N is not None:
-            high = numpy.full(shape, N)
-        else:
-            high = numpy.full(shape, numpy.iinfo(numpy.int16).max)
+            _shape.append(_o.shape)
+        except AttributeError:  # has no shape
+            _shape.append(numpy.asarray(_o).shape)
 
+    return sorted([x for x in _shape if x is not None], key=len)[-1]
+
+
+def _set_shape_object(shape, obj, default_value):
+    if obj is None:
+        obj = numpy.full(shape, default_value)
+    else:
+        obj = numpy.asarray(obj)
+        try:
+            obj = obj.reshape(shape)
+        except ValueError:
+            obj = numpy.full(shape, obj)
+    return obj
+
+
+def array_element(shape=None, init=None, low=None, high=None, **kwargs):
+    shape = _get_shape_from_objects(shape, init, low, high)
+    init = _set_shape_object(shape, init, 0)
+    low = _set_shape_object(shape, low, -numpy.inf)
+    high = _set_shape_object(shape, high, numpy.inf)
     out_of_bounds_mode = kwargs.pop("out_of_bounds_mode", "warning")
     seed = kwargs.pop("seed", None)
 
@@ -140,73 +128,23 @@ def discrete_array_element(N=None, shape=None, init=0, low=None, high=None, **kw
     )
 
 
-def array_element(shape=None, init=0, low=None, high=None, **kwargs):
+def discrete_array_element(N=None, shape=None, init=0, low=None, high=None, **kwargs):
 
-    low = numpy.asarray(low)
-    high = numpy.asarray(high)
+    dtype = kwargs.get("dtype", numpy.int64)
 
-    if shape is None:
-        if low is not None:
-            lshape = low.shape
-        else:
-            lshape = ()
-        if high is not None:
-            hshape = high.shape
-        else:
-            hshape = ()
-        if isinstance(init, numpy.ndarray):
-            ishape = init.shape
-        else:
-            init = numpy.asarray(init)
-            ishape = init.shape
-
-    elif isinstance(shape, tuple):
-        if isinstance(init, numpy.ndarray):
-            if init.shape == shape or init.shape == ():
-                pass
-            else:
-                raise ValueError(
-                    "shape arg {} inconsistent with init shape {}".format(
-                        shape, init.shape
-                    )
-                )
-
-    elif isinstance(shape, (int, float)):
-        shape = (int(shape),)
+    if N is None:
+        return array_element(
+            shape=shape, init=init, low=low, high=high, dtype=dtype, **kwargs
+        )
     else:
-        raise NotImplementedError
+        if low is None:
+            low = 0
+        if high is None:
+            high = N - 1 + low
 
-    shape = sorted(
-        [x for x in [lshape, hshape, ishape, shape] if x is not None], key=len
-    )[-1]
-
-    if low is None:
-        low = numpy.full(shape, -numpy.inf)
-    elif isinstance(low, numpy.ndarray):
-        low = low.reshape(shape)
-    else:
-        low = numpy.full(shape, low)
-    if high is None:
-        high = numpy.full(shape, numpy.inf)
-    elif isinstance(high, numpy.ndarray):
-        high = high.reshape(shape)
-    else:
-        high = numpy.full(shape, high)
-
-    try:
-        init.reshape(shape)
-    except ValueError:
-        init = numpy.full(shape, init)
-
-    out_of_bounds_mode = kwargs.pop("out_of_bounds_mode", "warning")
-    seed = kwargs.pop("seed", None)
-
-    return StateElement(
-        init,
-        Space(low=low, high=high, **kwargs),
-        out_of_bounds_mode=out_of_bounds_mode,
-        seed=seed,
-    )
+        return array_element(
+            shape=shape, init=init, low=low, high=high, dtype=dtype, **kwargs
+        )
 
 
 def cat_element(N, init=0, **kwargs):

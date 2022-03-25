@@ -1,3 +1,4 @@
+from array import array
 import copy
 import numpy
 import json
@@ -82,6 +83,10 @@ class StateElement(numpy.ndarray):
         """Simple wrapper for numpy clip"""
         if value not in space:
             return numpy.asarray(numpy.clip(value, space.low, space.high))
+
+    @property
+    def spacetype(self):
+        return self.space.spacetype
 
     def __new__(
         cls,
@@ -265,6 +270,7 @@ class StateElement(numpy.ndarray):
                 x[...] = 4
 
         """
+        # The except clause is here to support numpy broadcasting when indexing.
         value = StateElement._process_input_values(
             value, self.space[key], self.out_of_bounds_mode
         )
@@ -510,27 +516,13 @@ class StateElement(numpy.ndarray):
         else:
             mix_outbounds = self.out_of_bounds_mode
 
-        if numpy.issubdtype(self.space.dtype, numpy.integer):
-            self_spacetype = "discrete"
-        elif numpy.issubdtype(self.space.dtype, numpy.floating):
-            self_spacetype = "continuous"
-        else:
-            raise NotImplementedError
-
-        if numpy.issubdtype(other.dtype, numpy.integer):
-            other_spacetype = "discrete"
-        elif numpy.issubdtype(other.dtype, numpy.floating):
-            other_spacetype = "continuous"
-        else:
-            raise NotImplementedError
-
-        if self_spacetype == "discrete" and other_spacetype == "continuous":
+        if self.spacetype == "discrete" and other.spacetype == "continuous":
             value = self._discrete2continuous(other, mode=mode)
-        elif self_spacetype == "continuous" and other_spacetype == "continuous":
+        elif self.spacetype == "continuous" and other.spacetype == "continuous":
             value = self._continuous2continuous(other)
-        elif self_spacetype == "continuous" and other_spacetype == "discrete":
+        elif self.spacetype == "continuous" and other.spacetype == "discrete":
             value = self._continuous2discrete(other, mode=mode)
-        elif self_spacetype == "discrete" and other_spacetype == "discrete":
+        elif self.spacetype == "discrete" and other.spacetype == "discrete":
             if self.space.N == other.N:
                 value = self._discrete2discrete(other)
             else:
@@ -701,10 +693,13 @@ class StateElement(numpy.ndarray):
             return input_object
         if out_of_bounds_mode == "raw":
             return input_object
-
-        input_object = (
-            numpy.asarray(input_object).reshape(space.shape).astype(space.dtype)
-        )
+        try:
+            input_object = (
+                numpy.asarray(input_object).reshape(space.shape).astype(space.dtype)
+            )
+        except ValueError:
+            if numpy.atleast_1d(numpy.asarray(input_object)).shape == 1:
+                input_object = numpy.full(space.shape, input_object, space.dtype)
 
         if input_object not in space:
             if out_of_bounds_mode == "error":

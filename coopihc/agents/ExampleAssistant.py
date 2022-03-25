@@ -28,7 +28,7 @@ class ExampleAssistant(BaseAgent):
 
         # Call the policy defined above
         action_state = State()
-        action_state["action"] = cat_element(N=0, init=0)
+        action_state["action"] = cat_element(N=1, init=0)
 
         # Use default observation and inference engines
         observation_engine = None
@@ -80,9 +80,7 @@ class CoordinatedAssistantWithInference(BaseAgent):
         state["user_p0"] = copy.deepcopy(user_model.state.p0)
         # Call the policy defined above
         action_state = State()
-        action_state["action"] = StateElement(
-            0, Space(numpy.arange(10, dtype=numpy.int16), "discrete")
-        )
+        action_state["action"] = discrete_array_element(init=0, low=0, high=9)
 
         # Use default observation and inference engines
         observation_engine = None

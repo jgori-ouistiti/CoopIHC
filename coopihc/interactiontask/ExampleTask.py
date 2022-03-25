@@ -78,11 +78,7 @@ class ExampleTask(InteractionTask):
 class CoordinatedTask(InteractionTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.state["x"] = StateElement(
-            0,
-            discrete_space(numpy.arange(10, dtype=numpy.int16)),
-            out_of_bounds_mode="warning",
-        )
+        self.state["x"] = discrete_array_element(init=0, low=0, high=9)
 
     def reset(self, dic=None):
         self.state["x"][...] = 0

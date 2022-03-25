@@ -1,4 +1,5 @@
 from coopihc.base.State import State
+from coopihc.base.StateElement import StateElement
 from coopihc.base.elements import discrete_array_element, array_element, cat_element
 from coopihc.policy.BasePolicy import BasePolicy
 from coopihc.observation.RuleObservationEngine import RuleObservationEngine
@@ -340,7 +341,7 @@ class BaseAgent:
     def reset(self):
         """Initialize the agent before each new game.
 
-        Specify how the components of the agent will be reset. By default, the agent will call the reset method of all 4 components (policy, inference engine, observation engine, state). You can specify some added behavior here e.g. if you want to have a fixed value for the state at the beggining of each game (default behavior is random), you can speficy that here:
+        Specify how the components of the agent will be reset. By default, the agent will call the reset method of all 4 components (policy, inference engine, observation engine, state). You can specify some added behavior here e.g. if you want to have a fixed value for the state at the beggining of each game (default behavior is random), you can specify that here:
 
         .. code-block:: python
 

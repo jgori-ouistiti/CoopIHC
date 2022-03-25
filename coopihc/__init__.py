@@ -67,6 +67,7 @@ from .base.elements import integer_set
 from .base.elements import integer_space
 from .base.elements import box_space
 from .base.elements import array_element
+from .base.elements import discrete_array_element
 from .base.elements import cat_element
 
 
@@ -75,9 +76,3 @@ from .observation.utils import blind_engine_specification
 from .observation.utils import base_task_engine_specification
 from .observation.utils import base_user_engine_specification
 from .observation.utils import base_assistant_engine_specification
-
-
-# ------------------ convertors
-from .base.convertor import GymConvertor
-from .base.convertor import WrongConvertorError
-from .base.convertor import GymForceConvertor

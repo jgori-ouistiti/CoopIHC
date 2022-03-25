@@ -258,7 +258,7 @@ def test_cartesian_product_CatSet():
     ).all()
 
 
-def test_cartesian_product_Numeric():
+def test_cartesian_product_Numeric_continuous():
     s = Space(
         low=-numpy.ones((2, 2)),
         high=numpy.ones((2, 2)),
@@ -269,6 +269,17 @@ def test_cartesian_product_Numeric():
     )
     cp, _shape = Space.cartesian_product(s, q)
     assert (cp == numpy.array([[None, None]])).all()
+
+
+def test_cartesian_product_Numeric_discrete():
+    s = Space(low=-1, high=1, dtype=numpy.int64)
+    q = Space(low=-3, high=1, dtype=numpy.int64)
+    cp, _shape = Space.cartesian_product(s, q)
+
+
+def test_cartesian_product_Numeric():
+    test_cartesian_product_Numeric_continuous()
+    test_cartesian_product_Numeric_discrete()
 
 
 def test_cartesian_product_mix():

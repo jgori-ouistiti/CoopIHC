@@ -47,8 +47,8 @@ At a high level, your CoopIHC code will usually look like this
 
 You will usually define a task, a user, an assistant, and bundle them together. You can then play several rounds of interaction until the game ends, and based on the collected data, you can do something.
 
-States
-------------
+Quick-States
+--------------
 The interaction model uses the concept of states. States are a collection of useful variables for the system. In *CoopIHC* they are defined via a ``State`` object. The states are containers that hold elements called ``StateElement``. A ``StateElement`` is a collection of a value and a ``Space``. Note that a ``State`` may also contain another ``State``.
 
 In the example below, a super-state is defined using a State. This super-state is itself defined by two substates. Each of those two substates holds a ``StateElement``, which is a combination of a value and a ``Space``.
@@ -63,30 +63,30 @@ In the example below, a super-state is defined using a State. This super-state i
 States and StatElements subclass the built-in dictionary and the well-known NumPy arrays respectively. This means that interacting with these objects should prove relatively familiar to most Python users. To find out more about this and for extra details, go to :doc:`Space<space>`, :doc:`StateElement<stateelement>` and :doc:`State<state>`.
 
 
-Tasks
---------
+Quick-Tasks
+------------
 
 .. include:: tasks.rst
     :start-after: .. start-quickstart-task
     :end-before: .. end-quickstart-task
 
 
-Agents
+Quick-Agents
 ------------------
 
 .. include:: agents.rst
     :start-after: .. start-quickstart-agent
     :end-before: .. end-quickstart-agent
 
-Policies
-------------
+Quick-Policies
+----------------
 
 .. include:: policy.rst
     :start-after: .. start-quickstart-policy
     :end-before: .. end-quickstart-policy
 
-Observation Engines
----------------------
+Quick-Observation Engines
+---------------------------
 
 .. include:: observation_engine.rst
     :start-after: .. start-quickstart-obseng-intro
@@ -97,8 +97,8 @@ Observation Engines
     :end-before: .. end-quickstart-obseng-subclass
 
 
-Inference Engines
---------------------
+Quick-Inference Engines
+-------------------------
 
 .. include:: inference_engine.rst
     :start-after: .. start-quickstart-infeng-intro
@@ -112,7 +112,7 @@ Inference Engines
 
 
 
-Bundles
+Quick-Bundles
 ---------------------
 
 .. include:: bundles.rst

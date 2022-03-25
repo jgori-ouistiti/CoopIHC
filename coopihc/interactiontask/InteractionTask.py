@@ -200,7 +200,7 @@ class InteractionTask(ABC):
             return ret
 
     @abstractmethod
-    def user_step(self, *args, **kwargs):
+    def user_step(self, *args, user_action=None, **kwargs):
         """user_step
 
         Redefine this to specify the task state transitions and rewards issued.
@@ -211,7 +211,7 @@ class InteractionTask(ABC):
         return None
 
     @abstractmethod
-    def assistant_step(self, *args, **kwargs):
+    def assistant_step(self, *args, assistant_action=None, **kwargs):
         """assistant_step
 
         Redefine this to specify the task state transitions and rewards issued.

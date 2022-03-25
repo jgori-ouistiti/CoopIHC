@@ -27,6 +27,17 @@ class BaseSpace:
 
         self.rng = numpy.random.default_rng(seed)
         self._shape = None
+        self._spacetype = None
+
+    @property
+    def spacetype(self):
+        if self._spacetype is None:
+            if numpy.issubdtype(self.dtype, numpy.integer):
+                return "discrete"
+            elif numpy.issubdtype(self.dtype, numpy.floating):
+                return "continuous"
+        else:
+            raise NotImplementedError
 
 
 class Space:
@@ -100,10 +111,11 @@ class Space:
             shape.append(space.shape)
             if isinstance(space, CatSet):
                 arrays.append(space.array)
-            elif isinstance(
-                space, Numeric
-            ):  # Does not deal with case when the Numeric is discrete dtype.
-                arrays.append(numpy.array([None]))
+            elif isinstance(space, Numeric):
+                if space.spacetype == "discrete":
+                    arrays.append(space.array)
+                else:
+                    arrays.append(numpy.array([None]))
 
         la = len(arrays)
         dtype = numpy.result_type(*arrays)
@@ -120,7 +132,7 @@ class Numeric(BaseSpace):
 
     You can define an Numeric by specifying the lower and upper bounds:
 
-    .. code:block:: python
+    .. code-block:: python
 
         s = Numeric(
         low=-numpy.ones((2, 2), dtype=numpy.float32),
@@ -168,6 +180,25 @@ class Numeric(BaseSpace):
                 )
 
         super().__init__(**kwargs)
+
+        # astype has weird behavior when overflowing. e.g. numpy.asarray(numpy.inf).astype(numpy.int64) = -max instead of max. Below is poor attempt at solving it.
+
+        # try:
+        #     try:  # This clause because of dtype irregularity (mentioned somewhere else as well)
+        #         self.low = self.dtype.type(low)
+        #     except AttributeError:
+        #         self.low = self.dtype(low)
+        # except OverflowError:
+        #     self.low = numpy.iinfo(self.dtype).min
+
+        # try:
+        #     try:  # This clause because of dtype irregularity (mentioned somewhere else as well)
+        #         self.high = self.dtype.type(high)
+        #     except AttributeError:
+        #         self.high = self.dtype(high)
+        # except OverflowError:
+        #     self.high = numpy.iinfo(self.dtype).max
+
         self.low = low.astype(self.dtype)
         self.high = high.astype(self.dtype)
 

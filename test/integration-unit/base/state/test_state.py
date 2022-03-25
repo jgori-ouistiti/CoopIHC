@@ -9,6 +9,9 @@ from coopihc.base.elements import (
 from coopihc.base.State import State
 from coopihc.base.Space import Space
 from coopihc.base.utils import StateNotContainedError
+from coopihc.base.elements import example_game_state
+
+
 import numpy
 from tabulate import tabulate
 
@@ -117,6 +120,38 @@ def test_tabulate():
     test_tabulate_full()
 
 
+def test_equals_soft():
+    _example_state = example_game_state()
+    obs = {
+        "game_info": {"turn_index": numpy.array(0), "round_index": numpy.array(0)},
+        "task_state": {"position": numpy.array(2), "targets": numpy.array([0, 1])},
+        "user_action": {"action": numpy.array(0)},
+        "assistant_action": {"action": numpy.array(2)},
+    }
+    del _example_state["user_state"]
+    del _example_state["assistant_state"]
+    assert _example_state == obs
+    assert _example_state.equals(obs, mode="soft")
+
+
+def test_equals_hard():
+    _example_state = example_game_state()
+    obs = {
+        "game_info": {"turn_index": numpy.array(0), "round_index": numpy.array(0)},
+        "task_state": {"position": numpy.array(2), "targets": numpy.array([0, 1])},
+        "user_action": {"action": numpy.array(0)},
+        "assistant_action": {"action": numpy.array(2)},
+    }
+    del _example_state["user_state"]
+    del _example_state["assistant_state"]
+    assert not _example_state.equals(obs, mode="hard")
+
+
+def test_equals():
+    test_equals_soft()
+    test_equals_hard()
+
+
 if __name__ == "__main__":
     test__init__()
     test_filter()
@@ -124,3 +159,4 @@ if __name__ == "__main__":
     test_reset_small()
     test_reset_full()
     test_tabulate()
+    test_equals()
