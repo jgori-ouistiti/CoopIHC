@@ -2,8 +2,8 @@
 
 
 from abc import ABC, abstractmethod
-from coopihc.space.State import State
-from coopihc.space.StateElement import StateElement
+from coopihc.base.State import State
+from coopihc.base.StateElement import StateElement
 import numpy
 
 
@@ -75,7 +75,7 @@ class InteractionTask(ABC):
         The current state of the task.
 
         :return: task state
-        :rtype: :py:class:`State<coopihc.space.State.State>`
+        :rtype: :py:class:`State<coopihc.base.State.State>`
         """
         return self._state
 
@@ -90,10 +90,10 @@ class InteractionTask(ABC):
         The last action input by the user.
 
         :return: user action
-        :rtype: :py:class:`State<coopihc.space.State.State>`
+        :rtype: :py:class:`State<coopihc.base.State.State>`
         """
         if self.bundle:
-            return self.bundle.game_state["user_action"]["action"]
+            return tuple(self.bundle.game_state["user_action"].values())
 
     @property
     def assistant_action(self):
@@ -102,10 +102,10 @@ class InteractionTask(ABC):
         The last action input by the assistant.
 
         :return: assistant action
-        :rtype: :py:class:`State<coopihc.space.State.State>`
+        :rtype: :py:class:`State<coopihc.base.State.State>`
         """
         if self.bundle:
-            return self.bundle.game_state["assistant_action"]["action"]
+            return tuple(self.bundle.game_state["assistant_action"].values())
 
     def __content__(self):
         """Custom class representation.
@@ -158,7 +158,7 @@ class InteractionTask(ABC):
                 self.state[key] = value
                 continue
             elif isinstance(value, numpy.ndarray):
-                self.state[key][:] = value
+                self.state[key][...] = value
 
             elif value is None:
                 continue
@@ -176,7 +176,7 @@ class InteractionTask(ABC):
         provide default values, may be useful later.
 
         :return: (task state, task reward, is_done flag, metadata):
-        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float, boolean, dictionnary)
+        :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, float, boolean, dictionnary)
         """
         ret = self.user_step(*args, **kwargs)
         if ret is None:
@@ -191,7 +191,7 @@ class InteractionTask(ABC):
         little but provide default values, may be useful later.
 
         :return: (task state, task reward, is_done flag, metadata):
-        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float, boolean, dictionnary)
+        :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, float, boolean, dictionnary)
         """
         ret = self.assistant_step(*args, **kwargs)
         if ret is None:
@@ -200,24 +200,24 @@ class InteractionTask(ABC):
             return ret
 
     @abstractmethod
-    def user_step(self, *args, **kwargs):
+    def user_step(self, *args, user_action=None, **kwargs):
         """user_step
 
         Redefine this to specify the task state transitions and rewards issued.
 
         :return: (task state, task reward, is_done flag, {})
-        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float, boolean, dictionnary)
+        :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, float, boolean, dictionnary)
         """
         return None
 
     @abstractmethod
-    def assistant_step(self, *args, **kwargs):
+    def assistant_step(self, *args, assistant_action=None, **kwargs):
         """assistant_step
 
         Redefine this to specify the task state transitions and rewards issued.
 
         :return: (task state, task reward, is_done flag, {})
-        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float, boolean, dictionnary)
+        :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, float, boolean, dictionnary)
         """
         return None
 

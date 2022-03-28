@@ -20,7 +20,7 @@ class ExamplePolicy(BasePolicy):
         Compares 'x' to goal and issues +-1 accordingly.
 
         :return: action, reward
-        :rtype: tuple(`StateElement<coopihc.space.StateElement.StateElement>`, float)
+        :rtype: tuple(`StateElement<coopihc.base.StateElement.StateElement>`, float)
         """
 
         if observation is None:
@@ -39,10 +39,7 @@ class ExamplePolicy(BasePolicy):
         else:
             _action_value = 0
 
-        new_action = self.new_action
-        new_action[:] = _action_value
-
-        return new_action, 0
+        return _action_value, 0
 
 
 class PseudoRandomPolicy(BasePolicy):
@@ -59,10 +56,7 @@ class PseudoRandomPolicy(BasePolicy):
             8 + self.state.p0 * x + self.state.p1 * x * x + self.state.p2 * x * x * x
         ) % 10
 
-        new_action = self.new_action
-        new_action[:] = _action_value
-
-        return new_action, 0
+        return _action_value, 0
 
 
 class CoordinatedPolicy(BasePolicy):
@@ -82,10 +76,8 @@ class CoordinatedPolicy(BasePolicy):
         _action_value = self.simulation_bundle.game_state.user_action.action.view(
             numpy.ndarray
         )
-        new_action = self.new_action
-        new_action[:] = _action_value
 
-        return new_action, 0
+        return _action_value, 0
 
 
 class CoordinatedPolicyWithParams(CoordinatedPolicy):
@@ -105,7 +97,4 @@ class CoordinatedPolicyWithParams(CoordinatedPolicy):
             self.simulation_bundle.game_state.user_action.action[:]
         )
 
-        new_action = self.new_action
-        new_action[:] = _action_value
-
-        return new_action, 0
+        return _action_value, 0

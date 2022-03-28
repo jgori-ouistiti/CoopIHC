@@ -39,41 +39,40 @@ from .policy.WrapAsPolicy import WrapAsPolicy
 from .policy.ExamplePolicy import ExamplePolicy
 
 
-from .space.Space import Space
-from .space.State import State
-from .space.StateElement import StateElement
+from .base.Space import BaseSpace
+from .base.Space import Numeric
+from .base.Space import CatSet
+from .base.Space import Space
+
+from .base.State import State
+from .base.StateElement import StateElement
 
 # ---------------- warnings
-from .space.utils import StateNotContainedWarning
-from .space.utils import NotKnownSerializationWarning
-from .space.utils import ContinuousSpaceIntIndexingWarning
-from .space.utils import NumpyFunctionNotHandledWarning
-from .space.utils import RedefiningHandledFunctionWarning
-from .space.utils import WrongConvertorWarning
+from .base.utils import StateNotContainedWarning
+from .base.utils import NotKnownSerializationWarning
+from .base.utils import ContinuousSpaceIntIndexingWarning
+from .base.utils import NumpyFunctionNotHandledWarning
+from .base.utils import RedefiningHandledFunctionWarning
+from .base.utils import WrongConvertorWarning
 
 # ----------------- errors
-from .space.utils import SpaceLengthError
-from .space.utils import StateNotContainedError
-from .space.utils import SpacesNotIdenticalError
-from .space.utils import NotASpaceError
+from .base.utils import SpaceLengthError
+from .base.utils import StateNotContainedError
+from .base.utils import SpacesNotIdenticalError
+from .base.utils import NotASpaceError
 
 # -------------------- shortcuts
-from .space.utils import autospace
-from .space.utils import discrete_space
-from .space.utils import continuous_space
-from .space.utils import multidiscrete_space
-from .space.StateElement import num_element
-from .space.StateElement import array_element
-from .space.StateElement import cat_element
+from .base.elements import lin_space
+from .base.elements import integer_set
+from .base.elements import integer_space
+from .base.elements import box_space
+from .base.elements import array_element
+from .base.elements import discrete_array_element
+from .base.elements import cat_element
+
 
 from .observation.utils import oracle_engine_specification
 from .observation.utils import blind_engine_specification
 from .observation.utils import base_task_engine_specification
 from .observation.utils import base_user_engine_specification
 from .observation.utils import base_assistant_engine_specification
-
-
-# ------------------ convertors
-from .space.utils import GymConvertor
-from .space.utils import WrongConvertorError
-from .space.utils import GymForceConvertor

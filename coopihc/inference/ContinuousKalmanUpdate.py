@@ -9,6 +9,10 @@ class ContinuousKalmanUpdate(BaseInferenceEngine):
 
     """
 
+    @property
+    def action(self):
+        return super().action[0]
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fmd_flag = False
@@ -55,7 +59,7 @@ class ContinuousKalmanUpdate(BaseInferenceEngine):
         Infer the state based on the observation.
 
         :return: (new state, reward)
-        :rtype: tuple(py:class:`State<coopihc.space.State.State>`, float)
+        :rtype: tuple(py:class:`State<coopihc.base.State.State>`, float)
         """
         if not self.fmd_flag:
             raise RuntimeError(

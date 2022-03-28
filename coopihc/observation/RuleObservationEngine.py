@@ -1,4 +1,4 @@
-from coopihc.space.State import State
+from coopihc.base.State import State
 from coopihc.observation.BaseObservationEngine import BaseObservationEngine
 from coopihc.observation.utils import base_task_engine_specification
 import copy
@@ -30,7 +30,7 @@ class RuleObservationEngine(BaseObservationEngine):
 
     .. code-block:: python
 
-        from coopihc.space.utils import example_game_state
+        from coopihc.base.utils import example_game_state
         print(example_game_state())
 
         # Define mapping
@@ -161,9 +161,9 @@ class RuleObservationEngine(BaseObservationEngine):
         Wrapper around apply_mapping for interfacing with bundle.
 
         :param game_state: game state
-        :type game_state: :py:class:`State <coopihc.space.State.State>`
+        :type game_state: :py:class:`State <coopihc.base.State.State>`
         :return: (observation, obs reward)
-        :rtype: tuple(:py:class:`State <coopihc.space.State.State>`, float)
+        :rtype: tuple(:py:class:`State <coopihc.base.State.State>`, float)
         """
         game_state = super().observe(game_state=game_state)[0]
 
@@ -178,9 +178,9 @@ class RuleObservationEngine(BaseObservationEngine):
         Apply the rule mapping
 
         :param game_state: game state
-        :type game_state: :py:class:`State <coopihc.space.State.State>`
+        :type game_state: :py:class:`State <coopihc.base.State.State>`
         :return: observation
-        :rtype: :py:class:`State <coopihc.space.State.State>`
+        :rtype: :py:class:`State <coopihc.base.State.State>`
         """
         observation = State()
         for (
@@ -195,8 +195,15 @@ class RuleObservationEngine(BaseObservationEngine):
 
             if observation.get(substate) is None:
                 observation[substate] = State()
-            _obs = copy.copy((game_state[substate][subsubstate][_slice]))
+            try:
+                _obs = game_state[substate][subsubstate][_slice, {"space": True}]
+            except IndexError:  # 0-D arrays
+                _obs = game_state[substate][subsubstate][..., {"space": True}]
+
+            copied = False
             if _func:
+                _obs = copy.copy(_obs)
+                copied = True
                 if _args:
                     _obs = _func(_obs, game_state, *_args)
                 else:
@@ -204,6 +211,8 @@ class RuleObservationEngine(BaseObservationEngine):
             else:
                 _obs = _obs
             if _nfunc:
+                if copied == False:
+                    _obs = copy.copy(_obs)
                 if _nargs:
                     _obs = _nfunc(_obs, game_state, *_nargs)
 
@@ -213,9 +222,9 @@ class RuleObservationEngine(BaseObservationEngine):
             else:
                 _obs = _obs
 
-            observation[substate][subsubstate] = copy.copy(
-                game_state[substate][subsubstate]
-            )
+            # observation[substate][subsubstate] = copy.copy(
+            #     game_state[substate][subsubstate]
+            # ) # probably useless
             observation[substate][subsubstate] = _obs
 
         return observation
@@ -226,7 +235,7 @@ class RuleObservationEngine(BaseObservationEngine):
         Create mapping from the high level rules specified in the Rule Engine.
 
         :param game_state: game state
-        :type game_state: :py:class:`State <coopihc.space.State.State>`
+        :type game_state: :py:class:`State <coopihc.base.State.State>`
         :return: Mapping
         :rtype: iterable
         """

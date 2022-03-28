@@ -94,7 +94,7 @@ class PipeTaskWrapper(InteractionTask, ABC):
         4. Update state and return
 
         :return: (task state, task reward, is_done flag, {})
-        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float, boolean, dictionnary)
+        :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, float, boolean, dictionnary)
         """
         super().user_step(*args, **kwargs)
         user_action_msg = {
@@ -114,7 +114,7 @@ class PipeTaskWrapper(InteractionTask, ABC):
         Same as user_step
 
         :return: (task state, task reward, is_done flag, {})
-        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float, boolean, dictionnary)
+        :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, float, boolean, dictionnary)
         """
         super().assistant_step(*args, **kwargs)
         assistant_action_msg = {
@@ -143,7 +143,7 @@ class PipeTaskWrapper(InteractionTask, ABC):
         :param dic: reset dic, defaults to None
         :type dic: dictionnary, optional
         :return: Task state
-        :rtype: :py:class:`State<coopihc.space.State.State>`
+        :rtype: :py:class:`State<coopihc.base.State.State>`
         """
         super().reset(dic=dic)
         reset_msg = {"type": "reset", "reset_dic": dic}

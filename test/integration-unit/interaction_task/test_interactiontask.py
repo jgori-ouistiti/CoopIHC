@@ -3,8 +3,9 @@ coopihc package."""
 
 
 import numpy
-from coopihc import InteractionTask, StateElement, Space, discrete_space
-from coopihc.space.utils import StateNotContainedWarning, StateNotContainedError
+from coopihc import InteractionTask, StateElement
+from coopihc.base.elements import array_element, cat_element, discrete_array_element
+from coopihc.base.utils import StateNotContainedWarning, StateNotContainedError
 import pytest
 
 
@@ -28,9 +29,7 @@ class MinimalTaskWithState(MinimalTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.state["x"] = StateElement(
-            0, discrete_space(numpy.array([-1, 0, 1])), out_of_bounds_mode="warning"
-        )
+        self.state["x"] = discrete_array_element(low=-1, high=1, init=0)
 
 
 class MinimalTaskWithStateAugmented(MinimalTask):
@@ -40,16 +39,12 @@ class MinimalTaskWithStateAugmented(MinimalTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.state["x"] = StateElement(
-            0, discrete_space(numpy.array([-1, 0, 1])), out_of_bounds_mode="warning"
+        self.state["x"] = discrete_array_element(low=-1, high=1, init=0)
+        self.state["y"] = discrete_array_element(
+            low=2, high=5, init=2, out_of_bounds_mode="error"
         )
-        self.state["y"] = StateElement(
-            2, discrete_space(numpy.array([2, 3, 4, 5])), out_of_bounds_mode="error"
-        )
-        self.state["z"] = StateElement(
-            2,
-            discrete_space(numpy.array([i for i in range(1, 10)])),
-            out_of_bounds_mode="clip",
+        self.state["z"] = discrete_array_element(
+            low=0, high=9, init=0, out_of_bounds_mode="clip"
         )
 
 
@@ -59,7 +54,7 @@ class MinimalTaskWithStateAndDirectReset(MinimalTaskWithState):
 
     def reset(self, dic=None):
         reset_value = -1
-        self.state["x"][:] = reset_value
+        self.state["x"][...] = reset_value
 
 
 class MinimalTaskWithStateAndResetViaState(MinimalTaskWithState):
@@ -246,7 +241,7 @@ def test_base_reset_without_dic():
 def test_base_reset_with_full_dic():
     task = MinimalTaskWithState()
     reset_dic = {"x": numpy.array([0])}
-    task._base_reset(reset_dic)
+    task._base_reset(dic=reset_dic)
     assert isinstance(task.state["x"], StateElement)
     assert task.state["x"] == 0
     reset_dic = {"x": numpy.array([1])}
@@ -269,7 +264,7 @@ def test_base_reset_with_full_dic():
     assert isinstance(task.state["x"], StateElement)
     task = MinimalTaskWithStateAugmented()
     reset_dic = {"x": numpy.array([0]), "y": numpy.array([5]), "z": numpy.array([1])}
-    task._base_reset(reset_dic)
+    task._base_reset(dic=reset_dic)
     assert task.state["x"] == 0
     assert isinstance(task.state["x"], StateElement)
     assert task.state["y"] == 5
@@ -278,10 +273,10 @@ def test_base_reset_with_full_dic():
     assert isinstance(task.state["z"], StateElement)
     reset_dic = {"x": numpy.array([0]), "y": numpy.array([6]), "z": numpy.array([1])}
     with pytest.raises(StateNotContainedError):
-        task._base_reset(reset_dic)
+        task._base_reset(dic=reset_dic)
     reset_dic = {"x": numpy.array([0]), "y": numpy.array([5]), "z": numpy.array([-8])}
-    task._base_reset(reset_dic)
-    assert task.state["z"] == 1
+    task._base_reset(dic=reset_dic)
+    assert task.state["z"] == 0
 
 
 def test_base_reset_with_partial_dic():
@@ -296,9 +291,9 @@ def test_base_reset_with_partial_dic():
     set_z = {}
     for i in range(100):
         task._base_reset(reset_dic)
-        set_z[str(task.state["z"])] = task.state["z"].squeeze().tolist()
+        set_z[str(task.state["z"])] = task.state["z"].tolist()
 
-    assert sorted(list(set_z.values())) == [i for i in range(1, 10)]
+    assert sorted(list(set_z.values())) == [i for i in range(10)]
 
 
 def test_base_reset_with_overwritten_reset():

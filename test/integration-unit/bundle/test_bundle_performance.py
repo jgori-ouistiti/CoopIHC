@@ -2,13 +2,14 @@ import numpy
 from coopihc import (
     State,
     StateElement,
-    Space,
     Bundle,
     ExampleTask,
     BaseAgent,
     BasePolicy,
-    discrete_space,
 )
+
+from coopihc.base.elements import discrete_array_element, cat_element
+
 import cProfile
 
 
@@ -23,10 +24,10 @@ def bundle_round():
     BaseAgents as user and assistant."""
     # Define agent action states (what actions they can take)
     user_action_state = State()
-    user_action_state["action"] = StateElement(0, discrete_space([-1, 0, 1]))
+    user_action_state["action"] = discrete_array_element(init=0, low=-1, high=1)
 
     assistant_action_state = State()
-    assistant_action_state["action"] = StateElement(0, discrete_space([-1, 0, 1]))
+    assistant_action_state["action"] = discrete_array_element(init=0, low=-1, high=1)
 
     # Bundle a task together with two BaseAgents
     bundle = Bundle(

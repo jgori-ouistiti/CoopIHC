@@ -1,7 +1,7 @@
 import numpy
 import copy
 
-from coopihc.space.State import State
+from coopihc.base.State import State
 from coopihc.helpers import hard_flatten
 from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 
@@ -205,7 +205,7 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
         Update the substate 'beliefs' from the internal state. Generate candidate observations for each potential target, evaluate its likelihood and update the prior to form the posterior. Normalize the posterior and return the new state.
 
         :return: (new internal state, reward)
-        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float)
+        :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, float)
         """
 
         if self.user_policy_model is None:
@@ -216,7 +216,7 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
             observation = self.buffer[-1]
             user_state = observation["assistant_state"]
 
-        old_beliefs = user_state["beliefs"].squeeze().tolist()
+        old_beliefs = user_state["beliefs"].tolist()
         user_action = observation["user_action"]["action"]
 
         for nt, t in enumerate(self.set_theta):
@@ -240,5 +240,5 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
             )
             old_beliefs = [1 for i in old_beliefs]
         new_beliefs = [i / sum(old_beliefs) for i in old_beliefs]
-        user_state["beliefs"][:] = numpy.array(new_beliefs)
+        user_state["beliefs"][...] = numpy.array(new_beliefs)
         return user_state, 0

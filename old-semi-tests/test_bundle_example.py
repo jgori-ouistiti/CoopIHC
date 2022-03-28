@@ -2,7 +2,7 @@ def test_bundle_example():
     """Runs the bundle examples."""
 
     from coopihc.interactiontask import ExampleTask
-    from coopihc.space import State, StateElement, Space
+    from coopihc.base import State, StateElement, Space
     from coopihc.bundle import Bundle
     from coopihc.agents import BaseAgent, ExampleUser
     from coopihc.policy import BasePolicy

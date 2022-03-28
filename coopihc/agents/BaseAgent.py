@@ -1,5 +1,6 @@
-from coopihc.space.State import State
-from coopihc.space.StateElement import StateElement
+from coopihc.base.State import State
+from coopihc.base.StateElement import StateElement
+from coopihc.base.elements import discrete_array_element, array_element, cat_element
 from coopihc.policy.BasePolicy import BasePolicy
 from coopihc.observation.RuleObservationEngine import RuleObservationEngine
 from coopihc.observation.utils import base_user_engine_specification
@@ -186,7 +187,7 @@ class BaseAgent:
 
 
         :return: Last observation
-        :rtype: coopihc.space.State.State
+        :rtype: coopihc.base.State.State
 
         :meta private:
         """
@@ -204,11 +205,15 @@ class BaseAgent:
 
 
         :return: Last action
-        :rtype: coopihc.space.State.State
+        :rtype: coopihc.base.State.State
 
         :meta private:
         """
-        return self.policy.action_state["action"]
+        return tuple(self.policy.action_state.values())
+
+    @action.setter
+    def action(self, item):
+        self.policy.action = item
 
     def attach_policy(self, policy, **kwargs):
         """Attach a policy
@@ -326,7 +331,7 @@ class BaseAgent:
                 self.state[key] = value
                 continue
             elif isinstance(value, numpy.ndarray):
-                self.state[key][:] = value
+                self.state[key][...] = value
 
             elif value is None:
                 continue
@@ -336,7 +341,7 @@ class BaseAgent:
     def reset(self):
         """Initialize the agent before each new game.
 
-        Specify how the components of the agent will be reset. By default, the agent will call the reset method of all 4 components (policy, inference engine, observation engine, state). You can specify some added behavior here e.g. if you want to have a fixed value for the state at the beggining of each game (default behavior is random), you can speficy that here:
+        Specify how the components of the agent will be reset. By default, the agent will call the reset method of all 4 components (policy, inference engine, observation engine, state). You can specify some added behavior here e.g. if you want to have a fixed value for the state at the beggining of each game (default behavior is random), you can specify that here:
 
         .. code-block:: python
 
@@ -365,11 +370,11 @@ class BaseAgent:
         What the agent should do when the Bundle expects it to take an action.
 
         :return: return action and reward
-        :rtype: tuple(coopihc.space.State.State, float)
+        :rtype: tuple(coopihc.base.State.State, float)
 
         :meta private:
         """
-        return self.policy.sample()
+        return self.policy._base_sample()
 
     def _agent_step(self, infer=True):
         """Play an agent's turn.
@@ -397,13 +402,11 @@ class BaseAgent:
 
             # Update agent observation
             if self.role == "user":
-                if self.inference_engine.buffer[-1].get("user_state") is not None:
-                    self.inference_engine.buffer[-1]["user_state"].update(agent_state)
+                if self.observation.get("user_state") is not None:
+                    self.observation["user_state"].update(agent_state)
             elif self.role == "assistant":
-                if self.inference_engine.buffer[-1].get("assistant_state") is not None:
-                    self.inference_engine.buffer[-1]["assistant_state"].update(
-                        agent_state
-                    )
+                if self.observation.get("assistant_state") is not None:
+                    self.observation["assistant_state"].update(agent_state)
         else:
             agent_infer_reward = 0
         return agent_obs_reward, agent_infer_reward
@@ -414,9 +417,9 @@ class BaseAgent:
         Observe the gamestate by calling to the observation engine.
 
         :param game_state: current game state
-        :type game_state: coopihc.space.State.State
+        :type game_state: coopihc.base.State.State
         :return: return observation and associated reward
-        :rtype: tuple(coopihc.space.State.State, float)
+        :rtype: tuple(coopihc.base.State.State, float)
 
         :meta private:
         """

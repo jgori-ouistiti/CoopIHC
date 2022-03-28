@@ -3,10 +3,11 @@ import numpy
 import copy
 
 from coopihc.agents.BaseAgent import BaseAgent
-from coopihc.space.State import State
-from coopihc.space.StateElement import StateElement
-from coopihc.space.Space import Space
-from coopihc.space.utils import autospace
+from coopihc.base.State import State
+from coopihc.base.Space import Space
+from coopihc.base.elements import discrete_array_element, array_element, cat_element
+from coopihc.base.StateElement import StateElement
+
 from coopihc.policy.BasePolicy import BasePolicy
 from coopihc.observation.BaseObservationEngine import BaseObservationEngine
 from coopihc.observation.RuleObservationEngine import RuleObservationEngine
@@ -16,13 +17,11 @@ from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 
 # Define a state
 state = State()
-state["goalstate"] = StateElement(
-    4, autospace([-4, -3, -2, -1, 0, 1, 2, 3, 4], dtype=numpy.int16)
-)
+state["goalstate"] = discrete_array_element(init=-4, low=-4, high=4)
 
 # Define a policy (random policy)
 action_state = State()
-action_state["action"] = StateElement(0, autospace([-1, 0, 1], dtype=numpy.int16))
+action_state["action"] = discrete_array_element(init=0, low=-1, high=1)
 agent_policy = BasePolicy(action_state=action_state)
 
 # Explicitly use default observation and inference engines (default behavior is triggered when keyword argument is not provided or keyword value is None)
@@ -63,41 +62,20 @@ def test_init_args():
     assert action_state.get("action") is not None
     assert isinstance(action_state["action"], StateElement)
     assert action_state["action"] == 0
-    space = action_state["action"].spaces
-    assert isinstance(space, Space)
-    assert space.dtype == numpy.int16
+    space = action_state["action"].space
     # ----------- Check observation engine default
     obseng = new_agent.observation_engine
     assert obseng.host is new_agent
-    se_tx = StateElement(
-        numpy.array(1).reshape(1, 1),
-        Space(
-            [
-                numpy.array([-1], dtype=numpy.float32).reshape(1, 1),
-                numpy.array([1], dtype=numpy.float32).reshape(1, 1),
-            ],
-            "continuous",
-        ),
+    se_tx = array_element(init=1, low=numpy.array([-1]), high=numpy.array([1]))
+    se_ty = cat_element(
+        N=3,
+        init=1,
     )
-    se_ty = StateElement(
-        numpy.array(1).reshape(1),
-        Space(numpy.array([1, 2, 3], dtype=numpy.int16), "discrete"),
-    )
-    se_tz = StateElement(
-        numpy.array(-4).reshape(1),
-        Space(numpy.array([-6, -5, -4, -3, -2, -1], dtype=numpy.int16), "discrete"),
-    )
+    se_tz = discrete_array_element(init=-4, low=-6, high=-1)
 
-    turn_index = StateElement(
-        numpy.array([0]),
-        Space(numpy.array([0, 1, 2, 3], dtype=numpy.int8), "discrete"),
-        out_of_bounds_mode="raw",
-    )
-    round_index = StateElement(
-        numpy.array([0]),
-        Space(numpy.array([0, 1], dtype=numpy.int8), "discrete"),
-        out_of_bounds_mode="raw",
-    )
+    turn_index = cat_element(N=4, init=0, out_of_bounds_mode="raw")
+
+    round_index = discrete_array_element(N=None, init=0, out_of_bounds_mode="raw")
 
     gamestate = State(
         **{
@@ -131,13 +109,7 @@ def test_init_args():
 
 
 def test_init_agent_state():
-    se = StateElement(
-        4,
-        Space(
-            numpy.array([-4, -3, -2, -1, 0, 1, 2, 3, 4], dtype=numpy.int16), "discrete"
-        ),
-    )
-
+    se = discrete_array_element(init=4, low=-4, high=4)
     state = State()
     state["goalstate"] = se
     new_agent = BaseAgent("user", agent_state=state)
@@ -148,9 +120,7 @@ def test_init_agent_state():
 
 def test_init_agent_policy():
     action_state = State()
-    action_state["action"] = StateElement(
-        1, Space(numpy.array([1, 2, 3], dtype=numpy.int16), "discrete")
-    )
+    action_state["action"] = discrete_array_element(init=1, low=1, high=3)
     policy = BasePolicy(action_state=action_state)
     new_agent = BaseAgent("user", agent_policy=policy)
     assert policy.host is new_agent
@@ -171,24 +141,13 @@ def test_init_observation_engine():
     assert observation_engine.host is new_agent
     assert new_agent.observation_engine is observation_engine
 
-    se_tx = StateElement(
-        numpy.array(1).reshape(1, 1),
-        Space(
-            [
-                numpy.array([-1], dtype=numpy.float32).reshape(1, 1),
-                numpy.array([1], dtype=numpy.float32).reshape(1, 1),
-            ],
-            "continuous",
-        ),
+    se_tx = array_element(init=1, low=numpy.array([-1]), high=numpy.array([1]))
+
+    se_ty = cat_element(
+        N=3,
+        init=1,
     )
-    se_ty = StateElement(
-        numpy.array(1).reshape(1),
-        Space(numpy.array([1, 2, 3], dtype=numpy.int16), "discrete"),
-    )
-    se_tz = StateElement(
-        numpy.array(-4).reshape(1),
-        Space(numpy.array([-6, -5, -4, -3, -2, -1], dtype=numpy.int16), "discrete"),
-    )
+    se_tz = discrete_array_element(init=-4, low=-6, high=-1)
 
     gamestate = State(
         **{

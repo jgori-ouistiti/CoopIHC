@@ -1,14 +1,9 @@
 import numpy
 from coopihc.agents.BaseAgent import BaseAgent
-from coopihc.space.State import State
-from coopihc.space.StateElement import StateElement
-from coopihc.space.Space import Space
-from coopihc.policy.BasePolicy import BasePolicy
+from coopihc.base.State import State
+from coopihc.base.elements import discrete_array_element, array_element, cat_element
+from coopihc.base.elements import cat_element, discrete_array_element
 from coopihc.policy.ExamplePolicy import ExamplePolicy, PseudoRandomPolicy
-from coopihc.observation.RuleObservationEngine import RuleObservationEngine
-from coopihc.observation.utils import base_user_engine_specification
-from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
-from coopihc.space.utils import autospace
 
 
 class ExampleUser(BaseAgent):
@@ -24,19 +19,11 @@ class ExampleUser(BaseAgent):
 
         # Define an internal state with a 'goal' substate
         state = State()
-        state["goal"] = StateElement(
-            4,
-            Space(
-                numpy.array([-4, -3, -2, -1, 0, 1, 2, 3, 4], dtype=numpy.int16),
-                "discrete",
-            ),
-        )
+        state["goal"] = discrete_array_element(init=4, low=-4, high=4)
 
         # Call the policy defined above
         action_state = State()
-        action_state["action"] = StateElement(
-            0, Space(numpy.array([-1, 0, 1], dtype=numpy.int16), "discrete")
-        )
+        action_state["action"] = discrete_array_element(init=0, low=-1, high=1)
         # agent_policy = ExamplePolicy(action_state=action_state)
 
         # Use default observation and inference engines
@@ -61,7 +48,7 @@ class ExampleUser(BaseAgent):
 
         :meta public:
         """
-        self.state["goal"][:] = 4
+        self.state["goal"][...] = 4
 
 
 class PseudoRandomUser(BaseAgent):
@@ -69,15 +56,13 @@ class PseudoRandomUser(BaseAgent):
 
         # Define an internal state with a 'goal' substate
         state = State()
-        state["p0"] = StateElement(1, autospace([[-10]], [[10]]))
-        state["p1"] = StateElement(5, autospace([[-10]], [[10]]))
-        state["p2"] = StateElement(7, autospace([[-10]], [[10]]))
+        state["p0"] = discrete_array_element(init=1, low=-10, high=10)
+        state["p1"] = discrete_array_element(init=5, low=-10, high=10)
+        state["p2"] = discrete_array_element(init=7, low=-10, high=10)
 
         # Call the policy defined above
         action_state = State()
-        action_state["action"] = StateElement(
-            0, Space(numpy.arange(10, dtype=numpy.int16), "discrete")
-        )
+        action_state["action"] = discrete_array_element(init=0, N=10)
         agent_policy = PseudoRandomPolicy(action_state=action_state)
 
         # Use default observation and inference engines
@@ -101,15 +86,13 @@ class PseudoRandomUserWithParams(BaseAgent):
         # Define an internal state with a 'goal' substate
         self.p = p
         state = State()
-        state["p0"] = StateElement(p[0], autospace([[-10]], [[10]]))
-        state["p1"] = StateElement(p[1], autospace([[-10]], [[10]]))
-        state["p2"] = StateElement(p[2], autospace([[-10]], [[10]]))
+        state["p0"] = discrete_array_element(init=p[0], low=-10, high=10)
+        state["p1"] = discrete_array_element(init=p[1], low=-10, high=10)
+        state["p2"] = discrete_array_element(init=p[2], low=-10, high=10)
 
         # Call the policy defined above
         action_state = State()
-        action_state["action"] = StateElement(
-            0, Space(numpy.arange(10, dtype=numpy.int16), "discrete")
-        )
+        action_state["action"] = discrete_array_element(init=0, N=10)
         agent_policy = PseudoRandomPolicy(action_state=action_state)
 
         # Use default observation and inference engines

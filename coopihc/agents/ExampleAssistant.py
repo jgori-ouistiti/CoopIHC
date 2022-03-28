@@ -1,19 +1,15 @@
 import numpy
 from coopihc.agents.BaseAgent import BaseAgent
-from coopihc.space.State import State
-from coopihc.space.StateElement import StateElement
-from coopihc.space.Space import Space
+from coopihc.base.State import State
+from coopihc.base.elements import discrete_array_element, array_element, cat_element
+from coopihc.base.elements import discrete_array_element, cat_element
 from coopihc.policy.BasePolicy import BasePolicy
 from coopihc.policy.ExamplePolicy import (
     CoordinatedPolicy,
     CoordinatedPolicyWithParams,
 )
-from coopihc.observation.RuleObservationEngine import RuleObservationEngine
-from coopihc.observation.utils import base_user_engine_specification
-from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 from coopihc.inference.ExampleInferenceEngine import (
     CoordinatedInferenceEngine,
-    RolloutCoordinatedInferenceEngine,
 )
 from coopihc.bundle.Bundle import Bundle
 import copy
@@ -32,9 +28,7 @@ class ExampleAssistant(BaseAgent):
 
         # Call the policy defined above
         action_state = State()
-        action_state["action"] = StateElement(
-            0, Space(numpy.array([0], dtype=numpy.int16), "discrete")
-        )
+        action_state["action"] = cat_element(N=1, init=0)
 
         # Use default observation and inference engines
         observation_engine = None
@@ -58,9 +52,7 @@ class CoordinatedAssistant(BaseAgent):
 
         # Call the policy defined above
         action_state = State()
-        action_state["action"] = StateElement(
-            0, Space(numpy.arange(10, dtype=numpy.int16), "discrete")
-        )
+        action_state["action"] = cat_element(N=10, init=0)
 
         # Use default observation and inference engines
         observation_engine = None
@@ -88,9 +80,7 @@ class CoordinatedAssistantWithInference(BaseAgent):
         state["user_p0"] = copy.deepcopy(user_model.state.p0)
         # Call the policy defined above
         action_state = State()
-        action_state["action"] = StateElement(
-            0, Space(numpy.arange(10, dtype=numpy.int16), "discrete")
-        )
+        action_state["action"] = discrete_array_element(init=0, low=0, high=9)
 
         # Use default observation and inference engines
         observation_engine = None

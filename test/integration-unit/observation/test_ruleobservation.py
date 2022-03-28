@@ -2,7 +2,7 @@
 coopihc package."""
 
 from coopihc.observation.RuleObservationEngine import RuleObservationEngine
-from coopihc.space.utils import example_game_state
+from coopihc.base.elements import example_game_state
 import random
 import pytest
 
@@ -320,7 +320,7 @@ def test_apply_deterministic_all_mapping_remove_subsubstate_slice():
     del egs["game_info"]
     del egs["assistant_state"]
     del egs["task_state"]["position"]
-    egs["task_state"]["targets"] = egs["task_state"]["targets"][0]
+    egs["task_state"]["targets"] = egs["task_state"]["targets"][0, {"space": True}]
     assert egs == obs
 
 
@@ -466,14 +466,13 @@ def test_observe():
     obseng = RuleObservationEngine()
     with pytest.raises(AttributeError):
         obseng.observe()
-    from coopihc.space.utils import example_game_state
 
     _example_state = example_game_state()
     obs = obseng.observe(_example_state)[0]  # remove reward
     del _example_state["user_state"]
     del _example_state["assistant_state"]
 
-    assert obs == _example_state
+    assert _example_state.equals(obs, mode="hard")
 
 
 # +----------------------+

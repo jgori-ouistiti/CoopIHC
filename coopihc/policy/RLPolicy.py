@@ -1,6 +1,6 @@
 import copy
 
-from coopihc.space.State import State
+from coopihc.base.State import State
 from coopihc.policy.BasePolicy import BasePolicy
 from coopihc.bundle.wrappers.Train import TrainGym
 
@@ -110,13 +110,13 @@ class RLPolicy(BasePolicy):
             observation = self.observation
 
         # convert observation via the Train class
-        observation = self.env._convertor.filter_gamestate(
-            observation, self.env.observation_mapping
-        )
+        observation = self.env._convertor.filter_gamestate(observation)
 
         # Apply observation Wrappers
+        env = self.env
         for w in self.obs_wraps:
-            observation = w.observation(w, observation)
+            observation = w(env).observation(observation)
+            env = w(env)
 
         action = self.model.predict(observation, deterministic=True)[
             0
@@ -124,15 +124,9 @@ class RLPolicy(BasePolicy):
 
         # Apply Action Wrappers
         for w in self.act_wraps:
-            action = w.action(w, action)
+            action = w(env).action(action)
+            env = w(env)
 
-        # convert action via the Train class
-        action = list(
-            self.env._convertor.adapt_discrete_and_multidiscrete_action(
-                action, self.env
-            ).values()
-        )
+        action = list(action.values())
 
-        new_action = self.new_action
-        new_action[:] = action
-        return new_action, 0
+        return action, 0

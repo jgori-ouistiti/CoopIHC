@@ -29,7 +29,7 @@ class LinearFeedback(BasePolicy):
 
 
     :param action_state: see `BasePolicy<coopihc.policy.BasePolicy.BasePolicy`
-    :type action_state: `State<coopihc.space.State.State`
+    :type action_state: `State<coopihc.base.State.State`
     :param state_indicator: specifies which component is used as feedback information e.g. ``('user_state', 'substate1', slice(0,2,1))``
     :type state_indicator: iterable
     :param feedback_gain: Feedback gain matrix, defaults to "identity", which creates a negative identity matrix.
@@ -74,7 +74,7 @@ class LinearFeedback(BasePolicy):
         Applies the gain.
 
         :return: action, reward
-        :rtype: tuple(`StateElement<coopihc.space.StateElement.StateElement>`, float)
+        :rtype: tuple(`StateElement<coopihc.base.StateElement.StateElement>`, float)
         """
         if observation is None:
             observation = self.observation
@@ -92,15 +92,12 @@ class LinearFeedback(BasePolicy):
                 self.feedback_gain = -numpy.eye(max(output.shape))
 
         noiseless_feedback = -self.feedback_gain @ output.reshape((-1, 1))
+
         if self.noise_function is None:
-            action = self.action
-            action[:] = noiseless_feedback
-            return action, 0
+            return noiseless_feedback, 0
 
         noisy_action = self.noise_function(
             noiseless_feedback, observation, *self.noise_args
         )
-        action = self.action
-        action[:] = noisy_action
 
-        return action, 0
+        return noisy_action, 0

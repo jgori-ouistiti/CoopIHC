@@ -15,7 +15,7 @@ packages = \
  'coopihc.interactiontask',
  'coopihc.observation',
  'coopihc.policy',
- 'coopihc.space']
+ 'coopihc.base']
 
 package_data = \
 {'': ['*']}

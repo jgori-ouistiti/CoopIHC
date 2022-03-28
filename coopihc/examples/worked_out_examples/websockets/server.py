@@ -12,7 +12,7 @@ from coopihc.wsbundle import Server
 task = SimplePointingTask(gridsize=20, number_of_targets=5)
 # Define some policy for user action
 policy = ELLDiscretePolicy(
-    action_space=[coopihc.space.Discrete(3)], action_set=[[-1, 0, 1]]
+    action_space=[coopihc.base.Discrete(3)], action_set=[[-1, 0, 1]]
 )
 # Actions are in human values, i.e. they are not necessarily in range(0,N)
 def compute_likelihood(self, action, observation):

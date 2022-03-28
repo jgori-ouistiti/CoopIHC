@@ -1,9 +1,7 @@
 import numpy
 from coopihc.policy.ELLDiscretePolicy import ELLDiscretePolicy
-from coopihc.space.State import State
-from coopihc.space.StateElement import StateElement
-from coopihc.space.Space import Space
-from coopihc.space.utils import autospace
+from coopihc.base.State import State
+from coopihc.base.elements import discrete_array_element, array_element, cat_element
 
 
 policy = None
@@ -12,9 +10,7 @@ policy = None
 def test_init():
     global policy
     _seed = 123
-    se = StateElement(
-        1, autospace([0, 1, 2, 3, 4, 5, 6], dtype=numpy.int16), seed=_seed
-    )
+    se = cat_element(N=7, seed=_seed)
     action_state = State(**{"action": se})
     policy = ELLDiscretePolicy(action_state, seed=_seed)
     assert policy.action_state is action_state
@@ -60,7 +56,7 @@ def test_attach_likelihood_function():
         1 / 7 - 0.075,
     ]
     for i in range(7):
-        action = StateElement(i, autospace([0, 1, 2, 3, 4, 5, 6]))
+        action = discrete_array_element(init=i, low=0, high=6)
         observation = {}
         assert policy.compute_likelihood(action, observation) == probs[i]
 

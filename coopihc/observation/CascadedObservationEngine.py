@@ -39,9 +39,9 @@ class CascadedObservationEngine(BaseObservationEngine):
         Serial observations (i.e. output of an engine becomes input of the next one)
 
         :param game_state: game state
-        :type game_state: `State<coopihc.space.State.State`
+        :type game_state: `State<coopihc.base.State.State`
         :return: (observation, obs reward)
-        :rtype: tuple(`State<coopihc.space.State.State`, float)
+        :rtype: tuple(`State<coopihc.base.State.State`, float)
         """
         game_state = copy.deepcopy(game_state)
         rewards = 0

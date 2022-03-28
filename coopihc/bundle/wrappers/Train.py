@@ -1,9 +1,7 @@
-from coopihc.helpers import hard_flatten
-from coopihc.space.utils import GymConvertor, GymForceConvertor
-from coopihc.space.StateElement import StateElement
+from coopihc.base.StateElement import StateElement
+from coopihc.base.Space import Numeric, CatSet
 
 import gym
-import numpy
 from collections import OrderedDict
 from abc import ABC, abstractmethod
 
@@ -45,14 +43,14 @@ class TrainGym(gym.Env):
     :type train_assistant: bool, optional
     :param observation_dict: to filter out observations, you can apply a dictionnary, defaults to None. e.g.:
 
-    ..code-block:: python
+    .. code-block:: python
 
         filterdict = OrderedDict(
-        {
-            "user_state": OrderedDict({"goal": 0}),
-            "task_state": OrderedDict({"x": 0}),
-        }
-    )
+            {
+                "user_state": OrderedDict({"goal": 0}),
+                "task_state": OrderedDict({"x": 0}),
+            }
+        )
 
     You can always filter out observations later using an ObservationWrapper. Difference in performance between the two approaches is unknown.
 
@@ -72,7 +70,7 @@ class TrainGym(gym.Env):
         observation_dict=None,
         reset_dic={},
         reset_turn=None,
-        **kwargs
+        **kwargs,
     ):
         self.train_user = train_user
         self.train_assistant = train_assistant
@@ -93,7 +91,7 @@ class TrainGym(gym.Env):
 
         # The asymmetry of these two should be resolved. Currently, some fiddling is needed due to Issue # 58 https://github.com/jgori-ouistiti/CoopIHC/issues/58 . It is expected that when issue 58 is resolved, this code can be cleaned up.
         self.action_space = self.get_action_space()
-        self.observation_space, self.observation_mapping = self.get_observation_space()
+        self.observation_space = self.get_observation_space()
 
         # Below: Using ordereddict here is forced due to Open AI gym's behavior: when initializing the Dict space, it tries to order the dict by keys, which may change the order of the dict entries. This is actually useless since Python 3.7 because dicts are ordered by default.
 
@@ -106,17 +104,13 @@ class TrainGym(gym.Env):
         # ----- Init Action space -------
         action_dict = OrderedDict({})
         if self.train_user:
-            action_dict.update(
-                {"user_action": self.convert_space(self.bundle.user.action)[0]}
-            )
+            for i, _action in enumerate(self.bundle.user.action):
+                action_dict.update({f"user_action_{i}": self.convert_space(_action)})
         if self.train_assistant:
-            action_dict.update(
-                {
-                    "assistant_action": self.convert_space(
-                        self.bundle.assistant.action
-                    )[0]
-                }
-            )
+            for i, _action in enumerate(self.bundle.assistant.action):
+                action_dict.update(
+                    {f"assistant_action_{i}": self.convert_space(_action)}
+                )
         return gym.spaces.Dict(action_dict)
 
     def get_observation_space(self):
@@ -126,7 +120,7 @@ class TrainGym(gym.Env):
 
 
         """
-        self.bundle.reset(self.reset_turn)
+        self.bundle.reset(turn=self.reset_turn)
         # ------- Init Observation space
 
         if self.train_user and self.train_assistant:
@@ -141,63 +135,32 @@ class TrainGym(gym.Env):
 
     def get_agent_observation_space(self, agent):
         observation_dict = OrderedDict({})
-        observation_mapping = OrderedDict({})
-
-        observation_dict.update(
-            {
-                "turn_index": gym.spaces.Discrete(4),
-                "round_index": gym.spaces.Discrete(
-                    1000
-                ),  # Maximum of N=1000 rounds. Should not affect performance and be big enough for most cases.
-            }
-        )
-        observation_mapping.update({"turn_index": None, "round_index": None})
 
         for key, value in getattr(self.bundle, agent).observation.items():
-            if key == "game_info":
-                continue
-            elif key == "user_action" or key == "assistant_action":
-                observation_dict.update({key: self.convert_space(value["action"])[0]})
-                observation_mapping.update(
-                    {key: self.convert_space(value["action"])[1]}
-                )
+            if key == "user_action" or key == "assistant_action":
+                observation_dict.update({key: self.convert_space(value["action"])})
+
             else:
                 observation_dict.update(
                     {
-                        __key: self.convert_space(__value)[0]
-                        for __key, __value in value.items()
-                    }
-                )
-                observation_mapping.update(
-                    {
-                        __key: self.convert_space(__value)[1]
+                        __key: self.convert_space(__value)
                         for __key, __value in value.items()
                     }
                 )
 
-        return gym.spaces.Dict(observation_dict), observation_mapping
+        return gym.spaces.Dict(observation_dict)
 
     def reset(self):
         self.bundle.reset(dic=self.reset_dic, turn=self.reset_turn)
         if self.train_user and self.train_assistant:
             raise NotImplementedError
         if self.train_user:
-            return self._convertor.filter_gamestate(
-                self.bundle.user.observation, self.observation_mapping
-            )
+            return self._convertor.filter_gamestate(self.bundle.user.observation)
         if self.train_assistant:
-            return self._convertor.filter_gamestate(
-                self.bundle.assistant.observation, self.observation_mapping
-            )
+            return self._convertor.filter_gamestate(self.bundle.assistant.observation)
 
     def step(self, action):
-        ## Hack for now
-        # action = self._convertor.adapt_discrete_and_multidiscrete_action(
-        #     self._convertor, action, self
-        # )
-        action = GymConvertor.adapt_discrete_and_multidiscrete_action(
-            self._convertor, action, self
-        )
+
         user_action = action.get("user_action", None)
         assistant_action = action.get("assistant_action", None)
 
@@ -208,13 +171,9 @@ class TrainGym(gym.Env):
         if self.train_user and self.train_assistant:
             raise NotImplementedError
         if self.train_user:
-            obs = self._convertor.filter_gamestate(
-                self.bundle.user.observation, self.observation_mapping
-            )
+            obs = self._convertor.filter_gamestate(self.bundle.user.observation)
         if self.train_assistant:
-            obs = self._convertor.filter_gamestate(
-                self.bundle.assistant.observation, self.observation_mapping
-            )
+            obs = self._convertor.filter_gamestate(self.bundle.assistant.observation)
 
         return (
             obs,
@@ -225,7 +184,7 @@ class TrainGym(gym.Env):
 
     def convert_space(self, object):
         if isinstance(object, StateElement):
-            object = object.spaces
+            object = object.space
         return self._convertor.convert_space(object)
 
     def render(self, mode):
@@ -284,38 +243,19 @@ class GymConvertor(RLConvertor):
         super().__init__(interface="gym", **kwargs)
 
     def convert_space(self, space):
-        """convert_space
+        if isinstance(space, Numeric):
+            return gym.spaces.Box(low=space.low, high=space.high, dtype=space.dtype)
+        elif isinstance(space, CatSet):
+            return gym.spaces.Discrete(space.N)
 
-        CoopIHC continuous spaces are simply cast to Gym boxes. CoopIHC Discrete and Multidiscrete are cast to Gym Discrete and Multidiscrete, with a transformation of the arrays (since in Gym, discrete values live in :math:`\mathbb{N}`)
-
-        :param space: CoopIHC space to convert
-        :type space: `Space <coopihc.space.Space.Space>`
-        :return: (Gym space, conversion_list)
-        :rtype: tuple(gym.spaces, list)
-        """
-        if space.space_type == "continuous":
-            return (gym.spaces.Box(low=space.low, high=space.high), None)
-        elif space.space_type == "discrete":
-            if space.low == 0 and space.high == space.N - 1:
-                return (gym.spaces.Discrete(space.N), None)
-            else:
-                return (gym.spaces.Discrete(space.N), space._array_bound)
-        elif space.space_type == "multidiscrete":
-            convert_list = []
-            for _space in space:
-                if _space.low == 0 and _space.high == _space.N - 1:
-                    convert_list.append(None)
-                else:
-                    convert_list.append(_space._array_bound)
-            return (gym.spaces.MultiDiscrete(space.N), convert_list)
-
-    def filter_gamestate(self, gamestate, observation_mapping):
+    def filter_gamestate(self, gamestate):
         """filter_gamestate
 
         converts a CoopIHC observation to a valid Gym observation
 
 
         """
+
         dic = OrderedDict({})
         for k, v in gamestate.filter(mode="array-Gym").items():
             # Hack, see Issue # 58  https://github.com/jgori-ouistiti/CoopIHC/issues/58
@@ -329,35 +269,6 @@ class GymConvertor(RLConvertor):
                 v[k] = v.pop("action")
                 _key = k
 
-            # Also convert discrete spaces to gym discrete spaces
-            if observation_mapping[_key] is not None:
-                if isinstance(observation_mapping[_key], numpy.ndarray):
-                    v[_key] = int(numpy.where(observation_mapping[_key] == _value)[0])
-
-                elif isinstance(observation_mapping[_key], list):  # Multidiscrete
-                    for n, (mapping, __v) in enumerate(
-                        zip(observation_mapping[_key], _value)
-                    ):  # could verify here that iterables in zip are equal length. This can be done with strict = True starting from Python 3.10
-                        v[_key][n] = numpy.where(observation_mapping[_key] == __v)[0][0]
             dic.update(v)
+
         return dic
-
-    def adapt_discrete_and_multidiscrete_action(self, action, traingym):
-        """_adapt_discrete_and_multidiscrete_action
-
-        Transforms a Gym action to a CoopIHC valid action.
-
-        """
-
-        for key, value in action.items():
-            if isinstance(traingym.action_space.spaces[key], gym.spaces.Box):
-                pass
-            elif isinstance(
-                traingym.action_space.spaces[key],
-                (gym.spaces.Discrete, gym.spaces.MultiDiscrete),
-            ):
-                atr1, atr2 = key.split("_")
-                action[key] = getattr(
-                    getattr(traingym.bundle, atr1), atr2
-                ).spaces._array_bound[value]
-        return action

@@ -33,7 +33,7 @@ from coopihc.observation import (
 )
 from coopihc.interactiontask import ClassicControlTask
 from coopihc.policy import LLDiscretePolicy, Policy
-from coopihc.space import State
+from coopihc.base import State
 
 import sys
 

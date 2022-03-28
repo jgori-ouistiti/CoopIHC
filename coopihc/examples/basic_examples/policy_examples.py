@@ -1,8 +1,7 @@
 from coopihc.policy.ExamplePolicy import ExamplePolicy
-from coopihc.space.StateElement import StateElement
-from coopihc.space.State import State
+from coopihc.base.elements import cat_element
+from coopihc.base.State import State
 from coopihc.policy.ELLDiscretePolicy import ELLDiscretePolicy
-from coopihc.space.utils import autospace
 
 
 ## ==================== ExamplePolicy
@@ -38,7 +37,7 @@ def likelihood_model(self, action, observation, *args, **kwargs):
 
 # [start-elld-attach]
 _seed = 123
-se = StateElement(1, autospace([0, 1, 2, 3, 4, 5, 6]), seed=_seed)
+se = cat_element(init=1, N=7)
 action_state = State(**{"action": se})
 policy = ELLDiscretePolicy(action_state, seed=_seed)
 # Attach the model

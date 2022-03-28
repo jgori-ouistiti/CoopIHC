@@ -1,9 +1,9 @@
 import numpy
 import copy
 
-from coopihc.space.State import State
-from coopihc.space.StateElement import StateElement
-from coopihc.space.Space import Space
+from coopihc.base.State import State
+from coopihc.base.elements import discrete_array_element, array_element, cat_element
+from coopihc.base.elements import cat_element
 
 
 # ============== General Policies ===============
@@ -17,13 +17,13 @@ class BasePolicy:
 
     def __init__(self, *args, action_state=None, **kwargs):
 
+        self._action_keys = None  # For actionkeys property
+
         # If a state is provided, use it; else create one (important not to lose the reference w/r the game_state)
 
         if action_state is None:
             action_state = State()
-            action_state["action"] = StateElement(
-                0, Space(numpy.array([0, 1], dtype=numpy.int16), "discrete")
-            )
+            action_state["action"] = cat_element(N=2, init=0)
 
         self.action_state = action_state
         self.host = None
@@ -50,9 +50,16 @@ class BasePolicy:
         Return the last observation.
 
         :return: last observation
-        :rtype: `State<coopihc.space.State.State>`
+        :rtype: `State<coopihc.base.State.State>`
         """
         return self.host.inference_engine.buffer[-1]
+
+    @property
+    def action_keys(self):
+        if self._action_keys is None:
+            self._action_keys = self.action_state.keys()
+
+        return self._action_keys
 
     @property
     def action(self):
@@ -61,20 +68,32 @@ class BasePolicy:
         Return the last action.
 
         :return: last action
-        :rtype: `State<coopihc.space.StateElement.StateElement>`
+        :rtype: `State<coopihc.base.StateElement.StateElement>`
         """
-        return self.action_state["action"]
+        actions = tuple(self.action_state.values())
+        # if len(actions) == 1:
+        #     return next(iter(actions))
+        return actions
 
-    @property
-    def new_action(self):
-        """new action (copy)
+    @action.setter
+    def action(self, item):
+        try:
+            next(iter(item))
+        except TypeError:
+            item = (item,)
+        for _action, key in zip(item, self.action_keys):
+            self.action_state[key][...] = _action
 
-        Return a copy of the last action.
+    # @property
+    # def new_action(self):
+    #     """new action (copy)
 
-        :return: last action
-        :rtype: `StateElement<coopihc.space.StateElement.StateElement>`
-        """
-        return copy.copy(self.action_state["action"])
+    #     Return a copy of the last action.
+
+    #     :return: last action
+    #     :rtype: `StateElement<coopihc.base.StateElement.StateElement>`
+    #     """
+    #     return copy.deepcopy(self.action_state)
 
     @property
     def unwrapped(self):
@@ -91,15 +110,20 @@ class BasePolicy:
         if random:
             self.action_state.reset()
 
+    def _base_sample(self):
+        action, reward = self.sample(observation=None)
+        self.action = action
+        return self.action, reward
+
     def sample(self, observation=None):
         """sample
 
         (Randomly) Sample from the policy
 
         :return: (action, action reward)
-        :rtype: (StateElement<coopihc.space.StateElement.StateElement>, float)
+        :rtype: (StateElement<coopihc.base.StateElement.StateElement>, float)
         """
-        self.action.reset()
+        _ = [_action.reset() for _action in self.action]
         return self.action, 0
 
     def __repr__(self):

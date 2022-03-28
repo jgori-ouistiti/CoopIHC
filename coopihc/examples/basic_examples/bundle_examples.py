@@ -1,9 +1,7 @@
 import numpy
 from coopihc.interactiontask.ExampleTask import ExampleTask
-from coopihc.space.State import State
-from coopihc.space.Space import Space
-from coopihc.space.utils import discrete_space
-from coopihc.space.StateElement import StateElement
+from coopihc.base.State import State
+from coopihc.base.elements import discrete_array_element, array_element, cat_element
 from coopihc.bundle.Bundle import Bundle
 from coopihc.agents.BaseAgent import BaseAgent
 from coopihc.policy.BasePolicy import BasePolicy
@@ -14,10 +12,11 @@ from coopihc.agents.ExampleAssistant import ExampleAssistant
 # [start-check-task]
 # Define agent action states (what actions they can take)
 user_action_state = State()
-user_action_state["action"] = StateElement(0, discrete_space([-1, 0, 1]))
+user_action_state["action"] = discrete_array_element(low=-1, high=1)
 
 assistant_action_state = State()
-assistant_action_state["action"] = StateElement(0, discrete_space([-1, 0, 1]))
+assistant_action_state["action"] = discrete_array_element(low=-1, high=1)
+
 
 # Bundle a task together with two BaseAgents
 bundle = Bundle(
@@ -41,14 +40,11 @@ state, rewards, is_done = bundle.step(user_action=1, assistant_action=0)
 bundle.reset()
 while True:
     game_state, rewards, is_done = bundle.step(user_action=None, assistant_action=None)
-    # Equivalent to:
-    # game_state, rewards, is_done = bundle.step(
-    #     bundle.user.policy.sample()[0], bundle.assistant.policy.sample()[0]
-    # )
-
     if is_done:
         break
 # [end-check-task]
+
+
 # [start-check-taskuser]
 
 
@@ -65,7 +61,6 @@ bundle.reset(turn=1)
 
 while 1:
     state, rewards, is_done = bundle.step(user_action=None)
-
     if is_done:
         break
 # [end-check-taskuser]

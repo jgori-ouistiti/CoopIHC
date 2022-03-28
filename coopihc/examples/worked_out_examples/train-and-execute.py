@@ -32,7 +32,7 @@ unitcdgain = ConstantCDGain(1)
 # But that is okay because we don't sample from the policy during
 # learning
 policy = BasePolicy(
-    action_space=[coopihc.space.Discrete(10)],
+    action_space=[coopihc.base.Discrete(10)],
     action_set=[[-5 + i for i in range(5)] + [i + 1 for i in range(5)]],
     action_values=None,
 )
@@ -85,7 +85,7 @@ def make_env(rank, seed=0):
         unitcdgain = ConstantCDGain(1)
 
         policy = BasePolicy(
-            action_space=[coopihc.space.Discrete(10)],
+            action_space=[coopihc.base.Discrete(10)],
             action_set=[[-5 + i for i in range(5)] + [i + 1 for i in range(5)]],
             action_values=None,
         )
@@ -144,7 +144,7 @@ if __name__ == "__main__":
     unitcdgain = ConstantCDGain(1)
 
     policy = BasePolicy(
-        action_space=[coopihc.space.Discrete(10)],
+        action_space=[coopihc.base.Discrete(10)],
         action_set=[[-5 + i for i in range(5)] + [i + 1 for i in range(5)]],
         action_values=None,
     )

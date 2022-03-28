@@ -1,7 +1,6 @@
 from coopihc.agents.BaseAgent import BaseAgent
-from coopihc.space.State import State
-from coopihc.space.StateElement import StateElement
-from coopihc.space.Space import Space
+from coopihc.base.State import State
+from coopihc.base.elements import discrete_array_element, array_element, cat_element
 from coopihc.policy.ExamplePolicy import ExamplePolicy
 from coopihc.policy.BasePolicy import BasePolicy
 from coopihc.inference.ExampleInferenceEngine import ExampleInferenceEngine
@@ -22,20 +21,12 @@ class NonMinimalAgent(BaseAgent):
 
         # custom policy
         action_state = State()
-        action_state["action"] = StateElement(
-            2, Space(numpy.array([1, 2, 3], dtype=numpy.int16), "discrete")
-        )
+        action_state["action"] = discrete_array_element(init=2, low=1, high=3)
         policy = ExamplePolicy(action_state=action_state)
 
         # custom state
 
-        state = State(
-            **{
-                "substate_1": StateElement(
-                    1, Space(numpy.array([0, 1], dtype=numpy.int16), "discrete")
-                )
-            }
-        )
+        state = State(**{"substate_1": cat_element(N=2, init=1)})
 
         # custom inference_engine
 
@@ -130,17 +121,13 @@ def test_nonminimalagent():
 
 def test_state():
     agent = NonMinimalAgent()
-    assert agent.state["substate_1"] == StateElement(
-        1, Space(numpy.array([0, 1], dtype=numpy.int16), "discrete")
-    )
+    assert agent.state["substate_1"] == cat_element(N=2, init=1)
 
 
 def test_policy():
     agent = NonMinimalAgent()
     assert isinstance(agent.policy, ExamplePolicy)
-    assert agent.action == StateElement(
-        2, Space(numpy.array([1, 2, 3], dtype=numpy.int16), "discrete")
-    )
+    assert agent.action == discrete_array_element(init=2, low=1, high=3)
 
 
 def test_inference_engine():
@@ -182,9 +169,7 @@ def test_override_policy():
     policy = BasePolicy()
     agent = NonMinimalAgent(override_policy=(policy, {}))
     assert isinstance(agent.policy, BasePolicy)
-    assert agent.action == StateElement(
-        0, Space(numpy.array([0, 1], dtype=numpy.int16), "discrete")
-    )
+    assert agent.action == cat_element(N=2)
 
 
 def test_override_obseng():

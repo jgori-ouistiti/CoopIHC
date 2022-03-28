@@ -1,4 +1,4 @@
-from coopihc.space import Space, State, StateElement
+from coopihc.base import Space, State, StateElement
 from coopihc.policy import BasePolicy
 import numpy
 

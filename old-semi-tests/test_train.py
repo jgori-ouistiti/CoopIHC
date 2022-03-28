@@ -1,4 +1,4 @@
-from coopihc.space import StateElement, State
+from coopihc.base import StateElement, State
 import gym
 import numpy
 import sys

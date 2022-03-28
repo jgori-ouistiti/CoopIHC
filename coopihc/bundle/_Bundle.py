@@ -1,10 +1,9 @@
-from coopihc.space.Space import Space
-from coopihc.space.State import State
-from coopihc.space.StateElement import StateElement
+from coopihc.base.State import State
+from coopihc.base.elements import discrete_array_element, array_element, cat_element
+from coopihc.base.elements import discrete_array_element, cat_element
 
 import numpy
 import yaml
-from collections import OrderedDict
 import matplotlib.pyplot as plt
 import copy
 
@@ -42,15 +41,11 @@ class _Bundle:
         # Form complete game state
         self.game_state = State()
 
-        turn_index = StateElement(
-            numpy.array([0]),
-            Space(numpy.array([0, 1, 2, 3], dtype=numpy.int8), "discrete"),
-            out_of_bounds_mode="raw",
+        turn_index = cat_element(
+            N=4, init=0, out_of_bounds_mode="raw", dtype=numpy.int8
         )
-        round_index = StateElement(
-            numpy.array([0]),
-            Space(numpy.array([0], dtype=numpy.int8), "discrete"),
-            out_of_bounds_mode="raw",
+        round_index = discrete_array_element(
+            init=0, low=0, high=numpy.iinfo(numpy.int64).max, out_of_bounds_mode="raw"
         )
 
         self.game_state["game_info"] = State()
@@ -68,12 +63,12 @@ class _Bundle:
             self.game_state["user_action"] = user.policy.action_state
         else:
             self.game_state["user_action"] = State()
-            self.game_state["user_action"]["action"] = StateElement()
+            self.game_state["user_action"]["action"] = array_element()
         if assistant.policy is not None:
             self.game_state["assistant_action"] = assistant.policy.action_state
         else:
             self.game_state["assistant_action"] = State()
-            self.game_state["assistant_action"]["action"] = StateElement()
+            self.game_state["assistant_action"]["action"] = array_element()
 
         # Needed for render
         self.active_render_figure = None
@@ -122,7 +117,7 @@ class _Bundle:
     @turn_number.setter
     def turn_number(self, value):
         self._turn_number = value
-        self.game_state["game_info"]["turn_index"][:] = value
+        self.game_state["game_info"]["turn_index"][...] = value
 
     @property
     def round_number(self):
@@ -138,7 +133,11 @@ class _Bundle:
     @round_number.setter
     def round_number(self, value):
         self._round_number = value
-        self.game_state["game_info"]["round_index"][:] = value
+        self.game_state["game_info"]["round_index"][...] = value
+
+    @property
+    def state(self):
+        return self.game_state
 
     def reset(
         self, turn=0, task=True, user=True, assistant=True, dic={}, skip_user_step=False
@@ -181,7 +180,7 @@ class _Bundle:
         :param skip_user_step: do you want to skip user steps on reset?, defaults to False. Usually you want to have this set to False if the user starts playing but true if the assistant starts playing. Can also be set globally at the bundle level with the keyword argument "reset_skip_user_step".
         :type skip_user_step: bool, optional
         :return: new game state
-        :rtype: :py:class:`State<coopihc.space.State.State>`
+        :rtype: :py:class:`State<coopihc.base.State.State>`
         """
         # ============= Passing via bundles
         turn = self.kwargs.get("reset_turn", turn)
@@ -206,9 +205,9 @@ class _Bundle:
                 dic=assistant_dic, random=self.kwargs.get("random_reset", False)
             )
 
-        self.round_number[:] = 0
+        self.round_number[...] = 0
 
-        self.turn_number[:] = turn
+        self.turn_number[...] = turn
 
         if turn == 0:
             return self.game_state
@@ -216,7 +215,8 @@ class _Bundle:
             self._user_first_half_step()
         if turn >= 2 and not skip_user_step:
             user_action, _ = self.user._take_action()
-            self.broadcast_action("user", user_action)
+            self.user.action = user_action
+            # self.broadcast_action("user", user_action)
             self._user_second_half_step(user_action)
         if turn >= 3:
             self._assistant_first_half_step()
@@ -236,7 +236,7 @@ class _Bundle:
         :param go_to_turn: turn at which round stops, defaults to None
         :type go_to_turn: int, optional
         :return: gamestate, reward, game finished flag
-        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, collections.OrderedDict, boolean)
+        :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, collections.OrderedDict, boolean)
         """
 
         if go_to_turn is None:
@@ -272,13 +272,9 @@ class _Bundle:
                 if user_action is None:
                     user_action, user_policy_reward = self.user._take_action()
                 else:
-                    # Convert action to stateElement
-                    if not isinstance(user_action, StateElement):
-                        se_action = copy.copy(self.user.action)
-                        se_action[:] = user_action
-                        user_action = se_action
+                    self.user.action = user_action
                     user_policy_reward = 0
-                self.broadcast_action("user", user_action)
+
                 task_reward, is_done = self._user_second_half_step(user_action)
                 rewards["user_policy_reward"] = user_policy_reward
                 rewards["first_task_reward"] = task_reward
@@ -307,13 +303,9 @@ class _Bundle:
                         assistant_policy_reward,
                     ) = self.assistant._take_action()
                 else:
-                    # Convert action to stateElement
-                    if not isinstance(assistant_action, StateElement):
-                        se_action = copy.copy(self.assistant.action)
-                        se_action[:] = assistant_action
-                        assistant_action = se_action
+                    self.assistant.action = assistant_action
                     assistant_policy_reward = 0
-                self.broadcast_action("assistant", assistant_action)
+
                 task_reward, is_done = self._assistant_second_half_step(
                     assistant_action
                 )
@@ -342,7 +334,7 @@ class _Bundle:
         self.rendered_mode = mode
         if "text" in mode:
             print("\n")
-            print("Round number {}".format(self.round_number.squeeze().tolist()))
+            print("Round number {}".format(self.round_number.tolist()))
             print("Task Render")
             self.task.render(mode="text", *args, **kwargs)
             print("User Render")
@@ -534,7 +526,8 @@ class _Bundle:
             # else sample from policy
             user_action, user_policy_reward = self.user.take_action()
 
-        self.broadcast_action("user", user_action)
+        # self.broadcast_action("user", user_action)
+        self.user.action = user_action
 
         task_reward, is_done = self._user_second_half_step(user_action)
 
@@ -569,7 +562,8 @@ class _Bundle:
                 assistant_policy_reward,
             ) = self.assistant.take_action()
 
-        self.broadcast_action("assistant", assistant_action)
+        # self.broadcast_action("assistant", assistant_action)
+        self.assistant.action = assistant_action
 
         task_reward, is_done = self._assistant_second_half_step(assistant_action)
         return (
@@ -590,25 +584,29 @@ class _Bundle:
         :param state_key: state key in gamestate
         :type state_key: string
         :param state: new state value
-        :type state: :py:class:`State<coopihc.space.State.State>`
+        :type state: :py:class:`State<coopihc.base.State.State>`
         """
         self.game_state[state_key] = state
         getattr(self, role).observation[state_key] = state
 
-    def broadcast_action(self, role, action):
-        """broadcast action
+    # def broadcast_action(self, role, action):
+    #     """broadcast action
 
-        Broadcast an action to the gamestate and update the agent's policy.
+    #     Broadcast an action to the gamestate and update the agent's policy.
 
-        :param role: "user" or "assistant"
-        :type role: string
-        :param action: action
-        :type action: Any
-        """
-        getattr(self, role).policy.action_state["action"][:] = action.view(
-            numpy.ndarray
-        )
-        try:
-            getattr(self, role).observation["{}_action".format(role)]["action"] = action
-        except AttributeError:
-            pass
+    #     :param role: "user" or "assistant"
+    #     :type role: string
+    #     :param action: action
+    #     :type action: Any
+    #     """
+    #     agent = getattr(self, role)
+    #     for label, _action in zip(
+    #         actionstate, action
+    #     ):  # iterate over dict === iter over labels
+    #         actionstate[label][:] = _action.view(numpy.ndarray)
+    #         try:
+    #             getattr(self, role).observation["{}_action".format(role)][
+    #                 label
+    #             ] = _action
+    #         except AttributeError:
+    #             pass

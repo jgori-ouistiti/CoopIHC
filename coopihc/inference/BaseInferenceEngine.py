@@ -36,7 +36,7 @@ class BaseInferenceEngine:
         The last observation.
 
         :return: last observation
-        :rtype: :py:class:`State<coopihc.space.State.State>`
+        :rtype: :py:class:`State<coopihc.base.State.State>`
         """
         return self.buffer[-1]
 
@@ -47,7 +47,7 @@ class BaseInferenceEngine:
         The current agent state
 
         :return: agent state
-        :rtype: :py:class:`State<coopihc.space.State.State>`
+        :rtype: :py:class:`State<coopihc.base.State.State>`
         """
         return self.buffer[-1]["{}_state".format(self.host.role)]
 
@@ -58,9 +58,9 @@ class BaseInferenceEngine:
         The agent's last action
 
         :return: agent action
-        :rtype: :py:class:`State<coopihc.space.State.State>`
+        :rtype: :py:class:`State<coopihc.base.State.State>`
         """
-        return self.host.policy.action_state["action"]
+        return tuple(self.host.policy.action_state.values())
 
     @property
     def unwrapped(self):
@@ -72,7 +72,7 @@ class BaseInferenceEngine:
         Add an observation to a buffer. If the buffer does not exist, create a naive buffer. The buffer has a size given by buffer length
 
         :param observation: observation produced by an engine
-        :type observation: :py:class:`State<coopihc.space.State.State>`
+        :type observation: :py:class:`State<coopihc.base.State.State>`
         """
 
         if self.buffer is None:
@@ -109,7 +109,7 @@ class BaseInferenceEngine:
 
 
         :return: (new internal state, reward)
-        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float)
+        :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, float)
         """
         if user_state is not None:
             return user_state, 0

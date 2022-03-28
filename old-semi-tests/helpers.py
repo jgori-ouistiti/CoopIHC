@@ -1,4 +1,4 @@
-from coopihc.space import StateElement
+from coopihc.base import StateElement
 from coopihc.helpers import sort_two_lists, isdefined, flatten
 import gym
 import numpy
