@@ -94,7 +94,7 @@ def test_reset_full():
         "sub1": {"x1": 3},
         "sub2": {"y1": 3},
     }
-    state.reset(reset_dic)
+    state.reset(dic=reset_dic)
     assert state["sub1"]["x1"] == 3
     assert state["sub2"]["y1"] == 3
 
