@@ -3,7 +3,7 @@ from coopihc.agents.ExampleUser import PseudoRandomUser, PseudoRandomUserWithPar
 from coopihc.agents.ExampleAssistant import (
     CoordinatedAssistant,
     CoordinatedAssistantWithInference,
-    # CoordinatedAssistantWithRollout,
+    CoordinatedAssistantWithRollout,
 )
 
 from coopihc.bundle.Bundle import Bundle
@@ -41,21 +41,21 @@ while True:
     if is_done:
         break
 # [end-user-model-mismatch]
-pytest.skip("below not working, but tmp anyways", allow_module_level=True)
+# pytest.skip("below not working, but tmp anyways", allow_module_level=True)
 # [start-user-model-inference]
-user = PseudoRandomUserWithParams(p=[1, 5, 7])
-user_model = PseudoRandomUserWithParams(p=[5, 5, 7])  # Model mismatch
+# user = PseudoRandomUserWithParams(p=[1, 5, 7])
+# user_model = PseudoRandomUserWithParams(p=[5, 5, 7])  # Model mismatch
 
-assistant = CoordinatedAssistantWithInference(user_model=user_model)
+# assistant = CoordinatedAssistantWithInference(user_model=user_model)
 
-bundle = Bundle(task=CoordinatedTask(), user=user, assistant=assistant)
+# bundle = Bundle(task=CoordinatedTask(), user=user, assistant=assistant)
 
-bundle.reset(turn=2)
-print(bundle.game_state)
-while True:
-    obs, rewards, is_done = bundle.step()
-    if is_done:
-        break
+# bundle.reset(turn=2)
+# print(bundle.game_state)
+# while True:
+#     obs, rewards, is_done = bundle.step()
+#     if is_done:
+#         break
 # [end-user-model-inference]
 
 
@@ -79,52 +79,19 @@ while True:
 
 
 # [start-user-model-rollout]
-
 task = CoordinatedTask()
 task_model = CoordinatedTask()
 
 user = PseudoRandomUserWithParams(p=[1, 5, 7])
-user_model = PseudoRandomUserWithParams(p=[5, 5, 7])  # Model mismatch
-second_user_model = copy.deepcopy(user_model)
+user_model = copy.deepcopy(user)
 
-assistant_simulation = CoordinatedAssistant(user_model=second_user_model)
 
-simulation_bundle = Bundle(
-    task=task_model, user=user_model, assistant=assistant_simulation
-)
-
-assistant = CoordinatedAssistantWithRollout(simulation_bundle)
-
+assistant = CoordinatedAssistantWithRollout(task_model, user_model, [5, 7])
 bundle = Bundle(task=task, user=user, assistant=assistant)
 bundle.reset()
-bundle.step()
-
+while True:
+    obs, rewards, is_done = bundle.step()
+    print(bundle.game_state)
+    if is_done:
+        break
 # [end-user-model-rollout]
-
-
-# # [start-user-model-rollout]
-
-# task = CoordinatedTask()
-# task_model = CoordinatedTask()
-
-# user = PseudoRandomUserWithParams(p=[1, 5, 7])
-# user_model = PseudoRandomUserWithParams(p=[5, 5, 7])  # Model mismatch
-
-# assistant = CoordinatedAssistantWithRollout(
-#     task_model=task_model, user_model=user_model
-# )
-
-# bundle = Bundle(task=task, user=user, assistant=assistant)
-
-# bundle.reset(turn=2)
-# print(bundle.game_state)
-# self = assistant
-# agent_observation, agent_obs_reward = self._observe(self.bundle.game_state)
-# # Pass observation to InferenceEngine Buffer
-# self.inference_engine.add_observation(agent_observation)
-# exit()
-# while True:
-#     obs, rewards, is_done = bundle.step()
-#     if is_done:
-#         break
-# # [end-user-model-rollout]
