@@ -78,6 +78,7 @@ class RolloutCoordinatedInferenceEngine(BaseInferenceEngine):
         self._simulator = None
         self.__inference_count = 0
 
+    # define the simulator here. Simulator is called like a Bundle, but it will use the dual version of objects if available.
     @property
     def simulator(self):
         if self._simulator is None:
@@ -90,7 +91,9 @@ class RolloutCoordinatedInferenceEngine(BaseInferenceEngine):
 
     def infer(self, agent_state=None):
 
-        if self.__inference_count > 0:  # Only one inference is needed in this case
+        if (
+            self.__inference_count > 0
+        ):  # If it is the first time there is inference, continue, else just perform a BaseInference. We can do this because we know the parameter p[0] will not evolve over time.
             return super().infer(agent_state=agent_state)
 
         self.__inference_count += 1
@@ -102,6 +105,7 @@ class RolloutCoordinatedInferenceEngine(BaseInferenceEngine):
             agent_state
         )  # agent state will be altered in the simulator, so keep a copy of it for reference.
 
+        # For the 10 possible values, completely simulate them. The right parameter is the one that leads to the maximum rewards
         rew = [0 for i in range(10)]
         for i in range(10):  # Exhaustively try out all cases
 
@@ -128,7 +132,9 @@ class RolloutCoordinatedInferenceEngine(BaseInferenceEngine):
                 if is_done:
                     break
 
+        # Don't forget to close the simulator when you are finished.
         self.simulator.close()
+
         index = numpy.argmax(rew)
         mem_state["p0"][...] = index
         return mem_state, 0

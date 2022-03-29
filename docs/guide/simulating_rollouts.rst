@@ -6,14 +6,15 @@ Assistants that simulate users
 In many cases it is useful to have an assistant maintain a model of a user, for example to perform single-shot predictions (what will be the next user step?) or complete simulations by means of rollouts (what is the end result if I choose this policy throughout the task?).
 This predictions can then be used in the decision-making process.
 
-Since in *CoopIHC* we define users as classes (and/or instances), it seems natural to want to pass a user to an assistant, which could then query it to perform predictions. The examples below show a few ways in which this can be done.
+
+Since in *CoopIHC* we define users as classes (and/or instances), it seems natural to want to pass a user to an assistant, which could then query it to perform predictions. 
+
 
 
 
 Single-shot predictions
 -------------------------
-
-For this example, we consider a simple case where the user and assistant have to coordinate their actions to make the task state evolve. The coordination will be successful because the assistant will manage a simulation of the user that provides single-shot predictions of the next user action.
+Single-shot predictions are easy to implement with basic *CoopIHC* functions. Below is an example, where we consider a coordination task: the user and assistant have to select the same action to make the task state evolve (+1). The coordination will be successful because the assistant will manage a simulation of the user that provides single-shot predictions of the next user action.
  
 We first modify the ``ExampleTask`` that we used in the Quickstart:
 
@@ -62,87 +63,41 @@ At each turn, the assistant takes the same action as the user model. If we provi
     :end-before: [end-user-model]
 
 
-Single-shot predictions and inference
-----------------------------------------
 
-Usually, it is impossible to specify the true user model. In this coordination task, a mismatch between the true user and the user model crashes the performance of the assistant. To see this, run the following code, where ``PseudoRandomUserWithParams(p=[1, 5, 7])`` is the pseudorandom user where the parameters of its policy are specified during initialization (here :math:`p_0 = 1`, :math:`p_1 = 5`, :math:`p_2 = 7`).
-
-.. literalinclude:: ../../coopihc/examples/simple_examples/assistant_has_user_model.py
-    :linenos:
-    :start-after: [start-user-model-mismatch]
-    :end-before: [end-user-model-mismatch]
-
-The agents are uncoordinated and the task ends because of the hard limit of 100 rounds that we have specified. 
-
-
-Mismatches in models can be devastating. Yet, they can be resolved in some cases with certain assumptions.
-For example, let's assume that the assistant knows the formula of the user's policy but not the parameter :math:`p_0`.  
-Here is what we are going to do:
-
-    1. modify the assistant to have a ``user_p0`` state
-    2. update ``user_p0`` by an appropriate inference engine based on the observation of the user's behavior
-    3. pass the updated ``user_p0`` to the user model 
-    4. use the updated model to perform predictions.
-
-Steps 2--4 may have to be repeated in more complex cases, but the example we tackle here is quite straightforward and we will be able to infer :math:`p_0` perfectly on our first attempt.
-
-
-
-First, we define the new Assistant, simply adding a new state ``user_p0`` and a new inference engine ``CoordinatedInferenceEngine``.
-
-.. literalinclude:: ../../coopihc/agents/ExampleAssistant.py
-    :pyobject: CoordinatedAssistantWithInference
-    :linenos:
-
-The inference engine works simply by comparing the prediction of the user model with the actual observation of the user action. The parameter is tuned until the prediction matches the observation
-
-.. literalinclude:: ../../coopihc/inference/ExampleInferenceEngine.py
-    :pyobject: CoordinatedInferenceEngine
-    :linenos:
-
-You can check that the performance is as good as the first case where the true model was given by running the code below, since inference is guaranteed to be successful on the first try.
-
-
-.. literalinclude:: ../../coopihc/examples/simple_examples/assistant_has_user_model.py
-    :linenos:
-    :start-after: [start-user-model-inference]
-    :end-before: [end-user-model-inference]
 
 Rollouts
 -----------
+Usually, we need a more comprehensive simulation that spans several steps and that features a user and an assistant.
+Using the same assistant simultaneously in a bundle and in a simulation is not straightforward, so *CoopIHC* provides a few helper classes. In particular, the inference engines, policies etc. used during simulation can not be the same as the ones during execution of the bundle (or, you would have infinite recursion). *CoopIHC* offers the possibility of having two different inference engines and policies, using the so-called ``DualInferenceEngine`` and ``DualPolicy``. Depending on the state of the engine, the primary or the dual engine is used (same for the policy).
 
 
-Example not finished. There are several ways of doing this.  One of them is something like:
+To illustrate these, let's go over a variation of the previous example:
 
-.. code-block:: python
+.. literalinclude:: ../../coopihc/examples/simple_examples/assistant_has_user_model.py
+    :linenos:
+    :start-after: [start-user-model-rollout]
+    :end-before: [end-user-model-rollout]
 
-    # Define a simulation bundle that is passed to a CoopIHC component e.g. an inference engine
-    simulation_bundle = Bundle(
-        task=task_model, user=user_model, assistant=assistant_simulation
-    )
+Notice that the parameters of the ``PseudoRandomPolicy`` are given at initialization with the ``PseudoRandomUserWithParams`` (before, they were hard-coded in the user). If you look at the assistant, you see that we pass it a model of the task, a model of the user, as well as two parameters. These parameters are the last two parameters of the user model. The first one is unknown. The point of the assistant is now to infer that parameter using the models of the task and user it was given.
 
-    # Inside the inference engine, plug in the observed states inside the bundle and run it. Then do something based on that information.
-    reset_dic = copy.deepcopy(self.observation)
-    del reset_dic["assistant_state"]
+The code for the assistant is as follows:
 
-    reset_dic = {
-        **reset_dic,
-        **{
-            "user_state": {
-                "p0": numpy.array([[i]]),
-                "p1": self.state.user_p1[:],
-                "p2": self.state.user_p2[:],
-            }
-        },
-    }
+.. literalinclude:: ../../coopihc/agents/ExampleAssistant.py
+    :pyobject: CoordinatedAssistantWithRollout
+    :linenos:
 
-    self.simulation_bundle.reset(turn=0, dic=reset_dic)
-    while True:
-        state, rewards, is_done = self.simulation_bundle.step()
-        rew[i] += sum(rewards.values())
-        if is_done:
-            break
+The state ``p0`` is the one that needs to be determined. Once it is known, the assistant can simply use the ``PseudoRandomPolicy`` to select the same action as the user.
 
+The ``DualInferenceEngine`` holds two inference engines: the primary ``RolloutCoordinatedInferenceEngine`` which is used during the bundle execution, and the dual ``BaseInferenceEngine`` which is used for the simulation.
+
+The remaining code is in the ``RolloutCoordinatedInferenceEngine``
+
+.. literalinclude:: ../../coopihc/inference/RolloutCoordinatedInferenceEngine.py
+    :pyobject: RolloutCoordinatedInferenceEngine
+    :linenos:
+
+First, we define a simulator object. For that, simply instantiate a ``Simulator`` as you would a ``Bundle``. The difference between a simulator and a bundle is that the former will consider the dual versions of the objects.
+The inference is then straightforward: All possible values of ``p0`` are tested, and the correct one is the one that leads to the highest reward. 
 
 
 
