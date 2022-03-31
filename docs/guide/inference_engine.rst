@@ -84,7 +84,7 @@ This inference engine expects the likelihood model :math:`p(Y = y | \Theta = \th
 
     inference_engine = GoalInferenceWithUserPolicyGiven()
     # Attach it to the engine
-    inference_engine.attach_policy(user_policy_model)
+    inference_engine._attach_policy(user_policy_model)
 
 It also expects that the set of :math:`\theta`'s is supplied:
 

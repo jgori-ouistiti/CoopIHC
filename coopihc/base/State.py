@@ -5,7 +5,6 @@ import numpy
 import warnings
 import itertools
 
-from coopihc.helpers import flatten
 from coopihc.base.StateElement import StateElement
 from coopihc.base.utils import NotKnownSerializationWarning
 from coopihc.base.Space import CatSet
@@ -100,6 +99,14 @@ class State(dict):
             return self[name]
         except KeyError:
             raise AttributeError(name)
+
+    def __setitem__(self, key, value):
+        if isinstance(value, (State, StateElement)):
+            return super().__setitem__(key, value)
+        try:
+            self[key][...] = value
+        except KeyError:
+            return super().__setitem__(key, value)
 
     def reset(self, dic={}):
         """Initialize the state. See StateElement
@@ -270,6 +277,9 @@ class State(dict):
         line_no = 0
         for n, (key, value) in enumerate(self.items()):
             tab, tablines = value._tabulate()
+
+            nline = 1  # deal with empty substates
+
             for nline, line in enumerate(tab):
                 if isinstance(value, State) and nline != 0:
                     key = " "

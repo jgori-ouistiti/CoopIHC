@@ -1,9 +1,11 @@
+from abc import abstractmethod
 from coopihc.policy.BasePolicy import BasePolicy
+from abc import ABC, abstractmethod
 
 # ============== General Policies ===============
 
 
-class WrapAsPolicy(BasePolicy):
+class WrapAsPolicy(BasePolicy, ABC):
     """WrapAsPolicy
 
     Wrap a bundle as a policy.
@@ -38,7 +40,8 @@ class WrapAsPolicy(BasePolicy):
     def step(self, *args, **kwargs):
         return self.bundle.step(*args, **kwargs)
 
-    def sample(self, observation=None):
+    @abstractmethod
+    def sample(self, agent_observation=None, agent_state=None):
         pass
         # Do something
         # return action, rewards

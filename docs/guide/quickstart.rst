@@ -25,7 +25,7 @@ You can also build directly from the github repository to get the latest version
 
     poetry install
 
-from within the folder. This will install *CoopIHC* in editable mode (basically equivalent to ``python3 -m pip install -e .``), together with all its dependencies.
+from within the folder. This will install *CoopIHC* in editable mode (basically equivalent to ``python3 -m pip install -e .``), together with all its dependencies. You might need to download and install *CoopIHC-Zoo* as well for this to work.
 
 Interaction Model
 -------------------
@@ -33,10 +33,10 @@ Interaction Model
 *CoopIHC* builds on a :doc:`sequential two agent decision-making model<./interaction_model>`. You should read through the model to get a grasp of what each component does.
 
 
-High-level view of CoopIHC code
---------------------------------
+High-level view of *CoopIHC* code
+-----------------------------------
 
-At a high level, your CoopIHC code will usually look like this
+At a high level, your *CoopIHC* code will usually look like this
 
 .. literalinclude:: ../../coopihc/examples/basic_examples/bundle_examples.py
    :language: python
@@ -49,9 +49,9 @@ You will usually define a task, a user, an assistant, and bundle them together. 
 
 Quick-States
 --------------
-The interaction model uses the concept of states. States are a collection of useful variables for the system. In *CoopIHC* they are defined via a ``State`` object. The states are containers that hold elements called ``StateElement``. A ``StateElement`` is a collection of a value and a ``Space``. Note that a ``State`` may also contain another ``State``.
+The interaction model uses the concept of states, a collection of useful variables for the system. In *CoopIHC* you define them via a ``State`` object. The states are containers that hold elements called ``StateElement``. A ``StateElement`` is a collection of a value and a ``Space``, its associated domain. A ``State`` may be nested and contain another ``State``.
 
-In the example below, a super-state is defined using a State. This super-state is itself defined by two substates. Each of those two substates holds a ``StateElement``, which is a combination of a value and a ``Space``.
+In the example below, a super-state is defined using a State. This super-state is itself defined by two substates. Each of those two substates holds a ``StateElement``, defined here via shortcuts such as ``array_element``.
 
 .. literalinclude:: ../../coopihc/examples/basic_examples/state_examples.py
    :language: python
@@ -60,7 +60,7 @@ In the example below, a super-state is defined using a State. This super-state i
    :end-before: [end-state-example]
 
 
-States and StatElements subclass the built-in dictionary and the well-known NumPy arrays respectively. This means that interacting with these objects should prove relatively familiar to most Python users. To find out more about this and for extra details, go to :doc:`Space<space>`, :doc:`StateElement<stateelement>` and :doc:`State<state>`.
+`:py:class:States<coopihc.base.State>` and `:py:class:StateElementss<coopihc.base.StateElements>` subclass respectively Python's built-in dictionary and NumPy arrays types. Interacting with these objects should prove relatively familiar to most Python users. To find out more about this and for extra details, go to :doc:`Space<space>`, :doc:`StateElement<stateelement>` and :doc:`State<state>`.
 
 
 Quick-Tasks

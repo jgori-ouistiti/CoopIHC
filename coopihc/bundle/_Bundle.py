@@ -117,7 +117,7 @@ class _Bundle:
     @turn_number.setter
     def turn_number(self, value):
         self._turn_number = value
-        self.game_state["game_info"]["turn_index"][...] = value
+        self.game_state["game_info"]["turn_index"] = value
 
     @property
     def round_number(self):
@@ -133,14 +133,20 @@ class _Bundle:
     @round_number.setter
     def round_number(self, value):
         self._round_number = value
-        self.game_state["game_info"]["round_index"][...] = value
+        self.game_state["game_info"]["round_index"] = value
 
     @property
     def state(self):
         return self.game_state
 
     def reset(
-        self, turn=0, task=True, user=True, assistant=True, dic={}, skip_user_step=False
+        self,
+        turn=0,
+        task=True,
+        user=True,
+        assistant=True,
+        dic={},
+        skip_on_user_action=False,
     ):
         """Reset bundle.
 
@@ -177,14 +183,16 @@ class _Bundle:
         :type assistant: bool, optional
         :param dic: reset_dic, defaults to {}
         :type dic: dict, optional
-        :param skip_user_step: do you want to skip user steps on reset?, defaults to False. Usually you want to have this set to False if the user starts playing but true if the assistant starts playing. Can also be set globally at the bundle level with the keyword argument "reset_skip_user_step".
-        :type skip_user_step: bool, optional
+        :param skip_on_user_action: do you want to skip user steps on reset?, defaults to False. Usually you want to have this set to False if the user starts playing but true if the assistant starts playing. Can also be set globally at the bundle level with the keyword argument "reset_skip_on_user_action".
+        :type skip_on_user_action: bool, optional
         :return: new game state
         :rtype: :py:class:`State<coopihc.base.State.State>`
         """
         # ============= Passing via bundles
         turn = self.kwargs.get("reset_turn", turn)
-        skip_user_step = self.kwargs.get("reset_skip_user_step", skip_user_step)
+        skip_on_user_action = self.kwargs.get(
+            "reset_skip_on_user_action", skip_on_user_action
+        )
         # =============
 
         if task:
@@ -205,16 +213,16 @@ class _Bundle:
                 dic=assistant_dic, random=self.kwargs.get("random_reset", False)
             )
 
-        self.round_number[...] = 0
+        self.round_number = 0
 
-        self.turn_number[...] = turn
+        self.turn_number = turn
 
         if turn == 0:
             return self.game_state
-        if turn >= 1 and not skip_user_step:
+        if turn >= 1 and not skip_on_user_action:
             self._user_first_half_step()
-        if turn >= 2 and not skip_user_step:
-            user_action, _ = self.user._take_action()
+        if turn >= 2 and not skip_on_user_action:
+            user_action, _ = self.user.take_action()
             self.user.action = user_action
             # self.broadcast_action("user", user_action)
             self._user_second_half_step(user_action)
@@ -270,7 +278,7 @@ class _Bundle:
             # User takes action and receives reward from task
             elif self.turn_number == 1 and "no-user" != self.kwargs.get("name"):
                 if user_action is None:
-                    user_action, user_policy_reward = self.user._take_action()
+                    user_action, user_policy_reward = self.user.take_action()
                 else:
                     self.user.action = user_action
                     user_policy_reward = 0
@@ -301,7 +309,7 @@ class _Bundle:
                     (
                         assistant_action,
                         assistant_policy_reward,
-                    ) = self.assistant._take_action()
+                    ) = self.assistant.take_action()
                 else:
                     self.assistant.action = assistant_action
                     assistant_policy_reward = 0
@@ -465,7 +473,7 @@ class _Bundle:
         """
 
         # Play user's turn in the task
-        task_state, task_reward, is_done = self.task.base_user_step(user_action)
+        task_state, task_reward, is_done = self.task.base_on_user_action(user_action)
 
         # update task state (likely not needed, remove ?)
         self.broadcast_state("user", "task_state", task_state)
@@ -502,7 +510,7 @@ class _Bundle:
 
         # Play assistant's turn in the task
 
-        task_state, task_reward, is_done = self.task.base_assistant_step(
+        task_state, task_reward, is_done = self.task.base_on_assistant_action(
             assistant_action
         )
         # update task state
@@ -510,7 +518,7 @@ class _Bundle:
 
         return task_reward, is_done
 
-    def _user_step(self, *args):
+    def _on_user_action(self, *args):
         """Turns 1 and 2
 
         :param \*args: either provide the user action or not. If no action is provided the action is determined by the agent's policy using sample()
@@ -539,7 +547,7 @@ class _Bundle:
             is_done,
         )
 
-    def _assistant_step(self, *args):
+    def _on_assistant_action(self, *args):
         """Turns 3 and 4
 
         :param \*args: either provide the assistant action or not. If no action is provided the action is determined by the agent's policy using sample()
@@ -588,25 +596,3 @@ class _Bundle:
         """
         self.game_state[state_key] = state
         getattr(self, role).observation[state_key] = state
-
-    # def broadcast_action(self, role, action):
-    #     """broadcast action
-
-    #     Broadcast an action to the gamestate and update the agent's policy.
-
-    #     :param role: "user" or "assistant"
-    #     :type role: string
-    #     :param action: action
-    #     :type action: Any
-    #     """
-    #     agent = getattr(self, role)
-    #     for label, _action in zip(
-    #         actionstate, action
-    #     ):  # iterate over dict === iter over labels
-    #         actionstate[label][:] = _action.view(numpy.ndarray)
-    #         try:
-    #             getattr(self, role).observation["{}_action".format(role)][
-    #                 label
-    #             ] = _action
-    #         except AttributeError:
-    #             pass

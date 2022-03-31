@@ -8,7 +8,7 @@ Subclassing BasePolicy
 
 .. start-quickstart-policy
 
-You can define a new policy by subclassing the ``BasePolicy`` class and redefining its ``sample()`` method. Below, we show how ``ExamplePolicy`` is defined.
+To define a policy, simply subclass `:py:class:BasePolicy<coopihc.policy.BasePolicy>` and redefe its ``sample()`` method. Below, we show how ``ExamplePolicy`` has been defined.
 
 .. literalinclude:: ../../coopihc/policy/ExamplePolicy.py
     :linenos:

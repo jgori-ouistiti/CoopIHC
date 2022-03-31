@@ -159,7 +159,7 @@ def test_init_observation_engine():
         }
     )
 
-    obs, reward = new_agent._observe(gamestate)
+    obs, reward = new_agent.observe(gamestate)
     assert reward == 0
     assert obs == gamestate
 

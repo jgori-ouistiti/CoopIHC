@@ -45,12 +45,12 @@ class ExampleTask(InteractionTask):
             self.grid[i] = "T"
         super().reset(dic)
 
-    def user_step(self, *args, **kwargs):
-        return super().user_step()
+    def on_user_action(self, *args, **kwargs):
+        return super().on_user_action()
 
-    def assistant_step(self, *args, **kwargs):
+    def on_assistant_action(self, *args, **kwargs):
         # Call super method before anything else
-        super().assistant_step()
+        super().on_assistant_action()
 
         is_done = False
 

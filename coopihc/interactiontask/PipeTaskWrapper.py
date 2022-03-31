@@ -84,8 +84,8 @@ class PipeTaskWrapper(InteractionTask, ABC):
         """
         pass
 
-    def user_step(self, *args, **kwargs):
-        """user_step
+    def on_user_action(self, *args, **kwargs):
+        """on_user_action
 
 
         1. Transform user action into dictionnary with appropriate interface
@@ -96,7 +96,7 @@ class PipeTaskWrapper(InteractionTask, ABC):
         :return: (task state, task reward, is_done flag, {})
         :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, float, boolean, dictionnary)
         """
-        super().user_step(*args, **kwargs)
+        super().on_user_action(*args, **kwargs)
         user_action_msg = {
             "type": "user_action",
             "value": self.bundle.game_state["user_action"]["action"].serialize(),
@@ -108,15 +108,15 @@ class PipeTaskWrapper(InteractionTask, ABC):
         self.update_state(received_state)
         return self.state, received_dic["reward"], received_dic["is_done"], {}
 
-    def assistant_step(self, *args, **kwargs):
-        """assistant_step
+    def on_assistant_action(self, *args, **kwargs):
+        """on_assistant_action
 
-        Same as user_step
+        Same as on_user_action
 
         :return: (task state, task reward, is_done flag, {})
         :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, float, boolean, dictionnary)
         """
-        super().assistant_step(*args, **kwargs)
+        super().on_assistant_action(*args, **kwargs)
         assistant_action_msg = {
             "type": "assistant_action",
             "value": self.bundle.game_state["assistant_action"]["action"].serialize(),

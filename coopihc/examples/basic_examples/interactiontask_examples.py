@@ -2,7 +2,7 @@ import numpy
 
 from coopihc.interactiontask.ExampleTask import ExampleTask
 from coopihc.base.State import State
-from coopihc.base.elements import discrete_array_element, array_element, cat_element
+from coopihc.base.elements import discrete_array_element
 from coopihc.bundle.Bundle import Bundle
 from coopihc.agents.BaseAgent import BaseAgent
 from coopihc.policy.BasePolicy import BasePolicy
@@ -28,18 +28,17 @@ bundle = Bundle(
 
 # Reset the task, plot the state.
 bundle.reset(turn=1)
-bundle.step(numpy.array([1]), numpy.array([1]))
+bundle.step(1, 1)
 
 # Test simple input
-bundle.step(numpy.array([1]), numpy.array([1]))
+bundle.step(1, 1)
 
 # Test with input sampled from the agent policies
 bundle.reset()
 while True:
     game_state, rewards, is_done = bundle.step(
-        bundle.user.policy.sample()[0], bundle.assistant.policy.sample()[0]
+        bundle.user.take_action()[0], bundle.assistant.take_action()[0]
     )
-    # print(game_state["task_state"]["x"].squeeze().tolist())
     if is_done:
         break
 # [end-check-task]

@@ -60,13 +60,15 @@ class CascadedInferenceEngine(BaseInferenceEngine):
             }
         }
 
-    def infer(self, *args, user_state=None, **kwargs):
+    def infer(self, agent_observation=None):
 
-        if user_state is None:
-            user_state = self.state
+        if agent_observation is None:
+            agent_observation = self.observation
+
+        user_state = agent_observation["user_state"]
         rewards = 0
         for engine in self.engine_list:
-            new_state, new_reward = engine.infer(user_state=user_state)
+            new_state, new_reward = engine.infer(agent_observation=agent_observation)
             rewards += new_reward
             user_state.update(new_state)
 

@@ -96,7 +96,7 @@ class RLPolicy(BasePolicy):
 
         super().__init__(*args, action_state=action_state, **kwargs)
 
-    def sample(self, observation=None):
+    def sample(self, agent_observation=None, agent_state=None):
         """sample
 
         Get action by using model.predict(deterministic = True), applying the necessary wrappers.
@@ -106,19 +106,19 @@ class RLPolicy(BasePolicy):
         :return: see ``BasePolicy``
         :rtype: see ``BasePolicy``
         """
-        if observation is None:
-            observation = self.observation
+        if agent_observation is None:
+            agent_observation = self.observation
 
         # convert observation via the Train class
-        observation = self.env._convertor.filter_gamestate(observation)
+        agent_observation = self.env._convertor.filter_gamestate(agent_observation)
 
         # Apply observation Wrappers
         env = self.env
         for w in self.obs_wraps:
-            observation = w(env).observation(observation)
+            agent_observation = w(env).observation(agent_observation)
             env = w(env)
 
-        action = self.model.predict(observation, deterministic=True)[
+        action = self.model.predict(agent_observation, deterministic=True)[
             0
         ]  # with deterministic = True, don't sample from the Gaussian but just take its mean
 
@@ -127,6 +127,7 @@ class RLPolicy(BasePolicy):
             action = w(env).action(action)
             env = w(env)
 
-        action = list(action.values())
+        # action = list(action.values())
+        action = action.values()
 
         return action, 0

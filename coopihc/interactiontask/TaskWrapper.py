@@ -12,11 +12,11 @@ class TaskWrapper(InteractionTask):
         self.task = task
         self.__dict__.update(task.__dict__)
 
-    def user_step(self, *args, **kwargs):
-        return self.task.user_step(*args, **kwargs)
+    def on_user_action(self, *args, **kwargs):
+        return self.task.on_user_action(*args, **kwargs)
 
-    def assistant_step(self, *args, **kwargs):
-        return self.task.assistant_step(*args, **kwargs)
+    def on_assistant_action(self, *args, **kwargs):
+        return self.task.on_assistant_action(*args, **kwargs)
 
     def reset(self, dic=None):
         return self.task.reset(dic=dic)

@@ -49,18 +49,17 @@ while True:
 
 
 class ExampleTaskWithoutAssistant(ExampleTask):
-    def assistant_step(self, *args, **kwargs):
+    def on_assistant_action(self, *args, **kwargs):
         return self.state, 0, False
 
 
 example_task = ExampleTaskWithoutAssistant()
 example_user = ExampleUser()
 bundle = Bundle(task=example_task, user=example_user)
-# reset at turn 1 so that the observation is accessible to the user (viz. to the policy)
-bundle.reset(turn=1)
+bundle.reset()
 
-while 1:
-    state, rewards, is_done = bundle.step(user_action=None)
+while True:
+    state, rewards, is_done = bundle.step()
     if is_done:
         break
 # [end-check-taskuser]

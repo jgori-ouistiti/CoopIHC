@@ -91,18 +91,19 @@ def test_methods():
     user = MinimalAgent("user")
     # Public methods
     assert hasattr(user, "finit")
-    assert hasattr(user, "attach_policy")
-    assert hasattr(user, "attach_observation_engine")
-    assert hasattr(user, "attach_inference_engine")
+    assert hasattr(user, "_attach_policy")
+    assert hasattr(user, "_attach_observation_engine")
+    assert hasattr(user, "_attach_inference_engine")
     assert hasattr(user, "reset")
     assert hasattr(user, "render")
+    assert hasattr(user, "observe")
+
     # Private methods
     assert hasattr(user, "__content__")
     assert hasattr(user, "_base_reset")
     assert hasattr(user, "_override_components")
-    assert hasattr(user, "_take_action")
+    assert hasattr(user, "take_action")
     assert hasattr(user, "_agent_step")
-    assert hasattr(user, "_observe")
 
 
 def test_minimalagent():

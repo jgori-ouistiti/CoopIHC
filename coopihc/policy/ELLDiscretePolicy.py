@@ -72,7 +72,7 @@ class ELLDiscretePolicy(BasePolicy):
         """
         self._bind(_function, "compute_likelihood")
 
-    def sample(self, observation=None):
+    def sample(self, agent_observation=None, agent_state=None):
         """sample from likelihood model.
 
         Select an action according to its probability as defined by the likelihood model. You can pass an observation as well, in which case the policy will not look up he actual observation but use the observation you passed. This is useful e.g. when debugging the policy.
@@ -83,9 +83,9 @@ class ELLDiscretePolicy(BasePolicy):
         :rtype: tuple(`StateElement<coopihc.base.StateElement.StateElement>`, float)
         """
 
-        if observation is None:
-            observation = self.host.inference_engine.buffer[-1]
-        actions, llh = self.forward_summary(observation)
+        if agent_observation is None:
+            agent_observation = self.observation
+        actions, llh = self.forward_summary(agent_observation)
         action = actions[self.rng.choice(len(llh), p=llh)]
 
         return action, 0

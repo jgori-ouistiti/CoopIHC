@@ -24,22 +24,22 @@
 	};
 	
 %% Edges
-\draw[-triangle 60, thick, green!50!black] (task.0) to[out = 0, in = 90] node[midway, sloped, above, text width = 4cm, text centered](label1){observation }(user.90);
+\draw[triangle 60-, thick, green!50!black] (task.0) to[out = 0, in = 90] node[midway, sloped, above, text width = 4cm, text centered](label1){observation }(user.90);
 
 \draw[thick, -triangle 60, red!90!black] (user.135) to[out = 135, in = 315] node[midway, sloped, above](labelact1){action} node[midway, sloped, below]{task transition (step)} (task.315);
 %\draw[-triangle 60, dotted, ultra thick, red!90!black] (null) -- node[midway, right]{(a)} node[midway, rotate = 90, above]{\texttt{user step}} (task.270);
 %\draw[-triangle 60, thick, blue!70] (null) to[out = 180, in = 270] node[midway, sloped, below, text width = 4cm, text centered](label3){observation \texttt{observation~function}} (assistant.270);
-\draw[-triangle 60, thick, green!50!black] (task.180) to[out = 180, in = 90] node[midway, sloped, above, text width = 4cm, text centered](label4){observation} (assistant.90);
+\draw[triangle 60-, thick, green!50!black] (task.180) to[out = 180, in = 90] node[midway, sloped, above, text width = 4cm, text centered](label4){observation} (assistant.90);
 \draw[-triangle 60, thick, red!90!black] (assistant.45) -- node[midway, above, sloped](labelact2){action} node[midway, below, sloped]{task transition (step)} (task.225);
 \draw[-triangle 60, thick, cyan!50!black] (user.45) .. controls (8,-4) and (8,-6).. node[midway, right=-.75cm, text width = 4cm, text centered](label2){Update state (inference)} (user.315);
 \draw[-triangle 60, thick, cyan!50!black] (assistant.135) .. controls (-8,-4) and (-8,-6).. node[midway, left=-.75cm, text width = 4cm, text centered](label5){Update state (inference)} (assistant.225);
 
-\draw[-triangle 60, thick, orange, every text node part/.style={align=center}] (label1.90) -- +(0,3) node[above]{User observation \\ rewards};
-\draw[-triangle 60, thick, orange, every text node part/.style={align=center}] (label2.90) -- +(0,2) node[above]{User inference \\ rewards};
-\draw[-triangle 60, thick, orange, every text node part/.style={align=center}] (label4.90) -- +(0,3) node[above]{Assistant observation \\ rewards};
-\draw[-triangle 60, thick, orange,every text node part/.style={align=center}] (label5.90) -- +(0,2) node[above]{Assistant inference \\ rewards};
-\draw[-triangle 60, thick, orange, every text node part/.style={align=center}] (label5.90) -- +(0,2) node[above]{Assistant inference \\ rewards};
-\draw[-triangle 60, thick, orange, every text node part/.style={align=center}] ($(labelact1.90)+(-.2,.2)$)  -- +(0,3) node[above]{User action \\ rewards};
-\draw[-triangle 60, thick, orange, every text node part/.style={align=center}] ($(labelact2.90)+(.2,.2)$)  -- +(0,3) node[above]{Assistant action \\ rewards};
+\draw[-triangle 60, thick, orange, every text node part/.style={align=center}] (label1.90) -- +(0,3) node[above]{User observation \\ reward / cost};
+\draw[-triangle 60, thick, orange, every text node part/.style={align=center}] (label2.90) -- +(0,2) node[above]{User inference \\ reward / cost};
+\draw[-triangle 60, thick, orange, every text node part/.style={align=center}] (label4.90) -- +(0,3) node[above]{Assistant observation \\ reward / cost};
+\draw[-triangle 60, thick, orange,every text node part/.style={align=center}] (label5.90) -- +(0,2) node[above]{Assistant inference \\ reward / cost};
+\draw[-triangle 60, thick, orange, every text node part/.style={align=center}] (label5.90) -- +(0,2) node[above]{Assistant inference \\ reward / cost};
+\draw[-triangle 60, thick, orange, every text node part/.style={align=center}] ($(labelact1.90)+(-.2,.2)$)  -- +(0,3) node[above]{User action \\ reward / cost};
+\draw[-triangle 60, thick, orange, every text node part/.style={align=center}] ($(labelact2.90)+(.2,.2)$)  -- +(0,3) node[above]{Assistant action \\ reward / cost};
 
 \end{tikzpicture}

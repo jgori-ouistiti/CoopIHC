@@ -41,7 +41,10 @@ class BasePolicy:
 
     @property
     def state(self):
-        return self.host.state
+        try:
+            return self.host.state
+        except AttributeError:
+            raise AttributeError("This policy has not been connected to an agent yet.")
 
     @property
     def observation(self):
@@ -52,7 +55,10 @@ class BasePolicy:
         :return: last observation
         :rtype: `State<coopihc.base.State.State>`
         """
-        return self.host.inference_engine.buffer[-1]
+        try:
+            return self.host.observation
+        except AttributeError:
+            raise AttributeError("This policy has not been connected to an agent yet.")
 
     @property
     def action_keys(self):
@@ -71,8 +77,8 @@ class BasePolicy:
         :rtype: `State<coopihc.base.StateElement.StateElement>`
         """
         actions = tuple(self.action_state.values())
-        # if len(actions) == 1:
-        #     return next(iter(actions))
+        if len(actions) == 1:
+            return next(iter(actions))
         return actions
 
     @action.setter
@@ -83,17 +89,6 @@ class BasePolicy:
             item = (item,)
         for _action, key in zip(item, self.action_keys):
             self.action_state[key][...] = _action
-
-    # @property
-    # def new_action(self):
-    #     """new action (copy)
-
-    #     Return a copy of the last action.
-
-    #     :return: last action
-    #     :rtype: `StateElement<coopihc.base.StateElement.StateElement>`
-    #     """
-    #     return copy.deepcopy(self.action_state)
 
     @property
     def unwrapped(self):
@@ -110,12 +105,14 @@ class BasePolicy:
         if random:
             self.action_state.reset()
 
-    def _base_sample(self):
-        action, reward = self.sample(observation=None)
+    def _base_sample(self, agent_observation=None, agent_state=None):
+        action, reward = self.sample(
+            agent_observation=agent_observation, agent_state=agent_state
+        )
         self.action = action
         return self.action, reward
 
-    def sample(self, observation=None):
+    def sample(self, agent_observation=None, agent_state=None):
         """sample
 
         (Randomly) Sample from the policy
@@ -123,7 +120,10 @@ class BasePolicy:
         :return: (action, action reward)
         :rtype: (StateElement<coopihc.base.StateElement.StateElement>, float)
         """
-        _ = [_action.reset() for _action in self.action]
+        try:
+            _ = [_action.reset() for _action in self.action]
+        except TypeError:
+            self.action.reset()
         return self.action, 0
 
     def __repr__(self):

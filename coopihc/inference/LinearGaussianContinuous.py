@@ -70,20 +70,18 @@ class LinearGaussianContinuous(BaseInferenceEngine):
         super().__init__()
         self.render_tag = ["text", "plot"]
 
-    def infer(self, user_state=None):
-        if user_state is None:
-            observation = self.observation
+    def infer(self, agent_observation=None):
+        if agent_observation is None:
+            agent_observation = self.observation
             if self.host.role == "user":
-                user_state = observation["user_state"]
+                state = agent_observation["user_state"]
             else:
-                user_state = observation["assistant_state"]
+                state = agent_observation["assistant_state"]
 
         # Likelihood model
-        y, v = user_state["y"].view(numpy.ndarray), user_state["Sigma_0"].view(
-            numpy.ndarray
-        )
+        y, v = state["y"].view(numpy.ndarray), state["Sigma_0"].view(numpy.ndarray)
         # Prior
-        oldmu, oldsigma = user_state["belief-mu"].view(numpy.ndarray), user_state[
+        oldmu, oldsigma = state["belief-mu"].view(numpy.ndarray), state[
             "belief-sigma"
         ].view(numpy.ndarray)
 
@@ -92,28 +90,28 @@ class LinearGaussianContinuous(BaseInferenceEngine):
         newmu = new_sigma @ (
             numpy.linalg.inv(v) @ y + numpy.linalg.inv(oldsigma) @ oldmu
         )
-        user_state["belief-mu"][:] = newmu
-        user_state["belief-sigma"][:, :] = new_sigma
+        # state["belief-mu"][:] = newmu
+        # state["belief-sigma"][:, :] = new_sigma
+        state["belief-mu"] = newmu
+        state["belief-sigma"] = new_sigma
 
-        return user_state, 0
+        return state, 0
 
-    def render(self, *args, **kwargs):
+    def render(self, mode="text", ax_user=None, ax_assistant=None, ax_task=None):
         """render
 
         Draws the beliefs (mean value and ellipsis or confidence intervals according to dimension).
         """
-        mode = kwargs.get("mode")
         render_flag = False
         for r in self.render_tag:
             if r in mode:
                 render_flag = True
 
         if "plot" in mode:
-            axtask, axuser, axassistant = args[:3]
             if self.host.role == "user":
-                ax = axuser
+                ax = ax_user
             else:
-                ax = axassistant
+                ax = ax_assistant
 
             dim = self.host.dimension
             if self.ax is not None:
@@ -126,7 +124,7 @@ class LinearGaussianContinuous(BaseInferenceEngine):
             if dim == 1:
                 mean_belief = numpy.array([mean_belief.squeeze().tolist(), 0])
 
-            axtask.plot(*mean_belief.squeeze().tolist(), "r*")
+            ax_task.plot(*mean_belief.squeeze().tolist(), "r*")
             self.ax.set_title(type(self).__name__ + " beliefs")
 
         if "text" in mode:

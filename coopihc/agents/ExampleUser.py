@@ -21,10 +21,10 @@ class ExampleUser(BaseAgent):
         state = State()
         state["goal"] = discrete_array_element(init=4, low=-4, high=4)
 
-        # Call the policy defined above
+        # Define policy
         action_state = State()
         action_state["action"] = discrete_array_element(init=0, low=-1, high=1)
-        # agent_policy = ExamplePolicy(action_state=action_state)
+        agent_policy = ExamplePolicy(action_state=action_state)
 
         # Use default observation and inference engines
         observation_engine = None
@@ -33,8 +33,7 @@ class ExampleUser(BaseAgent):
         super().__init__(
             "user",
             *args,
-            agent_policy=ExamplePolicy,
-            policy_kwargs={"action_state": action_state},
+            agent_policy=agent_policy,
             agent_observation_engine=observation_engine,
             agent_inference_engine=inference_engine,
             agent_state=state,
@@ -48,7 +47,7 @@ class ExampleUser(BaseAgent):
 
         :meta public:
         """
-        self.state["goal"][...] = 4
+        self.state["goal"] = 4
 
 
 class PseudoRandomUser(BaseAgent):

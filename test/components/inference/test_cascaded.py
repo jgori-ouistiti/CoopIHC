@@ -5,13 +5,14 @@ from coopihc.inference.CascadedInferenceEngine import CascadedInferenceEngine
 
 from coopihc.base.elements import example_game_state
 
-egstate = example_game_state()["user_state"]
+egstate = example_game_state()
 
 
 class DummyInferenceEngine(BaseInferenceEngine):
-    def infer(self, user_state=None):
-        if user_state is None:
-            user_state = self.state
+    def infer(self, agent_observation=None):
+        if agent_observation is None:
+            agent_observation = self.observation
+        user_state = agent_observation["user_state"]
 
         user_state["goal"] = user_state["goal"] + 1
         return user_state, 1
@@ -23,8 +24,8 @@ inference_engine = CascadedInferenceEngine(engine_list)
 
 def test_cascade_init():
     assert inference_engine.engine_list == engine_list
-    assert egstate["goal"] == 0
-    state, reward = inference_engine.infer(user_state=egstate)
+    assert egstate["user_state"]["goal"] == 0
+    state, reward = inference_engine.infer(agent_observation=egstate)
     assert reward == 2
     assert state["goal"] == 2
 

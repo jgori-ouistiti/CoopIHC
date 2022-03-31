@@ -199,6 +199,8 @@ class RuleObservationEngine(BaseObservationEngine):
                 _obs = game_state[substate][subsubstate][_slice, {"space": True}]
             except IndexError:  # 0-D arrays
                 _obs = game_state[substate][subsubstate][..., {"space": True}]
+            except KeyError:  # If incomplete state is passed
+                continue
 
             copied = False
             if _func:

@@ -68,7 +68,7 @@ class LinearFeedback(BasePolicy):
         """
         self.feedback_gain = gain
 
-    def sample(self, observation=None):
+    def sample(self, agent_observation=None, agent_state=None):
         """sample
 
         Applies the gain.
@@ -76,10 +76,10 @@ class LinearFeedback(BasePolicy):
         :return: action, reward
         :rtype: tuple(`StateElement<coopihc.base.StateElement.StateElement>`, float)
         """
-        if observation is None:
-            observation = self.observation
+        if agent_observation is None:
+            agent_observation = self.observation
 
-        output = observation
+        output = agent_observation
         for item in self.state_indicator:
             output = output[item]
 
@@ -97,7 +97,7 @@ class LinearFeedback(BasePolicy):
             return noiseless_feedback, 0
 
         noisy_action = self.noise_function(
-            noiseless_feedback, observation, *self.noise_args
+            noiseless_feedback, agent_observation, *self.noise_args
         )
 
         return noisy_action, 0
