@@ -218,10 +218,10 @@ def test_step_both():
     x = bundle.game_state["task_state"]["x"]
     assert null_step(bundle, x)
     bundle.reset(turn=1)
-    x = bundle.game_state["task_state"]["x"]
+    x = copy.copy(bundle.game_state["task_state"]["x"])
     assert on_user_action(bundle, x)
     bundle.reset(turn=1)
-    x = bundle.game_state["task_state"]["x"]
+    x = copy.copy(bundle.game_state["task_state"]["x"])
     assert on_assistant_action(bundle, x)
 
 

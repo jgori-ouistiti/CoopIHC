@@ -1,3 +1,4 @@
+from random import random
 from coopihc.base.State import State
 from coopihc.base.elements import discrete_array_element, array_element, cat_element
 from coopihc.base.elements import discrete_array_element, cat_element
@@ -8,7 +9,7 @@ import matplotlib.pyplot as plt
 import copy
 
 
-class _Bundle:
+class BaseBundle:
     """Main class for bundles.
 
     Main class for bundles. This class is subclassed by Bundle, which defines the interface with which to interact.
@@ -146,7 +147,8 @@ class _Bundle:
         user=True,
         assistant=True,
         dic={},
-        skip_on_user_action=False,
+        skip_user_action=False,
+        random_reset=False,
     ):
         """Reset bundle.
 
@@ -170,7 +172,7 @@ class _Bundle:
 
         .. note ::
 
-            If subclassing _Bundle, make sure to call super().reset() in the new reset method.
+            If subclassing BaseBundle, make sure to call super().reset() in the new reset method.
 
 
         :param turn: game turn number. Can also be set globally at the bundle level by passing the "reset_turn" keyword argument, defaults to 0
@@ -183,34 +185,38 @@ class _Bundle:
         :type assistant: bool, optional
         :param dic: reset_dic, defaults to {}
         :type dic: dict, optional
-        :param skip_on_user_action: do you want to skip user steps on reset?, defaults to False. Usually you want to have this set to False if the user starts playing but true if the assistant starts playing. Can also be set globally at the bundle level with the keyword argument "reset_skip_on_user_action".
-        :type skip_on_user_action: bool, optional
+        :param skip_user_action: do you want to skip user steps on reset?, defaults to False. Usually you want to have this set to False if the user starts playing but true if the assistant starts playing. Can also be set globally at the bundle level with the keyword argument "reset_skip_user_action".
+        :type skip_user_action: bool, optional
+        :param random_reset: whether during resetting values should be randomized or not if not set by a reset dic, default to False
+        :type random_reset: bool, optional
         :return: new game state
         :rtype: :py:class:`State<coopihc.base.State.State>`
         """
         # ============= Passing via bundles
         turn = self.kwargs.get("reset_turn", turn)
-        skip_on_user_action = self.kwargs.get(
-            "reset_skip_on_user_action", skip_on_user_action
-        )
+        skip_user_action = self.kwargs.get("reset_skip_user_action", skip_user_action)
+        random_reset = self.kwargs.get("random_reset", random_reset)
         # =============
 
         if task:
             task_dic = dic.get("task_state")
             self.task._base_reset(
-                dic=task_dic, random=self.kwargs.get("random_reset", False)
+                dic=task_dic,
+                random=random_reset,
             )
 
         if user:
             user_dic = dic.get("user_state")
             self.user._base_reset(
-                dic=user_dic, random=self.kwargs.get("random_reset", False)
+                dic=user_dic,
+                random=random_reset,
             )
 
         if assistant:
             assistant_dic = dic.get("assistant_state")
             self.assistant._base_reset(
-                dic=assistant_dic, random=self.kwargs.get("random_reset", False)
+                dic=assistant_dic,
+                random=random_reset,
             )
 
         self.round_number = 0
@@ -219,12 +225,11 @@ class _Bundle:
 
         if turn == 0:
             return self.game_state
-        if turn >= 1 and not skip_on_user_action:
+        if turn >= 1 and not skip_user_action:
             self._user_first_half_step()
-        if turn >= 2 and not skip_on_user_action:
+        if turn >= 2 and not skip_user_action:
             user_action, _ = self.user.take_action()
             self.user.action = user_action
-            # self.broadcast_action("user", user_action)
             self._user_second_half_step(user_action)
         if turn >= 3:
             self._assistant_first_half_step()
@@ -475,9 +480,6 @@ class _Bundle:
         # Play user's turn in the task
         task_state, task_reward, is_done = self.task.base_on_user_action(user_action)
 
-        # update task state (likely not needed, remove ?)
-        self.broadcast_state("user", "task_state", task_state)
-
         return task_reward, is_done
 
     def _assistant_first_half_step(self):
@@ -506,15 +508,12 @@ class _Bundle:
         :return: task reward, task done?
         :rtype: tuple(float, boolean)
         """
-        # update action_state
 
         # Play assistant's turn in the task
 
         task_state, task_reward, is_done = self.task.base_on_assistant_action(
             assistant_action
         )
-        # update task state
-        self.broadcast_state("assistant", "task_state", task_state)
 
         return task_reward, is_done
 
@@ -534,7 +533,6 @@ class _Bundle:
             # else sample from policy
             user_action, user_policy_reward = self.user.take_action()
 
-        # self.broadcast_action("user", user_action)
         self.user.action = user_action
 
         task_reward, is_done = self._user_second_half_step(user_action)
@@ -570,7 +568,6 @@ class _Bundle:
                 assistant_policy_reward,
             ) = self.assistant.take_action()
 
-        # self.broadcast_action("assistant", assistant_action)
         self.assistant.action = assistant_action
 
         task_reward, is_done = self._assistant_second_half_step(assistant_action)
@@ -581,18 +578,3 @@ class _Bundle:
             task_reward,
             is_done,
         )
-
-    def broadcast_state(self, role, state_key, state):
-        """broadcast state
-
-        Broadcast a state value to the gamestate and update the agent's observation.
-
-        :param role: "user" or "assistant"
-        :type role: string
-        :param state_key: state key in gamestate
-        :type state_key: string
-        :param state: new state value
-        :type state: :py:class:`State<coopihc.base.State.State>`
-        """
-        self.game_state[state_key] = state
-        getattr(self, role).observation[state_key] = state

@@ -5,14 +5,14 @@ The Inference Engines
 
 .. start-quickstart-infeng-intro
 
-Real-life agents have non-stationary policies. This gives them the ability to learn (infer parameters from observed data) and to adapt (change policy parameters based on observed data). As in observation engines, there might be a cost associated with making inferences:
+Agents should be able to learn (infer parameters from observed data) and to adapt (change policy parameters based on observed data). As in observation engines, there might be a cost associated with making inferences:
 
     + Making an inference can be time costly.
 
     + Inferring may be rewarding; for example, because it is enjoyable.
 
 
-*CoopIHC* provides a generic object called inference engines to updating internal states from observations. Although the name might suggest otherwise, these engines may use other mechanisms than statistical inference that update the internal state. To create a new inference engine, you can base it off an existing engine or subclass the ``BaseInferenceEngine``. 
+*CoopIHC* provides a generic object called inference engines to update internal states from observations. Although the name might suggest otherwise, these engines may use (any) other mechanisms than statistical inference that update the internal state. To create a new inference engine, you can base it off an existing engine or subclass the ``BaseInferenceEngine``. 
 
 .. end-quickstart-infeng-intro
 
@@ -64,6 +64,10 @@ Available Inference Engines
 
 GoalInferenceWithUserModelGiven
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. warning::
+
+    outdated example
+
 An inference Engine used by an assistant to infer the 'goal' of a user.
 The inference is based on a model of the user policy, which has to be provided to this engine.
 
@@ -127,27 +131,27 @@ An Inference Engine that handles a continuous Gaussian Belief. It assumes a Gaus
 
     .. math::
 
-        \\begin{align}
-        p(y|x) \\sim \\mathcal{N}(x, \\Sigma_0)
-        \\end{align}
+        \begin{align}
+        p(y|x) \sim \mathcal{N}(x, \Sigma_0)
+        \end{align}
 
 
     If the initial prior (belief probability) is Gaussian as well, then the posterior will remain Gaussian (because we are only applying linear operations to Gaussians, Gaussianity is preserved). So the posterior after t-1 observations has the following form, where :math:`(\\mu(t-1), \\Sigma(t-1))` are respectively the mean and covariance matrices of the beliefs.
 
     .. math::
 
-        \\begin{align}
-        p(x(t-1)) \\sim \mathcal{N}(\\mu(t-1), \\Sigma(t-1))
-        \\end{align}
+        \begin{align}
+        p(x(t-1)) \\sim \mathcal{N}(\mu(t-1), \Sigma(t-1))
+        \end{align}
 
     On each new observation, the mean and covariance matrices are updated like so:
 
     .. math::
 
-        \\begin{align}
-        p(x(t) | y, x(t-1)) \\sim \\mathcal{N}(\\Sigma(t) \\left[ \\Sigma_0^{-1}y + \\Sigma(t-1) \\mu(t-1) \\right], \\Sigma(t)) \\\\
-        \\Sigma(t) = (\\Sigma_0^{-1} + \\Sigma(t-1)^{-1})^{-1}
-        \\end{align}
+        \begin{align}
+        p(x(t) | y, x(t-1)) \sim \mathcal{N}(\Sigma(t) \left[ \Sigma_0^{-1}y + \Sigma(t-1) \mu(t-1) \right], \Sigma(t)) \\
+        \Sigma(t) = (\Sigma_0^{-1} + \Sigma(t-1)^{-1})^{-1}
+        \end{align}
 
 
 - **Render**
