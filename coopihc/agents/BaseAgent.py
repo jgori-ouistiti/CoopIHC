@@ -527,13 +527,38 @@ class BaseAgent:
 
         :meta private:
         """
-        agent_observation, agent_obs_reward = self.observe(self.bundle.game_state)
+        # agent_observation, agent_obs_reward = self.observe(self.bundle.game_state)
+        agent_observation, agent_obs_reward = self.observe()
 
         if infer:
-            agent_state, agent_infer_reward = self.inference_engine.infer()
+            agent_state, agent_infer_reward = self.infer()
         else:
             agent_infer_reward = 0
         return agent_obs_reward, agent_infer_reward
+
+    def prepare_action(
+        self, affect_bundle=True, game_state=None, agent_observation=None, **kwargs
+    ):
+        if self.bundle is not None:
+            if self.bundle.turn_number != 0 and self.role == "user":
+                raise RuntimeError(
+                    f"You are preparing User {self.__class__.__name__} to take an action, but the Bundle is at turn {self.bundle.turn_number} (should be 0) "
+                )
+            if self.bundle.turn_number != 2 and self.role == "assistant":
+                raise RuntimeError(
+                    f"You are preparing Assistant {self.__class__.__name__} to take an action, but the Bundle is at turn {self.bundle.turn_number} (should be 2) "
+                )
+
+        if agent_observation is None:
+            _agent_observation, agent_obs_reward = self.observe(
+                affect_bundle=affect_bundle, game_state=game_state, **kwargs
+            )
+            if agent_observation is None:
+                agent_observation = _agent_observation
+            agent_state, agent_infer_reward = self.infer(
+                agent_observation=agent_observation, affect_bundle=affect_bundle
+            )
+        return agent_obs_reward + agent_infer_reward
 
     def render(self, mode="text", ax_user=None, ax_assistant=None, ax_task=None):
         """render the agent

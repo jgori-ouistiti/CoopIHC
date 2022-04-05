@@ -1,0 +1,179 @@
+\documentclass[tikz, crop, border = 20pt, dvipsnames]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{lmodern}
+\usepackage[left=3cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+
+
+
+\usetikzlibrary{shapes}
+\usetikzlibrary{arrows}
+\usetikzlibrary{fit, backgrounds}
+\usetikzlibrary{calc}
+\usetikzlibrary{intersections}
+\usetikzlibrary{positioning}
+\usetikzlibrary{decorations.pathreplacing,decorations.markings}
+\tikzset{
+  basic box/.style = {
+    shape = rectangle with rounded corners,
+    align = center,
+    draw  = #1,
+    fill  = #1!70!black,
+    % rounded corners,
+	text width = 2.5cm,
+	minimum width = 2.5cm,
+	minimum height = .5cm,
+	text centered},
+  t box/.style = {
+	shape = rectangle,
+	rounded corners,
+	align = center,
+	text width = 2cm,
+	draw = black,
+	text centered},
+  basic arrow/.style = {
+	  -latex,
+	  ultra thick
+  },
+  special arrow/.style = {
+	  -latex,
+	  ultra thick,
+	  draw = #1,
+  },
+  mid arrow/.style={postaction={decorate,decoration={
+	markings,
+	arrowhead = 4mm,
+	mark=at position .33 with {\arrow[#1]{latex}},
+	mark=at position .66 with {\arrow[#1]{latex}}
+  }}},
+}
+
+\definecolor{infocolor}{RGB}{221,204,119}
+\definecolor{taskcolor}{RGB}{153,153,51}
+\definecolor{statecolor}{RGB}{204,102,119}
+\definecolor{policycolor}{RGB}{68,170,153}
+\definecolor{userobservationenginecolor}{RGB}{136,204,238}
+\definecolor{inferenceenginecolor}{RGB}{17,119,51}
+\definecolor{assistantobservationenginecolor}{RGB}{170,68,153}
+% # ========== colors
+\newcommand{\infocolor}{infocolor}
+\newcommand{\taskcolor}{taskcolor}
+\newcommand{\statecolor}{statecolor}
+\newcommand{\policycolor}{policycolor}
+\newcommand{\userobservationenginecolor}{userobservationenginecolor}
+\newcommand{\inferenceenginecolor}{inferenceenginecolor}
+\newcommand{\assistantobservationenginecolor}{assistantobservationenginecolor}
+
+% # ========== scale
+\newcommand{\xscale}{6}
+
+
+\begin{document}
+\pgfdeclarelayer{background}
+\pgfdeclarelayer{middleground}
+\pgfsetlayers{background,middleground,main}
+
+\input{roundedwithrectangles.tex}
+
+\begin{tikzpicture}
+
+	% # ============= turn 0
+	\draw (0,0) node[name=origin_0]{};
+	\draw (origin_0) node[name = info_0, basic box = \infocolor]{\scriptsize $\text{turn, round}=0,0$};
+	\draw (info_0.south) node[name = task_0, below, basic box = \taskcolor!20!white]{\scriptsize Task state};
+	\draw (task_0.south) node[name = userstate_0, below, basic box = \statecolor!20!white]{\scriptsize User state};
+	\draw (userstate_0.south) node[name = assistantstate_0, below, basic box = \statecolor!20!white]{\scriptsize Assistant state};
+	\draw (assistantstate_0.south) node[name = useraction_0, below, basic box = \policycolor!20!white]{\scriptsize User action};
+	\draw (useraction_0.south) node[name = assistantaction_0, below, basic box = \policycolor!20!white]{\scriptsize Assistant action};
+	\draw (assistantaction_0.south) node[below=.75cm]{\textbf{0}};
+
+	% # ============= turn 1
+	\draw (origin_0) + (\xscale,0) node[name = info_1, basic box = \infocolor]{\scriptsize $\text{turn, round}=1,0$};
+	\draw (info_1.south) node[name = task_1, below, basic box = \taskcolor!20!white]{\scriptsize Task state};
+	\draw (task_1.south) node[name = userstate_1, below, basic box = \statecolor]{\scriptsize New user state};
+	\draw (userstate_1.south) node[name = assistantstate_1, below, basic box = \statecolor!20!white]{\scriptsize Assistant state};
+	\draw (assistantstate_1.south) node[name = useraction_1, below, basic box = \policycolor!20!white]{\scriptsize User action};
+	\draw (useraction_1.south) node[name = assistantaction_1, below, basic box = \policycolor!20!white]{\scriptsize Assistant action};
+	\draw (assistantaction_1.south) node[below=.75cm]{\textbf{1}};
+
+	% --------- turn 0-1 arrows
+	\draw[basic arrow] (userstate_0.east) -- (userstate_1.west) node[t box, below, midway]{\scriptsize New user observation, update user state};
+	\draw[special arrow = black] (info_0.north) to [out = 90, in = 90] node[rectangle, rounded corners, draw = black, midway, thick, above = 1mm, name = quarter_step_0]{\texttt{bundle.quarter\textunderscore step()}} (info_1.north) ;
+	\draw(quarter_step_0.100) node[rectangle, rounded corners, draw = black,  thick, above = 1mm, name = user_prepare_action]{\texttt{user.prepare\textunderscore action()}};
+
+	% # ============= turn 2
+	\draw (info_1) + (\xscale,0) node[name = info_2, basic box = \infocolor]{\scriptsize $\text{turn, round}=2,0$};
+	\draw (info_2.south) node[name = task_2, below, basic box = \taskcolor!60!white]{\scriptsize Task state};
+	\draw (task_2.south) node[name = userstate_2, below, basic box = \statecolor]{\scriptsize New user state};
+	\draw (userstate_2.south) node[name = assistantstate_2, below, basic box = \statecolor!20!white]{\scriptsize Assistant state};
+	\draw (assistantstate_2.south) node[name = useraction_2, below, basic box = \policycolor]{\scriptsize New user action};
+	\draw (useraction_2.south) node[name = assistantaction_2, below, basic box = \policycolor!20!white]{\scriptsize Assistant action};
+	\draw (assistantaction_2.south) node[name = turn_2, below=.75cm]{\textbf{2}};
+
+	% --------- turn 1-2 arrows
+	\draw[basic arrow] (task_1.east) -- node[t box, above]{\scriptsize task state update} (task_2.west);
+	\draw[basic arrow] (useraction_1.east) -- node[t box, below]{\scriptsize user action update} (useraction_2.west);
+	\draw[special arrow = black] (info_1.45) to [out = 90, in = 90] node[rectangle, rounded corners, draw = black, midway, thick, above = 1mm, name = quarter_step_1]{\texttt{bundle.quarter\textunderscore step()}} (info_2.north) ;
+	\draw(quarter_step_1.north) node[rectangle, rounded corners, draw = black,  thick, above = 1mm, name = user_take_action]{\texttt{user.take\textunderscore action()}};
+
+	% # ============= turn 3
+	\draw (info_2) + (\xscale,0) node[name = info_3, basic box = \infocolor]{\scriptsize $\text{turn, round}=3,0$};
+	\draw (info_3.south) node[name = task_3, below, basic box = \taskcolor!60!white]{\scriptsize Task state};
+	\draw (task_3.south) node[name = userstate_3, below, basic box = \statecolor]{\scriptsize New user state};
+	\draw (userstate_3.south) node[name = assistantstate_3, below, basic box = \statecolor]{\scriptsize Assistant state};
+	\draw (assistantstate_3.south) node[name = useraction_3, below, basic box = \policycolor]{\scriptsize New user action};
+	\draw (useraction_3.south) node[name = assistantaction_3, below, basic box = \policycolor!20!white]{\scriptsize Assistant action};
+	\draw (assistantaction_3.south) node[below=.75cm]{\textbf{3}};
+
+	% --------- turn 2-3 arrows
+	\draw[basic arrow] (assistantstate_2.east) -- (assistantstate_3.west) node[t box, below, midway]{\scriptsize New assistant observation, update assistant state};
+	\draw[special arrow = black] (info_2.45) to [out = 90, in = 90] node[rectangle, rounded corners, draw = black, midway, thick, above = 1mm, name = quarter_step_2]{\texttt{bundle.quarter\textunderscore step()}} (info_3.north) ;
+	\draw(quarter_step_2.100) node[rectangle, rounded corners, draw = black,  thick, above = 1mm, name = user_prepare_action]{\texttt{assistant.prepare\textunderscore action()}};
+
+	% # ============= turn 0, round = 1
+	\draw (info_3) + (\xscale,0) node[name = info_4, basic box = \infocolor]{\scriptsize $\text{turn, round}=0,1$};
+	\draw (info_4.south) node[name = task_4, below, basic box = \taskcolor]{\scriptsize Task state};
+	\draw (task_4.south) node[name = userstate_4, below, basic box = \statecolor]{\scriptsize New user state};
+	\draw (userstate_4.south) node[name = assistantstate_4, below, basic box = \statecolor]{\scriptsize Assistant state};
+	\draw (assistantstate_4.south) node[name = useraction_4, below, basic box = \policycolor]{\scriptsize New user action};
+	\draw (useraction_4.south) node[name = assistantaction_4, below, basic box = \policycolor]{\scriptsize Assistant action};
+	\draw (assistantaction_4.south) node[below=.75cm]{\textbf{0}};
+
+	% --------- turn 3-4 arrows
+	\draw[basic arrow] (task_3.east) -- node[t box, above]{\scriptsize task state update} (task_4.west);
+	\draw[basic arrow] (assistantaction_3.east) -- node[t box, above]{\scriptsize assistant action update} (assistantaction_4.west);
+	\draw[special arrow = black] (info_3.45) to [out = 90, in = 90] node[rectangle, rounded corners, draw = black, midway, thick, above = 3mm, name = quarter_step_3]{\texttt{bundle.quarter\textunderscore step()}} (info_4.north) ;
+	\draw(quarter_step_3.north) node[rectangle, rounded corners, draw = black,  thick, above = 3mm, name = user_take_action]{\texttt{assistant.take\textunderscore action()}};
+
+
+	% # ================== reset and step
+	\draw (origin_0) + (-1,-4.5) node[left = 1mm]{\textbf{Round = 0}};
+	\draw (origin_0) + (-1,-5) node[name= origin_1, left = 1mm]{\textbf{\texttt{bundle.reset()}}};
+	\draw (origin_0) + (0,-5) node{$\bullet$};
+
+	\draw (origin_0) + (-1,-5.5) node[left=1mm]{\textbf{\texttt{bundle.reset(turn = 2)}}};
+	\draw[mid arrow = red] (origin_0) + (0,-5.5) node{$\bullet$} -- ($(info_2) + (0,-5.5)$) node{$\bullet$};
+
+	\draw (origin_0) + (-1,-6) node[left=1mm]{\textbf{\texttt{bundle.reset(start\textunderscore at = 1, turn = 3)}}};
+	\draw[mid arrow = red] ($(info_1) + (0,-6)$) node{$\bullet$} -- ($(info_3) + (0,-6)$) node{$\bullet$};
+
+	\draw (origin_0) + (-1,-6.5) node[left=1mm]{\textbf{Round = N $\geq$ 1}};
+
+	\draw (origin_0) + (-1,-7) node[left=1mm]{ \textbf{Turn = 0, \texttt{bundle.step()}}};
+	\draw[mid arrow = red] ($(info_0) + (0,-7)$) node{$\bullet$} --  ($(info_4) + (0,-7)$) node{$\bullet$}  ;
+
+	\draw (origin_0) + (-1,-7.5) node[left=1mm]{ \textbf{Turn = 1, \texttt{bundle.step()}}};
+	\draw[mid arrow = red] ($(info_0) + (0,-7.5)$) --  ($(info_4) + (0,-7.5)$) ;
+	\draw[mid arrow = red] ($(info_1) + (0,-7.5)$) node{$\bullet$};
+
+	\draw (origin_0) + (-1,-8) node[left=1mm]{ \textbf{Turn = 1, \texttt{bundle.step(go\textunderscore to\textunderscore turn=3)}}};
+	\draw[mid arrow = red] ($(info_1) + (0,-8)$) node{$\bullet$} --   ($(info_3) + (0,-8)$) node{$\bullet$} ;
+	
+
+\end{tikzpicture}
+
+\end{document}

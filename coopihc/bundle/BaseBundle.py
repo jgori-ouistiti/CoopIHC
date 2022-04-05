@@ -143,11 +143,11 @@ class BaseBundle:
     def reset(
         self,
         turn=0,
+        start_at=0,
         task=True,
         user=True,
         assistant=True,
         dic={},
-        skip_user_action=False,
         random_reset=False,
     ):
         """Reset bundle.
@@ -177,6 +177,8 @@ class BaseBundle:
 
         :param turn: game turn number. Can also be set globally at the bundle level by passing the "reset_turn" keyword argument, defaults to 0
         :type turn: int, optional
+        :param start_at: which turn to start at (allows skipping some turns during reset), defaults to 0
+        :type start_at: int, optional
         :param task: reset task?, defaults to True
         :type task: bool, optional
         :param user: reset user?, defaults to True
@@ -185,8 +187,6 @@ class BaseBundle:
         :type assistant: bool, optional
         :param dic: reset_dic, defaults to {}
         :type dic: dict, optional
-        :param skip_user_action: do you want to skip user steps on reset?, defaults to False. Usually you want to have this set to False if the user starts playing but true if the assistant starts playing. Can also be set globally at the bundle level with the keyword argument "reset_skip_user_action".
-        :type skip_user_action: bool, optional
         :param random_reset: whether during resetting values should be randomized or not if not set by a reset dic, default to False
         :type random_reset: bool, optional
         :return: new game state
@@ -223,18 +223,26 @@ class BaseBundle:
 
         self.turn_number = turn
 
-        if turn == 0:
+        turn = max(turn, start_at)
+        if turn == 0 and start_at <= turn:
             return self.game_state
-        if turn >= 1 and not skip_user_action:
+        if turn >= 1 and start_at <= turn:
             self._user_first_half_step()
-        if turn >= 2 and not skip_user_action:
+        if turn >= 2 and start_at <= turn:
             user_action, _ = self.user.take_action()
             self.user.action = user_action
             self._user_second_half_step(user_action)
-        if turn >= 3:
+        if turn >= 3 and start_at <= turn:
             self._assistant_first_half_step()
 
         return self.game_state
+
+    def quarter_step(self, user_action=None, assistant_action=None, **kwargs):
+        return self.step(
+            user_action=user_action,
+            assistant_action=assistant_action,
+            go_to_turn=self.turn + 1,
+        )
 
     def step(self, user_action=None, assistant_action=None, go_to_turn=None, **kwargs):
         """Play a round
