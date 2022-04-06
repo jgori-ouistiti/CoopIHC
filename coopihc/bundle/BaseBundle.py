@@ -394,27 +394,24 @@ class BaseBundle:
             if self.active_render_figure:
                 plt.pause(self.playspeed)
                 self.task.render(
-                    self.axtask,
-                    self.axuser,
-                    self.axassistant,
+                    ax_task=self.axtask,
+                    ax_user=self.axuser,
+                    ax_assistant=self.axassistant,
                     mode="plot",
-                    *args,
                     **kwargs,
                 )
                 self.user.render(
-                    self.axtask,
-                    self.axuser,
-                    self.axassistant,
+                    ax_task=self.axtask,
+                    ax_user=self.axuser,
+                    ax_assistant=self.axassistant,
                     mode="plot",
-                    *args,
                     **kwargs,
                 )
                 self.assistant.render(
-                    self.axtask,
-                    self.axuser,
-                    self.axassistant,
+                    ax_task=self.axtask,
+                    ax_user=self.axuser,
+                    ax_assistant=self.axassistant,
                     mode="plot",
-                    *args,
                     **kwargs,
                 )
                 self.fig.canvas.draw()
@@ -428,26 +425,23 @@ class BaseBundle:
                 self.axassistant = self.fig.add_subplot(self.figure_layout[2])
                 self.axassistant.set_title("Assistant State")
                 self.task.render(
-                    self.axtask,
-                    self.axuser,
-                    self.axassistant,
+                    ax_task=self.axtask,
+                    ax_user=self.axuser,
+                    ax_assistant=self.axassistant,
                     mode="plot",
-                    *args,
                     **kwargs,
                 )
                 self.user.render(
-                    self.axtask,
-                    self.axuser,
-                    self.axassistant,
-                    *args,
+                    ax_task=self.axtask,
+                    ax_user=self.axuser,
+                    ax_assistant=self.axassistant,
                     mode="plot",
                     **kwargs,
                 )
                 self.assistant.render(
-                    self.axtask,
-                    self.axuser,
-                    self.axassistant,
-                    *args,
+                    ax_task=self.axtask,
+                    ax_user=self.axuser,
+                    ax_assistant=self.axassistant,
                     mode="plot",
                     **kwargs,
                 )
