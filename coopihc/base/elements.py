@@ -117,12 +117,14 @@ def array_element(shape=None, init=None, low=None, high=None, **kwargs):
     init = _set_shape_object(shape, init, 0)
     low = _set_shape_object(shape, low, -numpy.inf)
     high = _set_shape_object(shape, high, numpy.inf)
+
     out_of_bounds_mode = kwargs.pop("out_of_bounds_mode", "warning")
     seed = kwargs.pop("seed", None)
+    dtype = kwargs.pop("dtype", numpy.float64)
 
     return StateElement(
         init,
-        Space(low=low, high=high, **kwargs),
+        Space(low=low, high=high, dtype=dtype, **kwargs),
         out_of_bounds_mode=out_of_bounds_mode,
         seed=seed,
     )
@@ -130,7 +132,7 @@ def array_element(shape=None, init=None, low=None, high=None, **kwargs):
 
 def discrete_array_element(N=None, shape=None, init=0, low=None, high=None, **kwargs):
 
-    dtype = kwargs.get("dtype", numpy.int64)
+    dtype = kwargs.pop("dtype", numpy.int64)
 
     if N is None:
         return array_element(

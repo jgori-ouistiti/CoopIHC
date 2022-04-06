@@ -16,9 +16,9 @@ import numpy
 
         reset
 
-        user_step
+        on_user_action
 
-        assistant_step
+        on_assistant_action
 
         render
 
@@ -92,8 +92,10 @@ class InteractionTask(ABC):
         :return: user action
         :rtype: :py:class:`State<coopihc.base.State.State>`
         """
-        if self.bundle:
-            return tuple(self.bundle.game_state["user_action"].values())
+        try:
+            return self.bundle.user.action
+        except AttributeError:
+            raise AttributeError("This task has not been connected to a user yet")
 
     @property
     def assistant_action(self):
@@ -104,8 +106,10 @@ class InteractionTask(ABC):
         :return: assistant action
         :rtype: :py:class:`State<coopihc.base.State.State>`
         """
-        if self.bundle:
-            return tuple(self.bundle.game_state["assistant_action"].values())
+        try:
+            return self.bundle.assistant.action
+        except AttributeError:
+            raise AttributeError("This task has not been connected to an assistant yet")
 
     def __content__(self):
         """Custom class representation.
@@ -169,39 +173,39 @@ class InteractionTask(ABC):
                     )
                 )
 
-    def base_user_step(self, *args, **kwargs):
+    def base_on_user_action(self, *args, **kwargs):
         """base user step
 
-        Wraps the user defined user_step() method. For now does little but
+        Wraps the user defined on_user_action() method. For now does little but
         provide default values, may be useful later.
 
         :return: (task state, task reward, is_done flag, metadata):
         :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, float, boolean, dictionnary)
         """
-        ret = self.user_step(*args, **kwargs)
+        ret = self.on_user_action(*args, **kwargs)
         if ret is None:
             return self.state, -1 / 2, False, {}
         else:
             return ret
 
-    def base_assistant_step(self, *args, **kwargs):
+    def base_on_assistant_action(self, *args, **kwargs):
         """base assistant step
 
-        Wraps the assistant defined assistant_step() method. For now does
+        Wraps the assistant defined on_assistant_action() method. For now does
         little but provide default values, may be useful later.
 
         :return: (task state, task reward, is_done flag, metadata):
         :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, float, boolean, dictionnary)
         """
-        ret = self.assistant_step(*args, **kwargs)
+        ret = self.on_assistant_action(*args, **kwargs)
         if ret is None:
             return self.state, -1 / 2, False, {}
         else:
             return ret
 
     @abstractmethod
-    def user_step(self, *args, user_action=None, **kwargs):
-        """user_step
+    def on_user_action(self, *args, user_action=None, **kwargs):
+        """on_user_action
 
         Redefine this to specify the task state transitions and rewards issued.
 
@@ -211,8 +215,8 @@ class InteractionTask(ABC):
         return None
 
     @abstractmethod
-    def assistant_step(self, *args, assistant_action=None, **kwargs):
-        """assistant_step
+    def on_assistant_action(self, *args, assistant_action=None, **kwargs):
+        """on_assistant_action
 
         Redefine this to specify the task state transitions and rewards issued.
 
@@ -231,14 +235,13 @@ class InteractionTask(ABC):
         """
         return None
 
-    def render(self, *args, **kwargs):
+    def render(self, mode="text", ax_user=None, ax_assistant=None, ax_task=None):
         """Render the task on the main plot.
 
         :param mode: (str) text or plot
         :param args: (list) list of axis in order axtask, axuser, axassistant
 
         """
-        mode = kwargs.get("mode")
         if mode is None:
             mode = "text"
 

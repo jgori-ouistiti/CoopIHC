@@ -13,7 +13,7 @@ class ExampleInferenceEngine(BaseInferenceEngine):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def infer(self, agent_state=None):
+    def infer(self, agent_observation=None):
         """infer
 
         Do nothing. Same behavior as parent ``BaseInferenceEngine``
@@ -21,7 +21,7 @@ class ExampleInferenceEngine(BaseInferenceEngine):
         :return: (new internal state, reward)
         :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, float)
         """
-        if agent_state is None:
+        if agent_observation is None:
             agent_state = self.state
 
         reward = 0
@@ -51,7 +51,9 @@ class CoordinatedInferenceEngine(BaseInferenceEngine):
         # Parameter Inference is naive on purpose here
         while True:
             # Prediction using user model (can sample directly from the policy in this case, because it already does a single-shot prediction)
-            usermodel_action, _ = self.host.policy.sample(observation=self.observation)
+            usermodel_action, _ = self.host.take_action(
+                agent_observation=self.observation, agent_state=self.state
+            )
 
             # actual observation
             user_action = self.observation.user_action.action
@@ -93,8 +95,10 @@ class RolloutCoordinatedInferenceEngine(BaseInferenceEngine):
                 **{
                     "user_state": {
                         "p0": i,
-                        "p1": self.state.user_p1[...],
-                        "p2": self.state.user_p2[...],
+                        "p1": self.state.user_p1,
+                        "p2": self.state.user_p2,
+                        # "p1": self.state.user_p1[...],
+                        # "p2": self.state.user_p2[...],
                     }
                 },
             }
@@ -107,6 +111,6 @@ class RolloutCoordinatedInferenceEngine(BaseInferenceEngine):
                     break
 
         index = numpy.argmax(rew)
-        self.state["user_p0"][...] = index
+        self.state["user_p0"] = index
 
         return self.state, 0

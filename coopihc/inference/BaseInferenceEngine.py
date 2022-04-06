@@ -38,7 +38,10 @@ class BaseInferenceEngine:
         :return: last observation
         :rtype: :py:class:`State<coopihc.base.State.State>`
         """
-        return self.buffer[-1]
+        try:
+            return self.buffer[-1]
+        except TypeError:
+            return None
 
     @property
     def state(self):
@@ -49,7 +52,12 @@ class BaseInferenceEngine:
         :return: agent state
         :rtype: :py:class:`State<coopihc.base.State.State>`
         """
-        return self.buffer[-1]["{}_state".format(self.host.role)]
+        try:
+            return self.buffer[-1]["{}_state".format(self.host.role)]
+        except AttributeError:
+            return AttributeError(
+                "This agent is not capable of observing its internal state. Think about changing your observation engine."
+            )
 
     @property
     def action(self):
@@ -60,7 +68,10 @@ class BaseInferenceEngine:
         :return: agent action
         :rtype: :py:class:`State<coopihc.base.State.State>`
         """
-        return tuple(self.host.policy.action_state.values())
+        try:
+            return self.host.action
+        except AttributeError:
+            return None
 
     @property
     def unwrapped(self):
@@ -102,7 +113,7 @@ class BaseInferenceEngine:
         setattr(self, as_name, bound_method)
         return bound_method
 
-    def infer(self, user_state=None):
+    def infer(self, agent_observation=None):
         """infer
 
         The main method of this class. Return the new value of the internal state of the agent, as well as the reward associated with inferring the state. By default, this inference engine does nothing, and just returns the state with a null reward.
@@ -111,17 +122,18 @@ class BaseInferenceEngine:
         :return: (new internal state, reward)
         :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, float)
         """
-        if user_state is not None:
-            return user_state, 0
+        if agent_observation is None:
+            agent_observation = self.observation
+
         # do something with information inside buffer
         if self.host.role == "user":
             try:
-                return self.observation["user_state"], 0
+                return agent_observation["user_state"], 0
             except KeyError:
                 return {}, 0
         else:
             try:
-                return self.observation["assistant_state"], 0
+                return agent_observation["assistant_state"], 0
             except KeyError:
                 return {}, 0
 
@@ -136,12 +148,7 @@ class BaseInferenceEngine:
 
         self.buffer = None
 
-    def render(self, *args, **kwargs):
-        """render
-
-        Render the engine.
-        """
-        mode = kwargs.get("mode")
+    def render(self, mode="text", ax_user=None, ax_assistant=None, ax_task=None):
 
         render_flag = False
         for r in self.render_tag:
@@ -151,11 +158,16 @@ class BaseInferenceEngine:
         if render_flag:
 
             if "plot" in mode:
-                ax = args[0]
                 if self.ax is not None:
                     pass
                 else:
-                    self.ax = ax
+                    if ax_user is not None:
+                        self.ax = ax_user
+                    elif ax_assistant is not None:
+                        self.ax = ax_assistant
+                    else:
+                        self.ax = ax_task
+
                     self.ax.set_title(type(self).__name__)
 
             if "text" in mode:

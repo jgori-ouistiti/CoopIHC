@@ -17,14 +17,6 @@ class ExampleTask(InteractionTask):
 
     """
 
-    @property
-    def user_action(self):
-        return super().user_action[0]
-
-    @property
-    def assistant_action(self):
-        return super().assistant_action[0]
-
     def __init__(self, *args, **kwargs):
 
         # Call super().__init__() beofre anything else, which initializes some useful attributes, including a State (self.state) for the task
@@ -38,13 +30,14 @@ class ExampleTask(InteractionTask):
 
     def reset(self, dic=None):
         # Always start with state 'x' at 0
-        self.state["x"][...] = 0
+        self.state["x"] = 0
         return
 
-    def user_step(self, *args, **kwargs):
+    def on_user_action(self, *args, **kwargs):
         # Modify the state in place, adding the user action
         is_done = False
-        self.state["x"][...] = self.state["x"] + self.user_action
+        # self.state["x"] = self.state["x"] + self.user_action
+        self.state["x"] += self.user_action
 
         # Stopping condition, return is_done boolean floag
         if self.state["x"] == 4:
@@ -53,26 +46,16 @@ class ExampleTask(InteractionTask):
         reward = -1
         return self.state, reward, is_done
 
-    def assistant_step(self, *args, **kwargs):
+    def on_assistant_action(self, *args, **kwargs):
         is_done = False
         # Modify the state in place, adding the assistant action
-        self.state["x"][...] = self.state["x"] + self.assistant_action
+        self.state["x"] += self.assistant_action
         # Stopping condition, return is_done boolean floag
         if self.state["x"] == 4:
             is_done = True
 
         reward = -1
         return self.state, reward, is_done
-
-    def render(self, *args, mode="text"):
-
-        if "text" in mode:
-            print("\n")
-            print("Turn number {:f}".format(self.turn_number.squeeze().tolist()))
-            print(self.state)
-            print("\n")
-        else:
-            raise NotImplementedError("Only 'text' mode implemented for this task")
 
 
 class CoordinatedTask(InteractionTask):
@@ -81,10 +64,10 @@ class CoordinatedTask(InteractionTask):
         self.state["x"] = discrete_array_element(init=0, low=0, high=9)
 
     def reset(self, dic=None):
-        self.state["x"][...] = 0
+        self.state["x"] = 0
         return
 
-    def user_step(self, *args, **kwargs):
+    def on_user_action(self, *args, **kwargs):
         is_done = False
 
         if self.state["x"] == 9:
@@ -96,11 +79,11 @@ class CoordinatedTask(InteractionTask):
         reward = -1
         return self.state, reward, is_done
 
-    def assistant_step(self, *args, **kwargs):
+    def on_assistant_action(self, *args, **kwargs):
         is_done = False
 
         if self.user_action == self.assistant_action:
-            self.state["x"][...] = self.state["x"] + 1
+            self.state["x"] += 1
 
         reward = -1
         return self.state, reward, is_done

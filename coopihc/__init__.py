@@ -7,11 +7,11 @@ from .agents.lqrcontrollers.IHCT_LQGController import IHCT_LQGController
 from .agents.lqrcontrollers.IHDT_LQRController import IHDT_LQRController
 from .agents.lqrcontrollers.LQRController import LQRController
 
-from .bundle._Bundle import _Bundle
+from .bundle.BaseBundle import BaseBundle
 from .bundle.Bundle import Bundle
 from .bundle.wrappers.Train import TrainGym
 from .bundle.WsServer import WsServer
-from .bundle.wrappers import BundleWrapper, PipedTaskBundleWrapper
+from .bundle.wrappers import PipedTaskBundleWrapper
 
 
 from .inference.BaseInferenceEngine import BaseInferenceEngine

@@ -40,9 +40,9 @@ class SimplePointingTask(InteractionTask):
 
         return self.state
 
-    def user_step(self, *args, **kwargs):
+    def on_user_action(self, *args, **kwargs):
 
-        super().user_step()
+        super().on_user_action()
 
         is_done = False
         user_action = self.bundle.game_state['user_action']['action']
@@ -54,7 +54,7 @@ class SimplePointingTask(InteractionTask):
         return self.state, reward, is_done, {}
 
 
-    def assistant_step(self, *args, **kwargs):
+    def on_assistant_action(self, *args, **kwargs):
         """ Modulate the user's action.
 
         Multiply the user action with the assistant action.
@@ -66,7 +66,7 @@ class SimplePointingTask(InteractionTask):
 
         :meta public:
         """
-        super().assistant_step()
+        super().on_assistant_action()
         # do something
         is_done = False
         return self.state, -1/2, is_done, {}

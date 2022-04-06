@@ -1,6 +1,8 @@
 import copy
 import numpy
 
+from coopihc.base.State import State
+
 
 class BaseObservationEngine:
     """Base Class for Observation Engine.
@@ -48,13 +50,34 @@ class BaseObservationEngine:
         :rtype: :py:class:`State<coopihc.base.State.State>`
         """
         try:
-            return tuple(self.host.policy.action_state.values())
+            return self.host.action
         except AttributeError:
             return None
 
     @property
     def unwrapped(self):
         return self
+
+    def observe_from_substates(
+        self,
+        game_info={},
+        task_state={},
+        user_state={},
+        assistant_state={},
+        user_action={},
+        assistant_action={},
+    ):
+        game_state = State(
+            **{
+                "game_info": game_info,
+                "task_state": task_state,
+                "user_state": user_state,
+                "assistant_state": assistant_state,
+                "user_action": user_action,
+                "assistant_action": assistant_action,
+            }
+        )
+        return self.observe(game_state=game_state)
 
     def observe(self, game_state=None):
         """observe

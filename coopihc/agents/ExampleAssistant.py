@@ -68,7 +68,7 @@ class CoordinatedAssistant(BaseAgent):
         )
 
     def finit(self):
-        copy_task = copy.deepcopy(self.bundle.task)
+        copy_task = copy.deepcopy(self.task)
         self.simulation_bundle = Bundle(task=copy_task, user=self.user_model)
 
 
@@ -97,35 +97,5 @@ class CoordinatedAssistantWithInference(BaseAgent):
         )
 
     def finit(self):
-        copy_task = copy.deepcopy(self.bundle.task)
+        copy_task = copy.deepcopy(self.task)
         self.simulation_bundle = Bundle(task=copy_task, user=self.user_model)
-
-
-# class CoordinatedAssistantWithRollout(BaseAgent):
-#     def __init__(self, simulation_bundle, **kwargs):
-
-#         self.simulation_bundle = simulation_bundle
-
-#         state = State()
-#         state["user_p0"] = copy.deepcopy(simulation_bundle.user.state.p0)
-#         state["user_p1"] = copy.deepcopy(simulation_bundle.user.state.p1)
-#         state["user_p2"] = copy.deepcopy(simulation_bundle.user.state.p2)
-
-#         # Call the policy defined above
-#         action_state = State()
-#         action_state["action"] = StateElement(
-#             0, Space(numpy.arange(10, dtype=numpy.int16), "discrete")
-#         )
-
-#         # Use default observation and inference engines
-#         observation_engine = None
-#         inference_engine = RolloutCoordinatedInferenceEngine()
-
-#         super().__init__(
-#             "assistant",
-#             agent_state=state,
-#             agent_policy=BasePolicy,
-#             agent_observation_engine=observation_engine,
-#             agent_inference_engine=inference_engine,
-#             **kwargs
-#         )

@@ -1,3 +1,4 @@
+from random import random
 from coopihc.base.State import State
 from coopihc.base.elements import discrete_array_element, array_element, cat_element
 from coopihc.base.elements import discrete_array_element, cat_element
@@ -8,7 +9,7 @@ import matplotlib.pyplot as plt
 import copy
 
 
-class _Bundle:
+class BaseBundle:
     """Main class for bundles.
 
     Main class for bundles. This class is subclassed by Bundle, which defines the interface with which to interact.
@@ -28,6 +29,13 @@ class _Bundle:
 
     :meta public:
     """
+
+    turn_dict = {
+        "after_assistant_action": 0,
+        "before_user_action": 1,
+        "after_user_action": 2,
+        "before_assistant_action": 3,
+    }
 
     def __init__(self, task, user, assistant, *args, **kwargs):
         self.kwargs = kwargs
@@ -117,7 +125,7 @@ class _Bundle:
     @turn_number.setter
     def turn_number(self, value):
         self._turn_number = value
-        self.game_state["game_info"]["turn_index"][...] = value
+        self.game_state["game_info"]["turn_index"] = value
 
     @property
     def round_number(self):
@@ -133,14 +141,21 @@ class _Bundle:
     @round_number.setter
     def round_number(self, value):
         self._round_number = value
-        self.game_state["game_info"]["round_index"][...] = value
+        self.game_state["game_info"]["round_index"] = value
 
     @property
     def state(self):
         return self.game_state
 
     def reset(
-        self, turn=0, task=True, user=True, assistant=True, dic={}, skip_user_step=False
+        self,
+        go_to=0,
+        start_at=0,
+        task=True,
+        user=True,
+        assistant=True,
+        dic={},
+        random_reset=False,
     ):
         """Reset bundle.
 
@@ -164,11 +179,13 @@ class _Bundle:
 
         .. note ::
 
-            If subclassing _Bundle, make sure to call super().reset() in the new reset method.
+            If subclassing BaseBundle, make sure to call super().reset() in the new reset method.
 
 
         :param turn: game turn number. Can also be set globally at the bundle level by passing the "reset_turn" keyword argument, defaults to 0
         :type turn: int, optional
+        :param start_at: which turn to start at (allows skipping some turns during reset), defaults to 0
+        :type start_at: int, optional
         :param task: reset task?, defaults to True
         :type task: bool, optional
         :param user: reset user?, defaults to True
@@ -177,70 +194,96 @@ class _Bundle:
         :type assistant: bool, optional
         :param dic: reset_dic, defaults to {}
         :type dic: dict, optional
-        :param skip_user_step: do you want to skip user steps on reset?, defaults to False. Usually you want to have this set to False if the user starts playing but true if the assistant starts playing. Can also be set globally at the bundle level with the keyword argument "reset_skip_user_step".
-        :type skip_user_step: bool, optional
+        :param random_reset: whether during resetting values should be randomized or not if not set by a reset dic, default to False
+        :type random_reset: bool, optional
         :return: new game state
         :rtype: :py:class:`State<coopihc.base.State.State>`
         """
         # ============= Passing via bundles
-        turn = self.kwargs.get("reset_turn", turn)
-        skip_user_step = self.kwargs.get("reset_skip_user_step", skip_user_step)
+        go_to = self.kwargs.get("reset_go_to", go_to)
+        # skip_user_action = self.kwargs.get("reset_skip_user_action", skip_user_action)
+        # if skip_user_action:
+        # start_at = 2
+        random_reset = self.kwargs.get("random_reset", random_reset)
         # =============
 
         if task:
             task_dic = dic.get("task_state")
             self.task._base_reset(
-                dic=task_dic, random=self.kwargs.get("random_reset", False)
+                dic=task_dic,
+                random=random_reset,
             )
 
         if user:
             user_dic = dic.get("user_state")
             self.user._base_reset(
-                dic=user_dic, random=self.kwargs.get("random_reset", False)
+                dic=user_dic,
+                random=random_reset,
             )
 
         if assistant:
             assistant_dic = dic.get("assistant_state")
             self.assistant._base_reset(
-                dic=assistant_dic, random=self.kwargs.get("random_reset", False)
+                dic=assistant_dic,
+                random=random_reset,
             )
 
-        self.round_number[...] = 0
+        self.round_number = 0
 
-        self.turn_number[...] = turn
+        if not isinstance(go_to, (numpy.integer, int)):
+            go_to = self.turn_dict[go_to]
+        if not isinstance(start_at, (numpy.integer, int)):
+            start_at = self.turn_dict[start_at]
 
-        if turn == 0:
+        self.turn_number = go_to
+
+        # go_to = max(go_to, start_at)
+        if go_to == 0 and start_at == 0:
             return self.game_state
-        if turn >= 1 and not skip_user_step:
-            self._user_first_half_step()
-        if turn >= 2 and not skip_user_step:
-            user_action, _ = self.user._take_action()
-            self.user.action = user_action
-            # self.broadcast_action("user", user_action)
-            self._user_second_half_step(user_action)
-        if turn >= 3:
-            self._assistant_first_half_step()
+        if start_at <= go_to:
+            if go_to >= 1 and start_at <= 1:
+                self._user_first_half_step()
+            if go_to >= 2 and start_at <= 2:
+                user_action, _ = self.user.take_action(increment_turn=False)
+                self.user.action = user_action
+                self._user_second_half_step(user_action)
+            if go_to >= 3 and start_at <= 3:
+                self._assistant_first_half_step()
+        else:
+            raise ValueError(
+                f"start_at ({start_at}) can not be after go_to ({go_to}). You can likely use a combination of reset and step to achieve what you are looking for"
+            )
 
         return self.game_state
 
-    def step(self, user_action=None, assistant_action=None, go_to_turn=None, **kwargs):
+    def quarter_step(self, user_action=None, assistant_action=None, **kwargs):
+        return self.step(
+            user_action=user_action,
+            assistant_action=assistant_action,
+            go_to=(int(self.turn_number) + 1) % 4,
+        )
+
+    def step(self, user_action=None, assistant_action=None, go_to=None, **kwargs):
         """Play a round
 
-        Play a round of the game. A round consists in 4 turns. If go_to_turn is not None, the round is only played until that turn.
+        Play a round of the game. A round consists in 4 turns. If go_to is not None, the round is only played until that turn.
         If a user action and assistant action are passed as arguments, then these are used as actions to play the round. Otherwise, these actions are sampled from each agent's policy.
 
         :param user action: user action
         :type: any
         :param assistant action: assistant action
         :type: any
-        :param go_to_turn: turn at which round stops, defaults to None
-        :type go_to_turn: int, optional
+        :param go_to: turn at which round stops, defaults to None
+        :type go_to: int, optional
         :return: gamestate, reward, game finished flag
         :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, collections.OrderedDict, boolean)
         """
 
-        if go_to_turn is None:
-            go_to_turn = self.turn_number.squeeze().tolist()
+        if go_to is None:
+            go_to = int(self.turn_number)
+
+        if not isinstance(go_to, (numpy.integer, int)):
+            go_to = self.turn_dict[go_to]
 
         _started = False
         rewards = {}
@@ -253,7 +296,7 @@ class _Bundle:
         rewards["assistant_policy_reward"] = 0
         rewards["second_task_reward"] = 0
 
-        while self.turn_number != go_to_turn or (not _started):
+        while self.turn_number != go_to or (not _started):
 
             _started = True
             # User observes and infers
@@ -270,7 +313,9 @@ class _Bundle:
             # User takes action and receives reward from task
             elif self.turn_number == 1 and "no-user" != self.kwargs.get("name"):
                 if user_action is None:
-                    user_action, user_policy_reward = self.user._take_action()
+                    user_action, user_policy_reward = self.user.take_action(
+                        increment_turn=False
+                    )
                 else:
                     self.user.action = user_action
                     user_policy_reward = 0
@@ -301,7 +346,7 @@ class _Bundle:
                     (
                         assistant_action,
                         assistant_policy_reward,
-                    ) = self.assistant._take_action()
+                    ) = self.assistant.take_action(increment_turn=False)
                 else:
                     self.assistant.action = assistant_action
                     assistant_policy_reward = 0
@@ -465,10 +510,7 @@ class _Bundle:
         """
 
         # Play user's turn in the task
-        task_state, task_reward, is_done = self.task.base_user_step(user_action)
-
-        # update task state (likely not needed, remove ?)
-        self.broadcast_state("user", "task_state", task_state)
+        task_state, task_reward, is_done = self.task.base_on_user_action(user_action)
 
         return task_reward, is_done
 
@@ -498,19 +540,16 @@ class _Bundle:
         :return: task reward, task done?
         :rtype: tuple(float, boolean)
         """
-        # update action_state
 
         # Play assistant's turn in the task
 
-        task_state, task_reward, is_done = self.task.base_assistant_step(
+        task_state, task_reward, is_done = self.task.base_on_assistant_action(
             assistant_action
         )
-        # update task state
-        self.broadcast_state("assistant", "task_state", task_state)
 
         return task_reward, is_done
 
-    def _user_step(self, *args):
+    def _on_user_action(self, *args):
         """Turns 1 and 2
 
         :param \*args: either provide the user action or not. If no action is provided the action is determined by the agent's policy using sample()
@@ -524,9 +563,10 @@ class _Bundle:
             user_action = args[0]
         except IndexError:
             # else sample from policy
-            user_action, user_policy_reward = self.user.take_action()
+            user_action, user_policy_reward = self.user.take_action(
+                increment_turn=False
+            )
 
-        # self.broadcast_action("user", user_action)
         self.user.action = user_action
 
         task_reward, is_done = self._user_second_half_step(user_action)
@@ -539,7 +579,7 @@ class _Bundle:
             is_done,
         )
 
-    def _assistant_step(self, *args):
+    def _on_assistant_action(self, *args):
         """Turns 3 and 4
 
         :param \*args: either provide the assistant action or not. If no action is provided the action is determined by the agent's policy using sample()
@@ -560,9 +600,8 @@ class _Bundle:
             (
                 assistant_action,
                 assistant_policy_reward,
-            ) = self.assistant.take_action()
+            ) = self.assistant.take_action(increment_turn=False)
 
-        # self.broadcast_action("assistant", assistant_action)
         self.assistant.action = assistant_action
 
         task_reward, is_done = self._assistant_second_half_step(assistant_action)
@@ -573,40 +612,3 @@ class _Bundle:
             task_reward,
             is_done,
         )
-
-    def broadcast_state(self, role, state_key, state):
-        """broadcast state
-
-        Broadcast a state value to the gamestate and update the agent's observation.
-
-        :param role: "user" or "assistant"
-        :type role: string
-        :param state_key: state key in gamestate
-        :type state_key: string
-        :param state: new state value
-        :type state: :py:class:`State<coopihc.base.State.State>`
-        """
-        self.game_state[state_key] = state
-        getattr(self, role).observation[state_key] = state
-
-    # def broadcast_action(self, role, action):
-    #     """broadcast action
-
-    #     Broadcast an action to the gamestate and update the agent's policy.
-
-    #     :param role: "user" or "assistant"
-    #     :type role: string
-    #     :param action: action
-    #     :type action: Any
-    #     """
-    #     agent = getattr(self, role)
-    #     for label, _action in zip(
-    #         actionstate, action
-    #     ):  # iterate over dict === iter over labels
-    #         actionstate[label][:] = _action.view(numpy.ndarray)
-    #         try:
-    #             getattr(self, role).observation["{}_action".format(role)][
-    #                 label
-    #             ] = _action
-    #         except AttributeError:
-    #             pass
