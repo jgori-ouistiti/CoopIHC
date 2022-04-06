@@ -12,7 +12,10 @@ import pytest
 
 
 # [start-define-bundle]
-from coopihczoo import SimplePointingTask, ConstantCDGain, CarefulPointer
+from coopihc.examples.simplepointing.envs import SimplePointingTask
+from coopihc.examples.simplepointing.users import CarefulPointer
+from coopihc.examples.simplepointing.assistants import ConstantCDGain
+
 
 task = SimplePointingTask(gridsize=31, number_of_targets=8)
 unitcdgain = ConstantCDGain(1)
@@ -102,7 +105,6 @@ modified_env = NormalizeActionWrapper(modified_env)
 
 # >>> print(modified_env.observation_space)
 # Box(0.0, 30.0, (2,), float32)
-exit()
 
 check_env(modified_env, warn=True)
 # >>> modified_env.reset()

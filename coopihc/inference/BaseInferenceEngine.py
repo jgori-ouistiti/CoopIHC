@@ -18,6 +18,19 @@ class BaseInferenceEngine:
         self.buffer_depth = buffer_depth
         self.render_flag = None
         self.ax = None
+        self._host = None
+
+    @property
+    def host(self):
+        return self._host
+
+    @host.setter
+    def host(self, value):
+        self._host = value
+
+    @property
+    def role(self):
+        return self.host.role
 
     def __content__(self):
         """__content__

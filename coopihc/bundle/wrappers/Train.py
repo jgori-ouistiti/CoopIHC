@@ -104,12 +104,29 @@ class TrainGym(gym.Env):
         # ----- Init Action space -------
         action_dict = OrderedDict({})
         if self.train_user:
-            for i, _action in enumerate(self.bundle.user.action):
-                action_dict.update({f"user_action_{i}": self.convert_space(_action)})
-        if self.train_assistant:
-            for i, _action in enumerate(self.bundle.assistant.action):
+            try:
+                for i, _action in enumerate(self.bundle.user.action):
+                    action_dict.update(
+                        {f"user_action_{i}": self.convert_space(_action)}
+                    )
+            except TypeError:  # Catch single actions
                 action_dict.update(
-                    {f"assistant_action_{i}": self.convert_space(_action)}
+                    {f"user_action": self.convert_space(self.bundle.user.action)}
+                )
+
+        if self.train_assistant:
+            try:
+                for i, _action in enumerate(self.bundle.assistant.action):
+                    action_dict.update(
+                        {f"assistant_action_{i}": self.convert_space(_action)}
+                    )
+            except TypeError:  # Catch single actions
+                action_dict.update(
+                    {
+                        f"assistant_action": self.convert_space(
+                            self.bundle.assistant.action
+                        )
+                    }
                 )
         return gym.spaces.Dict(action_dict)
 
@@ -120,7 +137,7 @@ class TrainGym(gym.Env):
 
 
         """
-        self.bundle.reset(turn=self.reset_turn)
+        self.bundle.reset(go_to=self.reset_turn)
         # ------- Init Observation space
 
         if self.train_user and self.train_assistant:
@@ -151,7 +168,7 @@ class TrainGym(gym.Env):
         return gym.spaces.Dict(observation_dict)
 
     def reset(self):
-        self.bundle.reset(dic=self.reset_dic, turn=self.reset_turn)
+        self.bundle.reset(dic=self.reset_dic, go_to=self.reset_turn)
         if self.train_user and self.train_assistant:
             raise NotImplementedError
         if self.train_user:

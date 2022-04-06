@@ -1,16 +1,20 @@
 import numpy
 from coopihc.agents.BaseAgent import BaseAgent
 from coopihc.base.State import State
-from coopihc.base.elements import discrete_array_element, array_element, cat_element
 from coopihc.base.elements import discrete_array_element, cat_element
 from coopihc.policy.BasePolicy import BasePolicy
+from coopihc.policy.DualPolicy import DualPolicy
 from coopihc.policy.ExamplePolicy import (
     CoordinatedPolicy,
     CoordinatedPolicyWithParams,
+    PseudoRandomPolicy,
 )
+from coopihc.inference.DualInferenceEngine import DualInferenceEngine
 from coopihc.inference.ExampleInferenceEngine import (
     CoordinatedInferenceEngine,
+    RolloutCoordinatedInferenceEngine,
 )
+from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 from coopihc.bundle.Bundle import Bundle
 import copy
 
@@ -99,3 +103,36 @@ class CoordinatedAssistantWithInference(BaseAgent):
     def finit(self):
         copy_task = copy.deepcopy(self.task)
         self.simulation_bundle = Bundle(task=copy_task, user=self.user_model)
+
+
+class CoordinatedAssistantWithRollout(BaseAgent):
+    def __init__(self, task_model, user_model, p, **kwargs):
+        state = State()
+        state["p0"] = discrete_array_element(init=0, low=0, high=9)
+        state["p1"] = discrete_array_element(init=p[0], low=0, high=9)
+        state["p2"] = discrete_array_element(init=p[1], low=0, high=9)
+
+        # Use default observation engine
+        inference_engine = DualInferenceEngine(
+            primary_inference_engine=RolloutCoordinatedInferenceEngine(
+                task_model, user_model, self
+            ),
+            dual_inference_engine=BaseInferenceEngine(),
+            primary_kwargs={},
+            dual_kwargs={},
+        )
+
+        policy = PseudoRandomPolicy(
+            action_state=State(
+                **{"action": discrete_array_element(init=0, low=0, high=9)}
+            )
+        )
+
+        super().__init__(
+            "assistant",
+            agent_state=state,
+            agent_policy=policy,
+            agent_observation_engine=None,
+            agent_inference_engine=inference_engine,
+            **kwargs
+        )

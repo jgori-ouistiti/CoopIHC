@@ -82,7 +82,8 @@ class BaseAgent:
     ):
 
         # Bundles stuff
-        self.bundle = None
+        self._bundle = None
+        self._bundle_memory = None
         self.ax = None
 
         # Set role of agent
@@ -172,6 +173,29 @@ class BaseAgent:
             "Inference Engine": self.inference_engine.__content__(),
             "Policy": self.policy.__content__(),
         }
+
+    @property
+    def bundle(self):
+        return self._bundle
+
+    @bundle.setter
+    def bundle(self, value):
+        if type(value).__name__ == "Simulator":
+            self.bundle_memory = copy.copy(self._bundle)
+        self._bundle = value
+
+    @property
+    def bundle_memory(self):
+        return self._bundle_memory
+
+    @bundle_memory.setter
+    def bundle_memory(self, value):
+        if type(value).__name__ == "Simulator":
+            return
+        self._bundle_memory = value
+
+    def _simulator_close(self):
+        self._bundle = self._bundle_memory
 
     @property
     def policy(self):
@@ -380,7 +404,12 @@ class BaseAgent:
             elif value is None:
                 continue
             else:
-                raise NotImplementedError
+                try:
+                    self.state[key][
+                        ...
+                    ] = value  # Give StateElement's preprocessvalues method a chance
+                except:
+                    raise NotImplementedError
 
     def reset(self):
         """reset the agent --- Override this

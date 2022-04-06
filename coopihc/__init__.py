@@ -76,3 +76,8 @@ from .observation.utils import blind_engine_specification
 from .observation.utils import base_task_engine_specification
 from .observation.utils import base_user_engine_specification
 from .observation.utils import base_assistant_engine_specification
+
+# ---------------------- pointing examples
+from .examples.simplepointing.envs import SimplePointingTask
+from .examples.simplepointing.users import CarefulPointer
+from .examples.simplepointing.assistants import ConstantCDGain
