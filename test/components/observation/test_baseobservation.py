@@ -53,7 +53,7 @@ def test_methods():
 
 def can_be_subclassed_without_overrides():
     """Returns True if trying to subclass an Interactionobseng with
-    only overrides for user_step, assistant_step and reset succeeds."""
+    only overrides for on_user_action, on_assistant_action and reset succeeds."""
     MinimalEngine()
     return True
 

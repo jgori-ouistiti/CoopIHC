@@ -1,8 +1,8 @@
-from coopihc.bundle._Bundle import _Bundle
+from coopihc.bundle.BaseBundle import BaseBundle
 import time
 
 
-class PipedTaskBundleWrapper(_Bundle):
+class PipedTaskBundleWrapper(BaseBundle):
     """PipedTaskBundleWrapper
 
     Wrap a Bundle so that its task gets replaced by a version of the task which emits messages via a pipe.

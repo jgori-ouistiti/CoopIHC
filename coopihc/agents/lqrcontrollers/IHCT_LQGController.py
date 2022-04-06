@@ -127,8 +127,8 @@ class IHCT_LQGController(BaseAgent):
                 super().__init__(*args, **kwargs)
                 self.R = R
 
-            def sample(self, observation=None):
-                action, _ = super().sample(observation=observation)
+            def sample(self, agent_observation=None, agent_state=None):
+                action, _ = super().sample(agent_observation=agent_observation)
                 return (
                     action,
                     (action.T @ self.R @ action).squeeze().tolist(),

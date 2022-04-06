@@ -1,0 +1,165 @@
+\documentclass[tikz, crop, border = 20pt, dvipsnames]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{lmodern}
+\usepackage[left=3cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+
+\usepackage{tgtermes}
+
+
+\usetikzlibrary{shapes}
+\usetikzlibrary{arrows}
+\usetikzlibrary{fit, backgrounds}
+\usetikzlibrary{calc}
+\usetikzlibrary{intersections}
+\usetikzlibrary{positioning}
+\tikzset{
+  basic box/.style = {
+    shape = rectangle with rounded corners,
+    align = center,
+    draw  = #1,
+    fill  = #1!70!black,
+    % rounded corners,
+	text width = 2.5cm,
+	minimum width = 2.5cm,
+	minimum height = 1cm,
+	text centered},
+  basic arrow/.style = {
+	  -latex,
+	  ultra thick
+  },
+  special arrow/.style = {
+	  -latex,
+	  ultra thick,
+	  draw = #1,
+  },
+  observation arrow/.style = {
+	  -latex,
+	  thick,
+	  draw = #1,
+  }
+}
+\definecolor{taskcolor}{RGB}{153,153,51}
+\definecolor{statecolor}{RGB}{204,102,119}
+\definecolor{policycolor}{RGB}{68,170,153}
+\definecolor{userobservationenginecolor}{RGB}{136,204,238}
+\definecolor{inferenceenginecolor}{RGB}{17,119,51}
+\definecolor{assistantobservationenginecolor}{RGB}{170,68,153}
+% # ========== colors
+\newcommand{\taskcolor}{taskcolor}
+\newcommand{\statecolor}{statecolor}
+\newcommand{\policycolor}{policycolor}
+\newcommand{\userobservationenginecolor}{userobservationenginecolor}
+\newcommand{\inferenceenginecolor}{inferenceenginecolor}
+\newcommand{\assistantobservationenginecolor}{assistantobservationenginecolor}
+
+% # =========== positioning
+\newcommand{\x}{4}
+\newcommand{\y}{1.5}
+\newcommand{\xcomponentspacing}{2}
+\newcommand{\ycomponentspacing}{1.5}
+
+\begin{document}
+
+\pgfdeclarelayer{background}
+\pgfdeclarelayer{middleground}
+\pgfsetlayers{background,middleground,main}
+
+\input{roundedwithrectangles.tex}
+
+\begin{tikzpicture}
+
+	% # ========== Task ==========
+	\draw (0,0) node[name=origin]{};
+	\draw ($(origin) + (0,2)$) node[name = task_state, minimum height = 1cm, basic box = \taskcolor]{Task State};
+	\begin{pgfonlayer}{background}
+        \node[inner sep=15pt, fit = (task_state), fill = \taskcolor, draw = black, rounded corners] (fit-task) {};
+		\draw (fit-task.north) node[above]{\textbf{Task}};
+    \end{pgfonlayer}
+	% ------------ arrow assistant
+	\draw[basic arrow] (task_state.before north west) .. controls ($(task_state.west) + (-2,2)$) and ($(task_state.west) + (-2,-2)$) .. ( task_state.after south west) node[pos=.5, name = task_assistant_code_node]{}  node[pos = .75, left, name = task_assistant_arrow]{};
+	\draw (task_assistant_code_node.north)  node[left=1mm , name = task_assistant_code, rounded corners, draw = \taskcolor, fill = white] {\footnotesize \texttt{task.on\textunderscore assistant\textunderscore action(action)}};
+	% ------------ arrow user
+	\draw[basic arrow] (task_state.after north east) .. controls ($(task_state.east) + (2,2)$) and ($(task_state.east) + (2,-2)$) .. ( task_state.before south east) node[pos=.5, name = task_user_code_node]{} node[pos = .75, name = task_user_arrow]{};
+	\draw (task_user_code_node.north)  node[right=1mm , name = task_user_code, rounded corners, draw = \taskcolor, fill = white] {\footnotesize \texttt{task.on\textunderscore user\textunderscore action(action)}};
+	% # ========== User ==========
+	% ------------- State ---------
+	\draw ($(origin) + (1*\x,-1*\y)$) node[name = user_state, basic box = \statecolor]{State};
+	% ------------- Observation ---------
+	\draw (user_state.south) + (0,-.5*\ycomponentspacing) node[name = user_observation, below,basic box = \userobservationenginecolor]{Observation Engine};
+	\draw (user_observation.south)  node[below, name = user_observation_code, rounded corners, draw = \userobservationenginecolor, fill = white] {\footnotesize \texttt{user.observe(**state)}};
+	% -------------- Policy ------------
+	\draw (user_state.east) + (2*\xcomponentspacing,0) node[name = user_policy, basic box = \policycolor]{Policy};
+	\draw (user_policy.north)  node[above, name = user_policy_code, rounded corners, draw = \policycolor, fill = white] {\footnotesize \texttt{user.take\textunderscore action(observation, state)}};
+	% --------------- Inference ------------
+	\draw (user_policy.south) + (0,-.5*\ycomponentspacing) node[name = user_inference, below, basic box = \inferenceenginecolor]{Inference Engine};
+	\draw (user_inference.south)  node[below, name = user_inference_code, rounded corners, draw = \inferenceenginecolor, fill = white] {\footnotesize \texttt{user.infer(observation)}};
+
+
+
+	\begin{pgfonlayer}{background}
+        \node[fit = (user_state) (user_policy) (user_observation) (user_inference) (user_policy_code) (user_observation_code) (user_inference_code), fill = yellow!20, draw = yellow!50!black, rounded corners] (fit-user) {};
+		\draw (fit-user.north) node[above]{\textbf{User}};
+    \end{pgfonlayer}
+	\draw[basic arrow, name = user_inference_state_arrow] (user_inference) -- (user_state);
+	\draw[basic arrow, name = user_observation_inference_arrow] (user_observation) -- (user_inference);
+	\draw[basic arrow, name = user_oservation_policy_arrow] (user_observation) -- (user_policy);
+	\draw[basic arrow, name = user_state_policy_arrow] (user_state) -- (user_policy);
+
+	% # ========== Assistant ==========
+	% ------------- State ---------
+	\draw ($(origin) + (-1*\x,-1*\y)$) node[name = assistant_state, basic box = \statecolor]{State};
+	% ------------- Observation ---------
+	\draw (assistant_state.south) + (0,-.5*\ycomponentspacing) node[name = assistant_observation, below,basic box = \assistantobservationenginecolor]{Observation Engine};
+	\draw (assistant_observation.south)  node[below, name = assistant_observation_code, rounded corners, draw = \assistantobservationenginecolor, fill = white] {\footnotesize \texttt{assistant.observe(**state)}};
+	% -------------- Policy ------------
+	\draw (assistant_state.west) + (-2*\xcomponentspacing,0) node[name = assistant_policy, basic box = \policycolor]{Policy};
+	\draw (assistant_policy.north)  node[above, name = assistant_policy_code, rounded corners, draw = \policycolor, fill = white] {\footnotesize \texttt{assistant.take\textunderscore action(observation, state)}};
+	% --------------- Inference ------------
+	\draw (assistant_policy.south) + (0,-.5*\ycomponentspacing ) node[name = assistant_inference, below, basic box = \inferenceenginecolor]{Inference Engine};
+	\draw (assistant_inference.south)  node[below, name = assistant_inference_code, rounded corners, draw = \inferenceenginecolor, fill = white] {\footnotesize \texttt{assistant.infer(observation)}};
+
+
+
+	\begin{pgfonlayer}{background}
+        \node[fit = (assistant_state) (assistant_policy) (assistant_observation) (assistant_inference) (assistant_policy_code) (assistant_observation_code) (assistant_inference_code), fill = yellow!20, draw = yellow!50!black, rounded corners] (fit-assistant) {};
+		\draw (fit-assistant.north) node[above]{\textbf{Assistant}};
+    \end{pgfonlayer}
+	\draw[basic arrow, name = assistant_inference_state_arrow] (assistant_inference) -- (assistant_state);
+	\draw[basic arrow, name = assistant_observation_inference_arrow] (assistant_observation) -- (assistant_inference);
+	\draw[basic arrow, name = assistant_oservation_policy_arrow] (assistant_observation) -- (assistant_policy);
+	\draw[basic arrow, name = assistant_state_policy_arrow] (assistant_state) -- (assistant_policy);
+
+
+	% # ========= Special arrows
+	\draw[special arrow = \policycolor] (assistant_policy_code.north)  to[out = 90, in = 180] node[name = assistant_action, midway, above, sloped, \policycolor]{\textbf{Action}} (task_assistant_code.west) ;
+	\draw[special arrow = \policycolor] (user_policy_code.north)  to[out = 90, in = 0] node[name = user_action, midway, above , sloped, \policycolor]{\textbf{Action}} (task_user_code.east) ;
+
+	% # ========== Observation arrows
+	% ------------ User
+	\begin{pgfonlayer}{middleground}
+        \draw[observation arrow = \userobservationenginecolor] (task_state) to [out = 270, in = 180] (user_observation);
+		\draw[observation arrow = \userobservationenginecolor] (user_state) to [out = 180, in = 180] (user_observation);
+		\draw[observation arrow = \userobservationenginecolor] (assistant_action) to [out = 0, in = 180] (user_observation);
+		\draw[observation arrow = \userobservationenginecolor] (user_action) to [out = 180, in = 180] (user_observation);
+		\draw[observation arrow = \userobservationenginecolor] (assistant_state) to [out = 0, in = 180] (user_observation);
+    \end{pgfonlayer}
+	% ------------ Assistant
+	\begin{pgfonlayer}{middleground}
+        \draw[observation arrow = \assistantobservationenginecolor] (task_state) to [out = 270, in = 0] (assistant_observation);
+		\draw[observation arrow = \assistantobservationenginecolor] (user_state) to [out = 180, in = 0] (assistant_observation);
+		\draw[observation arrow = \assistantobservationenginecolor] (assistant_action) to [out = 0, in = 0] (assistant_observation);
+		\draw[observation arrow = \assistantobservationenginecolor] (user_action) to [out = 180, in = 0] (assistant_observation);
+		\draw[observation arrow = \assistantobservationenginecolor] (assistant_state) to [out = 0, in = 0] (assistant_observation);
+    \end{pgfonlayer}
+	
+
+
+\end{tikzpicture}
+
+\end{document}

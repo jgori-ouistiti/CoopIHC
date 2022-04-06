@@ -12,10 +12,10 @@ import pytest
 class MinimalTask(InteractionTask):
     """Non-functional minimal subclass to use in tests."""
 
-    def user_step(self):
+    def on_user_action(self):
         pass
 
-    def assistant_step(self):
+    def on_assistant_action(self):
         pass
 
     def reset(self, dic=None):
@@ -110,10 +110,7 @@ def test_properties():
     assert hasattr(task, "timestep")
     assert hasattr(task, "ax")
     # Property functions
-    # assert hasattr(task, "turn_number") # Only available with bundle
     assert hasattr(task, "state")
-    assert hasattr(task, "user_action")
-    assert hasattr(task, "assistant_action")
 
 
 def test_methods():
@@ -121,10 +118,10 @@ def test_methods():
     task = MinimalTask()
     # Public methods
     assert hasattr(task, "finit")
-    assert hasattr(task, "base_user_step")
-    assert hasattr(task, "base_assistant_step")
-    assert hasattr(task, "user_step")
-    assert hasattr(task, "assistant_step")
+    assert hasattr(task, "base_on_user_action")
+    assert hasattr(task, "base_on_assistant_action")
+    assert hasattr(task, "on_user_action")
+    assert hasattr(task, "on_assistant_action")
     assert hasattr(task, "reset")
     assert hasattr(task, "render")
     # Private methods
@@ -134,7 +131,7 @@ def test_methods():
 
 def can_be_subclassed_with_minimal_overrides():
     """Returns True if trying to subclass an InteractionTask with
-    only overrides for user_step, assistant_step and reset succeeds."""
+    only overrides for on_user_action, on_assistant_action and reset succeeds."""
     MinimalTask()
     return True
 
@@ -142,7 +139,7 @@ def can_be_subclassed_with_minimal_overrides():
 def cant_be_subclassed_without_necessary_overrides():
     """Returns True if trying to subclass an InteractionTask without
     the necessary method overrides fails."""
-    assert cant_be_subclassed_without_user_step()
+    assert cant_be_subclassed_without_on_user_action()
     assert cant_be_subclassed_without_assistent_step()
     assert cant_be_subclassed_without_reset()
     return True
@@ -153,10 +150,10 @@ def cant_be_subclassed_without_reset():
     a reset method override fails."""
 
     class TaskWithoutReset(InteractionTask):
-        def assistant_step(self):
+        def on_assistant_action(self):
             pass
 
-        def user_step(self):
+        def on_user_action(self):
             pass
 
     try:
@@ -165,12 +162,12 @@ def cant_be_subclassed_without_reset():
         return True
 
 
-def cant_be_subclassed_without_user_step():
+def cant_be_subclassed_without_on_user_action():
     """Returns True if trying to subclass an InteractionTask without
-    a user_step method override fails."""
+    a on_user_action method override fails."""
 
     class TaskWithoutAsssistentStep(InteractionTask):
-        def assistant_step(self):
+        def on_assistant_action(self):
             pass
 
         def reset(self):
@@ -187,7 +184,7 @@ def cant_be_subclassed_without_assistent_step():
     an assistent_step method override fails."""
 
     class TaskWithoutUserStep(InteractionTask):
-        def user_step(self):
+        def on_user_action(self):
             pass
 
         def reset(self):

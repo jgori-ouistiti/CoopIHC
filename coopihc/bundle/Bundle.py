@@ -1,11 +1,11 @@
-from coopihc.bundle._Bundle import _Bundle
+from coopihc.bundle.BaseBundle import BaseBundle
 from coopihc.agents.BaseAgent import BaseAgent
 
 
-class Bundle(_Bundle):
+class Bundle(BaseBundle):
     """Bundle
 
-    Modifies the interface of the _Bundle class.
+    Modifies the interface of the BaseBundle class.
 
     A bundle combines a task with a user and an assistant. The bundle creates the ``game_state`` by combining the task, user and assistant states with the turn index and both agent's actions.
 

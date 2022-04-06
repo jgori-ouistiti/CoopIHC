@@ -17,7 +17,7 @@ assistant = CoordinatedAssistant(user_model=user_model)
 
 bundle = Bundle(task=CoordinatedTask(), user=user, assistant=assistant)
 
-bundle.reset(turn=3)
+bundle.reset(go_to=3)
 print(bundle.game_state)
 while True:
     obs, rewards, is_done = bundle.step()
@@ -33,7 +33,7 @@ assistant = CoordinatedAssistant(user_model=user_model)
 
 bundle = Bundle(task=CoordinatedTask(), user=user, assistant=assistant)
 
-bundle.reset(turn=3)
+bundle.reset(go_to=3)
 print(bundle.game_state)
 while True:
     obs, rewards, is_done = bundle.step()
@@ -50,12 +50,12 @@ while True:
 
 # bundle = Bundle(task=CoordinatedTask(), user=user, assistant=assistant)
 
-# bundle.reset(turn=2)
-# print(bundle.game_state)
-# while True:
-#     obs, rewards, is_done = bundle.step()
-#     if is_done:
-#         break
+bundle.reset(go_to=2)
+print(bundle.game_state)
+while True:
+    obs, rewards, is_done = bundle.step()
+    if is_done:
+        break
 # [end-user-model-inference]
 
 

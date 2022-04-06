@@ -35,10 +35,10 @@
 #     assert (x[1:] == numpy.zeros(x[1:].shape)).all()
 
 
-# def test_user_step():
+# def test_on_user_action():
 #     u = array_element(init=1, low=-1, high=1)
 #     old_x = copy.copy(task.state["x"])
-#     new_state, reward, is_done = task.user_step(user_action=u)
+#     new_state, reward, is_done = task.on_user_action(user_action=u)
 #     assert (new_state["x"] == old_x + numpy.array([1, 1])).all()
 
 
@@ -46,7 +46,7 @@
 #     test_init_no_kwargs()
 #     test_finit_no_kwargs()
 #     test_reset_no_kwargs()
-#     test_user_step()
+#     test_on_user_action()
 
 
 # def test_init_no_kwargs_A():
@@ -60,16 +60,16 @@
 #     task.state["x"][...] = numpy.array([1, 1])
 
 
-# def test_user_step_A():
+# def test_on_user_action_A():
 #     u = array_element(init=1, low=-1, high=1)
 #     old_x = copy.copy(task.state["x"])
-#     new_state, reward, is_done = task.user_step(user_action=u)
+#     new_state, reward, is_done = task.on_user_action(user_action=u)
 #     assert (new_state["x"] == numpy.full((2, 2), 1) @ old_x + numpy.array([1, 1])).all()
 
 
 # def test_no_kwargs_A():
 #     test_init_no_kwargs_A()
-#     test_user_step_A()
+#     test_on_user_action_A()
 
 
 # def test_noise_F():
@@ -87,7 +87,7 @@
 #     noise_sample = []
 #     for i in range(10000):
 #         task.state["x"][:] = numpy.array([1, 1])
-#         new_state, reward, is_done = task.user_step(user_action=u)
+#         new_state, reward, is_done = task.on_user_action(user_action=u)
 #         noise_sample.append(new_state["x"].tolist() - 3)
 
 #     mean = numpy.mean(numpy.array(noise_sample))
@@ -119,7 +119,7 @@
 #     noise_sample = []
 #     for i in range(1000):
 #         task.state["x"][...] = numpy.array([1, 1])
-#         new_state, reward, is_done = task.user_step(user_action=u)
+#         new_state, reward, is_done = task.on_user_action(user_action=u)
 #         noise_sample.append(new_state["x"].tolist() - 3)
 
 #     mean = numpy.mean(numpy.array(noise_sample))

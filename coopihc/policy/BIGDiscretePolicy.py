@@ -208,7 +208,7 @@ class BIGDiscretePolicy(BasePolicy):
         action.reverse(), _IG.reverse()
         return action, _IG
 
-    def sample(self, observation=None):
+    def sample(self, agent_observation=None, agent_state=None):
         """sample
 
         Choose action (select the action with highest expected information gain)

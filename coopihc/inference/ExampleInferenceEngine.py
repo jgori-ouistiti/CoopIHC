@@ -14,7 +14,7 @@ class ExampleInferenceEngine(BaseInferenceEngine):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def infer(self, agent_state=None):
+    def infer(self, agent_observation=None):
         """infer
 
         Do nothing. Same behavior as parent ``BaseInferenceEngine``
@@ -22,7 +22,7 @@ class ExampleInferenceEngine(BaseInferenceEngine):
         :return: (new internal state, reward)
         :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, float)
         """
-        if agent_state is None:
+        if agent_observation is None:
             agent_state = self.state
 
         reward = 0
@@ -52,7 +52,9 @@ class CoordinatedInferenceEngine(BaseInferenceEngine):
         # Parameter Inference is naive on purpose here
         while True:
             # Prediction using user model (can sample directly from the policy in this case, because it already does a single-shot prediction)
-            usermodel_action, _ = self.host.policy.sample(observation=self.observation)
+            usermodel_action, _ = self.host.take_action(
+                agent_observation=self.observation, agent_state=self.state
+            )
 
             # actual observation
             user_action = self.observation.user_action.action
@@ -119,8 +121,8 @@ class RolloutCoordinatedInferenceEngine(BaseInferenceEngine):
                 **{
                     "assistant_state": {
                         "p0": i,
-                        "p1": mem_state.p1[...],
-                        "p2": mem_state.p2[...],
+                        "p1": mem_state.p1,
+                        "p2": mem_state.p2,
                     }
                 },
             }
@@ -136,5 +138,5 @@ class RolloutCoordinatedInferenceEngine(BaseInferenceEngine):
         self.simulator.close()
 
         index = numpy.argmax(rew)
-        mem_state["p0"][...] = index
+        self.state["user_p0"] = index
         return mem_state, 0

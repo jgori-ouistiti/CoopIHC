@@ -24,7 +24,7 @@ action_state["action"] = discrete_array_element(low=-5, high=5)
 user = CarefulPointer(override_policy=(BasePolicy, {"action_state": action_state}))
 bundle = Bundle(task=task, user=user, assistant=unitcdgain)
 
-observation = bundle.reset(turn=1)
+observation = bundle.reset(go_to=1)
 
 
 # >>> print(observation)
@@ -102,7 +102,7 @@ modified_env = NormalizeActionWrapper(modified_env)
 
 # >>> print(modified_env.observation_space)
 # Box(0.0, 30.0, (2,), float32)
-
+exit()
 
 check_env(modified_env, warn=True)
 # >>> modified_env.reset()
@@ -168,7 +168,7 @@ def make_env():
             override_policy=(BasePolicy, {"action_state": action_state})
         )
         bundle = Bundle(task=task, user=user, assistant=unitcdgain)
-        observation = bundle.reset(turn=1)
+        observation = bundle.reset(go_to=1)
         env = TrainGym(
             bundle,
             train_user=True,

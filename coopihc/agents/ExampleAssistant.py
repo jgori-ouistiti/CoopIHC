@@ -72,7 +72,7 @@ class CoordinatedAssistant(BaseAgent):
         )
 
     def finit(self):
-        copy_task = copy.deepcopy(self.bundle.task)
+        copy_task = copy.deepcopy(self.task)
         self.simulation_bundle = Bundle(task=copy_task, user=self.user_model)
 
 
@@ -101,7 +101,7 @@ class CoordinatedAssistantWithInference(BaseAgent):
         )
 
     def finit(self):
-        copy_task = copy.deepcopy(self.bundle.task)
+        copy_task = copy.deepcopy(self.task)
         self.simulation_bundle = Bundle(task=copy_task, user=self.user_model)
 
 

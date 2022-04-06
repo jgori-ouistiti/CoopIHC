@@ -53,7 +53,7 @@ class ContinuousKalmanUpdate(BaseInferenceEngine):
         self.K_flag = True
         self.K = K
 
-    def infer(self):
+    def infer(self, agent_observation=None):
         """infer
 
         Infer the state based on the observation.
@@ -96,7 +96,7 @@ class ContinuousKalmanUpdate(BaseInferenceEngine):
             dy - self.C @ xhat * self.host.timestep
         )
         xhat += deltaxhat
-        state["xhat"][:] = xhat
+        state["xhat"] = xhat
 
         # Here, we use the classical definition of rewards in the LQG setup, but this requires having the true value of the state. This may or may not realistic...
         # ====================== Rewards ===============
