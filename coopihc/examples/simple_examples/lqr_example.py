@@ -17,7 +17,7 @@ Bc = numpy.array([0, 1]).reshape(2, 1)
 task = ClassicControlTask(0.002, Ac, Bc, discrete_dynamics=False)
 user = IHDT_LQRController("user", Q, R)
 bundle = Bundle(task=task, user=user)
-bundle.reset(turn=0)
+bundle.reset(go_to=0)
 bundle.playspeed = 0.01
 # bundle.render("plot")
 for i in range(1500):

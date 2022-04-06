@@ -30,6 +30,13 @@ class BaseBundle:
     :meta public:
     """
 
+    turn_dict = {
+        "after_assistant_action": 0,
+        "before_user_action": 1,
+        "after_user_action": 2,
+        "before_assistant_action": 3,
+    }
+
     def __init__(self, task, user, assistant, *args, **kwargs):
         self.kwargs = kwargs
         self.task = task
@@ -142,7 +149,7 @@ class BaseBundle:
 
     def reset(
         self,
-        turn=0,
+        go_to=0,
         start_at=0,
         task=True,
         user=True,
@@ -193,8 +200,10 @@ class BaseBundle:
         :rtype: :py:class:`State<coopihc.base.State.State>`
         """
         # ============= Passing via bundles
-        turn = self.kwargs.get("reset_turn", turn)
-        skip_user_action = self.kwargs.get("reset_skip_user_action", skip_user_action)
+        go_to = self.kwargs.get("reset_go_to", go_to)
+        # skip_user_action = self.kwargs.get("reset_skip_user_action", skip_user_action)
+        # if skip_user_action:
+        # start_at = 2
         random_reset = self.kwargs.get("random_reset", random_reset)
         # =============
 
@@ -221,19 +230,29 @@ class BaseBundle:
 
         self.round_number = 0
 
-        self.turn_number = turn
+        if not isinstance(go_to, (numpy.integer, int)):
+            go_to = self.turn_dict[go_to]
+        if not isinstance(start_at, (numpy.integer, int)):
+            start_at = self.turn_dict[start_at]
 
-        turn = max(turn, start_at)
-        if turn == 0 and start_at <= turn:
+        self.turn_number = go_to
+
+        # go_to = max(go_to, start_at)
+        if go_to == 0 and start_at == 0:
             return self.game_state
-        if turn >= 1 and start_at <= turn:
-            self._user_first_half_step()
-        if turn >= 2 and start_at <= turn:
-            user_action, _ = self.user.take_action()
-            self.user.action = user_action
-            self._user_second_half_step(user_action)
-        if turn >= 3 and start_at <= turn:
-            self._assistant_first_half_step()
+        if start_at <= go_to:
+            if go_to >= 1 and start_at <= 1:
+                self._user_first_half_step()
+            if go_to >= 2 and start_at <= 2:
+                user_action, _ = self.user.take_action(increment_turn=False)
+                self.user.action = user_action
+                self._user_second_half_step(user_action)
+            if go_to >= 3 and start_at <= 3:
+                self._assistant_first_half_step()
+        else:
+            raise ValueError(
+                f"start_at ({start_at}) can not be after go_to ({go_to}). You can likely use a combination of reset and step to achieve what you are looking for"
+            )
 
         return self.game_state
 
@@ -241,27 +260,30 @@ class BaseBundle:
         return self.step(
             user_action=user_action,
             assistant_action=assistant_action,
-            go_to_turn=self.turn + 1,
+            go_to=(int(self.turn_number) + 1) % 4,
         )
 
-    def step(self, user_action=None, assistant_action=None, go_to_turn=None, **kwargs):
+    def step(self, user_action=None, assistant_action=None, go_to=None, **kwargs):
         """Play a round
 
-        Play a round of the game. A round consists in 4 turns. If go_to_turn is not None, the round is only played until that turn.
+        Play a round of the game. A round consists in 4 turns. If go_to is not None, the round is only played until that turn.
         If a user action and assistant action are passed as arguments, then these are used as actions to play the round. Otherwise, these actions are sampled from each agent's policy.
 
         :param user action: user action
         :type: any
         :param assistant action: assistant action
         :type: any
-        :param go_to_turn: turn at which round stops, defaults to None
-        :type go_to_turn: int, optional
+        :param go_to: turn at which round stops, defaults to None
+        :type go_to: int, optional
         :return: gamestate, reward, game finished flag
         :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, collections.OrderedDict, boolean)
         """
 
-        if go_to_turn is None:
-            go_to_turn = self.turn_number.squeeze().tolist()
+        if go_to is None:
+            go_to = int(self.turn_number)
+
+        if not isinstance(go_to, (numpy.integer, int)):
+            go_to = self.turn_dict[go_to]
 
         _started = False
         rewards = {}
@@ -274,7 +296,7 @@ class BaseBundle:
         rewards["assistant_policy_reward"] = 0
         rewards["second_task_reward"] = 0
 
-        while self.turn_number != go_to_turn or (not _started):
+        while self.turn_number != go_to or (not _started):
 
             _started = True
             # User observes and infers
@@ -291,7 +313,9 @@ class BaseBundle:
             # User takes action and receives reward from task
             elif self.turn_number == 1 and "no-user" != self.kwargs.get("name"):
                 if user_action is None:
-                    user_action, user_policy_reward = self.user.take_action()
+                    user_action, user_policy_reward = self.user.take_action(
+                        increment_turn=False
+                    )
                 else:
                     self.user.action = user_action
                     user_policy_reward = 0
@@ -322,7 +346,7 @@ class BaseBundle:
                     (
                         assistant_action,
                         assistant_policy_reward,
-                    ) = self.assistant.take_action()
+                    ) = self.assistant.take_action(increment_turn=False)
                 else:
                     self.assistant.action = assistant_action
                     assistant_policy_reward = 0
@@ -539,7 +563,9 @@ class BaseBundle:
             user_action = args[0]
         except IndexError:
             # else sample from policy
-            user_action, user_policy_reward = self.user.take_action()
+            user_action, user_policy_reward = self.user.take_action(
+                increment_turn=False
+            )
 
         self.user.action = user_action
 
@@ -574,7 +600,7 @@ class BaseBundle:
             (
                 assistant_action,
                 assistant_policy_reward,
-            ) = self.assistant.take_action()
+            ) = self.assistant.take_action(increment_turn=False)
 
         self.assistant.action = assistant_action
 

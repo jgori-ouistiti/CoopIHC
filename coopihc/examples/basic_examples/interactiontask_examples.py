@@ -27,7 +27,7 @@ bundle = Bundle(
 )
 
 # Reset the task, plot the state.
-bundle.reset(turn=1)
+bundle.reset(go_to=1)
 bundle.step(1, 1)
 
 # Test simple input

@@ -421,7 +421,12 @@ class BaseAgent:
 
         pass
 
-    def take_action(self, agent_observation=None, agent_state=None):
+    def take_action(
+        self,
+        agent_observation=None,
+        agent_state=None,
+        increment_turn=True,
+    ):
         """Select an action
 
         Select an action based on agent_observation and agent_state, by querying the agent's policy. If either of these arguments is not provided, then the argument is deduced from the agent's internals.
@@ -430,9 +435,23 @@ class BaseAgent:
         :type agent_observation: :py:class:State<coopihc.base.State>, optional
         :param agent_state: current value of the agent's internal state, defaults to None. If None, gets the state from itself.
         :type agent_state: :py:class:State<coopihc.base.State>, optional
+        :param increment_turn: whether to update bundle's turn and round
+        :type increment_turn: bool, optional
 
         :meta public:
         """
+
+        try:
+            if increment_turn:
+                self.bundle.turn_number = (self.bundle.turn_number + 1) % 4
+                if self.bundle.turn_number == 0:
+                    self.bundle.round_number += 1
+        except AttributeError:  # Catch case where agent not linked to a bundle
+            if self.bundle is None:
+                pass
+            else:  # Re-raise exception
+                self.bundle.turn_number = (self.bundle.turn_number + 1) % 4
+
         return self.policy._base_sample(
             agent_observation=agent_observation, agent_state=agent_state
         )
@@ -537,7 +556,12 @@ class BaseAgent:
         return agent_obs_reward, agent_infer_reward
 
     def prepare_action(
-        self, affect_bundle=True, game_state=None, agent_observation=None, **kwargs
+        self,
+        affect_bundle=True,
+        game_state=None,
+        agent_observation=None,
+        increment_turn=True,
+        **kwargs,
     ):
         if self.bundle is not None:
             if self.bundle.turn_number != 0 and self.role == "user":
@@ -548,6 +572,9 @@ class BaseAgent:
                 raise RuntimeError(
                     f"You are preparing Assistant {self.__class__.__name__} to take an action, but the Bundle is at turn {self.bundle.turn_number} (should be 2) "
                 )
+
+            if increment_turn:
+                self.bundle.turn_number = (self.bundle.turn_number + 1) % 4
 
         if agent_observation is None:
             _agent_observation, agent_obs_reward = self.observe(

@@ -65,7 +65,7 @@ def test_init():
 def test_reset_turn0():
     global bundle
 
-    bundle.reset(turn=0)
+    bundle.reset(go_to=0)
 
     assert bundle.round_number == 0
     assert bundle.turn_number == 0
@@ -78,7 +78,7 @@ def test_reset_turn0():
 def test_reset_turn1():
     global bundle
 
-    bundle.reset(turn=1)
+    bundle.reset(go_to=1)
 
     assert bundle.round_number == 0
     assert bundle.turn_number == 1
@@ -91,7 +91,7 @@ def test_reset_turn1():
 def test_reset_turn2():
     global bundle
 
-    bundle.reset(turn=2)
+    bundle.reset(go_to=2)
 
     assert bundle.round_number == 0
     assert bundle.turn_number == 2
@@ -104,7 +104,7 @@ def test_reset_turn2():
 def test_reset_turn3():
     global bundle
 
-    bundle.reset(turn=3)
+    bundle.reset(go_to=3)
 
     assert bundle.round_number == 0
     assert bundle.turn_number == 3
@@ -114,17 +114,45 @@ def test_reset_turn3():
     assert bundle.assistant.inference_engine.buffer is not None
 
 
+def test_reset_turn2_to_3():
+    global bundle
+
+    bundle.reset(start_at=2, go_to=3)
+
+    assert bundle.round_number == 0
+    assert bundle.turn_number == 3
+    assert assert_action_states(bundle)
+    assert assert_agent_states(bundle)
+    assert bundle.user.inference_engine.buffer is None
+    assert bundle.assistant.inference_engine.buffer is not None
+
+
+def test_reset_string():
+    global bundle
+
+    bundle.reset(start_at="after_user_action", go_to="before_assistant_action")
+
+    assert bundle.round_number == 0
+    assert bundle.turn_number == 3
+    assert assert_action_states(bundle)
+    assert assert_agent_states(bundle)
+    assert bundle.user.inference_engine.buffer is None
+    assert bundle.assistant.inference_engine.buffer is not None
+
+
 def test_reset_turn():
     test_reset_turn0()
     test_reset_turn1()
     test_reset_turn2()
     test_reset_turn3()
+    test_reset_turn2_to_3()
+    test_reset_string()
 
 
 def test_multi_reset():
     global bundle
     for i in range(10):
-        state = bundle.reset(turn=0)
+        state = bundle.reset(go_to=0)
         assert bundle.round_number == 0
         assert bundle.turn_number == 0
         assert bundle.task.state["x"] == 0
@@ -214,13 +242,13 @@ def on_assistant_action(bundle, task_state_value):
 
 def test_step_both():
     global bundle
-    bundle.reset(turn=1)
+    bundle.reset(go_to=1)
     x = bundle.game_state["task_state"]["x"]
     assert null_step(bundle, x)
-    bundle.reset(turn=1)
+    bundle.reset(go_to=1)
     x = copy.copy(bundle.game_state["task_state"]["x"])
     assert on_user_action(bundle, x)
-    bundle.reset(turn=1)
+    bundle.reset(go_to=1)
     x = copy.copy(bundle.game_state["task_state"]["x"])
     assert on_assistant_action(bundle, x)
 
@@ -261,17 +289,17 @@ def on_user_action_useronly(bundle, task_state_value):
 
 def test_step_useronly():
     global bundle
-    bundle.reset(turn=1)
+    bundle.reset(go_to=1)
     x = bundle.game_state["task_state"]["x"].squeeze().tolist()
     assert null_step_useronly(bundle, x)
-    bundle.reset(turn=1)
+    bundle.reset(go_to=1)
     x = bundle.game_state["task_state"]["x"].squeeze().tolist()
     assert on_user_action_useronly(bundle, x)
 
 
 def test_multistep_both():
     global bundle
-    bundle.reset(turn=1)
+    bundle.reset(go_to=1)
     x = bundle.game_state["task_state"]["x"].squeeze().tolist()
     while True:
         state, rewards, is_done = bundle.step(user_action=1, assistant_action=0)
@@ -287,7 +315,7 @@ def test_multistep_both():
 
 def test_multistep_single():
     global bundle
-    bundle.reset(turn=1)
+    bundle.reset(go_to=1)
     x = bundle.game_state["task_state"]["x"].squeeze().tolist()
     while True:
         state, rewards, is_done = bundle.step(user_action=1)
@@ -305,7 +333,7 @@ def test_multistep_single():
 
 def test_multistep_none():
     global bundle
-    bundle.reset(turn=1)
+    bundle.reset(go_to=1)
     x = bundle.game_state["task_state"]["x"].squeeze().tolist()
     while True:
         state, rewards, is_done = bundle.step()
@@ -334,14 +362,14 @@ def test_multistep():
 def test_partial_round():
     global bundle
     for i in [1, 2, 3]:
-        bundle.reset(turn=0)
-        state, rewards, is_done = bundle.step(go_to_turn=i)
+        bundle.reset(go_to=0)
+        state, rewards, is_done = bundle.step(go_to=i)
         assert bundle.turn_number == i
         assert bundle.round_number == 0
 
     for i in [3, 0, 1]:
-        bundle.reset(turn=2)
-        state, rewards, is_done = bundle.step(go_to_turn=i)
+        bundle.reset(go_to=2)
+        state, rewards, is_done = bundle.step(go_to=i)
         assert bundle.turn_number == i
         if i >= 2:
             assert bundle.round_number == 0
@@ -349,11 +377,42 @@ def test_partial_round():
             assert bundle.round_number == 1
 
 
+def quarter_step():
+    global bundle
+    bundle.reset(go_to=0)
+    for i in range(4):
+        state, rewards, is_done = bundle.quarter_step()
+        assert bundle.turn_number == (i + 1) % 4
+        if i < 3:
+            assert bundle.round_number == 0
+        else:
+            assert bundle.round_number == 1
+
+
+def agent_step():
+    global bundle
+    bundle.reset(go_to=0)
+    bundle.user.prepare_action()
+    assert bundle.turn_number == 1
+    assert bundle.round_number == 0
+    bundle.user.take_action()
+    assert bundle.turn_number == 2
+    assert bundle.round_number == 0
+    bundle.assistant.prepare_action()
+    assert bundle.turn_number == 3
+    assert bundle.round_number == 0
+    bundle.assistant.take_action()
+    assert bundle.turn_number == 0
+    assert bundle.round_number == 1
+
+
 def test_step():
     test_step_both()
     test_step_useronly()
     test_multistep()
     test_partial_round()
+    quarter_step()
+    agent_step()
 
 
 if __name__ == "__main__":
