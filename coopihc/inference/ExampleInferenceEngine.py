@@ -45,9 +45,12 @@ class CoordinatedInferenceEngine(BaseInferenceEngine):
     def simulation_bundle(self):
         return self.host.simulation_bundle
 
-    def infer(self, agent_state=None):
-        if agent_state is None:
-            agent_state = self.state
+    def infer(self, agent_observation=None):
+
+        if agent_observation is None:
+            agent_observation = self.observation
+
+        agent_state = getattr(self.observation, f"{self.role}_state")
 
         # Parameter Inference is naive on purpose here
         while True:
@@ -91,17 +94,19 @@ class RolloutCoordinatedInferenceEngine(BaseInferenceEngine):
             )
         return self._simulator
 
-    def infer(self, agent_state=None):
+    def infer(self, agent_observation=None):
 
         if (
             self.__inference_count > 0
         ):  # If it is the first time there is inference, continue, else just perform a BaseInference. We can do this because we know the parameter p[0] will not evolve over time.
-            return super().infer(agent_state=agent_state)
+            return super().infer(agent_observation=agent_observation)
 
         self.__inference_count += 1
 
-        if agent_state is None:
-            agent_state = self.state
+        if agent_observation is None:
+            agent_observation = self.observation
+
+        agent_state = getattr(self.observation, f"{self.role}_state")
 
         mem_state = copy.deepcopy(
             agent_state
@@ -127,7 +132,7 @@ class RolloutCoordinatedInferenceEngine(BaseInferenceEngine):
                 },
             }
 
-            self.simulator.reset(turn=0, dic=reset_dic)
+            self.simulator.reset(go_to=0, dic=reset_dic)
             while True:
                 state, rewards, is_done = self.simulator.step()
                 rew[i] += sum(rewards.values())

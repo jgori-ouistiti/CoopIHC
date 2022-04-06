@@ -64,10 +64,14 @@ class DualInferenceEngine(BaseInferenceEngine):
         else:
             self.dual_engine.buffer = value
 
-    def infer(self, agent_state=None):
+    def infer(self, agent_observation=None):
         if self._mode == "primary":
-            state, primary_reward = self.primary_engine.infer(agent_state=agent_state)
+            state, primary_reward = self.primary_engine.infer(
+                agent_observation=agent_observation
+            )
             return state, primary_reward
         else:
-            state, dual_reward = self.dual_engine.infer(agent_state=agent_state)
+            state, dual_reward = self.dual_engine.infer(
+                agent_observation=agent_observation
+            )
             return state, dual_reward

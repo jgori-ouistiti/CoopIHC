@@ -28,6 +28,10 @@ class BaseInferenceEngine:
     def host(self, value):
         self._host = value
 
+    @property
+    def role(self):
+        return self.host.role
+
     def __content__(self):
         """__content__
 
