@@ -1,27 +1,6 @@
 .. interaction_model:
 
 
-Modif proposées:
-==================
-
-FIG 1///
-
-* bundle.state à la palce de  bundle.game_state
-* user.observe(\*\*bundle.state)
-* nom des méthodes dans la figure
-* numéroter 
-
-* bundle.step(user_observe=True, user_infer=True, …) 
-* infer(user_state) --> infer(observation)
-* bouger action // observation + step reflexive
-
-
-FIG3//
-* enlever fleche satte --> ibference
-* elever inference label
-
-
-
 The Interaction Model
 ======================
 This library builds on the idea that the successful interaction between a human and a computer is in many cases a problem of **cooperation**.
