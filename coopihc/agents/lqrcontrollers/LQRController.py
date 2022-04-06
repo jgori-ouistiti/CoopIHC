@@ -2,9 +2,8 @@ import numpy
 
 
 from coopihc.agents.BaseAgent import BaseAgent
-from coopihc.space.State import State
-from coopihc.space.StateElement import StateElement
-from coopihc.space.Space import Space
+from coopihc.base.State import State
+from coopihc.base.elements import discrete_array_element, array_element, cat_element
 from coopihc.policy.LinearFeedback import LinearFeedback
 from coopihc.observation.RuleObservationEngine import RuleObservationEngine
 from coopihc.observation.utils import base_task_engine_specification
@@ -53,12 +52,8 @@ class LQRController(BaseAgent):
 
         # ================== Policy ================
         action_state = State()
-        action_state["action"] = StateElement(
-            0,
-            Space(
-                [numpy.full((1, 1), -numpy.inf), numpy.full((1, 1), numpy.inf)],
-                "continuous",
-            ),
+        action_state["action"] = array_element(
+            low=numpy.full((1,), -numpy.inf), high=numpy.full((1,), numpy.inf)
         )
 
         agent_policy = LinearFeedback(

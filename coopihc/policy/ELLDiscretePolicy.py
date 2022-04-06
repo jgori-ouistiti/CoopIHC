@@ -1,6 +1,6 @@
 import numpy
 from coopihc.policy.BasePolicy import BasePolicy
-from coopihc.space.Space import Space
+from coopihc.base.Space import Space
 
 
 class BadlyDefinedLikelihoodError(Exception):
@@ -72,23 +72,23 @@ class ELLDiscretePolicy(BasePolicy):
         """
         self._bind(_function, "compute_likelihood")
 
-    def sample(self, observation=None):
+    def sample(self, agent_observation=None, agent_state=None):
         """sample from likelihood model.
 
         Select an action according to its probability as defined by the likelihood model. You can pass an observation as well, in which case the policy will not look up he actual observation but use the observation you passed. This is useful e.g. when debugging the policy.
 
         :param observation: if passed, this is the observation upon which action selection is based upon. Otherwise, the policy will look at the actual agent observation, defaults to None
-        :type observation: `State<coopihc.space.State.State>`, optional
+        :type observation: `State<coopihc.base.State.State>`, optional
         :return: action, reward
-        :rtype: tuple(`StateElement<coopihc.space.StateElement.StateElement>`, float)
+        :rtype: tuple(`StateElement<coopihc.base.StateElement.StateElement>`, float)
         """
 
-        if observation is None:
-            observation = self.host.inference_engine.buffer[-1]
-        actions, llh = self.forward_summary(observation)
+        if agent_observation is None:
+            agent_observation = self.observation
+        actions, llh = self.forward_summary(agent_observation)
         action = actions[self.rng.choice(len(llh), p=llh)]
-        self.action_state["action"][:] = action
-        return self.action_state["action"], 0
+
+        return action, 0
 
     def forward_summary(self, observation):
         """forward_summary
@@ -96,13 +96,13 @@ class ELLDiscretePolicy(BasePolicy):
         Compute the likelihood of each action, given the current observation
 
         :param observation: current agent observation
-        :type observation: `State<coopihc.space.State.State>`
+        :type observation: `State<coopihc.base.State.State>`
         :return: [description]
         :rtype: [type]
         """
         llh, actions = [], []
         action_stateelement = self.action_state["action"]
-        action_space = action_stateelement.spaces
+        action_space = action_stateelement.space
 
         for action in Space.cartesian_product(action_space)[0]:
             llh.append(self.compute_likelihood(action, observation))

@@ -2,22 +2,22 @@
 
 Policies
 ========================
+In *CoopIHC*, it is assumed that agents performed decisions (take actions) based on their observations as well as their internal state. There might also be a cost associated with selecting an action, for example, a physical cost associated with moving an item, or benefit, for example if having a large diversity of actions is rewarding. 
+
+
+*CoopIHC* provides a generic object called a policy wich specifies how actions are taken by the agent. To specify a new policy, you will usually subclass the ``BasePolicy``, although several predefined policies also exist.
 
 Subclassing BasePolicy
 -------------------------
 
 .. start-quickstart-policy
 
-You can define a new policy by subclassing the ``BasePolicy`` class and redefining its ``sample()`` method. Below, we show how ``ExamplePolicy`` is defined.
+To define a policy, simply subclass `:py:class:BasePolicy<coopihc.policy.BasePolicy>` and redefine its ``sample()`` method. Below, we show how ``ExamplePolicy`` has been defined.
 
 .. literalinclude:: ../../coopihc/policy/ExamplePolicy.py
     :linenos:
     :pyobject: ExamplePolicy
 
-
-.. note::
-
-    The action that is returned by the sample method has to be a valid ``StateElement``. To create such a ``StateElement``, you can directly call ``self.new_action`` inside the policy. This returns a valid ``StateElement`` without a value, which you can just fill in, as done in the example.
 
 .. note::
 
@@ -36,7 +36,7 @@ Explicit Likelihood Discrete (ELLD) Policy
 --------------------------------------------
 Explicit Likelihood Discrete (ELLD) Policy is used in cases where the agent model is straightforward enough to be specified by an analytical model.
 
-Below, we define a simple probabilistic model which assigns different probabilities to each possible discrete action. Note that this function signature is what *CoopIHC* expects to find: in most cases the model will depend on at least the observation and on the particular action.
+Below, we define a simple probabilistic model which assigns different probabilities to each possible discrete action.
 
 .. literalinclude:: ../../coopihc/examples/basic_examples/policy_examples.py
    :language: python
@@ -56,14 +56,14 @@ You can then define your policy and attach the model to it:
 
 BIGDiscretePolicy
 --------------------
-The Bayesian Information Gain Policy is a reimplementation of a technique introduced by Liu et al [1]_.
+The Bayesian Information Gain Policy is a reimplementation of BIGPoint introduced by Liu et al [1]_.
 
 The main ideas/assumptions are:
 
    * A user wants the task to go to some goal state :math:`\\Theta`
-   * The assistant can put the task in a number of states (X)
+   * The assistant can set the task in a number of states (X)
    * The user can perform a given set of action Y
-   * A model :math:`p(Y=y|X=X, \\Theta = \\theta)` exists for user behavior that is leveraged by the assistant. Note that this model is not necessarily correct.
+   * A model :math:`p(Y=y|X=X, \\Theta = \\theta)` exists for user behavior. This model is exploited by the assistant, and is not necessarily the true model.
 
 After the policy has been defined, make sure to call:
 
@@ -72,6 +72,10 @@ After the policy has been defined, make sure to call:
 
 
 You can find an example implementation in CoopIHC-Zoo's pointing module. Below are the important steps:
+
+.. warning::
+
+   Example outdated
 
 .. code-block:: python
 

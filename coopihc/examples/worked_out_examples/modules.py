@@ -23,15 +23,15 @@ class oldpositionMemorizedSimplePointingTask(SimplePointingTask):
         super().reset(dic=dic)
         self.state["oldposition"] = copy.deepcopy(self.state["position"])
 
-    def user_step(self, *args, **kwargs):
+    def on_user_action(self, *args, **kwargs):
         self.memorized = copy.deepcopy(self.state["position"])
-        obs, rewards, is_done, _doc = super().user_step(*args, **kwargs)
+        obs, rewards, is_done, _doc = super().on_user_action(*args, **kwargs)
         obs["oldposition"] = self.memorized
         return obs, rewards, is_done, _doc
 
-    def assistant_step(self, *args, **kwargs):
+    def on_assistant_action(self, *args, **kwargs):
         self.memorized = copy.deepcopy(self.state["position"])
-        obs, rewards, is_done, _doc = super().assistant_step(*args, **kwargs)
+        obs, rewards, is_done, _doc = super().on_assistant_action(*args, **kwargs)
         obs["oldposition"] = self.memorized
         return obs, rewards, is_done, _doc
 

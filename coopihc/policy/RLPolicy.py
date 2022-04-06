@@ -1,6 +1,6 @@
 import copy
 
-from coopihc.space.State import State
+from coopihc.base.State import State
 from coopihc.policy.BasePolicy import BasePolicy
 from coopihc.bundle.wrappers.Train import TrainGym
 
@@ -96,7 +96,7 @@ class RLPolicy(BasePolicy):
 
         super().__init__(*args, action_state=action_state, **kwargs)
 
-    def sample(self, observation=None):
+    def sample(self, agent_observation=None, agent_state=None):
         """sample
 
         Get action by using model.predict(deterministic = True), applying the necessary wrappers.
@@ -106,33 +106,28 @@ class RLPolicy(BasePolicy):
         :return: see ``BasePolicy``
         :rtype: see ``BasePolicy``
         """
-        if observation is None:
-            observation = self.observation
+        if agent_observation is None:
+            agent_observation = self.observation
 
         # convert observation via the Train class
-        observation = self.env._convertor.filter_gamestate(
-            observation, self.env.observation_mapping
-        )
+        agent_observation = self.env._convertor.filter_gamestate(agent_observation)
 
         # Apply observation Wrappers
+        env = self.env
         for w in self.obs_wraps:
-            observation = w.observation(w, observation)
+            agent_observation = w(env).observation(agent_observation)
+            env = w(env)
 
-        action = self.model.predict(observation, deterministic=True)[
+        action = self.model.predict(agent_observation, deterministic=True)[
             0
         ]  # with deterministic = True, don't sample from the Gaussian but just take its mean
 
         # Apply Action Wrappers
         for w in self.act_wraps:
-            action = w.action(w, action)
+            action = w(env).action(action)
+            env = w(env)
 
-        # convert action via the Train class
-        action = list(
-            self.env._convertor.adapt_discrete_and_multidiscrete_action(
-                action, self.env
-            ).values()
-        )
+        # action = list(action.values())
+        action = action.values()
 
-        new_action = self.new_action
-        new_action[:] = action
-        return new_action, 0
+        return action, 0

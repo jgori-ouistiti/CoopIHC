@@ -1,5 +1,6 @@
 .. interaction_model:
 
+
 The Interaction Model
 ======================
 This library builds on the idea that the successful interaction between a human and a computer is in many cases a problem of **cooperation**.

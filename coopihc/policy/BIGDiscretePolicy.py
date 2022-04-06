@@ -2,10 +2,11 @@ import copy
 import math
 import copy
 
-from coopihc.space.State import State
-from coopihc.space.Space import Space
+from coopihc.base.Space import Space
+from coopihc.base.State import State
 from coopihc.helpers import sort_two_lists
 from coopihc.policy.BasePolicy import BasePolicy
+
 
 import numpy
 
@@ -37,7 +38,7 @@ class BIGDiscretePolicy(BasePolicy):
     .. [1] Liu, Wanyu, et al. "Bignav: Bayesian information gain for guiding multiscale navigation." Proceedings of the 2017 CHI Conference on Human Factors in Computing Systems. 2017.
 
     :param assistant_action_state: action state of the assistant
-    :type assistant_action_state: `State<coopihc.space.State.State>`
+    :type assistant_action_state: `State<coopihc.base.State.State>`
     :param user_policy_model: user policy model. This may be the real policy of the user, but realistically has to be a model of the user policy. This policy must currently be an `ELLDiscretePolicy<coopihc.policy.ELLDiscretePolicy.ELLDiscretePolicy>`.
     :type user_policy_model: ELLDiscretePolicy<coopihc.policy.ELLDiscretePolicy.ELLDiscretePolicy>`
     """
@@ -49,12 +50,12 @@ class BIGDiscretePolicy(BasePolicy):
         super().__init__(*args, action_state=assistant_action_state, **kwargs)
 
         self.assistant_action_set = Space.cartesian_product(
-            self.action_state["action"].spaces
+            self.action_state["action"].space
         )[0]
 
         self.user_policy_model = user_policy_model
         self.user_action_set = Space.cartesian_product(
-            user_policy_model.action_state["action"].spaces
+            user_policy_model.action_state["action"].space
         )[0]
 
         self.user_policy_likelihood_function = user_policy_model.compute_likelihood
@@ -71,9 +72,9 @@ class BIGDiscretePolicy(BasePolicy):
         Computes the conditional probability :math:`P(Y=y|X=x)`, where X is the assistant outcome and Y the user's response.
 
         :param user_action: user action y for which the condition is computed
-        :type user_action: `StateElement<coopihc.space.StateElement.StateElement>`
+        :type user_action: `StateElement<coopihc.base.StateElement.StateElement>`
         :param assistant_action: assistant action to be evaluated
-        :type assistant_action: `StateElement<coopihc.space.StateElement.StateElement>`
+        :type assistant_action: `StateElement<coopihc.base.StateElement.StateElement>`
         :param potential_states: collection of potential goal states
         :type potential_states: iterable
         :param beliefs: (list) beliefs for each target
@@ -99,7 +100,7 @@ class BIGDiscretePolicy(BasePolicy):
 
 
         :param assistant_action: assistant action to be evaluated
-        :type assistant_action: `StateElement<coopihc.space.StateElement.StateElement>`
+        :type assistant_action: `StateElement<coopihc.base.StateElement.StateElement>`
         :param potential_states: collection of potential goal states
         :type potential_states: iterable
         :param beliefs: (list) beliefs for each target
@@ -147,9 +148,9 @@ class BIGDiscretePolicy(BasePolicy):
         Computes the expected information gain :math:`\mathrm{IG}(X=x) = H(Y |X=x) - H(Y |\Theta = \theta, X=x)` for a potential assistant action x.
 
         :param assistant_action: assistant action to be evaluated
-        :type assistant_action: `StateElement<coopihc.space.StateElement.StateElement>`
+        :type assistant_action: `StateElement<coopihc.base.StateElement.StateElement>`
         :param observation: current assistant observation
-        :type observation: `State<coopihc.space.State.State>`
+        :type observation: `State<coopihc.base.State.State>`
         :param beliefs: (list) beliefs for each target
         :type beliefs: (list) beliefs for each target
         :return: [description]
@@ -207,16 +208,14 @@ class BIGDiscretePolicy(BasePolicy):
         action.reverse(), _IG.reverse()
         return action, _IG
 
-    def sample(self, observation=None):
+    def sample(self, agent_observation=None, agent_state=None):
         """sample
 
         Choose action (select the action with highest expected information gain)
 
         :return: (assistant action, associated reward)
-        :rtype: tuple(`StateElement<coopihc.space.StateElement.StateElement>`, float)
+        :rtype: tuple(`StateElement<coopihc.base.StateElement.StateElement>`, float)
         """
         self._actions, self._IG = self.find_best_action()
-        new_action = self.new_action
-        new_action[:] = self._actions[0]
 
-        return new_action, 0
+        return self._actions[0], 0

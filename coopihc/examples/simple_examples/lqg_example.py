@@ -51,7 +51,7 @@ task = ClassicControlTask(
 user = IHCT_LQGController("user", timestep, Q, R, U, C, D, noise="on")
 bundle = Bundle(task=task, user=user, onreset_deterministic_first_half_step=True)
 obs = bundle.reset(
-    turn=0,
+    go_to=0,
     dic={
         "task_state": {"x": numpy.array([[0.5], [0], [0], [0]])},
         "user_state": {"xhat": numpy.array([[0.5], [0], [0], [0]])},

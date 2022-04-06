@@ -2,9 +2,9 @@ import numpy
 import copy
 
 from coopihc.helpers import flatten
-from coopihc.space.State import State
-from coopihc.space.StateElement import StateElement
-from coopihc.space.Space import Space
+from coopihc.base.State import State
+from coopihc.base.elements import discrete_array_element, array_element, cat_element
+from coopihc.base.elements import array_element
 from coopihc.interactiontask.InteractionTask import InteractionTask
 
 
@@ -73,6 +73,10 @@ class ClassicControlTask(InteractionTask):
     :type noise: str, optional
     """
 
+    @property
+    def user_action(self):
+        return super().user_action[0]
+
     def __init__(
         self,
         timestep,
@@ -93,16 +97,11 @@ class ClassicControlTask(InteractionTask):
 
         self.dim = max(A.shape)
         self.state = State()
-        self.state["x"] = StateElement(
-            numpy.zeros((self.dim, 1)),
-            Space(
-                [
-                    -numpy.ones((self.dim, 1)) * numpy.inf,
-                    numpy.ones((self.dim, 1)) * numpy.inf,
-                ],
-                "continuous",
-            ),
+        self.state["x"] = array_element(
+            low=numpy.full((self.dim, 1), -numpy.inf),
+            high=numpy.full((self.dim, 1), numpy.inf),
         )
+
         self.state_last_x = copy.copy(self.state["x"])
         self.timestep = timestep
 
@@ -165,11 +164,10 @@ class ClassicControlTask(InteractionTask):
         """
         # Force zero velocity
 
-        self.state["x"] *= numpy.array([1] + [0 for i in range(self.dim - 1)]).reshape(
-            (-1, 1)
-        )
+        self.state["x"][0, 0] = 1
+        self.state["x"][1:, 0] = 0
 
-    def user_step(self, *args, **kwargs):
+    def on_user_action(self, *args, user_action=None, **kwargs):
         """user step
 
         Takes the state from x(.) to x(+.) according to
@@ -186,17 +184,7 @@ class ClassicControlTask(InteractionTask):
         # For readability
         A, B, F, G, H = self.A, self.B, self.F, self.G, self.H
 
-        # Just to test, could be removed
-        ua = kwargs.get("user_action")
-        if ua is not None:
-            try:
-                _u = ua.view(numpy.ndarray)
-            except AttributeError:
-                _u = numpy.array(ua)
-        else:
-            _u = self.user_action.view(
-                numpy.ndarray
-            )  # If you remove this block, only keep this line
+        _u = self.user_action.view(numpy.ndarray)
 
         _x = self.state["x"].view(numpy.ndarray)
 
@@ -209,7 +197,7 @@ class ClassicControlTask(InteractionTask):
             omega = numpy.random.normal(0, 0, (self.dim, 1))
 
         # Store last_x for render
-        self.state_last_x = copy.copy(self.state["x"][:])
+        self.state_last_x = copy.copy(_x)
         # Deterministic update + State dependent noise + independent noise
 
         if self.timespace == "discrete":
@@ -222,30 +210,29 @@ class ClassicControlTask(InteractionTask):
                 + H * _u * gamma
             )
 
-        self.state["x"][:] = _x
+        self.state["x"] = _x
 
         is_done = self.stopping_condition()
 
         return self.state, 0, is_done
 
     def stopping_condition(self):
-        _x = self.state["x"][:]
+        _x = self.state["x"]
         if (abs(_x[:]) <= self.end).all():
             return True
         return False
 
-    def assistant_step(self, *args, **kwargs):
-        """assistant_step"""
+    def on_assistant_action(self, *args, **kwargs):
+        """on_assistant_action"""
         return self.state, 0, False
 
-    def render(self, *args, **kwargs):
+    def render(self, mode="text", ax_user=None, ax_assistant=None, ax_task=None):
         """render
 
         Text mode: print task state
 
         plot mode: Dynamically update axes with state trajectories.
         """
-        mode = kwargs.get("mode")
         if mode is None:
             mode = "text"
 
@@ -253,7 +240,6 @@ class ClassicControlTask(InteractionTask):
             print("state")
             print(self.state["x"])
         if "plot" in mode:
-            axtask, axuser, axassistant = args[:3]
             if self.ax is not None:
                 self.draw()
                 if self.turn_number == 3:
@@ -263,8 +249,8 @@ class ClassicControlTask(InteractionTask):
             else:
                 self.color = ["b", "g", "r", "c", "m", "y", "k"]
                 self.labels = ["x[{:d}]".format(i) for i in range(self.dim)]
-                self.axes = [axtask]
-                self.ax = axtask
+                self.axes = [ax_task]
+                self.ax = ax_task
                 for i in range(self.dim - 1):
                     self.axes.append(self.ax.twinx())
 

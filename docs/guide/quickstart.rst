@@ -25,7 +25,7 @@ You can also build directly from the github repository to get the latest version
 
     poetry install
 
-from within the folder. This will install *CoopIHC* in editable mode (basically equivalent to ``python3 -m pip install -e .``), together with all its dependencies.
+from within the folder. This will install *CoopIHC* in editable mode (basically equivalent to ``python3 -m pip install -e .``), together with all its dependencies. You might need to download and install *CoopIHC-Zoo* as well for this to work.
 
 Interaction Model
 -------------------
@@ -33,10 +33,10 @@ Interaction Model
 *CoopIHC* builds on a :doc:`sequential two agent decision-making model<./interaction_model>`. You should read through the model to get a grasp of what each component does.
 
 
-High-level view of CoopIHC code
---------------------------------
+High-level view of *CoopIHC* code
+-----------------------------------
 
-At a high level, your CoopIHC code will usually look like this
+At a high level, your *CoopIHC* code will usually look like this
 
 .. literalinclude:: ../../coopihc/examples/basic_examples/bundle_examples.py
    :language: python
@@ -47,9 +47,11 @@ At a high level, your CoopIHC code will usually look like this
 
 You will usually define a task, a user, an assistant, and bundle them together. You can then play several rounds of interaction until the game ends, and based on the collected data, you can do something.
 
-States
-------------
-The interaction model uses the concept of states, for which *CoopIHC* introduces the ``Space`` ``StateElement`` and ``State`` objects. States can hold StateElements and can be nested. In the example below, a super-state is defined using a State. This super-state is itself defined by two substates. Each of those two substates holds a StateElement, which is a combination of a value and a space.
+Quick-States
+--------------
+The interaction model uses the concept of states, a collection of useful variables for the system. In *CoopIHC* you define them via a ``State`` object. The states are containers that hold elements called ``StateElement``. A ``StateElement`` is a collection of a value and a ``Space``, its associated domain. A ``State`` may be nested and contain another ``State``.
+
+In the example below, a super-state is defined using a State. This super-state is itself defined by two substates. Each of those two substates holds a ``StateElement``, defined here via shortcuts such as ``array_element``.
 
 .. literalinclude:: ../../coopihc/examples/basic_examples/state_examples.py
    :language: python
@@ -58,33 +60,33 @@ The interaction model uses the concept of states, for which *CoopIHC* introduces
    :end-before: [end-state-example]
 
 
-States and StatElements subclass the built-in dictionary and the well-known NumPy arrays respectively. This means that interacting with these objects should prove relatively familiar. To find out more about this and for extra details, go to :doc:`Space<space>`, :doc:`StateElement<stateelement>` and :doc:`State<state>`.
+`:py:class:States<coopihc.base.State>` and `:py:class:StateElementss<coopihc.base.StateElements>` subclass respectively Python's built-in dictionary and NumPy arrays types. Interacting with these objects should prove relatively familiar to most Python users. To find out more about this and for extra details, go to :doc:`Space<space>`, :doc:`StateElement<stateelement>` and :doc:`State<state>`.
 
 
-Tasks
---------
+Quick-Tasks
+------------
 
 .. include:: tasks.rst
     :start-after: .. start-quickstart-task
     :end-before: .. end-quickstart-task
 
 
-Agents
+Quick-Agents
 ------------------
 
 .. include:: agents.rst
     :start-after: .. start-quickstart-agent
     :end-before: .. end-quickstart-agent
 
-Policies
-------------
+Quick-Policies
+----------------
 
 .. include:: policy.rst
     :start-after: .. start-quickstart-policy
     :end-before: .. end-quickstart-policy
 
-Observation Engines
----------------------
+Quick-Observation Engines
+---------------------------
 
 .. include:: observation_engine.rst
     :start-after: .. start-quickstart-obseng-intro
@@ -95,8 +97,8 @@ Observation Engines
     :end-before: .. end-quickstart-obseng-subclass
 
 
-Inference Engines
---------------------
+Quick-Inference Engines
+-------------------------
 
 .. include:: inference_engine.rst
     :start-after: .. start-quickstart-infeng-intro
@@ -110,7 +112,7 @@ Inference Engines
 
 
 
-Bundles
+Quick-Bundles
 ---------------------
 
 .. include:: bundles.rst

@@ -1,8 +1,7 @@
 import numpy
 import copy
 
-from coopihc.space.State import State
-from coopihc.helpers import hard_flatten
+from coopihc.base.State import State
 from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 
 
@@ -20,7 +19,7 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
         This inference engine expects:
 
         + the agent to have a 'belief' state, corresponding to the discrete belief pmf. in its internal state:
-        + the modeler to attach a user policy model to the engine ``inference_engine.attach_policy(user_policy_model)``
+        + the modeler to attach a user policy model to the engine ``inference_engine._attach_policy(user_policy_model)``
         + the modeler to attach the set of possible user goals ``inference_engine.attach_set_theta(set_theta)``
 
 
@@ -44,7 +43,7 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
 
             inference_engine = GoalInferenceWithUserPolicyGiven()
             # Attach it to the engine
-            inference_engine.attach_policy(user_policy_model)
+            inference_engine._attach_policy(user_policy_model)
 
         It also expects that the set of :math:`\theta`'s is supplied:
 
@@ -87,10 +86,10 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
     def __init__(self, *args, user_policy_model=None, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.attach_policy(user_policy_model)
+        self._attach_policy(user_policy_model)
         self.render_tag = ["plot", "text"]
 
-    def attach_policy(self, policy):
+    def _attach_policy(self, policy):
         if policy is None:
             self.user_policy_model = None
             return
@@ -104,9 +103,12 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
     def attach_set_theta(self, set_theta):
         self.set_theta = set_theta
 
-    def render(self, *args, **kwargs):
+    def render(self, mode="text", ax_user=None, ax_assistant=None, ax_task=None):
 
-        mode = kwargs.get("mode")
+        if self.host.role == "user":
+            ax = ax_user
+        else:
+            ax = ax_assistant
 
         render_flag = False
         for r in self.render_tag:
@@ -183,7 +185,6 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
         ## -------------------------- End Helper functions
 
         if "plot" in mode:
-            ax = args[0]
             if self.ax is not None:
                 title = self.ax.get_title()
                 self.ax.clear()
@@ -199,29 +200,29 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
             beliefs = self.host.state["beliefs"].squeeze().tolist()
             print("beliefs", beliefs)
 
-    def infer(self, user_state=None):
+    def infer(self, agent_observation=None):
         """infer
 
         Update the substate 'beliefs' from the internal state. Generate candidate observations for each potential target, evaluate its likelihood and update the prior to form the posterior. Normalize the posterior and return the new state.
 
         :return: (new internal state, reward)
-        :rtype: tuple(:py:class:`State<coopihc.space.State.State>`, float)
+        :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, float)
         """
 
         if self.user_policy_model is None:
             raise RuntimeError(
                 "This inference engine requires a likelihood-based model of an user policy to function."
             )
-        if user_state is None:
-            observation = self.buffer[-1]
-            user_state = observation["assistant_state"]
+        if agent_observation is None:
+            agent_observation = self.observation
+            state = agent_observation["assistant_state"]
 
-        old_beliefs = user_state["beliefs"].squeeze().tolist()
-        user_action = observation["user_action"]["action"]
+        old_beliefs = state["beliefs"].tolist()
+        user_action = agent_observation["user_action"]["action"]
 
         for nt, t in enumerate(self.set_theta):
             # candidate_observation = copy.copy(observation)
-            candidate_observation = copy.deepcopy(observation)
+            candidate_observation = copy.deepcopy(agent_observation)
             for key, value in t.items():
                 try:
                     candidate_observation[key[0]][key[1]] = value
@@ -240,5 +241,5 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
             )
             old_beliefs = [1 for i in old_beliefs]
         new_beliefs = [i / sum(old_beliefs) for i in old_beliefs]
-        user_state["beliefs"][:] = numpy.array(new_beliefs)
-        return user_state, 0
+        state["beliefs"] = numpy.array(new_beliefs)
+        return state, 0

@@ -3,9 +3,8 @@ import copy
 import warnings
 from coopihc.agents.BaseAgent import BaseAgent
 from coopihc.observation.RuleObservationEngine import RuleObservationEngine
-from coopihc.space.State import State
-from coopihc.space.StateElement import StateElement
-from coopihc.space.Space import Space
+from coopihc.base.State import State
+from coopihc.base.elements import discrete_array_element, array_element, cat_element
 from coopihc.policy.LinearFeedback import LinearFeedback
 from coopihc.inference.ContinuousKalmanUpdate import ContinuousKalmanUpdate
 
@@ -112,13 +111,15 @@ class IHCT_LQGController(BaseAgent):
         # =================== Linear Feedback Policy ==========
 
         action_state = State()
-        action_state["action"] = StateElement(
-            numpy.zeros((1, 1)),
-            Space(
-                [numpy.full((1, 1), -numpy.inf), numpy.full((1, 1), numpy.inf)],
-                "continuous",
-            ),
-        )
+        action_state["action"] = array_element(shape=(1, 1))
+
+        # StateElement(
+        #     numpy.zeros((1, 1)),
+        #     Space(
+        #         [numpy.full((1, 1), -numpy.inf), numpy.full((1, 1), numpy.inf)],
+        #         "continuous",
+        #     ),
+        # )
 
         # Linear Feedback with LQ reward
         class LFwithLQreward(LinearFeedback):
@@ -126,8 +127,8 @@ class IHCT_LQGController(BaseAgent):
                 super().__init__(*args, **kwargs)
                 self.R = R
 
-            def sample(self, observation=None):
-                action, _ = super().sample(observation=observation)
+            def sample(self, agent_observation=None, agent_state=None):
+                action, _ = super().sample(agent_observation=agent_observation)
                 return (
                     action,
                     (action.T @ self.R @ action).squeeze().tolist(),

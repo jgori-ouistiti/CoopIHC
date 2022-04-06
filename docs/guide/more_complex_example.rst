@@ -79,7 +79,7 @@ Finally, we define two methods that describe how the state of the task transitio
 
 .. code-block:: python
 
-    def user_step(self, *args, **kwargs):
+    def on_user_action(self, *args, **kwargs):
         """Check if the user signals that the cursor is on the goal.
         """
         # User signals with 0 if the cursor is on the goal
@@ -88,7 +88,7 @@ Finally, we define two methods that describe how the state of the task transitio
             is_done = True
         return self.state, -1, is_done
 
-    def assistant_step(self, *args, **kwargs):
+    def on_assistant_action(self, *args, **kwargs):
         is_done = False
 
         # Stopping condition if too many turns
@@ -275,8 +275,8 @@ We are going to couple this operator with an intelligent assistant which leverag
             # Feed the model of the user policy to the policy and the inference engine.
             user_policy_model = copy.deepcopy(self.bundle.user.policy)
             agent_policy = BIGDiscretePolicy(action_state, user_policy_model)
-            self.attach_policy(agent_policy)
-            self.inference_engine.attach_policy(user_policy_model)
+            self._attach_policy(agent_policy)
+            self.inference_engine._attach_policy(user_policy_model)
 
             # Initialize uniformly distributed beliefs
             self.state["beliefs"] = StateElement(

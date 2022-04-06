@@ -4,11 +4,11 @@ The Observation Engines
 ========================
 .. start-quickstart-obseng-intro
 
-In an interactive setting, states are rarely perfectly observable by the various agents:
+States are rarely perfectly observable by agents:
 
-    * the other agent's internal states are unknown,
-    * the task's state may be partially observable; for example, a human observer is imperfect and produces noisy observations,
-    * an agent's own internal state may be partially observable; for example, a human observer might have decaying memory.
+    * the other agent's internal states are usually unknown,
+    * the task's state may be partially observable; for example, a human observer may produce noisy observations,
+    * an agent's own internal state may be partially observable; for example, a human observer might have poor retention capabilities.
 
 Furthermore, there might be a cost associated with making observations:
 
@@ -24,7 +24,7 @@ Subclassing ``BaseObservationEngine``
 --------------------------------------
 .. start-quickstart-obseng-subclass
 
-To create a new engine by subclassing the ``BaseObservationEngine`` class, you simply have to redefine the ``observe()`` method. You can virtually put anything inside this function: that includes the output of a neural network, of a complex simulation process, and even the output of another bundle (see :doc:`modularity` for an example). Below, we show a basic example where we define an engine that only looks at a particular substate.
+To create a new engine by subclassing the ``BaseObservationEngine`` class, you have to redefine the ``observe()`` method. You can virtually put anything inside this function: that includes the output of a neural network, of a complex simulation process, and even the output of another bundle (see :doc:`modularity` for an example). Below, we show a basic example where we define an engine that only looks at a particular substate.
 
 .. literalinclude:: ../../coopihc/observation/ExampleObservationEngine.py
     :linenos:
@@ -89,7 +89,7 @@ which are then collected to form an observed state. For example, a valid mapping
 
 .. code-block:: python
 
-    from coopihc.space.utils import example_game_state
+    from coopihc.base.utils import example_game_state
     print(example_game_state())
 
     # Define mapping
