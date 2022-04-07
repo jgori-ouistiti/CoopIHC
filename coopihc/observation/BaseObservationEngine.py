@@ -1,10 +1,16 @@
 import copy
+from xml.dom.minidom import Attr
 import numpy
 
 from coopihc.base.State import State
 
 
-class BaseObservationEngine:
+class MetaObservationEngine(type):
+    def __new__(metacls, name, bases, namespace, **kwargs):
+        return type.__new__(metacls, name, bases, namespace, **kwargs)
+
+
+class BaseObservationEngine(metaclass=MetaObservationEngine):
     """Base Class for Observation Engine.
 
     Does nothing but specify a type for the observation engine and return the full game state.
@@ -39,6 +45,15 @@ class BaseObservationEngine:
             return self.host.inference_engine.buffer[-1]
         except AttributeError:
             return None
+
+    @property
+    def bundle(self):
+        try:
+            return self.host.bundle
+        except AttributeError:
+            raise AttributeError(
+                "You haven't connected the observation to a user that is connected to a bundle yet."
+            )
 
     @property
     def action(self):
@@ -79,6 +94,38 @@ class BaseObservationEngine:
         )
         return self.observe(game_state=game_state)
 
+    def default_value(func):
+        """Apply this decorator to use bundle.game_state as default value to observe if game_state = None"""
+
+        def wrapper_default_value(self, game_state=None):
+            if game_state is None:
+                game_state = self.host.bundle.game_state
+            return func(self, game_state=game_state)
+
+        return wrapper_default_value
+
+    # def get_params(func):
+    #     """Apply this decorator if you need to retrieve parameters"""
+
+    #     def wrapper_get_params(self, game_state=None):
+    #         obs, reward = func(self, game_state=game_state)
+    #         try:
+    #             param_dic = {
+    #                 "params": {
+    #                     "task_params": self.bundle.task.params,
+    #                     "user_params": self.bundle.user.params,
+    #                     "assistant_params": self.bundle.assistant.params,
+    #                 }
+    #             }
+    #             obs.update(param_dic)
+    #             return obs, reward
+    #         except AttributeError:
+    #             return obs, reward
+
+    #     return wrapper_get_params
+
+    # @get_params
+    @default_value
     def observe(self, game_state=None):
         """observe
 
@@ -93,8 +140,6 @@ class BaseObservationEngine:
         :return: observation, obs reward
         :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, float)
         """
-        if game_state is None:
-            game_state = self.host.bundle.game_state
         return copy.deepcopy(game_state), 0
 
     def reset(self, random=True):
@@ -106,3 +151,7 @@ class BaseObservationEngine:
         :type random: bool, optional
         """
         return
+
+    # To be able to inherit these decorators
+    # get_params = staticmethod(get_params)
+    default_value = staticmethod(default_value)

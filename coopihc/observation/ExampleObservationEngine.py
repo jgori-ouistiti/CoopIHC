@@ -15,6 +15,8 @@ class ExampleObservationEngine(BaseObservationEngine):
         super().__init__(*args, **kwargs)
         self.observable_state = observable_state
 
+    # @BaseObservationEngine.get_params
+    @BaseObservationEngine.default_value
     def observe(self, game_state=None):
         """observe
 
@@ -25,10 +27,9 @@ class ExampleObservationEngine(BaseObservationEngine):
         :return: (observation, obs reward)
         :rtype: tuple(`State<coopihc.base.State.State`, float)
         """
-        game_state, reward = super().observe(game_state=game_state)
         return (
             State(**{self.observable_state: game_state[self.observable_state]}),
-            reward,
+            0,
         )
 
 

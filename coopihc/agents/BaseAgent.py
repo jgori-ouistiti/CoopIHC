@@ -85,6 +85,7 @@ class BaseAgent:
         self._bundle = None
         self._bundle_memory = None
         self.ax = None
+        self._parameters = {}
 
         # Set role of agent
         if role not in ["user", "assistant"]:
@@ -173,6 +174,12 @@ class BaseAgent:
             "Inference Engine": self.inference_engine.__content__(),
             "Policy": self.policy.__content__(),
         }
+
+    @property
+    def parameters(self):
+        if self.bundle:
+            return self.bundle.parameters
+        return self._parameters
 
     @property
     def bundle(self):
@@ -282,6 +289,12 @@ class BaseAgent:
             raise AttributeError(
                 f"Agent{self.__class__.__name__} has not been connected to a task yet."
             )
+
+    def __getattr__(self, value):
+        try:
+            return self.parameters.__getattr__(value)
+        except:
+            return AttributeError
 
     def _attach_policy(self, policy, **kwargs):
         """Attach a policy

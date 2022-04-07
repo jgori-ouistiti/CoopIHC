@@ -155,6 +155,8 @@ class RuleObservationEngine(BaseObservationEngine):
         self.extraprobabilisticrules = extraprobabilisticrules
         self.mapping = mapping
 
+    # @BaseObservationEngine.get_params
+    @BaseObservationEngine.default_value
     def observe(self, game_state=None):
         """observe
 
@@ -165,8 +167,6 @@ class RuleObservationEngine(BaseObservationEngine):
         :return: (observation, obs reward)
         :rtype: tuple(:py:class:`State <coopihc.base.State.State>`, float)
         """
-        game_state = super().observe(game_state=game_state)[0]
-
         if self.mapping is None:
             self.mapping = self.create_mapping(game_state)
         obs = self.apply_mapping(game_state)

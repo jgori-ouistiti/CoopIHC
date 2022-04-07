@@ -40,11 +40,22 @@ class BasePolicy:
         return self.__class__.__name__
 
     @property
+    def parameters(self):
+        try:
+            return self.host.parameters
+        except AttributeError:
+            raise AttributeError(
+                "This policy has not been connected to an agent yet -- You can't access this agent's parameters"
+            )
+
+    @property
     def state(self):
         try:
             return self.host.state
         except AttributeError:
-            raise AttributeError("This policy has not been connected to an agent yet.")
+            raise AttributeError(
+                "This policy has not been connected to an agent yet -- You can't access this agent's state"
+            )
 
     @property
     def observation(self):
@@ -58,7 +69,9 @@ class BasePolicy:
         try:
             return self.host.observation
         except AttributeError:
-            raise AttributeError("This policy has not been connected to an agent yet.")
+            raise AttributeError(
+                "This policy has not been connected to an agent yet -- You can't access this agent's observation"
+            )
 
     @property
     def action_keys(self):

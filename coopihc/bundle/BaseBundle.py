@@ -63,9 +63,9 @@ class BaseBundle:
         self.game_state["user_state"] = user.state
         self.game_state["assistant_state"] = assistant.state
 
-        self.task.finit()
-        self.user.finit()
-        self.assistant.finit()
+        # self.task.finit()
+        # self.user.finit()
+        # self.assistant.finit()
 
         if user.policy is not None:
             self.game_state["user_action"] = user.policy.action_state
@@ -77,6 +77,10 @@ class BaseBundle:
         else:
             self.game_state["assistant_action"] = State()
             self.game_state["assistant_action"]["action"] = array_element()
+
+        self.task.finit()
+        self.user.finit()
+        self.assistant.finit()
 
         # Needed for render
         self.active_render_figure = None
@@ -109,6 +113,14 @@ class BaseBundle:
             "Task": self.task.__content__(),
             "User": self.user.__content__(),
             "Assistant": self.assistant.__content__(),
+        }
+
+    @property
+    def parameters(self):
+        return {
+            **self.task._parameters,
+            **self.user._parameters,
+            **self.assistant._parameters,
         }
 
     @property

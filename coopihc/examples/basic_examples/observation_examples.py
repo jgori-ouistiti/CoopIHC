@@ -2,6 +2,11 @@ import numpy
 from coopihc.base.State import State
 from coopihc.base.elements import discrete_array_element, array_element, cat_element
 from coopihc.observation.ExampleObservationEngine import ExampleObservationEngine
+from coopihc.bundle.Bundle import Bundle
+
+from coopihc.agents.BaseAgent import BaseAgent
+from coopihc.policy.BasePolicy import BasePolicy
+from coopihc.interactiontask.ExampleTask import ExampleTask
 
 import numpy
 
@@ -33,3 +38,27 @@ print(obs_engine.observe(game_state=S)[0])
 #            substate_y  2  Discr(3)
 # ---------  ----------  -  ----------
 # [end-obseng-example]
+
+# ============ with bundle ============
+user_action_state = State()
+user_action_state["action"] = discrete_array_element(low=-1, high=1)
+
+assistant_action_state = State()
+assistant_action_state["action"] = discrete_array_element(low=-1, high=1)
+
+
+# Bundle a task together with two BaseAgents
+bundle = Bundle(
+    task=ExampleTask(),
+    # Here policy = None, will call BasePolicy of BaseAgent with kwargs policy_kwargs
+    user=BaseAgent("user", policy_kwargs={"action_state": user_action_state}),
+    # Here, we use the override mechanism directly. Both are equivalent
+    assistant=BaseAgent(
+        "assistant",
+        override_policy=(BasePolicy, {"action_state": assistant_action_state}),
+    ),
+)
+
+print("============ Bundle =========")
+bundle.reset()
+bundle.quarter_step()

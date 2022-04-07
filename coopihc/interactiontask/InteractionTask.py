@@ -40,6 +40,7 @@ class InteractionTask(ABC):
         self._state = State()
         self.bundle = None
         self.timestep = 0.1
+        self._parameters = {}
 
         # Render
         self.ax = None
@@ -110,6 +111,18 @@ class InteractionTask(ABC):
             return self.bundle.assistant.action
         except AttributeError:
             raise AttributeError("This task has not been connected to an assistant yet")
+
+    def __getattr__(self, value):
+        try:
+            return self.parameters.__getattr__(value)
+        except:
+            return AttributeError
+
+    @property
+    def parameters(self):
+        if self.bundle:
+            return self.bundle.parameters
+        return self._parameters
 
     def __content__(self):
         """Custom class representation.
