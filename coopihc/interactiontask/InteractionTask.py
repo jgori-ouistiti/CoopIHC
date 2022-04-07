@@ -114,9 +114,11 @@ class InteractionTask(ABC):
 
     def __getattr__(self, value):
         try:
-            return self.parameters.__getattr__(value)
+            return self.parameters.__getitem__(value)
         except:
-            return AttributeError
+            raise AttributeError(
+                f"'{self.__class__.__name__}' object has no attribute '{value}'"
+            )
 
     @property
     def parameters(self):

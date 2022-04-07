@@ -200,6 +200,7 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
             beliefs = self.host.state["beliefs"].squeeze().tolist()
             print("beliefs", beliefs)
 
+    @BaseInferenceEngine.default_value
     def infer(self, agent_observation=None):
         """infer
 
@@ -213,9 +214,8 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
             raise RuntimeError(
                 "This inference engine requires a likelihood-based model of an user policy to function."
             )
-        if agent_observation is None:
-            agent_observation = self.observation
-            state = agent_observation["assistant_state"]
+
+        state = agent_observation["assistant_state"]
 
         old_beliefs = state["beliefs"].tolist()
         user_action = agent_observation["user_action"]["action"]

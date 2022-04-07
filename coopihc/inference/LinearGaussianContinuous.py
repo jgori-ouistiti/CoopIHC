@@ -70,13 +70,13 @@ class LinearGaussianContinuous(BaseInferenceEngine):
         super().__init__()
         self.render_tag = ["text", "plot"]
 
+    @BaseInferenceEngine.default_value
     def infer(self, agent_observation=None):
-        if agent_observation is None:
-            agent_observation = self.observation
-            if self.host.role == "user":
-                state = agent_observation["user_state"]
-            else:
-                state = agent_observation["assistant_state"]
+
+        if self.host.role == "user":
+            state = agent_observation["user_state"]
+        else:
+            state = agent_observation["assistant_state"]
 
         # Likelihood model
         y, v = state["y"].view(numpy.ndarray), state["Sigma_0"].view(numpy.ndarray)

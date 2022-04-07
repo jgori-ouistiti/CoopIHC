@@ -96,6 +96,7 @@ class RLPolicy(BasePolicy):
 
         super().__init__(*args, action_state=action_state, **kwargs)
 
+    @BasePolicy.default_value
     def sample(self, agent_observation=None, agent_state=None):
         """sample
 
@@ -106,9 +107,6 @@ class RLPolicy(BasePolicy):
         :return: see ``BasePolicy``
         :rtype: see ``BasePolicy``
         """
-        if agent_observation is None:
-            agent_observation = self.observation
-
         # convert observation via the Train class
         agent_observation = self.env._convertor.filter_gamestate(agent_observation)
 

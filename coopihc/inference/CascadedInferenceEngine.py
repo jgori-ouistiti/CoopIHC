@@ -60,10 +60,8 @@ class CascadedInferenceEngine(BaseInferenceEngine):
             }
         }
 
+    @BaseInferenceEngine.default_value
     def infer(self, agent_observation=None):
-
-        if agent_observation is None:
-            agent_observation = self.observation
 
         user_state = agent_observation["user_state"]
         rewards = 0

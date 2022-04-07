@@ -63,9 +63,11 @@ class BaseBundle:
         self.game_state["user_state"] = user.state
         self.game_state["assistant_state"] = assistant.state
 
-        # self.task.finit()
-        # self.user.finit()
-        # self.assistant.finit()
+        # here there is a small caveat: you can not access action states in the game_state at finit, you have to pass through the agent instead. This is due to the current way of creating the game_state.
+
+        self.task.finit()
+        self.user.finit()
+        self.assistant.finit()
 
         if user.policy is not None:
             self.game_state["user_action"] = user.policy.action_state
@@ -78,9 +80,11 @@ class BaseBundle:
             self.game_state["assistant_action"] = State()
             self.game_state["assistant_action"]["action"] = array_element()
 
-        self.task.finit()
-        self.user.finit()
-        self.assistant.finit()
+        # This will not work sometimes
+
+        # self.task.finit()
+        # self.user.finit()
+        # self.assistant.finit()
 
         # Needed for render
         self.active_render_figure = None
@@ -515,7 +519,9 @@ class BaseBundle:
         """
 
         # Play user's turn in the task
-        task_state, task_reward, is_done = self.task.base_on_user_action(user_action)
+        task_state, task_reward, is_done = self.task.base_on_user_action(
+            user_action=user_action
+        )
 
         return task_reward, is_done
 
@@ -549,7 +555,7 @@ class BaseBundle:
         # Play assistant's turn in the task
 
         task_state, task_reward, is_done = self.task.base_on_assistant_action(
-            assistant_action
+            assistant_action=assistant_action
         )
 
         return task_reward, is_done

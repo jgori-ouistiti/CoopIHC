@@ -208,6 +208,7 @@ class BIGDiscretePolicy(BasePolicy):
         action.reverse(), _IG.reverse()
         return action, _IG
 
+    @BasePolicy.default_value
     def sample(self, agent_observation=None, agent_state=None):
         """sample
 

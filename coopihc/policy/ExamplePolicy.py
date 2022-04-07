@@ -14,6 +14,7 @@ class ExamplePolicy(BasePolicy):
     def __init____init__(self, *args, action_state=None, **kwargs):
         super().__init__(*args, action_state=None, **kwargs)
 
+    @BasePolicy.default_value
     def sample(self, agent_observation=None, agent_state=None):
         """sample
 
@@ -22,9 +23,6 @@ class ExamplePolicy(BasePolicy):
         :return: action, reward
         :rtype: tuple(`StateElement<coopihc.base.StateElement.StateElement>`, float)
         """
-
-        if agent_observation is None:
-            agent_observation = self.observation
 
         if (
             agent_observation["task_state"]["x"]

@@ -107,6 +107,20 @@ class BasePolicy:
     def unwrapped(self):
         return self
 
+    def default_value(func):
+        """Apply this decorator to use bundle.game_state as default value to observe if game_state = None"""
+
+        def wrapper_default_value(self, agent_observation=None, agent_state=None):
+            if agent_observation is None:
+                agent_observation = self.host.observation
+            if agent_state is None:
+                agent_state = self.state
+            return func(
+                self, agent_observation=agent_observation, agent_state=agent_state
+            )
+
+        return wrapper_default_value
+
     def reset(self, random=True):
         """reset
 
@@ -125,6 +139,7 @@ class BasePolicy:
         self.action = action
         return self.action, reward
 
+    @default_value
     def sample(self, agent_observation=None, agent_state=None):
         """sample
 

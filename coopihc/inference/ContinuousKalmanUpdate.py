@@ -53,6 +53,7 @@ class ContinuousKalmanUpdate(BaseInferenceEngine):
         self.K_flag = True
         self.K = K
 
+    @BaseInferenceEngine.default_value
     def infer(self, agent_observation=None):
         """infer
 

@@ -72,6 +72,7 @@ class ELLDiscretePolicy(BasePolicy):
         """
         self._bind(_function, "compute_likelihood")
 
+    @BasePolicy.default_value
     def sample(self, agent_observation=None, agent_state=None):
         """sample from likelihood model.
 
@@ -83,8 +84,6 @@ class ELLDiscretePolicy(BasePolicy):
         :rtype: tuple(`StateElement<coopihc.base.StateElement.StateElement>`, float)
         """
 
-        if agent_observation is None:
-            agent_observation = self.observation
         actions, llh = self.forward_summary(agent_observation)
         action = actions[self.rng.choice(len(llh), p=llh)]
 

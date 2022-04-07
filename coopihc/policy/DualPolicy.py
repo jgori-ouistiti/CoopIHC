@@ -54,8 +54,13 @@ class DualPolicy(BasePolicy):
         self.action = action
         return self.action, reward
 
-    def sample(self, observation=None):
+    @BasePolicy.default_value
+    def sample(self, agent_observation=None, agent_state=None):
         if self.mode == "primary":
-            return self.primary_policy.sample(observation=observation)
+            return self.primary_policy.sample(
+                agent_observation=agent_observation, agent_state=agent_state
+            )
         else:
-            return self.dual_policy.sample(observation=observation)
+            return self.dual_policy.sample(
+                agent_observation=agent_observation, agent_state=agent_state
+            )

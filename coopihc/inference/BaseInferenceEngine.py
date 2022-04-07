@@ -126,6 +126,17 @@ class BaseInferenceEngine:
         setattr(self, as_name, bound_method)
         return bound_method
 
+    def default_value(func):
+        """Apply this decorator to use self.agent_observation as default value to infer from if agent_observation = None"""
+
+        def wrapper_default_value(self, agent_observation=None):
+            if agent_observation is None:
+                agent_observation = self.observation
+            return func(self, agent_observation=agent_observation)
+
+        return wrapper_default_value
+
+    @default_value
     def infer(self, agent_observation=None):
         """infer
 
@@ -135,8 +146,6 @@ class BaseInferenceEngine:
         :return: (new internal state, reward)
         :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, float)
         """
-        if agent_observation is None:
-            agent_observation = self.observation
 
         # do something with information inside buffer
         if self.host.role == "user":

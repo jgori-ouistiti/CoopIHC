@@ -45,22 +45,20 @@ class CoordinatedInferenceEngine(BaseInferenceEngine):
     def simulation_bundle(self):
         return self.host.simulation_bundle
 
+    @BaseInferenceEngine.default_value
     def infer(self, agent_observation=None):
 
-        if agent_observation is None:
-            agent_observation = self.observation
-
-        agent_state = getattr(self.observation, f"{self.role}_state")
+        agent_state = getattr(agent_observation, f"{self.role}_state")
 
         # Parameter Inference is naive on purpose here
         while True:
             # Prediction using user model (can sample directly from the policy in this case, because it already does a single-shot prediction)
             usermodel_action, _ = self.host.take_action(
-                agent_observation=self.observation, agent_state=self.state
+                agent_observation=agent_observation, agent_state=self.state
             )
 
             # actual observation
-            user_action = self.observation.user_action.action
+            user_action = agent_observation.user_action.action
 
             # Compare prediction with observation
             if user_action != usermodel_action:
@@ -94,6 +92,7 @@ class RolloutCoordinatedInferenceEngine(BaseInferenceEngine):
             )
         return self._simulator
 
+    @BaseInferenceEngine.default_value
     def infer(self, agent_observation=None):
 
         if (
@@ -103,10 +102,7 @@ class RolloutCoordinatedInferenceEngine(BaseInferenceEngine):
 
         self.__inference_count += 1
 
-        if agent_observation is None:
-            agent_observation = self.observation
-
-        agent_state = getattr(self.observation, f"{self.role}_state")
+        agent_state = getattr(agent_observation, f"{self.role}_state")
 
         mem_state = copy.deepcopy(
             agent_state
@@ -117,7 +113,7 @@ class RolloutCoordinatedInferenceEngine(BaseInferenceEngine):
         for i in range(10):  # Exhaustively try out all cases
 
             # load the simulation with the right parameters
-            reset_dic = copy.deepcopy(self.observation)
+            reset_dic = copy.deepcopy(agent_observation)
 
             # try out a new state
             del reset_dic["assistant_state"]

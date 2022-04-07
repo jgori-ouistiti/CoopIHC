@@ -68,6 +68,7 @@ class LinearFeedback(BasePolicy):
         """
         self.feedback_gain = gain
 
+    @BasePolicy.default_value
     def sample(self, agent_observation=None, agent_state=None):
         """sample
 
@@ -76,8 +77,6 @@ class LinearFeedback(BasePolicy):
         :return: action, reward
         :rtype: tuple(`StateElement<coopihc.base.StateElement.StateElement>`, float)
         """
-        if agent_observation is None:
-            agent_observation = self.observation
 
         output = agent_observation
         for item in self.state_indicator:

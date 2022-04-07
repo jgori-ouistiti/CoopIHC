@@ -5,12 +5,7 @@ import numpy
 from coopihc.base.State import State
 
 
-class MetaObservationEngine(type):
-    def __new__(metacls, name, bases, namespace, **kwargs):
-        return type.__new__(metacls, name, bases, namespace, **kwargs)
-
-
-class BaseObservationEngine(metaclass=MetaObservationEngine):
+class BaseObservationEngine:
     """Base Class for Observation Engine.
 
     Does nothing but specify a type for the observation engine and return the full game state.
@@ -104,27 +99,6 @@ class BaseObservationEngine(metaclass=MetaObservationEngine):
 
         return wrapper_default_value
 
-    # def get_params(func):
-    #     """Apply this decorator if you need to retrieve parameters"""
-
-    #     def wrapper_get_params(self, game_state=None):
-    #         obs, reward = func(self, game_state=game_state)
-    #         try:
-    #             param_dic = {
-    #                 "params": {
-    #                     "task_params": self.bundle.task.params,
-    #                     "user_params": self.bundle.user.params,
-    #                     "assistant_params": self.bundle.assistant.params,
-    #                 }
-    #             }
-    #             obs.update(param_dic)
-    #             return obs, reward
-    #         except AttributeError:
-    #             return obs, reward
-
-    #     return wrapper_get_params
-
-    # @get_params
     @default_value
     def observe(self, game_state=None):
         """observe
