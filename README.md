@@ -1,6 +1,6 @@
 ![CoopIHC Logo](https://raw.githubusercontent.com/jgori-ouistiti/CoopIHC/main/docs/guide/images/coopihc-logo.png)
 
-_CoopIHC_, pronounced 'kopik', is a Python module that provides a common basis for describing computational Human Computer Interaction (HCI) contexts, mostly targeted at expressing models of users and intelligent assistants.
+_CoopIHC_, pronounced 'kopik', is a Python module that provides a common basis for describing computational Human-Computer Interaction (HCI) contexts, mostly targeted at expressing models of users and intelligent assistants.
 
 1. It provides a common conceptual and practical reference, which facilitates reusing and extending other researcher's work
 2. It can help design intelligent assistants by translating an interactive context into a problem that can be solved (via other methods).
