@@ -59,12 +59,12 @@ class Space:
     """
 
     def __new__(
-        self, low=None, high=None, array=None, N=None, _function=None, **kwargs
+        cls, low=None, high=None, array=None, N=None, _function=None, seed=None, **kwargs
     ):
         if low is not None and high is not None:
-            return Numeric(low=numpy.asarray(low), high=numpy.asarray(high), **kwargs)
+            return Numeric(low=numpy.asarray(low), high=numpy.asarray(high), seed=seed, **kwargs)
         if array is not None:
-            return CatSet(array=numpy.asarray(array), **kwargs)
+            return CatSet(array=numpy.asarray(array), seed=seed, **kwargs)
         if N is not None and _function is not None:
             raise NotImplementedError
         raise ValueError(
