@@ -14,7 +14,7 @@ import numpy
 
 
 # ======================== Space Shortcuts ========================
-def lin_space(start, stop, num=50, endpoint=True, dtype=numpy.int64):
+def lin_space(start, stop, num=50, endpoint=True, dtype=numpy.int64, **kwargs):
     # lin_space(num=50, start=0, stop=None, endpoint=False, dtype=numpy.int64):
     """Linearly spaced discrete space.
 
@@ -27,7 +27,9 @@ def lin_space(start, stop, num=50, endpoint=True, dtype=numpy.int64):
     if stop is None:
         stop = num + start
     return Space(
-        array=numpy.linspace(start, stop, num=num, endpoint=endpoint, dtype=dtype)
+        array=numpy.linspace(
+            start, stop, num=num, endpoint=endpoint, dtype=dtype, **kwargs
+        )
     )
 
 
