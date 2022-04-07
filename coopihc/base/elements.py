@@ -14,7 +14,7 @@ import numpy
 
 
 # ======================== Space Shortcuts ========================
-def lin_space(start, stop, num=50, endpoint=True, dtype=numpy.int64, **kwargs):
+def lin_space(start, stop, num=50, endpoint=True, dtype=numpy.int64, seed=None, **kwargs):
     # lin_space(num=50, start=0, stop=None, endpoint=False, dtype=numpy.int64):
     """Linearly spaced discrete space.
 
@@ -28,8 +28,10 @@ def lin_space(start, stop, num=50, endpoint=True, dtype=numpy.int64, **kwargs):
         stop = num + start
     return Space(
         array=numpy.linspace(
-            start, stop, num=num, endpoint=endpoint, dtype=dtype, **kwargs
-        )
+            start, stop, num=num, endpoint=endpoint, dtype=dtype
+        ),
+        seed=seed,
+        **kwargs
     )
 
 
@@ -151,11 +153,9 @@ def discrete_array_element(N=None, shape=None, init=0, low=None, high=None, **kw
         )
 
 
-def cat_element(N, init=0, **kwargs):
-    out_of_bounds_mode = kwargs.pop("out_of_bounds_mode", "warning")
-    seed = kwargs.pop("seed", None)
+def cat_element(N, init=0, seed=None, out_of_bounds_mode="warning", **kwargs):
     return StateElement(
-        init, integer_set(N, **kwargs), out_of_bounds_mode=out_of_bounds_mode, seed=seed
+        init, integer_set(N, seed=seed, **kwargs), out_of_bounds_mode=out_of_bounds_mode
     )
 
 
