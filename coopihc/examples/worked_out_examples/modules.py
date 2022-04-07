@@ -49,7 +49,7 @@ oculomotornoise = 0.2
 # Define task, user model for Chen et al. and bundle together
 task = ChenEyePointingTask(fitts_W, fitts_D, dimension=1)
 user = ChenEye(perceptualnoise, oculomotornoise, dimension=1)
-obs_bundle = SinglePlayUserAuto(task, user, start_at_action=True)
+obs_bundle = SinglePlayUserAuto(task, user, start_after_action=True)
 
 
 # Wrap the bundle into an observation engine. To do so, subclass from WrapAsObservationEngine and redefine the observe method.

@@ -162,7 +162,7 @@ class BaseBundle:
     def reset(
         self,
         go_to=0,
-        start_at=0,
+        start_after=0,
         task=True,
         user=True,
         assistant=True,
@@ -196,8 +196,8 @@ class BaseBundle:
 
         :param turn: game turn number. Can also be set globally at the bundle level by passing the "reset_turn" keyword argument, defaults to 0
         :type turn: int, optional
-        :param start_at: which turn to start at (allows skipping some turns during reset), defaults to 0
-        :type start_at: int, optional
+        :param start_after: which turn to start at (allows skipping some turns during reset), defaults to 0
+        :type start_after: int, optional
         :param task: reset task?, defaults to True
         :type task: bool, optional
         :param user: reset user?, defaults to True
@@ -215,7 +215,7 @@ class BaseBundle:
         go_to = self.kwargs.get("reset_go_to", go_to)
         # skip_user_action = self.kwargs.get("reset_skip_user_action", skip_user_action)
         # if skip_user_action:
-        # start_at = 2
+        # start_after = 2
         random_reset = self.kwargs.get("random_reset", random_reset)
         # =============
 
@@ -244,26 +244,25 @@ class BaseBundle:
 
         if not isinstance(go_to, (numpy.integer, int)):
             go_to = self.turn_dict[go_to]
-        if not isinstance(start_at, (numpy.integer, int)):
-            start_at = self.turn_dict[start_at]
+        if not isinstance(start_after, (numpy.integer, int)):
+            start_after = self.turn_dict[start_after]
 
         self.turn_number = go_to
 
-        # go_to = max(go_to, start_at)
-        if go_to == 0 and start_at == 0:
+        if go_to == 0 and start_after + 1 == 0:
             return self.game_state
-        if start_at <= go_to:
-            if go_to >= 1 and start_at <= 1:
+        if start_after <= go_to:
+            if go_to >= 1 and start_after + 1 <= 1:
                 self._user_first_half_step()
-            if go_to >= 2 and start_at <= 2:
+            if go_to >= 2 and start_after + 1 <= 2:
                 user_action, _ = self.user.take_action(increment_turn=False)
                 self.user.action = user_action
                 self._user_second_half_step(user_action)
-            if go_to >= 3 and start_at <= 3:
+            if go_to >= 3 and start_after + 1 <= 3:
                 self._assistant_first_half_step()
         else:
             raise ValueError(
-                f"start_at ({start_at}) can not be after go_to ({go_to}). You can likely use a combination of reset and step to achieve what you are looking for"
+                f"start_after ({start_after}) can not be after go_to ({go_to}). You can likely use a combination of reset and step to achieve what you are looking for"
             )
 
         return self.game_state

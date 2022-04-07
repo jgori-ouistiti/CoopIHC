@@ -117,7 +117,7 @@ def test_reset_turn3():
 def test_reset_turn2_to_3():
     global bundle
 
-    bundle.reset(start_at=2, go_to=3)
+    bundle.reset(start_after=2, go_to=3)
 
     assert bundle.round_number == 0
     assert bundle.turn_number == 3
@@ -130,7 +130,7 @@ def test_reset_turn2_to_3():
 def test_reset_string():
     global bundle
 
-    bundle.reset(start_at="after_user_action", go_to="before_assistant_action")
+    bundle.reset(start_after="after_user_action", go_to="before_assistant_action")
 
     assert bundle.round_number == 0
     assert bundle.turn_number == 3
