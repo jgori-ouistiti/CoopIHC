@@ -22,7 +22,7 @@ class BaseSpace:
     ):
 
         self.seed = seed
-        self._dtype = dtype
+        self._dtype = numpy.dtype(dtype)
         self.contains = contains
 
         self.rng = numpy.random.default_rng(seed)
@@ -183,8 +183,8 @@ class Numeric(BaseSpace):
         contains="numpy",
     ):
 
-        self.low = low
-        self.high = high
+        low = numpy.asarray(low)
+        high = numpy.asarray(high)
         self._N = None
         self._array = None
 
@@ -198,26 +198,18 @@ class Numeric(BaseSpace):
 
         super().__init__(seed=seed, dtype=dtype, contains=contains)
 
-        # astype has weird behavior when overflowing. e.g. numpy.asarray(numpy.inf).astype(numpy.int64) = -max instead of max. Below is poor attempt at solving it.
+        # converting numpy.inf to integer is not standardized and
+        # self.low = low.astype(self.dtype)
+        # self.high = high.astype(self.dtype)
+        # will not work
+        #  Currently, it will give -2**(nbits) /2 for both numpy.inf and -numpy.inf. Hack below
 
-        # try:
-        #     try:  # This clause because of dtype irregularity (mentioned somewhere else as well)
-        #         self.low = self.dtype.type(low)
-        #     except AttributeError:
-        #         self.low = self.dtype(low)
-        # except OverflowError:
-        #     self.low = numpy.iinfo(self.dtype).min
-
-        # try:
-        #     try:  # This clause because of dtype irregularity (mentioned somewhere else as well)
-        #         self.high = self.dtype.type(high)
-        #     except AttributeError:
-        #         self.high = self.dtype(high)
-        # except OverflowError:
-        #     self.high = numpy.iinfo(self.dtype).max
-
-        self.low = low.astype(self.dtype)
-        self.high = high.astype(self.dtype)
+        if numpy.issubdtype(self.dtype, numpy.integer):
+            self.low = numpy.nan_to_num(low, neginf=numpy.iinfo(self.dtype).min)
+            self.high = numpy.nan_to_num(high, posinf=numpy.iinfo(self.dtype).max)
+        else:
+            self.low = low
+            self.high = high
 
     @property
     def shape(self):

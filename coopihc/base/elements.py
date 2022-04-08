@@ -127,17 +127,24 @@ def array_element(
     )
 
 
-def discrete_array_element(N=None, shape=None, init=0, low=None, high=None, **kwargs):
-
+def discrete_array_element(
+    N=None, shape=None, init=0, low=None, high=None, dtype=None, **kwargs
+):
+    if dtype is None:
+        dtype = numpy.int64
     if N is None:
-        return array_element(shape=shape, init=init, low=low, high=high, **kwargs)
+        return array_element(
+            shape=shape, init=init, low=low, high=high, dtype=dtype, **kwargs
+        )
     else:
         if low is None:
             low = 0
         if high is None:
             high = N - 1 + low
 
-        return array_element(shape=shape, init=init, low=low, high=high, **kwargs)
+        return array_element(
+            shape=shape, init=init, low=low, high=high, dtype=dtype, **kwargs
+        )
 
 
 def cat_element(N, init=0, out_of_bounds_mode="warning", **kwargs):

@@ -10,8 +10,8 @@ def test_array_element():
     assert isinstance(x.space, Numeric)
     assert x.space.low == -numpy.inf
     assert x.space.high == numpy.inf
-    assert x.space.dtype == numpy.float64
-    assert x.space.seed == None
+    assert x.dtype == numpy.float64
+    assert x.seed == None
 
     x = array_element(shape=(1, 1))
     assert x == 0
@@ -19,8 +19,8 @@ def test_array_element():
     assert isinstance(x.space, Numeric)
     assert x.space.low == -numpy.inf
     assert x.space.high == numpy.inf
-    assert x.space.dtype == numpy.float64
-    assert x.space.seed == None
+    assert x.dtype == numpy.float64
+    assert x.seed == None
 
     x = array_element(init=1, seed=123, dtype=numpy.float32)
     assert x == 1
@@ -28,8 +28,8 @@ def test_array_element():
     assert isinstance(x.space, Numeric)
     assert x.space.low == -numpy.inf
     assert x.space.high == numpy.inf
-    assert x.space.dtype == numpy.float32
-    assert x.space.seed == 123
+    assert x.dtype == numpy.float32
+    assert x.seed == 123
 
 
 def test_discrete_array_element():
@@ -39,8 +39,8 @@ def test_discrete_array_element():
     assert isinstance(x.space, Numeric)
     assert x.space.low == 0
     assert x.space.high == 4
-    assert x.space.dtype == numpy.int64
-    assert x.space.seed == None
+    assert x.dtype == numpy.int64
+    assert x.seed == None
 
     x = discrete_array_element(N=5, init=1, shape=(2, 2), seed=123, dtype=numpy.int8)
     assert (x == 1).all()
@@ -49,8 +49,8 @@ def test_discrete_array_element():
     assert isinstance(x.space, Numeric)
     assert (x.space.low == 0).all()
     assert (x.space.high == 4).all()
-    assert x.space.dtype == numpy.int8
-    assert x.space.seed == 123
+    assert x.dtype == numpy.int8
+    assert x.seed == 123
 
     x = discrete_array_element(init=-4, low=-4, high=4)
     assert x == -4
@@ -58,8 +58,8 @@ def test_discrete_array_element():
     assert isinstance(x.space, Numeric)
     assert x.space.low == -4
     assert x.space.high == 4
-    assert x.space.dtype == numpy.int64
-    assert x.space.seed == None
+    assert x.dtype == numpy.int64
+    assert x.seed == None
 
     x = discrete_array_element(low=0, high=31, shape=(8,))
     assert (x == 0).all()
@@ -67,8 +67,8 @@ def test_discrete_array_element():
     assert isinstance(x.space, Numeric)
     assert (x.space.low == 0).all()
     assert (x.space.high == 31).all()
-    assert x.space.dtype == numpy.int64
-    assert x.space.seed == None
+    assert x.dtype == numpy.int64
+    assert x.seed == None
 
 
 def test_cat_element():
@@ -78,8 +78,8 @@ def test_cat_element():
     assert isinstance(x.space, CatSet)
     assert x.space.low == 0
     assert x.space.high == 4
-    assert x.space.dtype == numpy.int64
-    assert x.space.seed == None
+    assert x.dtype == numpy.int64
+    assert x.seed == None
 
     x = cat_element(5, init=0, seed=123, dtype=numpy.int8)
     assert x == 0
@@ -87,8 +87,8 @@ def test_cat_element():
     assert isinstance(x.space, CatSet)
     assert x.space.low == 0
     assert x.space.high == 4
-    assert x.space.dtype == numpy.int8
-    assert x.space.seed == 123
+    assert x.dtype == numpy.int8
+    assert x.seed == 123
 
 
 def test_init():
