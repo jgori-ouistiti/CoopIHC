@@ -71,6 +71,7 @@ class TrainGym(gym.Env):
         observation_dict=None,
         reset_dic={},
         reset_turn=None,
+        filter_observation=None,
         **kwargs,
     ):
         self.train_user = train_user
@@ -78,6 +79,7 @@ class TrainGym(gym.Env):
         self.bundle = bundle
         self.observation_dict = observation_dict
         self.reset_dic = reset_dic
+        self.filter_observation = filter_observation
 
         if reset_turn is None:
             if self.train_user:
@@ -88,7 +90,7 @@ class TrainGym(gym.Env):
         else:
             self.reset_turn = reset_turn
 
-        self._convertor = GymConvertor()
+        self._convertor = GymConvertor(filter_observation=filter_observation)
 
         # The asymmetry of these two should be resolved. Currently, some fiddling is needed due to Issue # 58 https://github.com/jgori-ouistiti/CoopIHC/issues/58 . It is expected that when issue 58 is resolved, this code can be cleaned up.
         self.action_space = self.get_action_space()
@@ -154,7 +156,14 @@ class TrainGym(gym.Env):
     def get_agent_observation_space(self, agent):
         observation_dict = OrderedDict({})
 
-        for key, value in getattr(self.bundle, agent).observation.items():
+        observation = getattr(self.bundle, agent).observation
+        if self.filter_observation is not None:
+            observation = observation.filter(
+                mode="stateelement", filterdict=self.filter_observation
+            )
+
+        for key, value in observation.items():
+            # for key, value in getattr(self.bundle, agent).observation.items():
             if key == "user_action" or key == "assistant_action":
                 observation_dict.update({key: self.convert_space(value["action"])})
 
@@ -257,8 +266,9 @@ class GymConvertor(RLConvertor):
     :type RLConvertor: [type]
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, filter_observation=None, **kwargs):
         super().__init__(interface="gym", **kwargs)
+        self._filter_observation = filter_observation
 
     def convert_space(self, space):
         if isinstance(space, Numeric):
@@ -279,7 +289,9 @@ class GymConvertor(RLConvertor):
         """
 
         dic = OrderedDict({})
-        for k, v in gamestate.filter(mode="array-Gym").items():
+        for k, v in gamestate.filter(
+            mode="array-Gym", filterdict=self._filter_observation
+        ).items():
             # Hack, see Issue # 58  https://github.com/jgori-ouistiti/CoopIHC/issues/58
 
             try:

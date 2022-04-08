@@ -205,7 +205,7 @@ class State(dict):
             filterdict = self
         for key, value in filterdict.items():
             if isinstance(self[key], State):
-                new_state[key] = self[key].filter(mode, filterdict=value)
+                new_state[key] = self[key].filter(mode=mode, filterdict=value)
             elif isinstance(self[key], StateElement):
                 # to make S.filter("values", S) possible.
                 # Warning: values == filterdict[key] != self[key]
@@ -213,7 +213,7 @@ class State(dict):
                     try:
                         value = slice(0, len(value), 1)
                     except TypeError:  # Deal with 0-D arrays
-                        value = slice(0, 1, 1)
+                        value = slice(0, 1, 1)  # Ellipsis  # slice(0, 1, 1)
                 if mode == "space":
                     _SEspace = self[key].space
                     new_state[key] = _SEspace
@@ -229,7 +229,7 @@ class State(dict):
                         new_state[key] = v
 
                 elif mode == "stateelement":
-                    new_state[key] = self[key][value, {"spaces": True}]
+                    new_state[key] = self[key][value, {"space": True}]
             else:
                 new_state[key] = self[key]
 

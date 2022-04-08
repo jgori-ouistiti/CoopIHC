@@ -17,12 +17,10 @@ class BaseSpace:
     def __init__(
         self,
         seed=None,
-        dtype=None,
         contains="numpy",
     ):
 
         self.seed = seed
-        self._dtype = numpy.dtype(dtype)
         self.contains = contains
 
         self.rng = numpy.random.default_rng(seed)
@@ -182,6 +180,10 @@ class Numeric(BaseSpace):
         dtype=None,
         contains="numpy",
     ):
+        if dtype is not None:
+            self._dtype = numpy.dtype(dtype)
+        else:
+            self._dtype = None
 
         low = numpy.asarray(low)
         high = numpy.asarray(high)
@@ -196,7 +198,9 @@ class Numeric(BaseSpace):
                     )
                 )
 
-        super().__init__(seed=seed, dtype=dtype, contains=contains)
+        self.low, self.high = low, high
+
+        super().__init__(seed=seed, contains=contains)
 
         # converting numpy.inf to integer is not standardized and
         # self.low = low.astype(self.dtype)
@@ -205,11 +209,11 @@ class Numeric(BaseSpace):
         #  Currently, it will give -2**(nbits) /2 for both numpy.inf and -numpy.inf. Hack below
 
         if numpy.issubdtype(self.dtype, numpy.integer):
-            self.low = numpy.nan_to_num(low, neginf=numpy.iinfo(self.dtype).min)
-            self.high = numpy.nan_to_num(high, posinf=numpy.iinfo(self.dtype).max)
-        else:
-            self.low = low
-            self.high = high
+            self.low = numpy.nan_to_num(self.low, neginf=numpy.iinfo(self.dtype).min)
+            self.high = numpy.nan_to_num(self.high, posinf=numpy.iinfo(self.dtype).max)
+
+        self.low = self.low.astype(self.dtype)
+        self.high = self.high.astype(self.dtype)
 
     @property
     def shape(self):
@@ -237,9 +241,12 @@ class Numeric(BaseSpace):
         if self._dtype is None:
 
             if self.low.dtype == self.high.dtype:
-                self._dtype = self.low.dtype
+                self._dtype = numpy.dtype(self.low.dtype)
             else:
-                self._dtype = numpy.common_type(self.low, self.high)
+                self._dtype = numpy.dtype(numpy.common_type(self.low, self.high))
+
+            self.low = self.low.astype(self._dtype)
+            self.high = self.high.astype(self._dtype)
         return self._dtype
 
     @property
@@ -410,21 +417,11 @@ class Numeric(BaseSpace):
 
         """
         if numpy.issubdtype(self.dtype, numpy.integer):
-            try:
-                return self.rng.integers(
-                    low=self.low,
-                    high=self.high,
-                    endpoint=True,
-                    dtype=self.dtype,
-                )
-            # Sometimes self.dtype is numpy.dtype[int64] and not dtype('int64'). While this remains, this hack is needed.
-            except TypeError:
-                return self.rng.integers(
-                    low=self.low,
-                    high=self.high,
-                    endpoint=True,
-                    dtype=self.dtype.type,
-                )
+
+            return self.rng.integers(
+                low=self.low, high=self.high, endpoint=True, dtype=self.dtype
+            )
+
         else:
             return numpy.nan_to_num(
                 (self.high - self.low), nan=1, posinf=1
@@ -464,11 +461,17 @@ class CatSet(BaseSpace):
     """
 
     def __init__(self, array=None, seed=None, dtype=None, contains="numpy"):
+
+        self.array = array
+
         if dtype is not None:
             if not numpy.issubdtype(dtype, numpy.integer):
                 raise ValueError("dtype has to be an integer type")
-        self.array = array
-        super().__init__(seed=seed, dtype=dtype, contains=contains)
+            self._dtype = numpy.dtype(dtype)
+        else:
+            self._dtype = None
+
+        super().__init__(seed=seed, contains=contains)
         self.array = array.astype(self.dtype)
 
     @property

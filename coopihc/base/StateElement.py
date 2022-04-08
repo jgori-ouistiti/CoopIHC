@@ -231,13 +231,18 @@ class StateElement(numpy.ndarray):
             assert x[0, 1, {"space": True}] == StateElement(0.1, box_space(numpy.float64(1)))
 
         """
+
         if isinstance(key, tuple) and key[-1] == {"space": True}:
             key = key[:-1]
             item = super().__getitem__(key)
+
+            if key == (Ellipsis,):
+                return self
             try:
                 space = self.space[key]
             except SpaceNotSeparableError:
                 return self
+
             return StateElement(
                 item.view(numpy.ndarray),
                 space,

@@ -505,6 +505,14 @@ def test__getitem__numeric():
         == StateElement(numpy.array([0.1, 0.3]), box_space(numpy.ones((2,))))
     ).all()
 
+    x = StateElement(numpy.array(0), box_space(low=-1, high=1))
+    from coopihc import State
+
+    s = State()
+    s["x"] = x
+    fd = {"x": ...}
+    a = s.filter(mode="stateelement", filterdict=fd)
+
 
 def test__getitem__():
     test__getitem__integer()
