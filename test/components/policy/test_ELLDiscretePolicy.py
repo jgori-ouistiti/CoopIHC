@@ -84,7 +84,7 @@ def test_sample():
     for i in range(100000):
         if not i % 10000:
             print(i)
-        action, reward = policy.sample(agent_observation={})
+        action, reward = policy.sample(agent_observation={}, agent_state={})
         actions[str(action.squeeze().tolist())] += 1
     empirical_probs = numpy.array([u / 100000 for u in list(actions.values())])
     llh = numpy.array(

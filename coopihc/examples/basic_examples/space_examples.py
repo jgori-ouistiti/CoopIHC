@@ -3,7 +3,7 @@ import numpy
 # from coopihc.helpers import flatten
 from coopihc.base.Space import Space
 
-from coopihc.base.elements import box_space, integer_set, lin_space, integer_space
+from coopihc.base.elements import box_space, integer_set, integer_space
 
 
 numpy.set_printoptions(precision=3, suppress=True)
@@ -23,9 +23,10 @@ discr_set = Space(array=numpy.array([0, 1, 2, 3]))
 # Shortcut
 discr_set = integer_set(4)
 
-# Other shortcuts
-space = lin_space(-5, 5, num=11, dtype=numpy.int16)
-space = lin_space(-5, 5, num=22)
+# # Other shortcuts
+# currently unavailable
+# space = lin_space(-5, 5, num=11, dtype=numpy.int16)
+# space = lin_space(-5, 5, num=22)
 space = integer_space(10, dtype=numpy.int16)
 space = box_space(low=-numpy.ones((2, 2)), high=numpy.ones((2, 2)))
 # [end-space-def]

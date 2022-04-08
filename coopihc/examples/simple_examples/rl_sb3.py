@@ -25,9 +25,9 @@ action_state = State()
 action_state["action"] = discrete_array_element(low=-5, high=5)
 
 user = CarefulPointer(override_policy=(BasePolicy, {"action_state": action_state}))
-bundle = Bundle(task=task, user=user, assistant=unitcdgain)
-
-observation = bundle.reset(go_to=1)
+bundle = Bundle(task=task, user=user, assistant=unitcdgain, reset_go_to=1)
+exit()
+observation = bundle.reset()
 
 
 # >>> print(observation)
