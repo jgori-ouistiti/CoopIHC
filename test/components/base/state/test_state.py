@@ -61,27 +61,27 @@ filterdict = dict(
 )
 
 
-def test_filter():
-    global filterdict, state
-    f_state = state.filter(mode="space", filterdict=filterdict)
-    assert f_state == {
-        "sub1": {
-            "x1": Space(low=1, high=3, dtype=numpy.int64),
-            "x3": Space(low=numpy.ones((2, 2)), high=2 * numpy.ones((2, 2))),
-        },
-        "sub2": {"y1": Space(low=1, high=3, dtype=numpy.int64)},
-    }
-
-    f_state = state.filter(mode="array", filterdict=filterdict)
-    # print(f_state)
-    f_state = state.filter(mode="stateelement", filterdict=filterdict)
-    # print(f_state)
-    f_state = state.filter(mode="space")
-    # print(f_state)
-    f_state = state.filter(mode="array")
-    # print(f_state)
-    f_state = state.filter(mode="array-Gym")
-    # print(f_state)
+# def test_filter():
+#     global filterdict, state
+#     f_state = state.filter(mode="space", filterdict=filterdict)
+#     assert f_state == {
+#         "sub1": {
+#             "x1": Space(low=1, high=3, dtype=numpy.int64),
+#             "x3": Space(low=numpy.ones((2, 2)), high=2 * numpy.ones((2, 2))),
+#         },
+#         "sub2": {"y1": Space(low=1, high=3, dtype=numpy.int64)},
+#     }
+#
+#     f_state = state.filter(mode="array", filterdict=filterdict)
+#     # print(f_state)
+#     f_state = state.filter(mode="stateelement", filterdict=filterdict)
+#     # print(f_state)
+#     f_state = state.filter(mode="space")
+#     # print(f_state)
+#     f_state = state.filter(mode="array")
+#     # print(f_state)
+#     f_state = state.filter(mode="array-Gym")
+#     # print(f_state)
 
 
 def test_serialize():
@@ -165,7 +165,7 @@ def test_assign_after():
 
 if __name__ == "__main__":
     test__init__()
-    test_filter()
+    # test_filter()
     test_serialize()
     test_reset_small()
     test_reset_full()

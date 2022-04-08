@@ -247,6 +247,8 @@ class Numeric(BaseSpace):
 
             self.low = self.low.astype(self._dtype)
             self.high = self.high.astype(self._dtype)
+
+        # assert isinstance(self._dtype, numpy.dtype)
         return self._dtype
 
     @property
@@ -419,13 +421,13 @@ class Numeric(BaseSpace):
         if numpy.issubdtype(self.dtype, numpy.integer):
 
             return self.rng.integers(
-                low=self.low, high=self.high, endpoint=True, dtype=self.dtype
+                low=self.low, high=self.high, endpoint=True, dtype=self.dtype.type
             )
 
         else:
             return numpy.nan_to_num(
                 (self.high - self.low), nan=1, posinf=1
-            ) * self.rng.random(self.shape, dtype=self.dtype) + numpy.nan_to_num(
+            ) * self.rng.random(self.shape, dtype=self.dtype.type) + numpy.nan_to_num(
                 self.low, neginf=1
             )
 
