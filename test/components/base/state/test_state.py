@@ -55,8 +55,8 @@ state["sub2"] = substate2
 
 filterdict = dict(
     {
-        "sub1": dict({"x1": 0, "x3": slice(0, 1)}),
-        "sub2": dict({"y1": 0}),
+        "sub1": dict({"x1": ..., "x3": slice(0, 1)}),
+        "sub2": dict({"y1": ...}),
     }
 )
 

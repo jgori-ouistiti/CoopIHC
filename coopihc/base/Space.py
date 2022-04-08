@@ -67,6 +67,7 @@ class Space:
         dtype=None,
         contains="numpy",
     ):
+        print(dtype)
         if low is not None and high is not None:
             return Numeric(
                 low=numpy.asarray(low),
@@ -180,6 +181,7 @@ class Numeric(BaseSpace):
         dtype=None,
         contains="numpy",
     ):
+
         if dtype is not None:
             self._dtype = numpy.dtype(dtype)
         else:
@@ -248,7 +250,6 @@ class Numeric(BaseSpace):
             self.low = self.low.astype(self._dtype)
             self.high = self.high.astype(self._dtype)
 
-        # assert isinstance(self._dtype, numpy.dtype)
         return self._dtype
 
     @property
@@ -282,7 +283,7 @@ class Numeric(BaseSpace):
             low=next(self._iter_low),
             high=next(self._iter_high),
             seed=self.seed,
-            dtype=self._dtype,
+            dtype=self.dtype,
             contains=self.contains,
         )
 
@@ -322,7 +323,7 @@ class Numeric(BaseSpace):
             low=self.low[key],
             high=self.high[key],
             seed=self.seed,
-            dtype=self._dtype,
+            dtype=self.dtype,
             contains=self.contains,
         )
 
@@ -486,7 +487,7 @@ class CatSet(BaseSpace):
         """numpy.dtype of data"""
         if self._dtype is None:
             if self.array is not None:
-                self._dtype = self.array.dtype
+                self._dtype = numpy.dtype(self.array.dtype)
                 if not numpy.issubdtype(self._dtype, numpy.integer):
                     self._dtype = numpy.dtype(numpy.int64)
         return self._dtype

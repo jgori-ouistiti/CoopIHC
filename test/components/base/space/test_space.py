@@ -95,7 +95,7 @@ def test_sample_CatSet():
 
 
 def test_sample_shortcuts():
-    s = integer_space(N=3, start=-1)
+    s = integer_space(N=3, start=-1, dtype=numpy.int8)
     s.sample()
     q = integer_set(2)
     q.sample()
