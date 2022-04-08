@@ -1,6 +1,7 @@
 from coopihc.base.StateElement import StateElement
 from coopihc.base.Space import Numeric, CatSet
 
+import numpy
 import gym
 from collections import OrderedDict
 from abc import ABC, abstractmethod
@@ -262,7 +263,9 @@ class GymConvertor(RLConvertor):
     def convert_space(self, space):
         if isinstance(space, Numeric):
             return gym.spaces.Box(
-                low=space.low, high=space.high, shape=space.low.shape, dtype=space.dtype
+                low=numpy.atleast_1d(space.low),
+                high=numpy.atleast_1d(space.high),
+                dtype=space.dtype,
             )
         elif isinstance(space, CatSet):
             return gym.spaces.Discrete(space.N)

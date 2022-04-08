@@ -223,6 +223,8 @@ class State(dict):
                     v = (self[key][value]).view(numpy.ndarray)
                     if isinstance(self[key].space, CatSet):
                         new_state[key] = int(v)
+                    elif self[key].space.shape == ():
+                        new_state[key] = numpy.atleast_1d(v)
                     else:
                         new_state[key] = v
 
