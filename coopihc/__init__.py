@@ -62,7 +62,7 @@ from .base.utils import SpacesNotIdenticalError
 from .base.utils import NotASpaceError
 
 # -------------------- shortcuts
-from .base.elements import lin_space
+# from .base.elements import lin_space
 from .base.elements import integer_set
 from .base.elements import integer_space
 from .base.elements import box_space

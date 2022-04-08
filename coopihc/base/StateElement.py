@@ -88,14 +88,7 @@ class StateElement(numpy.ndarray):
     def spacetype(self):
         return self.space.spacetype
 
-    def __new__(
-        cls,
-        input_object,
-        space,
-        *args,
-        out_of_bounds_mode="warning",
-        **kwargs,
-    ):
+    def __new__(cls, input_object, space, out_of_bounds_mode="warning"):
         """__new__, see https://numpy.org/doc/stable/user/basics.subclassing.html"""
 
         input_object = numpy.asarray(
@@ -108,7 +101,6 @@ class StateElement(numpy.ndarray):
         obj = input_object.view(cls)
         obj.space = space
         obj.out_of_bounds_mode = out_of_bounds_mode
-        obj.kwargs = kwargs
         return obj
 
     def __array_finalize__(self, obj):
@@ -119,7 +111,14 @@ class StateElement(numpy.ndarray):
         out_of_bounds_mode = getattr(obj, "out_of_bounds_mode", None)
         self.space = space
         self.out_of_bounds_mode = out_of_bounds_mode
-        self.kwargs = getattr(obj, "kwargs", {})
+
+    @property
+    def dtype(self):
+        return self.space.dtype
+
+    @property
+    def seed(self):
+        return self.space.seed
 
     # Code below is kept as an example in case one day we decide on overriding numpy functions (again).
     # def __array_ufunc__(self, ufunc, method, *input_args, out=None, **kwargs):
@@ -243,7 +242,6 @@ class StateElement(numpy.ndarray):
                 item.view(numpy.ndarray),
                 space,
                 out_of_bounds_mode=self.out_of_bounds_mode,
-                **self.kwargs,
             )
         else:
             try:
@@ -304,7 +302,6 @@ class StateElement(numpy.ndarray):
             value,
             space,
             out_of_bounds_mode=self.out_of_bounds_mode,
-            **self.kwargs,
         )
 
     def __str__(self):

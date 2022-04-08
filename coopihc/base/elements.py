@@ -14,28 +14,28 @@ import numpy
 
 
 # ======================== Space Shortcuts ========================
-def lin_space(start, stop, num=50, endpoint=True, dtype=numpy.int64, seed=None, **kwargs):
-    # lin_space(num=50, start=0, stop=None, endpoint=False, dtype=numpy.int64):
-    """Linearly spaced discrete space.
+# def lin_space(start, stop, num=50, endpoint=True, dtype=numpy.int64, seed=None, **kwargs):
+#     # lin_space(num=50, start=0, stop=None, endpoint=False, dtype=numpy.int64):
+#     """Linearly spaced discrete space.
 
-    Wrap numpy's linspace to produce a space that is compatible with COOPIHC. Parameters of this function are defined in https://numpy.org/doc/stable/reference/generated/numpy.linspace.html
-
-
-    :return: _description_
-    :rtype: _type_
-    """
-    if stop is None:
-        stop = num + start
-    return Space(
-        array=numpy.linspace(
-            start, stop, num=num, endpoint=endpoint, dtype=dtype
-        ),
-        seed=seed,
-        **kwargs
-    )
+#     Wrap numpy's linspace to produce a space that is compatible with COOPIHC. Parameters of this function are defined in https://numpy.org/doc/stable/reference/generated/numpy.linspace.html
 
 
-def integer_set(N, **kwargs):
+#     :return: _description_
+#     :rtype: _type_
+#     """
+#     if stop is None:
+#         stop = num + start
+#     return Space(
+#         array=numpy.linspace(
+#             start, stop, num=num, endpoint=endpoint, dtype=dtype
+#         ),
+#         seed=seed,
+#         **kwargs
+#     )
+
+
+def integer_set(N, dtype=None, **kwargs):
     """{0, 1, ... , N-1} Set
 
     Wrapper around lin_space.
@@ -45,10 +45,12 @@ def integer_set(N, **kwargs):
     :return: Integer Set
     :rtype: CatSet
     """
-    return lin_space(0, None, num=N, endpoint=False, **kwargs)
+    return Space(
+        array=numpy.linspace(0, N, num=N, endpoint=False, dtype=dtype), **kwargs
+    )
 
 
-def integer_space(N=None, start=0, stop=None, **kwargs):
+def integer_space(N=None, start=0, stop=None, dtype=numpy.int64):
     """[0, 1, ... , N-1, N]
 
     Wrapper around box_space
@@ -58,19 +60,13 @@ def integer_space(N=None, start=0, stop=None, **kwargs):
     :return: Integer Space
     :rtype: Numeric
     """
-    dtype = kwargs.get("dtype", None)
-    if dtype is None:
-        dtype = numpy.dtype("int64")
+
     if stop is None:
         if N is None:
             N = numpy.iinfo(dtype).max
         stop = N + start - 1
 
-    return box_space(
-        low=numpy.array(start),
-        high=numpy.array(stop),
-        **kwargs,
-    )
+    return box_space(low=numpy.array(start), high=numpy.array(stop), dtype=dtype)
 
 
 def box_space(high=numpy.ones((1, 1)), low=None, **kwargs):
@@ -116,46 +112,37 @@ def _set_shape_object(shape, obj, default_value):
     return obj
 
 
-def array_element(shape=None, init=None, low=None, high=None, **kwargs):
+def array_element(
+    shape=None, init=None, low=None, high=None, out_of_bounds_mode="warning", **kwargs
+):
     shape = _get_shape_from_objects(shape, init, low, high)
     init = _set_shape_object(shape, init, 0)
     low = _set_shape_object(shape, low, -numpy.inf)
     high = _set_shape_object(shape, high, numpy.inf)
 
-    out_of_bounds_mode = kwargs.pop("out_of_bounds_mode", "warning")
-    seed = kwargs.pop("seed", None)
-    dtype = kwargs.pop("dtype", numpy.float64)
-
     return StateElement(
         init,
-        Space(low=low, high=high, dtype=dtype, **kwargs),
+        Space(low=low, high=high, **kwargs),
         out_of_bounds_mode=out_of_bounds_mode,
-        seed=seed,
     )
 
 
 def discrete_array_element(N=None, shape=None, init=0, low=None, high=None, **kwargs):
 
-    dtype = kwargs.pop("dtype", numpy.int64)
-
     if N is None:
-        return array_element(
-            shape=shape, init=init, low=low, high=high, dtype=dtype, **kwargs
-        )
+        return array_element(shape=shape, init=init, low=low, high=high, **kwargs)
     else:
         if low is None:
             low = 0
         if high is None:
             high = N - 1 + low
 
-        return array_element(
-            shape=shape, init=init, low=low, high=high, dtype=dtype, **kwargs
-        )
+        return array_element(shape=shape, init=init, low=low, high=high, **kwargs)
 
 
-def cat_element(N, init=0, seed=None, out_of_bounds_mode="warning", **kwargs):
+def cat_element(N, init=0, out_of_bounds_mode="warning", **kwargs):
     return StateElement(
-        init, integer_set(N, seed=seed, **kwargs), out_of_bounds_mode=out_of_bounds_mode
+        init, integer_set(N, **kwargs), out_of_bounds_mode=out_of_bounds_mode
     )
 
 

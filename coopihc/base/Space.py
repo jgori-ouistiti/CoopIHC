@@ -59,12 +59,28 @@ class Space:
     """
 
     def __new__(
-        cls, low=None, high=None, array=None, N=None, _function=None, seed=None, **kwargs
+        cls,
+        low=None,
+        high=None,
+        array=None,
+        N=None,
+        _function=None,
+        seed=None,
+        dtype=None,
+        contains="numpy",
     ):
         if low is not None and high is not None:
-            return Numeric(low=numpy.asarray(low), high=numpy.asarray(high), seed=seed, **kwargs)
+            return Numeric(
+                low=numpy.asarray(low),
+                high=numpy.asarray(high),
+                seed=seed,
+                dtype=dtype,
+                contains=contains,
+            )
         if array is not None:
-            return CatSet(array=numpy.asarray(array), seed=seed, **kwargs)
+            return CatSet(
+                array=numpy.asarray(array), seed=seed, dtype=dtype, contains=contains
+            )
         if N is not None and _function is not None:
             raise NotImplementedError
         raise ValueError(
@@ -162,12 +178,13 @@ class Numeric(BaseSpace):
         self,
         low=-numpy.array([1]),
         high=numpy.array([1]),
-        **kwargs,
+        seed=None,
+        dtype=None,
+        contains="numpy",
     ):
 
         self.low = low
         self.high = high
-        self.kwargs = kwargs
         self._N = None
         self._array = None
 
@@ -179,7 +196,7 @@ class Numeric(BaseSpace):
                     )
                 )
 
-        super().__init__(**kwargs)
+        super().__init__(seed=seed, dtype=dtype, contains=contains)
 
         # astype has weird behavior when overflowing. e.g. numpy.asarray(numpy.inf).astype(numpy.int64) = -max instead of max. Below is poor attempt at solving it.
 
@@ -261,7 +278,11 @@ class Numeric(BaseSpace):
     def __next__(self):
         """__next__"""
         return type(self)(
-            low=next(self._iter_low), high=next(self._iter_high), **self.kwargs
+            low=next(self._iter_low),
+            high=next(self._iter_high),
+            seed=self.seed,
+            dtype=self._dtype,
+            contains=self.contains,
         )
 
     def __getitem__(self, key):
@@ -296,7 +317,13 @@ class Numeric(BaseSpace):
             assert s[:, :] == s
             assert s[...] == s
         """
-        return type(self)(low=self.low[key], high=self.high[key], **self.kwargs)
+        return type(self)(
+            low=self.low[key],
+            high=self.high[key],
+            seed=self.seed,
+            dtype=self._dtype,
+            contains=self.contains,
+        )
 
     def __eq__(self, other):
         """__eq__
@@ -438,14 +465,10 @@ class CatSet(BaseSpace):
     :type array: numpy.ndarray, optional
     """
 
-    def __init__(
-        self,
-        array=None,
-        **kwargs,
-    ):
+    def __init__(self, array=None, seed=None, dtype=None, contains="numpy"):
 
         self.array = array
-        super().__init__(**kwargs)
+        super().__init__(seed=seed, dtype=dtype, contains=contains)
         self.array = array.astype(self.dtype)
 
     @property
