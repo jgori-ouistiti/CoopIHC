@@ -390,7 +390,10 @@ class Numeric(BaseSpace):
         return f"{type(self).__name__}([{self.low}, {self.high}])"
 
     def __flat__(self):
-        return f"{type(self).__name__}({self.shape})"
+        if self.seed is None:
+            return f"{type(self).__name__}({self.shape}) -- {self.dtype}"
+        else:
+            return f"{type(self).__name__}({self.shape}) -- {self.dtype} -- seed: {self.seed}"
 
     def sample(self):
         """sample

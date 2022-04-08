@@ -621,10 +621,23 @@ class StateElement(numpy.ndarray):
         except TypeError:
             _index = 0
         if self.space.__class__.__name__ == "Numeric":
-            string_space[_index] = "Numeric{}".format(self.space.shape)
+            if self.space.seed is None:
+                string_space[
+                    _index
+                ] = f"Numeric{self.space.shape} - {self.space.dtype}".format()
+            else:
+                string_space[
+                    _index
+                ] = f"Numeric{self.space.shape} - {self.space.dtype} (seed:{self.space.seed})".format()
             array = self.view(numpy.ndarray)
         elif self.space.__class__.__name__ == "CatSet":
-            string_space[_index] = "CatSet({})".format(self.space.N)
+            if self.space.seed is None:
+                string_space[_index] = f"CatSet({self.space.N}) - {self.space.dtype}"
+            else:
+                string_space[
+                    _index
+                ] = f"CatSet({self.space.N}) - {self.space.dtype} seed:{self.space.seed}"
+
             array = self.view(numpy.ndarray)
         else:
             raise NotImplementedError
