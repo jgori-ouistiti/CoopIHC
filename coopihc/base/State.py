@@ -6,7 +6,10 @@ import warnings
 import itertools
 
 from coopihc.base.StateElement import StateElement
-from coopihc.base.utils import NotKnownSerializationWarning
+from coopihc.base.utils import (
+    NotKnownSerializationWarning,
+    StateElementAssignmentWarning,
+)
 from coopihc.base.Space import CatSet
 
 
@@ -102,9 +105,22 @@ class State(dict):
 
     def __setitem__(self, key, value):
         if isinstance(value, (State, StateElement)):
+            if isinstance(value, StateElement):
+                try:
+                    if self[key].space != value.space:
+                        warnings.warn(
+                            StateElementAssignmentWarning(
+                                f"You are trying to assign StateElement {value} with space {value.space} to a state which has previous StateElement {self[key]} with space {self[key].space}. To suppress this warning, either make sure your assignment is not of type StateElement, or delete the old statelement beforehand if you want it to be replaced"
+                            )
+                        )
+                        self[key][...] = value[...]
+                        return
+                except KeyError:
+                    return super().__setitem__(key, value)
             return super().__setitem__(key, value)
         try:
             self[key][...] = value
+            return
         except KeyError:
             return super().__setitem__(key, value)
 

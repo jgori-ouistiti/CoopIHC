@@ -37,7 +37,21 @@ class BaseBundle:
         "before_assistant_action": 3,
     }
 
-    def __init__(self, task, user, assistant, *args, **kwargs):
+    def __init__(
+        self,
+        task,
+        user,
+        assistant,
+        *args,
+        reset_random=False,
+        reset_start_after=-1,
+        reset_go_to=0,
+        **kwargs,
+    ):
+        self._reset_random = reset_random
+        self._reset_start_after = reset_start_after
+        self._reset_go_to = reset_go_to
+
         self.kwargs = kwargs
         self.task = task
         self.task.bundle = self
@@ -165,8 +179,8 @@ class BaseBundle:
 
     def reset(
         self,
-        go_to=0,
-        start_after=0,
+        go_to=None,
+        start_after=None,
         task=True,
         user=True,
         assistant=True,
@@ -215,13 +229,14 @@ class BaseBundle:
         :return: new game state
         :rtype: :py:class:`State<coopihc.base.State.State>`
         """
-        # ============= Passing via bundles
-        go_to = self.kwargs.get("reset_go_to", go_to)
-        # skip_user_action = self.kwargs.get("reset_skip_user_action", skip_user_action)
-        # if skip_user_action:
-        # start_after = 2
-        random_reset = self.kwargs.get("random_reset", random_reset)
-        # =============
+
+        if go_to is None:
+            go_to = self._reset_go_to
+
+        if start_after is None:
+            start_after = self._reset_start_after
+
+        random_reset = self._reset_random or random_reset
 
         if task:
             task_dic = dic.get("task_state")

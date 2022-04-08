@@ -379,7 +379,10 @@ class Numeric(BaseSpace):
             raise NotImplementedError
 
     def __repr__(self):
-        return f"{type(self).__name__}([{self.low}, {self.high}])"
+        if self.seed is None:
+            return f"{type(self).__name__}([{self.low}, {self.high}]) -- {self.dtype}"
+        else:
+            return f"{type(self).__name__}([{self.low}, {self.high}]) -- {self.dtype} -- seed: {self.seed}"
 
     def __flat__(self):
         if self.seed is None:
@@ -461,7 +464,9 @@ class CatSet(BaseSpace):
     """
 
     def __init__(self, array=None, seed=None, dtype=None, contains="numpy"):
-
+        if dtype is not None:
+            if not numpy.issubdtype(dtype, numpy.integer):
+                raise ValueError("dtype has to be an integer type")
         self.array = array
         super().__init__(seed=seed, dtype=dtype, contains=contains)
         self.array = array.astype(self.dtype)
@@ -477,6 +482,8 @@ class CatSet(BaseSpace):
         if self._dtype is None:
             if self.array is not None:
                 self._dtype = self.array.dtype
+                if not numpy.issubdtype(self._dtype, numpy.integer):
+                    self._dtype = numpy.dtype(numpy.int64)
         return self._dtype
 
     @property

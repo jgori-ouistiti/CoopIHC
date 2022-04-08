@@ -35,7 +35,7 @@ import numpy
 #     )
 
 
-def integer_set(N, dtype=None, **kwargs):
+def integer_set(N, dtype=numpy.int64, **kwargs):
     """{0, 1, ... , N-1} Set
 
     Wrapper around lin_space.
@@ -46,7 +46,7 @@ def integer_set(N, dtype=None, **kwargs):
     :rtype: CatSet
     """
     return Space(
-        array=numpy.linspace(0, N, num=N, endpoint=False, dtype=dtype), **kwargs
+        array=numpy.linspace(0, N, num=N, endpoint=False), dtype=dtype, **kwargs
     )
 
 

@@ -261,7 +261,9 @@ class GymConvertor(RLConvertor):
 
     def convert_space(self, space):
         if isinstance(space, Numeric):
-            return gym.spaces.Box(low=space.low, high=space.high, dtype=space.dtype)
+            return gym.spaces.Box(
+                low=space.low, high=space.high, shape=space.low.shape, dtype=space.dtype
+            )
         elif isinstance(space, CatSet):
             return gym.spaces.Discrete(space.N)
 

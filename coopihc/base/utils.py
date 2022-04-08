@@ -38,6 +38,12 @@ class WrongConvertorWarning(Warning):
     __module__ = Warning.__module__
 
 
+class StateElementAssignmentWarning(Warning):
+    """Warning raised when trying to assign a statelement to a state with a previous stateelement, and the two spaces don't match"""
+
+    __module__ = Warning.__module__
+
+
 # ======================== Errors ========================
 
 

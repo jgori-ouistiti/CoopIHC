@@ -66,10 +66,10 @@ def test_filter():
     f_state = state.filter(mode="space", filterdict=filterdict)
     assert f_state == {
         "sub1": {
-            "x1": Space(low=1, high=3),
+            "x1": Space(low=1, high=3, dtype=numpy.int64),
             "x3": Space(low=numpy.ones((2, 2)), high=2 * numpy.ones((2, 2))),
         },
-        "sub2": {"y1": Space(low=1, high=3)},
+        "sub2": {"y1": Space(low=1, high=3, dtype=numpy.int64)},
     }
 
     f_state = state.filter(mode="array", filterdict=filterdict)
@@ -150,6 +150,17 @@ def test_equals_hard():
 def test_equals():
     test_equals_soft()
     test_equals_hard()
+
+
+def test_assign_after():
+    S = State()
+    S["x"] = discrete_array_element(N=4)
+    S["x"] = 0.0
+    assert numpy.issubdtype(S["x"].dtype, numpy.integer)
+
+    S["x"] = 1 + array_element(init=1)
+    assert S["x"] == 2
+    assert numpy.issubdtype(S["x"].dtype, numpy.integer)
 
 
 if __name__ == "__main__":
