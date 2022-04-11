@@ -290,13 +290,13 @@ class BaseAgent:
                 f"Agent{self.__class__.__name__} has not been connected to a task yet."
             )
 
-    def __getattr__(self, value):
-        try:
-            return self.parameters.__getitem__(value)
-        except:
-            raise AttributeError(
-                f"{self.__class__.__name__} object has no attribute {value}"
-            )
+    # def __getattr__(self, value):
+    #     try:
+    #         return self.parameters.__getitem__(value)
+    #     except:
+    #         raise AttributeError(
+    #             f"{self.__class__.__name__} object has no attribute {value}"
+    #         )
 
     def _attach_policy(self, policy, **kwargs):
         """Attach a policy

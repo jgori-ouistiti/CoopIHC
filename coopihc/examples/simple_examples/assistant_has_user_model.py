@@ -24,6 +24,7 @@ while True:
     # print(bundle.game_state)
     if is_done:
         break
+
 # [end-user-model]
 # [start-user-model-mismatch]
 user = PseudoRandomUserWithParams(p=[1, 5, 7])
@@ -50,12 +51,13 @@ while True:
 
 # bundle = Bundle(task=CoordinatedTask(), user=user, assistant=assistant)
 
-bundle.reset(go_to=2)
-# print(bundle.game_state)
-while True:
-    obs, rewards, is_done = bundle.step()
-    if is_done:
-        break
+# bundle.reset(go_to=2)
+# # print(bundle.game_state)
+# while True:
+#     obs, rewards, is_done = bundle.step()
+#     if is_done:
+#         break
+
 # [end-user-model-inference]
 
 

@@ -67,7 +67,6 @@ class Space:
         dtype=None,
         contains="numpy",
     ):
-        print(dtype)
         if low is not None and high is not None:
             return Numeric(
                 low=numpy.asarray(low),
