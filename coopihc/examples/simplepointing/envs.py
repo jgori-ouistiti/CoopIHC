@@ -35,7 +35,7 @@ class SimplePointingTask(InteractionTask):
         )  # position anywhere inside the grid
 
         self.state["targets"] = discrete_array_element(
-            low=0, high=gridsize, shape=(number_of_targets,)
+            low=0, high=gridsize - 1, shape=(number_of_targets,)
         )  # targets anywere inside the grid
 
     def reset(self, dic=None):
@@ -48,7 +48,9 @@ class SimplePointingTask(InteractionTask):
         # select random targets
         targets = sorted(
             numpy.random.choice(
-                list(range(self.gridsize)), size=self.number_of_targets, replace=False
+                list(range(self.gridsize)),
+                size=self.number_of_targets,
+                replace=False,
             )
         )
 
@@ -99,10 +101,8 @@ class SimplePointingTask(InteractionTask):
 
         # two modes
         if self.mode == "position":
-            print("yes")
             self.state["position"] = int(self.assistant_action)
         elif self.mode == "gain":
-            print("no")
             self.state["position"] += int(self.user_action) * int(self.assistant_action)
 
         return self.state, 0, False

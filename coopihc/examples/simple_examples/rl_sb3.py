@@ -105,6 +105,7 @@ modified_env = NormalizeActionWrapper(modified_env)
 # >>> print(modified_env.observation_space)
 # Box(0.0, 30.0, (2,), float32)
 
+
 check_env(modified_env, warn=True)
 # >>> modified_env.reset()
 # array([ 4., 23.], dtype=float32)

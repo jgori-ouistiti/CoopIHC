@@ -125,8 +125,4 @@ class CarefulPointer(BaseAgent):
     def reset(self, dic=None):
         # select a random target to be the goal
         index = numpy.random.randint(0, self.targets.size)
-        self.state["goal"] = discrete_array_element(
-            init=self.targets[index],
-            low=self.targets.space[index].low,
-            high=self.targets.space[index].high - 1,
-        )
+        self.state["goal"] = self.targets[index]
