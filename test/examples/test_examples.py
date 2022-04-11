@@ -19,6 +19,10 @@ def test_simple_examples():
     import coopihc.examples.simple_examples.exploit_rlnet
 
 
+def test_poiting_examples():
+    import coopihc.examples.simplepointing.scripts.basic_big
+
+
 @pytest.mark.timeout(3)
 def test_bundle_examples():
     import coopihc.examples.basic_examples.bundle_examples

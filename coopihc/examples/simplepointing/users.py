@@ -40,7 +40,6 @@ class CarefulPointer(BaseAgent):
 
 
 
-
     :param error_rate: rate at which users makes errors, defaults to 0.05
     :type error_rate: float, optional
     """
@@ -49,9 +48,11 @@ class CarefulPointer(BaseAgent):
 
         self._targets = None
 
+        # Define action state of the agent ([-1,0,1])
         action_state = State()
         action_state["action"] = discrete_array_element(low=-1, high=1)
 
+        # Define Policy. Here we use a policy explicitly defined by a likelihood model (of the form p(action|observation) = x for each action). To do so, we use a ELLDiscretePolicy, and simply define the likelihood model (compute_likelihood). See ELLDiscretePolicy docs for more information
         ELLD_dic = {"compute_likelihood_args": {"error_rate": error_rate}}
         ELLD_dic.update(kwargs.get("policy_kwargs", {}))
 
@@ -94,12 +95,13 @@ class CarefulPointer(BaseAgent):
         agent_policy.attach_likelihood_function(compute_likelihood)
 
         # ---------- Observation engine ------------
+        # Here, we use an engine that sees everything except the assistant state. See RuleObservationEngine documentation
         observation_engine = RuleObservationEngine(
             deterministic_specification=base_user_engine_specification,
         )
 
         # ---------- Calling BaseAgent class -----------
-        # Calling an agent, set as an user, which uses our previously defined observation engine and without an inference engine.
+        # Always call super().__init__() to attach all components to the agent.
 
         super().__init__(
             "user",
@@ -110,15 +112,18 @@ class CarefulPointer(BaseAgent):
         )
 
     def finit(self):
+        # Select the goal. This has to be done during finit, otherwise, the task will not have the right targets yet.
         self.state["goal"] = discrete_array_element(
             low=0, high=(self.bundle.task.gridsize - 1)
         )
 
     @property
     def targets(self):
+        # shortcut
         return self.bundle.task.state["targets"]
 
     def reset(self, dic=None):
+        # select a random target to be the goal
         index = numpy.random.randint(0, self.targets.size)
         self.state["goal"] = discrete_array_element(
             init=self.targets[index],

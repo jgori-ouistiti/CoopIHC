@@ -171,7 +171,7 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
             return draw, fill, symbol
 
         def draw_beliefs(ax):
-            beliefs = self.host.state["beliefs"].squeeze().tolist()
+            beliefs = self.host.state["beliefs"].tolist()
 
             ticks = []
             ticklabels = []
@@ -185,19 +185,19 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
         ## -------------------------- End Helper functions
 
         if "plot" in mode:
-            if self.ax is not None:
-                title = self.ax.get_title()
-                self.ax.clear()
-                draw_beliefs(ax)
-                ax.set_title(title)
+            # if self.ax is not None:
+            #     title = self.ax.get_title()
+            #     self.ax.clear()
+            #     draw_beliefs(ax)
+            #     ax.set_title(title)
 
-            else:
-                self.ax = ax
-                draw_beliefs(ax)
-                self.ax.set_title(type(self).__name__ + " beliefs")
+            # else:
+            self.ax = ax
+            draw_beliefs(ax)
+            self.ax.set_title(type(self).__name__ + " beliefs")
 
         if "text" in mode:
-            beliefs = self.host.state["beliefs"].squeeze().tolist()
+            beliefs = self.host.state["beliefs"].tolist()
             print("beliefs", beliefs)
 
     @BaseInferenceEngine.default_value

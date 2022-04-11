@@ -110,7 +110,7 @@ class State(dict):
                     if self[key].space != value.space:
                         warnings.warn(
                             StateElementAssignmentWarning(
-                                f"You are trying to assign StateElement {value} with space {value.space} to a state which has previous StateElement {self[key]} with space {self[key].space}. To suppress this warning, either make sure your assignment is not of type StateElement, or delete the old statelement beforehand if you want it to be replaced"
+                                f"StateElement Assignment for Key '{key}': You are trying to assign StateElement {value} with space {value.space} to a state which has previous StateElement {self[key]} with space {self[key].space}. This means you are assigning a new value only, not a new statelement. To suppress this warning, either make sure your assignment is not of type StateElement, or delete the old StateElement beforehand if you want it to be replaced"
                             )
                         )
                         self[key][...] = value[...]

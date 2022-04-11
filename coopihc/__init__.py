@@ -80,4 +80,4 @@ from .observation.utils import base_assistant_engine_specification
 # ---------------------- pointing examples
 from .examples.simplepointing.envs import SimplePointingTask
 from .examples.simplepointing.users import CarefulPointer
-from .examples.simplepointing.assistants import ConstantCDGain
+from .examples.simplepointing.assistants import ConstantCDGain, BIGGain

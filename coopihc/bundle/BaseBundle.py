@@ -77,22 +77,20 @@ class BaseBundle:
         self.game_state["user_state"] = user.state
         self.game_state["assistant_state"] = assistant.state
 
-        # here there is a small caveat: you can not access action states in the game_state at finit, you have to pass through the agent instead. This is due to the current way of creating the game_state.
+        # # here there is a small caveat: you can not access action states in the game_state at finit, you have to pass through the agent instead. This is due to the current way of creating the game_state.
 
         self.task.finit()
         self.user.finit()
         self.assistant.finit()
 
-        if user.policy is not None:
-            self.game_state["user_action"] = user.policy.action_state
-        else:
-            self.game_state["user_action"] = State()
-            self.game_state["user_action"]["action"] = array_element()
-        if assistant.policy is not None:
-            self.game_state["assistant_action"] = assistant.policy.action_state
-        else:
-            self.game_state["assistant_action"] = State()
-            self.game_state["assistant_action"]["action"] = array_element()
+        self.game_state["user_action"] = self.user.policy.action_state
+        self.game_state["assistant_action"] = self.assistant.policy.action_state
+
+        # self.game_state["user_action"] = State()
+        # self.game_state["user_action"]["action"] = array_element()
+
+        # self.game_state["assistant_action"] = State()
+        # self.game_state["assistant_action"]["action"] = array_element()
 
         # This will not work sometimes
 

@@ -28,11 +28,11 @@ class ConstantCDGain(BaseAgent):
         super().__init__("assistant")
 
     def finit(self):
-
+        del self.policy.action_state["action"]
         self.policy.action_state["action"] = array_element(
             init=self.gain,
-            low=numpy.full((1, self.bundle.task.dim), self.gain),
-            high=numpy.full((1, self.bundle.task.dim), self.gain),
+            low=numpy.full((self.bundle.task.dim,), self.gain),
+            high=numpy.full((self.bundle.task.dim,), self.gain),
         )
 
 
@@ -44,25 +44,25 @@ class BIGGain(BaseAgent):
         )
 
     def finit(self):
-        action_state = self.bundle.game_state["assistant_action"]
-        action_state["action"] = discrete_array_element(
+        del self.policy.action_state["action"]
+        self.policy.action_state["action"] = discrete_array_element(
             init=0, low=0, high=self.bundle.task.gridsize, out_of_bounds_mode="error"
         )
 
         user_policy_model = copy.deepcopy(self.bundle.user.policy)
-        agent_policy = BIGDiscretePolicy(action_state, user_policy_model)
-        self.attach_policy(agent_policy)
-        self.inference_engine.attach_policy(user_policy_model)
+        agent_policy = BIGDiscretePolicy(self.policy.action_state, user_policy_model)
+        self._attach_policy(agent_policy)
+        self.inference_engine._attach_policy(user_policy_model)
 
         self.state["beliefs"] = array_element(
             init=1 / self.bundle.task.number_of_targets,
             low=numpy.zeros((self.bundle.task.number_of_targets,)),
             high=numpy.ones((self.bundle.task.number_of_targets,)),
-            out_of_bounds_more="error",
+            out_of_bounds_mode="error",
         )
 
     def reset(self, dic=None):
-        self.state["beliefs"][...] = numpy.array(
+        self.state["beliefs"] = numpy.array(
             [
                 1 / self.bundle.task.number_of_targets
                 for i in range(self.bundle.task.number_of_targets)
@@ -93,12 +93,8 @@ class BIGGain(BaseAgent):
 
         self.policy.attach_transition_function(transition_function)
 
-    def render(self, *args, **kwargs):
-        mode = kwargs.get("mode")
-        if mode is None:
-            mode = "text"
+    def render(self, mode="text", ax_user=None, ax_assistant=None, ax_task=None):
         try:
-            axtask, axuser, axassistant = args
-            self.inference_engine.render(axassistant, mode=mode)
+            self.inference_engine.render(mode="text", ax_assistant=ax_assistant)
         except ValueError:
             self.inference_engine.render(mode=mode)

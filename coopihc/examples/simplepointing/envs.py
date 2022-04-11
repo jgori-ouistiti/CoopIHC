@@ -19,19 +19,9 @@ class SimplePointingTask(InteractionTask):
 
     A 1D grid of size 'Gridsize'. The cursor is at a certain 'position' and there are several potential 'targets' on the grid. The user action is modulated by the assistant.
 
-    :param gridsize: (int) Size of the grid
-    :param number_of_targets: (int) Number of targets on the grid
+    The task features two modes, 'position' and 'gain'. In position, the assistant directly specifies the position of the cursor. In gain mode, the cursor position is modulated by the assistant: position[k+1] = position[k] + user action * assistant_action
 
-    :meta public:
     """
-
-    @property
-    def user_action(self):
-        return super().user_action[0]
-
-    @property
-    def assistant_action(self):
-        return super().assistant_action[0]
 
     def __init__(self, gridsize=31, number_of_targets=10, mode="gain"):
         super().__init__()
@@ -42,50 +32,51 @@ class SimplePointingTask(InteractionTask):
 
         self.state["position"] = discrete_array_element(
             low=0, high=gridsize - 1, out_of_bounds_mode="clip"
-        )
+        )  # position anywhere inside the grid
 
         self.state["targets"] = discrete_array_element(
             low=0, high=gridsize, shape=(number_of_targets,)
-        )
+        )  # targets anywere inside the grid
 
     def reset(self, dic=None):
         """Reset the task.
 
         Reset the grid used for rendering, define new targets, select a starting position
 
-        :param args: reset to the given state
-
-        :meta public:
         """
-        self.grid = [" " for i in range(self.gridsize)]
+
+        # select random targets
         targets = sorted(
             numpy.random.choice(
                 list(range(self.gridsize)), size=self.number_of_targets, replace=False
             )
         )
-        for i in targets:
-            self.grid[i] = "T"
-        # Define starting position
-        copy = list(range(len(self.grid)))
+
+        # Define starting position, making sure not to start on a target
+        copy = list(range(self.gridsize))
         for i in targets:
             copy.remove(i)
         position = int(numpy.random.choice(copy))
-        self.state["position"][...] = position
-        self.state["targets"][...] = targets
+
+        # actually assign position and targets to task
+        self.state["position"] = position
+        self.state["targets"] = targets
+
+        # For text render
+        self.grid = [" " for i in range(self.gridsize)]
+        for i in targets:
+            self.grid[i] = "T"
 
     def on_user_action(self, *args, user_action=None, **kwargs):
         """Do nothing, increment turns, return half a timestep
 
         :meta public:
         """
+        # Finish task if cursor on top of the goal
         is_done = False
-        if (
-            # self.user_action == 0
-            # and self.state["position"] == self.bundle.user.state["goal"]
-            self.state["position"]
-            == self.bundle.user.state["goal"]
-        ):
+        if self.state["position"] == self.bundle.user.state["goal"]:
             is_done = True
+
         return self.state, -1, is_done
 
     def on_assistant_action(self, *args, assistant_action=None, **kwargs):
@@ -103,22 +94,20 @@ class SimplePointingTask(InteractionTask):
         is_done = False
 
         # Stopping condition if too many turns
-        if int(self.round_number) >= 50:
+        if self.round_number >= 50:
             return self.state, 0, True
 
+        # two modes
         if self.mode == "position":
-            self.state["position"][...] = self.assistant_action
+            print("yes")
+            self.state["position"] = int(self.assistant_action)
         elif self.mode == "gain":
-
-            position = self.state["position"]
-
-            self.state["position"][...] = numpy.round(
-                position + self.user_action * self.assistant_action
-            )
+            print("no")
+            self.state["position"] += int(self.user_action) * int(self.assistant_action)
 
         return self.state, 0, False
 
-    def render(self, *args, mode="text"):
+    def render(self, mode="text", ax_user=None, ax_assistant=None, ax_task=None):
         """Render the task.
 
         Plot or print the grid, with cursor and target positions.
@@ -133,11 +122,11 @@ class SimplePointingTask(InteractionTask):
 
         :meta public:
         """
-        goal = self.bundle.game_state["user_state"]["goal"].squeeze().tolist()
+        goal = int(self.bundle.game_state["user_state"]["goal"])
         self.grid[goal] = "G"
         if "text" in mode:
             tmp = self.grid.copy()
-            tmp[int(self.state["position"].squeeze().tolist())] = "P"
+            tmp[int(self.state["position"])] = "P"
             _str = "|"
             for t in tmp:
                 _str += t + "|"
@@ -146,14 +135,13 @@ class SimplePointingTask(InteractionTask):
 
             targets = sorted(self.state["targets"])
             print("Targets:")
-            print([t.squeeze().tolist() for t in targets])
+            print([t.tolist() for t in targets])
             print("\n")
         if "plot" in mode:
-            axtask, axuser, axassistant = args[:3]
             if self.ax is not None:
                 self.update_position()
             else:
-                self.ax = axtask
+                self.ax = ax_task
                 self.init_grid()
                 self.ax.set_aspect("equal")
         if not ("plot" in mode or "text" in mode):
