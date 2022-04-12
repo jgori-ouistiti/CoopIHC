@@ -16,13 +16,10 @@ from coopihc import BaseAgent
 # [start-user-model]
 user = PseudoRandomUser()
 user_model = PseudoRandomUser()  # The same as user
-assistant = CoordinatedAssistant(user_model=user_model)
-assistant = BaseAgent("assistant")
-task = CoordinatedTask()
 
+assistant = CoordinatedAssistant(user_model=user_model)
 bundle = Bundle(task=CoordinatedTask(), user=user, assistant=assistant)
-exit()
-# bundle.reset(go_to=3)
+bundle.reset(go_to=3)
 print(bundle.game_state)
 while True:
     obs, rewards, is_done = bundle.step()

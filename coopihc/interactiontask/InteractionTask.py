@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from coopihc.base.State import State
 from coopihc.base.StateElement import StateElement
 import numpy
-
+import copy
 
 """
     The main API methods for this class are:
@@ -113,13 +113,15 @@ class InteractionTask(ABC):
             raise AttributeError("This task has not been connected to an assistant yet")
 
     def __getattr__(self, value):
-        print(f"inside {self.__class__.__name__}, getting {value}")
-        print(f"parameters: {self.parameters}")
+        # https://stackoverflow.com/questions/47299243/recursionerror-when-python-copy-deepcopy
+        if value.startswith("__"):
+            raise AttributeError
+
         try:
             return self.parameters.__getitem__(value)
         except:
             raise AttributeError(
-                f"'{self.__class__.__name__}' object has no attribute '{value}'"
+                f"{self.__class__.__name__} object has no attribute {value}"
             )
 
     @property

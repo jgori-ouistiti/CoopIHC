@@ -69,6 +69,7 @@ from .base.elements import box_space
 from .base.elements import array_element
 from .base.elements import discrete_array_element
 from .base.elements import cat_element
+from .base.elements import example_game_state
 
 
 from .observation.utils import oracle_engine_specification

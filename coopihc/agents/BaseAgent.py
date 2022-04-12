@@ -290,13 +290,17 @@ class BaseAgent:
                 f"Agent{self.__class__.__name__} has not been connected to a task yet."
             )
 
-    # def __getattr__(self, value):
-    #     try:
-    #         return self.parameters.__getitem__(value)
-    #     except:
-    #         raise AttributeError(
-    #             f"{self.__class__.__name__} object has no attribute {value}"
-    #         )
+    def __getattr__(self, value):
+        # https://stackoverflow.com/questions/47299243/recursionerror-when-python-copy-deepcopy
+        if value.startswith("__"):
+            raise AttributeError
+
+        try:
+            return self.parameters.__getitem__(value)
+        except:
+            raise AttributeError(
+                f"{self.__class__.__name__} object has no attribute {value}"
+            )
 
     def _attach_policy(self, policy, **kwargs):
         """Attach a policy
