@@ -81,6 +81,8 @@ class BaseBundle:
 
         self.task.finit()
         self.user.finit()
+        print("here==============")
+
         self.assistant.finit()
 
         self.game_state["user_action"] = self.user.policy.action_state
@@ -133,6 +135,13 @@ class BaseBundle:
 
     @property
     def parameters(self):
+        print(
+            {
+                **self.task._parameters,
+                **self.user._parameters,
+                **self.assistant._parameters,
+            }
+        )
         return {
             **self.task._parameters,
             **self.user._parameters,

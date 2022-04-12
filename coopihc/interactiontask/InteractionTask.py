@@ -112,19 +112,28 @@ class InteractionTask(ABC):
         except AttributeError:
             raise AttributeError("This task has not been connected to an assistant yet")
 
-    # def __getattr__(self, value):
-    #     try:
-    #         return self.parameters.__getitem__(value)
-    #     except:
-    #         raise AttributeError(
-    #             f"'{self.__class__.__name__}' object has no attribute '{value}'"
-    #         )
+    def __getattr__(self, value):
+        print(f"inside {self.__class__.__name__}, getting {value}")
+        print(f"parameters: {self.parameters}")
+        try:
+            return self.parameters.__getitem__(value)
+        except:
+            raise AttributeError(
+                f"'{self.__class__.__name__}' object has no attribute '{value}'"
+            )
 
     @property
     def parameters(self):
         if self.bundle:
             return self.bundle.parameters
         return self._parameters
+
+    @parameters.setter
+    def parameters(self, value):
+        if isinstance(value, dict):
+            self._parameters = value
+        else:
+            raise ValueError("Parameters can only be set with dictionaries")
 
     def __content__(self):
         """Custom class representation.

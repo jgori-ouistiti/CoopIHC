@@ -1,5 +1,6 @@
 from coopihc.interactiontask.ExampleTask import CoordinatedTask
 from coopihc.agents.ExampleUser import PseudoRandomUser, PseudoRandomUserWithParams
+
 from coopihc.agents.ExampleAssistant import (
     CoordinatedAssistant,
     CoordinatedAssistantWithInference,
@@ -10,13 +11,17 @@ from coopihc.bundle.Bundle import Bundle
 import copy
 import pytest
 
+from coopihc import BaseAgent
+
 # [start-user-model]
 user = PseudoRandomUser()
 user_model = PseudoRandomUser()  # The same as user
 assistant = CoordinatedAssistant(user_model=user_model)
+assistant = BaseAgent("assistant")
+task = CoordinatedTask()
 
 bundle = Bundle(task=CoordinatedTask(), user=user, assistant=assistant)
-
+exit()
 # bundle.reset(go_to=3)
 print(bundle.game_state)
 while True:
