@@ -32,21 +32,38 @@ class InteractionTask(ABC):
     The class that defines an Interaction Task. Subclass this task when
     creating a new task to ensure compatibility with CoopIHC. When doing so,
     make sure to call ``super()`` in ``__init__()``.
+    :param seedsequence: A seedsequence used to spawn seeds for the various spaces, defaults to None. If None, no seed is provided to the RNGs. The preferred way to set seeds is by passing the 'seed' keyword argument to the Bundle.
+    :type seedsequence: numpy.random.bit_generator.SeedSequence, optional
 
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, seedsequence=None, **kwargs):
 
         self._state = State()
         self.bundle = None
         self.timestep = 0.1
         self._parameters = {}
+        self.seedsequence = seedsequence
 
         # Render
         self.ax = None
 
     def finit(self):
         return
+
+    def _set_seed(self, seedsequence=None):
+        if seedsequence is None:
+            seedsequence = self.seedsequence
+        else:
+            self.seedsequence = seedsequence
+
+        self.state._set_seed(seedsequence)
+
+    def _get_rng(self, seedsequence=None):
+        if seedsequence is None:
+            seedsequence = self.seedsequence
+        child_seeds = seedsequence.spawn(1)
+        return numpy.random.default_rng(child_seeds[0])
 
     @property
     def turn_number(self):

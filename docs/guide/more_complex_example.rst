@@ -21,7 +21,7 @@ The user goal is the green 'G', the current cursor position is the blue 'P' and 
 
 To define a new task, we subclass ``InteractionTask`` and override the needed methods.
 
-.. literalinclude:: ../../coopihc/examples/simplepointing.envs.py
+.. literalinclude:: ../../coopihc/examples/simplepointing/envs.py
     :linenos:
     :lines: 17-109
 
@@ -31,7 +31,7 @@ Synthetic User Model
 ^^^^^^^^^^^^^^^^^^^^^^
 We now define a user model, that we call ``CarefulPointer``. To do so, we describe the 4 components of the CoopIHC BaseAgent: state, observation and inference engines, and policy. 
 
-.. literalinclude:: ../../coopihc/examples/simplepointing.users.py
+.. literalinclude:: ../../coopihc/examples/simplepointing/users.py
     :linenos:
     :pyobject: CarefulPointer
 
@@ -49,7 +49,7 @@ We are going to couple this operator with an intelligent assistant which leverag
 
 
 
-.. literalinclude:: ../../coopihc/examples/simplepointing.assistants.py
+.. literalinclude:: ../../coopihc/examples/simplepointing/assistants.py
     :linenos:
     :pyobject: BIGGain
 
@@ -59,7 +59,7 @@ Bundle
 ^^^^^^^^^
 Now that all components are ready, we can bundle them together to evaluate this combination of user model and assistant. 
 
-.. literalinclude:: ../../coopihc/examples/simplepointing.scripts/basic_big.py
+.. literalinclude:: ../../coopihc/examples/simplepointing/scripts/basic_big.py
     :linenos:
     
 

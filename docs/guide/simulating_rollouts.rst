@@ -92,7 +92,7 @@ The ``DualInferenceEngine`` holds two inference engines: the primary ``RolloutCo
 
 The remaining code is in the ``RolloutCoordinatedInferenceEngine``
 
-.. literalinclude:: ../../coopihc/inference/RolloutCoordinatedInferenceEngine.py
+.. literalinclude:: ../../coopihc/inference/ExampleInferenceEngine.py
     :pyobject: RolloutCoordinatedInferenceEngine
     :linenos:
 

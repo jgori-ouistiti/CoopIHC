@@ -10,7 +10,7 @@ from coopihc.base.utils import (
     NotKnownSerializationWarning,
     StateElementAssignmentWarning,
 )
-from coopihc.base.Space import CatSet
+from coopihc.base.Space import CatSet, Space
 
 
 class State(dict):
@@ -148,7 +148,11 @@ class State(dict):
             reset_dic = dic.get(key)
             value.reset(reset_dic)
 
-    def filter(self, mode="array", filterdict=None):
+    def _set_seed(self, seedsequence):
+        for n, i in enumerate(self.filter(mode="space", flat=True).values()):
+            i.seed = seedsequence.spawn(1)[0]
+
+    def filter(self, mode="array", filterdict=None, flat=False):
         """Extract some part of the state information
 
         An example for filterdict's structure is as follows:
@@ -191,21 +195,30 @@ class State(dict):
             # Get Gym Compatible arrays
             f_state = state.filter(mode="array-Gym")
 
+            # Same, but with a non-nested (flat) output
+            f_state = state.filter(mode="space", flat=True)
+
 
         :param mode: "array" or "spaces" or "stateelement", defaults to "array". If "stateelement", returns a dictionnary with the selected stateelements. If "spaces", returns the same dictionnary, but with only the spaces (no array information). If "array", returns the same dictionnary, but with only the value arrays (no space information).
         :type mode: str, optional
         :param filterdict: the dictionnary that indicates which components to filter out, defaults to None
         :type filterdict: dictionnary, optional
+        :param flat: whether the output should be nested like the input or flattened, default to True
+        :type flat: bool, optional
         :return: The dictionnary with the filtered state
         :rtype: dictionnary
         """
 
         new_state = {}
+
         if filterdict is None:
             filterdict = self
         for key, value in filterdict.items():
             if isinstance(self[key], State):
-                new_state[key] = self[key].filter(mode=mode, filterdict=value)
+                if not flat:
+                    new_state[key] = self[key].filter(mode=mode, filterdict=value)
+                else:
+                    new_state.update(self[key].filter(mode=mode, filterdict=value))
             elif isinstance(self[key], StateElement):
                 # to make S.filter("values", S) possible.
                 # Warning: values == filterdict[key] != self[key]
@@ -227,9 +240,12 @@ class State(dict):
                         new_state[key] = numpy.atleast_1d(v)
                     else:
                         new_state[key] = v
-
                 elif mode == "stateelement":
                     new_state[key] = self[key][value, {"space": True}]
+                else:
+                    raise ValueError(
+                        f"You want to filter by {mode}, but only modes 'space', 'array', 'array-Gym', 'stateelement' are supported."
+                    )
             else:
                 new_state[key] = self[key]
 
@@ -238,7 +254,6 @@ class State(dict):
     def __content__(self):
         return list(self.keys())
 
-    # Here we override copy and deepcopy simply because there seems to be some overhead in the default deepcopy implementation. It turns out the gain is almost None, but keep it here as a reminder that deepcopy needs speeding up.  Adapted from StateElement code
     def __copy__(self):
         cls = self.__class__
         copy_object = cls.__new__(cls)
@@ -246,6 +261,7 @@ class State(dict):
         copy_object.update(self)
         return copy_object
 
+    # about 2x speed up w/r no __deepcopy__
     def __deepcopy__(self, memodict={}):
         cls = self.__class__
         deepcopy_object = cls.__new__(cls)

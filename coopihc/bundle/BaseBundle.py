@@ -46,6 +46,7 @@ class BaseBundle:
         reset_random=False,
         reset_start_after=-1,
         reset_go_to=0,
+        seed=None,
         **kwargs,
     ):
         self._reset_random = reset_random
@@ -98,6 +99,10 @@ class BaseBundle:
         # self.user.finit()
         # self.assistant.finit()
 
+        # Seeding
+        if seed is not None:
+            self._set_seed(numpy.random.SeedSequence(seed))
+
         # Needed for render
         self.active_render_figure = None
         self.figure_layout = [211, 223, 224]
@@ -130,6 +135,12 @@ class BaseBundle:
             "User": self.user.__content__(),
             "Assistant": self.assistant.__content__(),
         }
+
+    def _set_seed(self, seedsequence):
+        child_seeds = seedsequence.spawn(3)
+        self.task._set_seed(child_seeds[0])
+        self.user._set_seed(child_seeds[1])
+        self.assistant._set_seed(child_seeds[2])
 
     @property
     def parameters(self):

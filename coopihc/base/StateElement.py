@@ -627,17 +627,23 @@ class StateElement(numpy.ndarray):
             _index = 0
         if self.space.__class__.__name__ == "Numeric":
             if self.space.seed is None:
+                string_space[_index] = f"Numeric{self.space.shape} - {self.space.dtype}"
+            elif isinstance(self.space.seed, numpy.random.bit_generator.SeedSequence):
                 string_space[
                     _index
-                ] = f"Numeric{self.space.shape} - {self.space.dtype}".format()
+                ] = f"Numeric{self.space.shape} - {self.space.dtype} seed:{self.space.seed.entropy}{self.space.seed.spawn_key}"
             else:
                 string_space[
                     _index
-                ] = f"Numeric{self.space.shape} - {self.space.dtype} (seed:{self.space.seed})".format()
+                ] = f"Numeric{self.space.shape} - {self.space.dtype} seed:{self.space.seed}"
             array = self.view(numpy.ndarray)
         elif self.space.__class__.__name__ == "CatSet":
             if self.space.seed is None:
                 string_space[_index] = f"CatSet({self.space.N}) - {self.space.dtype}"
+            elif isinstance(self.space.seed, numpy.random.bit_generator.SeedSequence):
+                string_space[
+                    _index
+                ] = f"CatSet({self.space.N}) - {self.space.dtype} seed:{self.space.seed.entropy}{self.space.seed.spawn_key})"
             else:
                 string_space[
                     _index

@@ -43,7 +43,7 @@ filterdict = dict(
 
 f_state = state.filter(mode="array", filterdict=filterdict)
 f_state = state.filter(mode="stateelement", filterdict=filterdict)
-f_state = state.filter(mode="spaces")
+f_state = state.filter(mode="space")
 f_state = state.filter(mode="array")
 
 # [end-state-filter]

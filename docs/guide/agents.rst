@@ -20,7 +20,7 @@ Agents are defined by four components:
 
 
 
-You define a new agent by subclassing the ``BaseAgent`` class. As an example, we now create an agent which goes with the ExampleTask that we defined in :doc:`Tasks<tasks.rst>`. We make an agent with a ``'goal'`` state to indicate the value for ``'x'`` that it wants to achieve, and make its available actions :math:`[-1,0,1]`. These actions are chosen via the ``ExamplePolicy`` (see :doc:`Policies<policy.rst>`).
+You define a new agent by subclassing the ``BaseAgent`` class. As an example, we now create an agent which goes with the ExampleTask that we defined in :doc:`Tasks <tasks>`. We make an agent with a ``'goal'`` state to indicate the value for ``'x'`` that it wants to achieve, and make its available actions :math:`[-1,0,1]`. These actions are chosen via the ``ExamplePolicy`` (see :doc:`Policies <policy>`).
 
 .. literalinclude:: ../../coopihc/agents/ExampleUser.py
     :linenos:

@@ -1,3 +1,4 @@
+from random import seed
 from coopihc.base.State import State
 from coopihc.base.StateElement import StateElement
 from coopihc.base.elements import discrete_array_element, array_element, cat_element
@@ -48,17 +49,29 @@ class BaseAgent:
         changed_policy_user = MyNewUser(override_agent_policy = (some_other_policy, other_policy_kwargs))
 
 
-    :param str role: "user" or "assistant"
-    :param type \*\*kwargs: keyword values ( each agent_X key expects a valid X object, and X_kwargs expects a valid dictionary of keyword arguments for X)
 
-        + agent_policy
-        + agent_inference_engine
-        + agent_observation_engine
-        + agent_state
-        + policy_kwargs
-        + inference_engine_kwargs
-        + observation_engine_kwargs
-        + state_kwargs
+
+    :param role: "user" or "assistant"
+    :type role: string
+    :param agent_state: defaults to None
+    :type agent_state: dictionnary, optional
+    :param agent_policy: defaults to None
+    :type agent_policy: CoopIHC policy (instance or class), optional
+    :param agent_inference_engine: defaults to None
+    :type agent_inference_engine: CoopIHC inference engine (instance or class), optional
+    :param agent_observation_engine: defaults to None. If None uses the corresponding RuleObservationEngine
+    :type agent_observation_engine: CoopIHC observation engine (instance or class), optional
+    :param state_kwargs: probably useless, defaults to {}
+    :type state_kwargs: dict, optional
+    :param policy_kwargs: keyword arguments to pass to agent_policy constructor if agent_policy is a class, defaults to {}
+    :type policy_kwargs: dict, optional
+    :param inference_engine_kwargs: keyword arguments to pass to agent_inference_engine constructor if agent_inference_engine is a class, defaults to {}
+    :type inference_engine_kwargs: dict, optional
+    :param observation_engine_kwargs: keyword arguments to pass to agent_observation_engine constructor if agent_observation_engine is a class, defaults to {}
+    :type observation_engine_kwargs: dict, optional
+    :param seedsequence: A seedsequence used to spawn seeds for the various spaces, defaults to None. If None, no seed is provided to the RNGs. The preferred way to set seeds is by passing the 'seed' keyword argument to the Bundle.
+    :type seedsequence: numpy.random.bit_generator.SeedSequence, optional
+
 
 
     :return: A *CoopIHC* and :py:class:`Bundle<coopihc.bundle>`-compatible agent
@@ -77,7 +90,7 @@ class BaseAgent:
         policy_kwargs={},
         inference_engine_kwargs={},
         observation_engine_kwargs={},
-        *args,
+        seedsequence=None,
         **kwargs,
     ):
 
@@ -86,6 +99,7 @@ class BaseAgent:
         self._bundle_memory = None
         self.ax = None
         self._parameters = {}
+        self.seedsequence = seedsequence
 
         # Set role of agent
         if role not in ["user", "assistant"]:
@@ -174,6 +188,28 @@ class BaseAgent:
             "Inference Engine": self.inference_engine.__content__(),
             "Policy": self.policy.__content__(),
         }
+
+    def _set_seed(self, seedsequence=None):
+        if seedsequence is None:
+            seedsequence = self.seedsequence
+        else:
+            self.seedsequence = seedsequence
+
+        child_seeds = seedsequence.spawn(5)
+        self.state._set_seed(child_seeds[0])
+        self.policy._set_seed(child_seeds[1])
+        self.inference_engine._set_seed(child_seeds[2])
+        self.observation_engine._set_seed(child_seeds[3])
+
+    def get_rng(self, seedsequence=None):
+        if seedsequence is None:
+            seedsequence = self.seedsequence
+        child_seeds = seedsequence.spawn(1)
+        return numpy.random.default_rng(child_seeds[0])
+
+    @property
+    def action_state(self):
+        return self.policy.action_state
 
     @property
     def parameters(self):

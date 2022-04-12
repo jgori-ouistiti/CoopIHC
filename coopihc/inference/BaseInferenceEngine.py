@@ -1,5 +1,4 @@
-from collections import OrderedDict
-
+import numpy
 
 # Base Inference Engine: does nothing but return the same state. Any new inference method can subclass InferenceEngine to have a buffer and add_observation method (required by the bundle)
 class BaseInferenceEngine:
@@ -9,16 +8,31 @@ class BaseInferenceEngine:
 
     :param buffer_depth: number of observations that are stored, defaults to 1
     :type buffer_depth: int, optional
+    :param seedsequence: A seedsequence used to spawn seeds for a RNG if needed (by calling ``get_rng()``). The preferred way to set seeds is by passing the 'seed' keyword argument to the Bundle.
+    :type seedsequence: numpy.random.bit_generator.SeedSequence, optional
     """
 
     """"""
 
-    def __init__(self, *args, buffer_depth=1, **kwargs):
+    def __init__(self, *args, buffer_depth=1, seedsequence=None, **kwargs):
         self.buffer = None
         self.buffer_depth = buffer_depth
         self.render_flag = None
         self.ax = None
         self._host = None
+        self.seedsequence = seedsequence
+
+    def _set_seed(self, seedsequence=None):
+        if seedsequence is None:
+            seedsequence = self.seedsequence
+        else:
+            self.seedsequence = seedsequence
+
+    def get_rng(self, seedsequence=None):
+        if seedsequence is None:
+            seedsequence = self.seedsequence
+        child_seeds = seedsequence.spawn(1)
+        return numpy.random.default_rng(child_seeds[0])
 
     @property
     def host(self):

@@ -15,7 +15,7 @@ class BasePolicy:
     Base Policy class. Randomly samples from the action state. You have can provide an action state as an argument (args[0]). If no action state is provided, the policy is initialized with an action state with a single 'None' action.
     """
 
-    def __init__(self, *args, action_state=None, **kwargs):
+    def __init__(self, *args, action_state=None, seedsequence=None, **kwargs):
 
         self._action_keys = None  # For actionkeys property
 
@@ -27,6 +27,22 @@ class BasePolicy:
 
         self.action_state = action_state
         self.host = None
+        self.seedsequence = seedsequence
+
+    def _set_seed(self, seedsequence=None):
+        if seedsequence is None:
+            seedsequence = self.seedsequence
+        else:
+            self.seedsequence = seedsequence
+
+        child_seeds = seedsequence.spawn(1)
+        self.action_state._set_seed(child_seeds[0])
+
+    def get_rng(self, seedsequence=None):
+        if seedsequence is None:
+            seedsequence = self.seedsequence
+        child_seeds = seedsequence.spawn(1)
+        return numpy.random.default_rng(child_seeds[0])
 
     # https://stackoverflow.com/questions/1015307/python-bind-an-unbound-method
     def _bind(self, func, as_name=None):

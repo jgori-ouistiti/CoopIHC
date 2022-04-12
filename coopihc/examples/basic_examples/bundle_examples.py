@@ -85,3 +85,24 @@ while 1:
     if is_done:
         break
 # [end-highlevel-code]
+
+
+# [start-bundle-seed]
+example_task = ExampleTask()
+example_user = ExampleUser()
+example_assistant = ExampleAssistant()
+bundle = Bundle(
+    task=example_task, user=example_user, assistant=example_assistant, seed=1234
+)
+bundle.reset()
+# >>> print(bundle.state)
+# ----------------  -----------  -  -------------------------------------
+# game_info         turn_index   0  CatSet(4) - int8
+#                   round_index  0  Numeric() - int64
+# task_state        x            0  Numeric() - int64 seed:1234(0, 0)
+# user_state        goal         4  Numeric() - int64 seed:1234(1, 0, 0)
+# user_action       action       0  Numeric() - int64 seed:1234(1, 1, 0)
+# assistant_action  action       0  CatSet(1) - int64 seed:1234(2, 1, 0))
+# ----------------  -----------  -  -------------------------------------
+
+# [end-bundle-seed]

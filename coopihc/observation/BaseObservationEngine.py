@@ -12,10 +12,25 @@ class BaseObservationEngine:
 
     All Observation Engines are subclassed from this main class, but you are really not inheriting much... This is mostly here for potential future changes.
 
+    :param seedsequence: A seedsequence used to spawn seeds for a RNG if needed (by calling ``get_rng()``). The preferred way to set seeds is by passing the 'seed' keyword argument to the Bundle.
+    :type seedsequence: numpy.random.bit_generator.SeedSequence, optional
+
     """
 
-    def __init__(self, *args, seed=None, **kwargs):
-        self.rng = numpy.random.default_rng(seed)
+    def __init__(self, *args, seedsequence=None, **kwargs):
+        self.seedsequence = seedsequence
+
+    def _set_seed(self, seedsequence=None):
+        if seedsequence is None:
+            seedsequence = self.seedsequence
+        else:
+            self.seedsequence = seedsequence
+
+    def get_rng(self, seedsequence=None):
+        if seedsequence is None:
+            seedsequence = self.seedsequence
+        child_seeds = seedsequence.spawn(1)
+        return numpy.random.default_rng(child_seeds[0])
 
     def __content__(self):
         """__content__
