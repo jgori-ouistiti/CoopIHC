@@ -67,6 +67,7 @@ class Space:
         dtype=None,
         contains="numpy",
     ):
+
         if low is not None and high is not None:
             return Numeric(
                 low=numpy.asarray(low),
@@ -180,7 +181,6 @@ class Numeric(BaseSpace):
         dtype=None,
         contains="numpy",
     ):
-
         if dtype is not None:
             self._dtype = numpy.dtype(dtype)
         else:
@@ -207,14 +207,24 @@ class Numeric(BaseSpace):
         # self.low = low.astype(self.dtype)
         # self.high = high.astype(self.dtype)
         # will not work
-        #  Currently, it will give -2**(nbits) /2 for both numpy.inf and -numpy.inf. Hack below
+        #  Currently, it will give -2**(nbits) /2 for both numpy.inf and -numpy.inf. Also, a
+
+        # store dtype
+        dtype = self.dtype
+
+        # convert to float64 to have good precision  before cast int/float
+        low = self.low.astype(numpy.float64)
+        high = self.high.astype(numpy.float64)
 
         if numpy.issubdtype(self.dtype, numpy.integer):
-            self.low = numpy.nan_to_num(self.low, neginf=numpy.iinfo(self.dtype).min)
-            self.high = numpy.nan_to_num(self.high, posinf=numpy.iinfo(self.dtype).max)
+            low = numpy.nan_to_num(low, neginf=numpy.iinfo(self.dtype).min + 1e3)
+            high = numpy.nan_to_num(high, posinf=numpy.iinfo(self.dtype).max - 1e3)
 
-        self.low = self.low.astype(self.dtype)
-        self.high = self.high.astype(self.dtype)
+        # Get dtype back fro storage and set it
+        self._dtype = dtype
+
+        self.low = low.astype(self.dtype)
+        self.high = high.astype(self.dtype)
 
     @property
     def shape(self):

@@ -35,4 +35,4 @@ You can call an RNG, which will use a spawn from the same seed that was used dur
 
     # Inside a *CoopIHC* component
     # generate a random number
-    self._get_rng().random()
+    self.get_rng().random()
