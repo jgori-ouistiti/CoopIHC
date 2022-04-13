@@ -70,14 +70,14 @@ def test_discrete_array_element():
     assert x.dtype == numpy.int64
     assert x.seed == None
 
-    print("\n================== HEREEEEE")
     x = discrete_array_element(low=0, high=numpy.inf)
     assert x == 0
     assert x.shape == ()
     assert isinstance(x.space, Numeric)
     assert x.space.low == 0
     assert x.dtype == numpy.int64
-    assert x.space.high == numpy.iinfo(x.dtype).max
+    assert x.space.high <= numpy.iinfo(x.dtype).max - 1e3 + 1
+    assert x.space.high >= numpy.iinfo(x.dtype).max - 1e3 - 1
     assert x.seed == None
 
 
