@@ -23,9 +23,9 @@ class BaseSpace:
         self.seed = seed
         self.contains = contains
 
-        self.rng = numpy.random.default_rng(seed)
         self._shape = None
         self._spacetype = None
+        self._rng = None
 
     @property
     def spacetype(self):
@@ -36,6 +36,18 @@ class BaseSpace:
                 return "continuous"
         else:
             raise NotImplementedError
+
+    @property
+    def rng(self):
+        if self._rng is not None:
+            return self._rng
+        if self.seed is None or isinstance(self.seed, int):
+            self._rng = numpy.random.default_rng(self.seed)
+            return self._rng
+        if isinstance(self.seed, numpy.random.bit_generator.SeedSequence):
+            seedsequence = self.seed
+            self._rng = numpy.random.default_rng(seedsequence.spawn(1)[0])
+            return self._rng
 
 
 class Space:

@@ -42,10 +42,20 @@ def test_init():
     assert bundle.assistant.observation_engine.seedsequence.entropy == 222
     assert bundle.assistant.policy.seedsequence.entropy == 222
 
-    del bundle.game_state["game_info"]
-    for i in bundle.game_state.filter(mode="space", flat=True).values():
+    copied_game_state = copy.deepcopy(bundle.game_state)
+    del copied_game_state["game_info"]
+    for i in copied_game_state.filter(mode="space", flat=True).values():
         assert i.seed.entropy == 222
+
+
+def test_samples():
+    copied_game_state = copy.deepcopy(bundle.game_state)
+    del copied_game_state["game_info"]
+    sequence = [3, 1]
+    for n, i in enumerate(copied_game_state.filter(mode="space", flat=True).values()):
+        assert i.sample() == sequence[n]
 
 
 if __name__ == "__main__":
     test_init()
+    test_samples()
