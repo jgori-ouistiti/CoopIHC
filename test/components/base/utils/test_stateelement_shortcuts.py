@@ -31,6 +31,38 @@ def test_array_element():
     assert x.dtype == numpy.float32
     assert x.seed == 123
 
+    x = array_element(
+        init=numpy.array(1),
+        low=numpy.array(-2, dtype=numpy.float32),
+        high=numpy.array(2, dtype=numpy.float32),
+    )
+    assert x == 1
+    assert x.shape == ()
+    assert isinstance(x.space, Numeric)
+    assert x.space.low == -2
+    assert x.space.high == 2
+    assert x.dtype == numpy.float32
+
+    x = array_element(
+        init=numpy.array(1),
+        low=numpy.array(-numpy.inf, dtype=numpy.float32),
+        high=numpy.array(numpy.inf, dtype=numpy.float32),
+    )
+    assert x == 1
+    assert x.shape == ()
+    assert isinstance(x.space, Numeric)
+    assert x.space.low == -numpy.inf
+    assert x.space.high == numpy.inf
+    assert x.dtype == numpy.float32
+
+    x = array_element(init=1, dtype=numpy.float32)
+    assert x == 1
+    assert x.shape == ()
+    assert isinstance(x.space, Numeric)
+    assert x.space.low == -numpy.inf
+    assert x.space.high == numpy.inf
+    assert x.dtype == numpy.float32
+
 
 def test_discrete_array_element():
     x = discrete_array_element(N=5, init=1)
@@ -76,8 +108,20 @@ def test_discrete_array_element():
     assert isinstance(x.space, Numeric)
     assert x.space.low == 0
     assert x.dtype == numpy.int64
-    assert x.space.high <= numpy.iinfo(x.dtype).max - 1e3 + 1
-    assert x.space.high >= numpy.iinfo(x.dtype).max - 1e3 - 1
+    assert x.space.high <= numpy.iinfo(x.dtype).max
+    assert x.space.high >= numpy.iinfo(x.dtype).max
+    assert x.seed == None
+
+    x = discrete_array_element(
+        low=numpy.array(-(2 ** 14), dtype=numpy.int16), high=numpy.inf, dtype=numpy.int8
+    )
+    assert x == 0
+    assert x.shape == ()
+    assert isinstance(x.space, Numeric)
+    assert x.space.low == -(2 ** 7)
+    assert x.dtype == numpy.int8
+    assert x.space.high <= numpy.iinfo(x.dtype).max
+    assert x.space.high >= numpy.iinfo(x.dtype).max
     assert x.seed == None
 
 

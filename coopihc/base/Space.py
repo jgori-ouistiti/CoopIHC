@@ -223,20 +223,43 @@ class Numeric(BaseSpace):
 
         # store dtype
         dtype = self.dtype
+        # =================== Old code
+        # # convert to float64 to have good precision  before cast int/float
+        # low = self.low.astype(numpy.float64)
+        # high = self.high.astype(numpy.float64)
 
-        # convert to float64 to have good precision  before cast int/float
-        low = self.low.astype(numpy.float64)
-        high = self.high.astype(numpy.float64)
+        # if numpy.issubdtype(self.dtype, numpy.integer):
+        #     low = numpy.nan_to_num(low, neginf=numpy.iinfo(self.dtype).min + 1e3)
+        #     high = numpy.nan_to_num(high, posinf=numpy.iinfo(self.dtype).max - 1e3)
 
-        if numpy.issubdtype(self.dtype, numpy.integer):
-            low = numpy.nan_to_num(low, neginf=numpy.iinfo(self.dtype).min + 1e3)
-            high = numpy.nan_to_num(high, posinf=numpy.iinfo(self.dtype).max - 1e3)
+        # # Get dtype back fro storage and set it
+        # self._dtype = dtype
 
-        # Get dtype back fro storage and set it
-        self._dtype = dtype
+        # self.low = low.astype(self.dtype)
+        # self.high = high.astype(self.dtype)
+        # ==================== New code
 
-        self.low = low.astype(self.dtype)
-        self.high = high.astype(self.dtype)
+        if issubclass(numpy.dtype(dtype).type, numpy.integer):
+            low = Numeric._int_from_X(low, dtype=dtype)
+            high = Numeric._int_from_X(high, dtype=dtype)
+
+        self.low = numpy.asarray(low).astype(dtype)
+        self.high = numpy.asarray(high).astype(dtype)
+
+    @staticmethod
+    def _int_from_X(x, dtype):
+        x = numpy.asarray(x)
+        input_is_scalar = x.ndim == 0
+        x = numpy.atleast_1d(x)
+
+        imin, imax = numpy.iinfo(dtype).min, numpy.iinfo(dtype).max
+        Xmin, Xmax = x.dtype.type((imin, imax))
+        too_small = x <= Xmin
+        too_large = x >= Xmax
+        ix = x.astype(dtype)
+        ix[too_small] = imin
+        ix[too_large] = imax
+        return ix.item() if input_is_scalar else ix
 
     @property
     def shape(self):

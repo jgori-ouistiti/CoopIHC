@@ -6,35 +6,6 @@ from coopihc.base.State import State
 import numpy
 
 
-# def _numpy_max_info(dtype):
-#     if numpy.issubdtype(dtype, numpy.integer):
-#         return numpy.iinfo(dtype).max
-#     else:
-#         return numpy.finfo(dtype).max
-
-
-# ======================== Space Shortcuts ========================
-# def lin_space(start, stop, num=50, endpoint=True, dtype=numpy.int64, seed=None, **kwargs):
-#     # lin_space(num=50, start=0, stop=None, endpoint=False, dtype=numpy.int64):
-#     """Linearly spaced discrete space.
-
-#     Wrap numpy's linspace to produce a space that is compatible with COOPIHC. Parameters of this function are defined in https://numpy.org/doc/stable/reference/generated/numpy.linspace.html
-
-
-#     :return: _description_
-#     :rtype: _type_
-#     """
-#     if stop is None:
-#         stop = num + start
-#     return Space(
-#         array=numpy.linspace(
-#             start, stop, num=num, endpoint=endpoint, dtype=dtype
-#         ),
-#         seed=seed,
-#         **kwargs
-#     )
-
-
 def integer_set(N, dtype=numpy.int64, **kwargs):
     """{0, 1, ... , N-1} Set
 
@@ -112,6 +83,15 @@ def _set_shape_object(shape, obj, default_value):
     return obj
 
 
+# def _set_dtype_object(dtype, obj):
+#     if numpy.issubdtype(dtype, numpy.integer):
+#         _max = numpy.iinfo(numpy.dtype(dtype)).max
+#         _min = numpy.iinfo(numpy.dtype(dtype)).min
+#     else:
+#         _max = numpy.finfo(numpy.dtype(dtype)).max
+#         _min = numpy.finfo(numpy.dtype(dtype)).min
+
+
 def array_element(
     shape=None, init=None, low=None, high=None, out_of_bounds_mode="warning", **kwargs
 ):
@@ -125,6 +105,52 @@ def array_element(
         Space(low=low, high=high, **kwargs),
         out_of_bounds_mode=out_of_bounds_mode,
     )
+
+
+# def continuous_array_element(
+#     shape=None,
+#     init=None,
+#     low=None,
+#     high=None,
+#     dtype=None,
+#     out_of_bounds_mode="warning",
+#     **kwargs,
+# ):
+#     shape = _get_shape_from_objects(shape, init, low, high)
+#     init = _set_shape_object(shape, init, 0)
+#     low = _set_shape_object(shape, low, -numpy.inf)
+#     high = _set_shape_object(shape, high, numpy.inf)
+#     return StateElement(
+#         init,
+#         Space(low=low, high=high, **kwargs),
+#         out_of_bounds_mode=out_of_bounds_mode,
+#     )
+
+
+# def interval(
+#     low=None,
+#     high=None,
+#     dtype=None,
+#     shape=None,
+#     init=0,
+#     out_of_bounds_mode="warning",
+#     **kwargs,
+# ):
+#     low_dtype = numpy.dtype(numpy.asarray(low).dtype)
+#     high_dtype = numpy.dtype(numpy.asarray(low).dtype)
+#     if low_dtype != high_dtype:
+#         raise ValueError(
+#             f"low {low} and high {high} have different dtypes ({low_dtype} and {high_dtype})."
+#         )
+#     if dtype is None:
+#         dtype = low_dtype
+
+
+#     shape = _get_shape_from_objects(shape, init, low, high)
+
+#     init = _set_shape_object(shape, init, 0)
+#     low = _set_shape_object(shape, low, _min)
+#     high = _set_shape_object(shape, high, _max)
 
 
 def discrete_array_element(
