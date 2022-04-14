@@ -268,7 +268,11 @@ class BaseBundle:
                 random=random_reset,
             )
 
-        self.round_number = 0
+        round_index = dic.get("game_info", {}).get("round_index", 0)
+        self.round_number = round_index
+        turn_index = dic.get("game_info", {}).get("turn_index", None)
+        if turn_index is not None:
+            return self.game_state
 
         if not isinstance(go_to, (numpy.integer, int)):
             go_to = self.turn_dict[go_to]

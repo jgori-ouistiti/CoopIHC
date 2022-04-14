@@ -34,6 +34,18 @@ class BaseInferenceEngine:
         child_seeds = seedsequence.spawn(1)
         return numpy.random.default_rng(child_seeds[0])
 
+    def __getattr__(self, value):
+        # https://stackoverflow.com/questions/47299243/recursionerror-when-python-copy-deepcopy
+        if value.startswith("__"):
+            raise AttributeError
+
+        try:
+            return self.host.parameters.__getitem__(value)
+        except:
+            raise AttributeError(
+                f"{self.__class__.__name__} object has no attribute {value}"
+            )
+
     @property
     def host(self):
         return self._host
