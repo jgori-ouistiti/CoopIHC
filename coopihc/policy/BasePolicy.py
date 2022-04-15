@@ -26,7 +26,7 @@ class BasePolicy:
             action_state["action"] = cat_element(N=2, init=0)
 
         self.action_state = action_state
-        self.host = None
+        self._host = None
         self.seedsequence = seedsequence
 
     def _set_seed(self, seedsequence=None):
@@ -43,6 +43,33 @@ class BasePolicy:
             seedsequence = self.seedsequence
         child_seeds = seedsequence.spawn(1)
         return numpy.random.default_rng(child_seeds[0])
+
+    @property
+    def parameters(self):
+        return self.host.parameters
+
+    @property
+    def host(self):
+        try:
+            return self._host
+        except AttributeError:
+            raise AttributeError(f"Object {self.__name__} not connected to a host yet.")
+
+    @host.setter
+    def host(self, value):
+        self._host = value
+
+    def __getattr__(self, value):
+        # https://stackoverflow.com/questions/47299243/recursionerror-when-python-copy-deepcopy
+        if value.startswith("__"):
+            raise AttributeError
+
+        try:
+            return self.parameters.__getitem__(value)
+        except:
+            raise AttributeError(
+                f"{self.__class__.__name__} object has no attribute {value}"
+            )
 
     # https://stackoverflow.com/questions/1015307/python-bind-an-unbound-method
     def _bind(self, func, as_name=None):

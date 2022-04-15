@@ -217,6 +217,16 @@ class BaseAgent:
             return self.bundle.parameters
         return self._parameters
 
+    def update_parameters(self, dic):
+        self._parameters.update(dic)
+
+    @parameters.setter
+    def parameters(self, value):
+        if isinstance(value, dict):
+            self._parameters = value
+        else:
+            raise ValueError("Parameters can only be set with dictionaries")
+
     @property
     def bundle(self):
         return self._bundle
