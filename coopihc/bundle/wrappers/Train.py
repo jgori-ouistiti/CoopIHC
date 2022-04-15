@@ -107,30 +107,13 @@ class TrainGym(gym.Env):
         # ----- Init Action space -------
         action_dict = OrderedDict({})
         if self.train_user:
-            try:
-                for i, _action in enumerate(self.bundle.user.action):
-                    action_dict.update(
-                        {f"user_action_{i}": self.convert_space(_action)}
-                    )
-            except TypeError:  # Catch single actions
-                action_dict.update(
-                    {f"user_action": self.convert_space(self.bundle.user.action)}
-                )
+            for key, value in self.bundle.user.action_state.filter(mode="stateelement").items():
+                action_dict.update({"assistant_action__" + key: self.convert_space(value)})
 
         if self.train_assistant:
-            try:
-                for i, _action in enumerate(self.bundle.assistant.action):
-                    action_dict.update(
-                        {f"assistant_action_{i}": self.convert_space(_action)}
-                    )
-            except TypeError:  # Catch single actions
-                action_dict.update(
-                    {
-                        f"assistant_action": self.convert_space(
-                            self.bundle.assistant.action
-                        )
-                    }
-                )
+            for key, value in self.bundle.assistant.action_state.filter(mode="stateelement").items():
+                action_dict.update({"assistant_action__" + key: self.convert_space(value)})
+
         return gym.spaces.Dict(action_dict)
 
     def get_observation_space(self):
@@ -154,28 +137,14 @@ class TrainGym(gym.Env):
             return self.get_agent_observation_space("assistant")
 
     def get_agent_observation_space(self, agent):
-        observation_dict = OrderedDict({})
+
+        obs_dic = OrderedDict({})
 
         observation = getattr(self.bundle, agent).observation
-        if self.filter_observation is not None:
-            observation = observation.filter(
-                mode="stateelement", filterdict=self.filter_observation
-            )
+        for key, value in observation.filter(mode="stateelement", flat=True, filterdict=self.filter_observation).items():
+            obs_dic.update({key: self.convert_space(value)})
 
-        for key, value in observation.items():
-            # for key, value in getattr(self.bundle, agent).observation.items():
-            if key == "user_action" or key == "assistant_action":
-                observation_dict.update({key: self.convert_space(value["action"])})
-
-            else:
-                observation_dict.update(
-                    {
-                        __key: self.convert_space(__value)
-                        for __key, __value in value.items()
-                    }
-                )
-
-        return gym.spaces.Dict(observation_dict)
+        return gym.spaces.Dict(obs_dic)
 
     def reset(self):
         self.bundle.reset(dic=self.reset_dic, go_to=self.reset_turn)
@@ -288,21 +257,6 @@ class GymConvertor(RLConvertor):
 
         """
 
-        dic = OrderedDict({})
-        for k, v in gamestate.filter(
-            mode="array-Gym", filterdict=self._filter_observation
-        ).items():
-            # Hack, see Issue # 58  https://github.com/jgori-ouistiti/CoopIHC/issues/58
-
-            try:
-                _key, _value = next(iter(v.items()))
-            except StopIteration:
-                continue
-
-            if k == "user_action" or k == "assistant_action":
-                v[k] = v.pop("action")
-                _key = k
-
-            dic.update(v)
+        dic =  gamestate.filter(mode="array-Gym", filterdict=self._filter_observation, flat=True)
 
         return dic

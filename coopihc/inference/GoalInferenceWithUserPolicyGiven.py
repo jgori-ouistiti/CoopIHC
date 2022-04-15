@@ -97,7 +97,7 @@ class GoalInferenceWithUserPolicyGiven(BaseInferenceEngine):
             raise AttributeError(
                 "This inference engine requires a policy defined by an explicit likelihood"
             )
-        print("Attached policy {} to {}".format(policy, self.__class__.__name__))
+        # print("Attached policy {} to {}".format(policy, self.__class__.__name__))
         self.user_policy_model = policy
 
     def attach_set_theta(self, set_theta):

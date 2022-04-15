@@ -218,7 +218,7 @@ class State(dict):
                 if not flat:
                     new_state[key] = self[key].filter(mode=mode, filterdict=value)
                 else:
-                    new_state.update(self[key].filter(mode=mode, filterdict=value))
+                    new_state.update({key + "__" + _key: _value for _key, _value in self[key].filter(mode=mode, filterdict=value).items()})
             elif isinstance(self[key], StateElement):
                 # to make S.filter("values", S) possible.
                 # Warning: values == filterdict[key] != self[key]
@@ -241,7 +241,10 @@ class State(dict):
                     else:
                         new_state[key] = v
                 elif mode == "stateelement":
-                    new_state[key] = self[key][value, {"space": True}]
+                    try:
+                        new_state[key] = self[key][value, {"space": True}]
+                    except IndexError:
+                        new_state[key] = self[key][..., {"space": True}]
                 else:
                     raise ValueError(
                         f"You want to filter by {mode}, but only modes 'space', 'array', 'array-Gym', 'stateelement' are supported."
