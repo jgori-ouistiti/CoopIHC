@@ -22,10 +22,11 @@ assistant_action_state = State()
 assistant_action_state["action"] = cat_element(N=2)
 
 
-
 class ExampleTaskwithParams(ExampleTask):
     def __init__(self, *args, **kwargs):
-        
+        super().__init__(*args, **kwargs)
+        self.parameters = {"param1": 1, "param2": 2}
+
 
 bundle = Bundle(
     task=ExampleTask(),
@@ -36,3 +37,31 @@ bundle = Bundle(
     ),
     seed=222,
 )
+
+
+def test_task_param():
+    class ExampleTaskwithParams(ExampleTask):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.parameters = {"param1": 1, "param2": 2}
+
+    bundle = Bundle(
+        task=ExampleTaskwithParams(),
+        user=BaseAgent("user", policy_kwargs={"action_state": user_action_state}),
+        assistant=BaseAgent(
+            "assistant",
+            override_policy=(BasePolicy, {"action_state": assistant_action_state}),
+        ),
+    )
+
+    assert bundle.parameters == {"param1": 1, "param2": 2}
+    assert bundle.task.parameters == {"param1": 1, "param2": 2}
+    assert bundle.user.parameters == {"param1": 1, "param2": 2}
+    assert bundle.assistant.parameters == {"param1": 1, "param2": 2}
+    assert bundle.user.observation_engine == {"param1": 1, "param2": 2}
+    assert bundle.user.inference_engine == {"param1": 1, "param2": 2}
+    assert bundle.user.policy == {"param1": 1, "param2": 2}
+
+
+if __name__ == "__main__":
+    test_task_param()
