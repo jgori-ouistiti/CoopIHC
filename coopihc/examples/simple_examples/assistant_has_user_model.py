@@ -20,7 +20,6 @@ user_model = PseudoRandomUser()  # The same as user
 assistant = CoordinatedAssistant(user_model=user_model)
 bundle = Bundle(task=CoordinatedTask(), user=user, assistant=assistant)
 bundle.reset(go_to=3)
-print(bundle.game_state)
 while True:
     obs, rewards, is_done = bundle.step()
     # print(bundle.game_state)
@@ -40,7 +39,6 @@ bundle.reset(go_to=3)
 # print(bundle.game_state)
 while True:
     obs, rewards, is_done = bundle.step()
-    print(bundle.game_state)
     if is_done:
         break
 # [end-user-model-mismatch]
@@ -81,7 +79,6 @@ while True:
 #         break
 # [end-user-model-rollout2]
 
-
 # [start-user-model-rollout]
 task = CoordinatedTask()
 task_model = CoordinatedTask()
@@ -93,6 +90,7 @@ user_model = copy.deepcopy(user)
 assistant = CoordinatedAssistantWithRollout(task_model, user_model, [5, 7])
 bundle = Bundle(task=task, user=user, assistant=assistant)
 bundle.reset()
+
 while True:
     obs, rewards, is_done = bundle.step()
     if is_done:

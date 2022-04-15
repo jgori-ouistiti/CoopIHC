@@ -111,13 +111,13 @@ class RolloutCoordinatedInferenceEngine(BaseInferenceEngine):
         # For the 10 possible values, completely simulate them. The right parameter is the one that leads to the maximum rewards
         rew = [0 for i in range(10)]
         for i in range(10):  # Exhaustively try out all cases
-
             # load the simulation with the right parameters
             reset_dic = copy.deepcopy(agent_observation)
-
             # try out a new state
             del reset_dic["assistant_state"]
+            del reset_dic["game_info"]
             reset_dic = {
+                **{"game_info": {"round_index": 0, "turn_index": 0}},
                 **reset_dic,
                 **{
                     "assistant_state": {
@@ -127,17 +127,16 @@ class RolloutCoordinatedInferenceEngine(BaseInferenceEngine):
                     }
                 },
             }
-
-            self.simulator.reset(go_to=0, dic=reset_dic)
+            self.simulator.reset(dic=reset_dic)
             while True:
                 state, rewards, is_done = self.simulator.step()
                 rew[i] += sum(rewards.values())
+
                 if is_done:
                     break
 
         # Don't forget to close the simulator when you are finished.
         self.simulator.close()
-
         index = numpy.argmax(rew)
-        self.state["user_p0"] = index
-        return mem_state, 0
+        self.state["p0"] = index
+        return self.state, 0

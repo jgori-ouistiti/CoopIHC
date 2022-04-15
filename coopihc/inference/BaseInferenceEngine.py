@@ -172,7 +172,6 @@ class BaseInferenceEngine:
         :return: (new internal state, reward)
         :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, float)
         """
-
         # do something with information inside buffer
         if self.host.role == "user":
             try:

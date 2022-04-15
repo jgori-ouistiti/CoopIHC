@@ -64,8 +64,11 @@ class DualInferenceEngine(BaseInferenceEngine):
         else:
             self.dual_engine.buffer = value
 
-    @BaseInferenceEngine.default_value
+    # @BaseInferenceEngine.default_value
     def infer(self, agent_observation=None):
+        if agent_observation is None:
+            agent_observation = self.observation
+
         if self._mode == "primary":
             state, primary_reward = self.primary_engine.infer(
                 agent_observation=agent_observation

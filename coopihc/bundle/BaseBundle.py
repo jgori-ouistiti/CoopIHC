@@ -270,8 +270,18 @@ class BaseBundle:
 
         round_index = dic.get("game_info", {}).get("round_index", 0)
         self.round_number = round_index
+
+        user_observation = dic.get("user_observation", None)
+        if user_observation is not None:
+            self.user.inference_engine.add_observation(user_observation)
+
+        assistant_observation = dic.get("assistant_observation", None)
+        if assistant_observation is not None:
+            self.user.inference_engine.add_observation(assistant_observation)
+
         turn_index = dic.get("game_info", {}).get("turn_index", None)
         if turn_index is not None:
+            self.turn_number = turn_index
             return self.game_state
 
         if not isinstance(go_to, (numpy.integer, int)):

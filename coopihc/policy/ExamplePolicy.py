@@ -44,9 +44,8 @@ class PseudoRandomPolicy(BasePolicy):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+    @BasePolicy.default_value
     def sample(self, agent_observation=None, agent_state=None):
-        if agent_observation is None:
-            agent_observation = self.observation
 
         x = agent_observation.task_state.x
 
@@ -62,9 +61,8 @@ class CoordinatedPolicy(BasePolicy):
     def simulation_bundle(self):
         return self.host.simulation_bundle
 
+    @BasePolicy.default_value
     def sample(self, agent_observation=None, agent_state=None):
-        if agent_observation is None:
-            agent_observation = self.observation
 
         reset_dic = {"task_state": agent_observation.task_state}
 
@@ -77,9 +75,8 @@ class CoordinatedPolicy(BasePolicy):
 
 
 class CoordinatedPolicyWithParams(CoordinatedPolicy):
+    @BasePolicy.default_value
     def sample(self, agent_observation=None, agent_state=None):
-        if agent_observation is None:
-            agent_observation = self.observation
 
         reset_dic = {
             "task_state": copy.deepcopy(agent_observation.task_state),
