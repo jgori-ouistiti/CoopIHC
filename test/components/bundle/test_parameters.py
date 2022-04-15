@@ -23,12 +23,6 @@ assistant_action_state = State()
 assistant_action_state["action"] = cat_element(N=2)
 
 
-class ExampleTaskwithParams(ExampleTask):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.parameters = {"param1": 1, "param2": 2}
-
-
 bundle = Bundle(
     task=ExampleTask(),
     user=BaseAgent("user", policy_kwargs={"action_state": user_action_state}),

@@ -36,7 +36,7 @@ class BaseInferenceEngine:
 
     @property
     def parameters(self):
-        return self.host.parameters
+        return self._host.parameters
 
     @property
     def host(self):
@@ -51,7 +51,7 @@ class BaseInferenceEngine:
 
     def __getattr__(self, value):
         # https://stackoverflow.com/questions/47299243/recursionerror-when-python-copy-deepcopy
-        if value.startswith("__"):
+        if value.startswith("_"):
             raise AttributeError
 
         try:

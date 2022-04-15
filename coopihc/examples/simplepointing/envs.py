@@ -108,10 +108,10 @@ class SimplePointingTask(InteractionTask):
             self.state["position"] = numpy.clip(
                 0,
                 self.gridsize - 1,
-                self.state["position"]
-                + int(self.user_action) * int(self.assistant_action),
+                self.state["position"].view(numpy.ndarray)
+                + self.user_action.view(numpy.ndarray)
+                * self.assistant_action.view(numpy.ndarray),
             )
-
         return self.state, 0, False
 
     def render(self, mode="text", ax_user=None, ax_assistant=None, ax_task=None):

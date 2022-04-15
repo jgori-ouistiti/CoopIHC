@@ -66,7 +66,7 @@ check_env(env, warn=False)
 
 # [start-define-mywrappers]
 
-TEN_EPSILON32 = 10 * numpy.finfo(numpy.float32).eps
+TEN_EPSILON64 = 10 * numpy.finfo(numpy.float64).eps
 
 
 class NormalizeActionWrapper(gym.ActionWrapper):
@@ -77,19 +77,19 @@ class NormalizeActionWrapper(gym.ActionWrapper):
             low=-1,
             high=1,
             shape=(1,),
-            dtype=numpy.float32,
+            dtype=numpy.float64,
         )
 
     def action(self, action):
         return {
             "user_action": int(
-                numpy.around(action * 11 / 2 - TEN_EPSILON32, decimals=0)
+                numpy.around(action * 11 / 2 - TEN_EPSILON64, decimals=0)
             )
         }
 
     def reverse_action(self, action):
         return numpy.array((action["user_action"] - 5.0) / 11.0 * 2).astype(
-            numpy.float32
+            numpy.float64
         )
 
 
@@ -102,7 +102,8 @@ modified_env = FlattenObservation(
 # Normalize actions with a custom wrapper
 modified_env = NormalizeActionWrapper(modified_env)
 # >>> print(modified_env.action_space)
-# Box(-0.9999997615814209, 0.9999997615814209, (1,), float32)
+# Box(-1.0, 1.0, (1,), float64)
+
 
 # >>> print(modified_env.observation_space)
 # Box(0.0, 30.0, (2,), float32)
@@ -124,6 +125,10 @@ check_env(modified_env, warn=True)
 # assistant_action  action       [[1]]                      Numeric(1, 1)
 # ----------------  -----------  -------------------------  -------------
 
+for i in numpy.linspace(start=-1, stop=1, num=1000):
+    reset_state = modified_env.reset()
+    obs, _, _, _ = modified_env.step(i)
+    assert obs in modified_env.observation_space
 
 modified_env.step(
     0.99
@@ -154,7 +159,6 @@ modified_env.step(
 # sb3env = TrainGym2SB3ActionWrapper(env)
 # check_env(sb3env, warn=True)
 # # [end-define-SB3wrapper]
-
 
 # ============= function to make env
 
