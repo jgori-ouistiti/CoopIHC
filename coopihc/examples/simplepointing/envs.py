@@ -101,16 +101,11 @@ class SimplePointingTask(InteractionTask):
 
         # two modes
         if self.mode == "position":
-            self.state["position"] = numpy.clip(
-                0, self.gridsize - 1, int(self.assistant_action)
-            )
+            self.state["position"] = self.assistant_action
         elif self.mode == "gain":
-            self.state["position"] = numpy.clip(
-                0,
-                self.gridsize - 1,
-                self.state["position"].view(numpy.ndarray)
-                + self.user_action.view(numpy.ndarray)
-                * self.assistant_action.view(numpy.ndarray),
+
+            self.state["position"] = (
+                self.state["position"] + self.user_action * self.assistant_action
             )
         return self.state, 0, False
 
