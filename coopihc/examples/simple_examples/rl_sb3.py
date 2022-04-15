@@ -96,7 +96,9 @@ class NormalizeActionWrapper(gym.ActionWrapper):
 from gym.wrappers import FilterObservation, FlattenObservation
 
 # Apply Observation Wrapper
-modified_env = FlattenObservation(FilterObservation(env, ("position", "goal")))
+modified_env = FlattenObservation(
+    FilterObservation(env, ("task_state__position", "user_state__goal"))
+)
 # Normalize actions with a custom wrapper
 modified_env = NormalizeActionWrapper(modified_env)
 # >>> print(modified_env.action_space)

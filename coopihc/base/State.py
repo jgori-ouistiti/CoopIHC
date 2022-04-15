@@ -152,7 +152,21 @@ class State(dict):
         for n, i in enumerate(self.filter(mode="space", flat=True).values()):
             i.seed = seedsequence.spawn(1)[0]
 
-    def filter(self, mode="array", filterdict=None, flat=False):
+    def filter(
+        self,
+        mode="array",
+        flat=False,
+        filter_remove=None,
+        filter_keep=None,
+        filterdict=None,
+    ):
+
+        if (filter_keep is not None) or (filter_remove is not None):
+            raise NotImplementedError
+        else:
+            return self._filter(mode=mode, flat=flat, filterdict=filterdict)
+
+    def _filter(self, mode="array", filterdict=None, flat=False):
         """Extract some part of the state information
 
         An example for filterdict's structure is as follows:
@@ -218,7 +232,14 @@ class State(dict):
                 if not flat:
                     new_state[key] = self[key].filter(mode=mode, filterdict=value)
                 else:
-                    new_state.update({key + "__" + _key: _value for _key, _value in self[key].filter(mode=mode, filterdict=value).items()})
+                    new_state.update(
+                        {
+                            key + "__" + _key: _value
+                            for _key, _value in self[key]
+                            .filter(mode=mode, filterdict=value)
+                            .items()
+                        }
+                    )
             elif isinstance(self[key], StateElement):
                 # to make S.filter("values", S) possible.
                 # Warning: values == filterdict[key] != self[key]
@@ -226,7 +247,7 @@ class State(dict):
                     try:
                         value = slice(0, len(value), 1)
                     except TypeError:  # Deal with 0-D arrays
-                        value = slice(0, 1, 1)  # Ellipsis  # slice(0, 1, 1)
+                        value = Ellipsis  # slice(0, 1, 1)
                 if mode == "space":
                     _SEspace = self[key].space
                     new_state[key] = _SEspace
@@ -241,10 +262,10 @@ class State(dict):
                     else:
                         new_state[key] = v
                 elif mode == "stateelement":
-                    try:
-                        new_state[key] = self[key][value, {"space": True}]
-                    except IndexError:
-                        new_state[key] = self[key][..., {"space": True}]
+                    # try:
+                    new_state[key] = self[key][value, {"space": True}]
+                    # except IndexError:
+                    #     new_state[key] = self[key][..., {"space": True}]
                 else:
                     raise ValueError(
                         f"You want to filter by {mode}, but only modes 'space', 'array', 'array-Gym', 'stateelement' are supported."

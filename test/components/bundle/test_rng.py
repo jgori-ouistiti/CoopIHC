@@ -51,7 +51,7 @@ def test_init():
 def test_samples():
     copied_game_state = copy.deepcopy(bundle.game_state)
     del copied_game_state["game_info"]
-    sequence = [3, 1]
+    sequence = [3, -1, 1]
     for n, i in enumerate(copied_game_state.filter(mode="space", flat=True).values()):
         assert i.sample() == sequence[n]
 

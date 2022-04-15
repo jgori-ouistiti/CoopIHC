@@ -107,12 +107,18 @@ class TrainGym(gym.Env):
         # ----- Init Action space -------
         action_dict = OrderedDict({})
         if self.train_user:
-            for key, value in self.bundle.user.action_state.filter(mode="stateelement").items():
-                action_dict.update({"assistant_action__" + key: self.convert_space(value)})
+            for key, value in self.bundle.user.action_state.filter(
+                mode="stateelement"
+            ).items():
+                action_dict.update({"user_action__" + key: self.convert_space(value)})
 
         if self.train_assistant:
-            for key, value in self.bundle.assistant.action_state.filter(mode="stateelement").items():
-                action_dict.update({"assistant_action__" + key: self.convert_space(value)})
+            for key, value in self.bundle.assistant.action_state.filter(
+                mode="stateelement"
+            ).items():
+                action_dict.update(
+                    {"assistant_action__" + key: self.convert_space(value)}
+                )
 
         return gym.spaces.Dict(action_dict)
 
@@ -141,7 +147,9 @@ class TrainGym(gym.Env):
         obs_dic = OrderedDict({})
 
         observation = getattr(self.bundle, agent).observation
-        for key, value in observation.filter(mode="stateelement", flat=True, filterdict=self.filter_observation).items():
+        for key, value in observation.filter(
+            mode="stateelement", flat=True, filterdict=self.filter_observation
+        ).items():
             obs_dic.update({key: self.convert_space(value)})
 
         return gym.spaces.Dict(obs_dic)
@@ -157,8 +165,8 @@ class TrainGym(gym.Env):
 
     def step(self, action):
 
-        user_action = action.get("user_action", None)
-        assistant_action = action.get("assistant_action", None)
+        user_action = action.get("user_action__action", None)
+        assistant_action = action.get("assistant_action__action", None)
 
         obs, rewards, flag = self.bundle.step(
             user_action=user_action, assistant_action=assistant_action
@@ -257,6 +265,8 @@ class GymConvertor(RLConvertor):
 
         """
 
-        dic =  gamestate.filter(mode="array-Gym", filterdict=self._filter_observation, flat=True)
+        dic = gamestate.filter(
+            mode="array-Gym", filterdict=self._filter_observation, flat=True
+        )
 
         return dic
