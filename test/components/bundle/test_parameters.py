@@ -13,6 +13,7 @@ from coopihc.agents.BaseAgent import BaseAgent
 from coopihc.policy.BasePolicy import BasePolicy
 from coopihc.agents.ExampleUser import ExampleUser
 from coopihc.agents.ExampleAssistant import ExampleAssistant
+from coopihc.observation.BaseObservationEngine import BaseObservationEngine
 import copy
 
 user_action_state = State()
@@ -45,6 +46,9 @@ def test_task_param():
             super().__init__(*args, **kwargs)
             self.parameters = {"param1": 1, "param2": 2}
 
+        def finit(self):
+            self.update_parameters({"finit": 1})
+
     bundle = Bundle(
         task=ExampleTaskwithParams(),
         user=BaseAgent("user", policy_kwargs={"action_state": user_action_state}),
@@ -53,15 +57,73 @@ def test_task_param():
             override_policy=(BasePolicy, {"action_state": assistant_action_state}),
         ),
     )
+    task_dic = {"param1": 1, "param2": 2, "finit": 1}
+    assert bundle.parameters == task_dic
+    assert bundle.task.parameters == task_dic
+    assert bundle.user.parameters == task_dic
+    assert bundle.assistant.parameters == task_dic
+    assert bundle.user.observation_engine.parameters == task_dic
+    assert bundle.user.inference_engine.parameters == task_dic
+    assert bundle.user.policy.parameters == task_dic
 
-    assert bundle.parameters == {"param1": 1, "param2": 2}
-    assert bundle.task.parameters == {"param1": 1, "param2": 2}
-    assert bundle.user.parameters == {"param1": 1, "param2": 2}
-    assert bundle.assistant.parameters == {"param1": 1, "param2": 2}
-    assert bundle.user.observation_engine == {"param1": 1, "param2": 2}
-    assert bundle.user.inference_engine == {"param1": 1, "param2": 2}
-    assert bundle.user.policy == {"param1": 1, "param2": 2}
+
+def test_user_param():
+    class BaseAgentWithParams(BaseAgent):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.parameters = {"param1": 1, "param2": 2}
+
+        def finit(self):
+            self.update_parameters({"finit": 1})
+
+    bundle = Bundle(
+        task=ExampleTask(),
+        user=BaseAgentWithParams(
+            "user", policy_kwargs={"action_state": user_action_state}
+        ),
+        assistant=BaseAgent(
+            "assistant",
+            override_policy=(BasePolicy, {"action_state": assistant_action_state}),
+        ),
+    )
+    task_dic = {"param1": 1, "param2": 2, "finit": 1}
+    assert bundle.parameters == task_dic
+    assert bundle.task.parameters == task_dic
+    assert bundle.user.parameters == task_dic
+    assert bundle.assistant.parameters == task_dic
+    assert bundle.user.observation_engine.parameters == task_dic
+    assert bundle.user.inference_engine.parameters == task_dic
+    assert bundle.user.policy.parameters == task_dic
+
+
+def test_assistant_param():
+    class BaseAgentWithParams(BaseAgent):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.parameters = {"param1": 1, "param2": 2}
+
+        def finit(self):
+            self.update_parameters({"finit": 1})
+
+    bundle = Bundle(
+        task=ExampleTask(),
+        user=BaseAgent("user", policy_kwargs={"action_state": user_action_state}),
+        assistant=BaseAgentWithParams(
+            "assistant",
+            override_policy=(BasePolicy, {"action_state": assistant_action_state}),
+        ),
+    )
+    task_dic = {"param1": 1, "param2": 2, "finit": 1}
+    assert bundle.parameters == task_dic
+    assert bundle.task.parameters == task_dic
+    assert bundle.user.parameters == task_dic
+    assert bundle.assistant.parameters == task_dic
+    assert bundle.user.observation_engine.parameters == task_dic
+    assert bundle.user.inference_engine.parameters == task_dic
+    assert bundle.user.policy.parameters == task_dic
 
 
 if __name__ == "__main__":
     test_task_param()
+    test_user_param()
+    test_assistant_param()

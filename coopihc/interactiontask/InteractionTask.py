@@ -154,6 +154,9 @@ class InteractionTask(ABC):
         else:
             raise ValueError("Parameters can only be set with dictionaries")
 
+    def update_parameters(self, dic):
+        self._parameters.update(dic)
+
     def __content__(self):
         """Custom class representation.
 
