@@ -75,6 +75,7 @@ and **bundling** them back together using a so-called :py:mod:`Bundle <../coopih
     guide/inference_engine
     guide/bundles
     guide/rng
+    guide/parameters
     guide/highlevel_objects
     guide/user_modeling
     guide/wrappers
