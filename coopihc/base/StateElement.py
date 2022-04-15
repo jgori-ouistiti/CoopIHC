@@ -61,7 +61,7 @@ class StateElement(numpy.ndarray):
 
     """
 
-    # Simple static two-way dict
+    # # Simple static two-way dict
     __precedence__ = {
         "error": 0,
         "warning": 2,
@@ -120,7 +120,67 @@ class StateElement(numpy.ndarray):
     def seed(self):
         return self.space.seed
 
+    def __array_ufunc__(self, ufunc, method, *input_args, out=None, **kwargs):
+        """__array_ufunc__, see https://numpy.org/doc/stable/user/basics.subclassing.html.
+
+        This can lead to some issues with some numpy universal functions. For example, modf returns the fractional and integral part of an array in the form of two new StateElements. In that case, the fractional part is necessarily in ]0,1[, whatever the actual space of the original StateElement, but the former will receive the latter's space. To deal with that case, it is suggested to select a proper "out_of_bounds_mode", perhaps dynamically, and to change the space attribute of the new object afterwards if actually needed.
+
+        """
+        args = []
+        # Input and Output conversion to numpy
+        for _input in input_args:
+            if isinstance(_input, StateElement):
+                args.append(_input.view(numpy.ndarray))
+            else:
+                args.append(_input)
+
+        outputs = out
+        if outputs:
+            out_args = []
+            for output in outputs:
+                if isinstance(output, StateElement):
+                    out_args.append(output.view(numpy.ndarray))
+                else:
+                    out_args.append(output)
+            kwargs["out"] = tuple(out_args)
+        else:
+            outputs = (None,) * ufunc.nout
+
+        # Actually apply the ufunc to numpy array
+        result = getattr(ufunc, method)(*args, **kwargs)
+        if result is NotImplemented:
+            return NotImplemented
+
+        # In place
+        if method == "at":
+            if isinstance(input_args[0], StateElement):
+                input_args[0][...] = StateElement._process_input_values(
+                    input_args[0][...], self.space, self.out_of_bounds_mode
+                )
+                input_args[0].space = self.space
+                input_args[0].out_of_bounds_mode = self.out_of_bounds_mode
+
+        if ufunc.nout == 1:
+            result = (result,)
+
+        __result = []
+        for _result, output in zip(result, outputs):
+            if output is None:
+                _result = numpy.asarray(_result)
+
+            else:
+                _result = StateElement(
+                    output,
+                    self.space,
+                    out_of_bounds_mode=self.out_of_bounds_mode,
+                )
+            __result.append(_result)
+        result = tuple(__result)
+
+        return result[0] if len(result) == 1 else result
+
     # Code below is kept as an example in case one day we decide on overriding numpy functions (again).
+
     # def __array_ufunc__(self, ufunc, method, *input_args, out=None, **kwargs):
     #     """__array_ufunc__, see https://numpy.org/doc/stable/user/basics.subclassing.html.
 

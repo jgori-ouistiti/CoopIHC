@@ -7,7 +7,7 @@ from coopihc.base.State import State
 from coopihc.base.elements import discrete_array_element, array_element, cat_element
 from coopihc.policy.LinearFeedback import LinearFeedback
 from coopihc.inference.ContinuousKalmanUpdate import ContinuousKalmanUpdate
-
+from coopihc.observation.BaseObservationEngine import BaseObservationEngine
 
 # Infinite Horizon Continuous Time LQG controller, based on Phillis 1985
 class IHCT_LQGController(BaseAgent):
@@ -147,9 +147,10 @@ class IHCT_LQGController(BaseAgent):
                 super().__init__(*args, **kwargs)
                 self.Q = Q
 
+            @BaseObservationEngine.default_value
             def observe(self, game_state=None):
                 observation, _ = super().observe(game_state=game_state)
-                x = observation["task_state"]["x"].view(numpy.ndarray)
+                x = observation["task_state"]["x"]
                 reward = x.T @ self.Q @ x
                 return observation, reward
 

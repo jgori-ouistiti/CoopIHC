@@ -87,11 +87,11 @@ class ContinuousKalmanUpdate(BaseInferenceEngine):
             )
 
         state = observation["{}_state".format(self.host.role)]
-        u = self.action.view(numpy.ndarray)
+        u = self.action
 
-        xhat = state["xhat"].view(numpy.ndarray)
+        xhat = state["xhat"]
 
-        xhat = xhat.reshape(-1, 1)
+        xhat = xhat
         u = u.reshape(-1, 1)
         deltaxhat = (self.A @ xhat + self.B @ u) * self.host.timestep + self.K @ (
             dy - self.C @ xhat * self.host.timestep
@@ -102,7 +102,7 @@ class ContinuousKalmanUpdate(BaseInferenceEngine):
         # Here, we use the classical definition of rewards in the LQG setup, but this requires having the true value of the state. This may or may not realistic...
         # ====================== Rewards ===============
 
-        x = self.host.bundle.task.state["x"].view(numpy.ndarray)
+        x = self.host.bundle.task.state["x"]
         reward = (x - xhat).T @ self.host.U @ (x - xhat)
 
         return state, reward
