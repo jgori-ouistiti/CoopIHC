@@ -215,29 +215,7 @@ class Numeric(BaseSpace):
 
         super().__init__(seed=seed, contains=contains)
 
-        # converting numpy.inf to integer is not standardized and
-        # self.low = low.astype(self.dtype)
-        # self.high = high.astype(self.dtype)
-        # will not work
-        #  Currently, it will give -2**(nbits) /2 for both numpy.inf and -numpy.inf. Also, a
-
-        # store dtype
         dtype = self.dtype
-        # =================== Old code
-        # # convert to float64 to have good precision  before cast int/float
-        # low = self.low.astype(numpy.float64)
-        # high = self.high.astype(numpy.float64)
-
-        # if numpy.issubdtype(self.dtype, numpy.integer):
-        #     low = numpy.nan_to_num(low, neginf=numpy.iinfo(self.dtype).min + 1e3)
-        #     high = numpy.nan_to_num(high, posinf=numpy.iinfo(self.dtype).max - 1e3)
-
-        # # Get dtype back fro storage and set it
-        # self._dtype = dtype
-
-        # self.low = low.astype(self.dtype)
-        # self.high = high.astype(self.dtype)
-        # ==================== New code
 
         if issubclass(numpy.dtype(dtype).type, numpy.integer):
             low = Numeric._int_from_X(low, dtype=dtype)
