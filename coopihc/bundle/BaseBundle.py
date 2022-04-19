@@ -195,6 +195,8 @@ class BaseBundle:
         assistant=True,
         dic={},
         random_reset=False,
+        user_components="all",
+        assistant_components="all",
     ):
         """Reset bundle.
 
@@ -235,6 +237,10 @@ class BaseBundle:
         :type dic: dict, optional
         :param random_reset: whether during resetting values should be randomized or not if not set by a reset dic, default to False
         :type random_reset: bool, optional
+        :param user_components: 'components' keyword for user reset, default to 'all'
+        :type user_components: bool, optional
+        :param assistant_components:  'components' keyword for assistant reset, default to 'all'
+        :type assistant_components: bool, optional
         :return: new game state
         :rtype: :py:class:`State<coopihc.base.State.State>`
         """
@@ -257,15 +263,13 @@ class BaseBundle:
         if user:
             user_dic = dic.get("user_state")
             self.user._base_reset(
-                dic=user_dic,
-                random=random_reset,
+                dic=user_dic, random=random_reset, components=user_components
             )
 
         if assistant:
             assistant_dic = dic.get("assistant_state")
             self.assistant._base_reset(
-                dic=assistant_dic,
-                random=random_reset,
+                dic=assistant_dic, random=random_reset, components=assistant_components
             )
 
         round_index = dic.get("game_info", {}).get("round_index", 0)

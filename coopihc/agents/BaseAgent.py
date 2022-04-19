@@ -431,23 +431,25 @@ class BaseAgent:
 
         self._inference_engine.host = self
 
-    def _base_reset(self, all=True, dic=None, random=True):
+    def _base_reset(self, components="all", dic=None, random=True):
         """Reset function called by the Bundle.
 
         This method is called by the bundle to reset the agent. It defines a bunch of actions that should be performed upon each reset. It namely calls the reset method that can be modified by the end-user of the library.
 
 
-
-        :param all: which components to reset, defaults to True
+        :param components: which components to reset, defaults to 'all'. You can specify any one of policy, inference, observation
         :type all: bool, optional
         :param dic: reset dictionary, defaults to None.
         :type dic: [type], optional
-
-        :meta private:
+        :param random: whether spaces should be sampled randomly upon reset, defaults to True
+        :type random: bool, optional
         """
-        if all:
+        print(self.__class__.__name__)
+        if "policy" in components or components == "all":
             self.policy.reset(random=random)
+        if "inference" in components or components == "all":
             self.inference_engine.reset(random=random)
+        if "observation" in components or components == "all":
             self.observation_engine.reset(random=random)
 
         if not dic:
