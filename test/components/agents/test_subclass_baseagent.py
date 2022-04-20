@@ -134,7 +134,7 @@ def test_policy():
 def test_inference_engine():
     agent = NonMinimalAgent()
     assert isinstance(agent.inference_engine, ExampleInferenceEngine)
-    assert agent.inference_engine.buffer_depth == 7
+    assert agent.inference_engine.buffer.depth == 7
 
 
 def test_observation_engine():
@@ -183,7 +183,7 @@ def test_override_infeng():
     infeng = BaseInferenceEngine()
     agent = NonMinimalAgent(override_inference_engine=(infeng, {}))
     assert isinstance(agent.inference_engine, BaseInferenceEngine)
-    assert agent.inference_engine.buffer_depth == 1
+    assert agent.inference_engine.buffer.depth == 1
 
 
 # +----------------------+

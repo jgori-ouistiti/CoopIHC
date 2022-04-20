@@ -19,6 +19,7 @@ from .inference.ExampleInferenceEngine import ExampleInferenceEngine
 from .inference.ContinuousKalmanUpdate import ContinuousKalmanUpdate
 from .inference.GoalInferenceWithUserPolicyGiven import GoalInferenceWithUserPolicyGiven
 from .inference.LinearGaussianContinuous import LinearGaussianContinuous
+from .inference.utils import BufferNotFilledError
 
 from .interactiontask.ClassicControlTask import ClassicControlTask
 from .interactiontask.InteractionTask import InteractionTask

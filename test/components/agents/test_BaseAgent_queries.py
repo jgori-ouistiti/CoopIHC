@@ -40,7 +40,7 @@ def test_obs_game_state():
     user.reset_all(random=False)
     game_state = example_game_state()
     obs, reward = user.observe(game_state=game_state, affect_bundle=False)
-    assert user.inference_engine.buffer is None
+    assert user.inference_engine.buffer.is_empty() == True
     obs, reward = user.observe(game_state=game_state, affect_bundle=True)
     del game_state["assistant_state"]
     assert user.inference_engine.buffer[-1] == game_state

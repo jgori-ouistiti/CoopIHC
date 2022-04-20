@@ -1,6 +1,37 @@
+from coopihc.inference.utils import BufferNotFilledError
 import numpy
 
 # Base Inference Engine: does nothing but return the same state. Any new inference method can subclass InferenceEngine to have a buffer and add_observation method (required by the bundle)
+
+
+class Buffer:
+    def __init__(self, depth, **kwargs):
+        self.depth = depth
+        self.data = []
+
+    def __getitem__(self, key):
+        if not isinstance(key, int):
+            raise ValueError(
+                f"Buffer can only be indexed with ints, but you tried to index with {key} of type {type(key)}"
+            )
+        try:
+            return self.data[key]
+        except IndexError:
+            raise BufferNotFilledError
+
+    def empty(self):
+        self.data = []
+
+    def is_empty(self):
+        return bool(self.data == [])
+
+    def add_observation(self, observation):
+        if len(self.data) < self.depth:
+            self.data.append(observation)
+        else:
+            self.data = self.data[1:] + [observation]
+
+
 class BaseInferenceEngine:
     """BaseInferenceEngine
 
@@ -15,8 +46,7 @@ class BaseInferenceEngine:
     """"""
 
     def __init__(self, *args, buffer_depth=1, seedsequence=None, **kwargs):
-        self.buffer = None
-        self.buffer_depth = buffer_depth
+        self.buffer = Buffer(buffer_depth)
         self.render_flag = None
         self.ax = None
         self._host = None
@@ -53,7 +83,6 @@ class BaseInferenceEngine:
         # https://stackoverflow.com/questions/47299243/recursionerror-when-python-copy-deepcopy
         if value.startswith("_"):
             raise AttributeError
-
         try:
             return self.parameters.__getitem__(value)
         except:
@@ -132,12 +161,7 @@ class BaseInferenceEngine:
         :type observation: :py:class:`State<coopihc.base.State.State>`
         """
 
-        if self.buffer is None:
-            self.buffer = []
-        if len(self.buffer) < self.buffer_depth:
-            self.buffer.append(observation)
-        else:
-            self.buffer = self.buffer[1:] + [observation]
+        self.buffer.add_observation(observation)
 
     # https://stackoverflow.com/questions/1015307/python-bind-an-unbound-method
     def bind(self, func, as_name=None):
@@ -200,7 +224,7 @@ class BaseInferenceEngine:
         :type random: bool, optional
         """
 
-        self.buffer = None
+        self.buffer.empty()
 
     def render(self, mode="text", ax_user=None, ax_assistant=None, ax_task=None):
 

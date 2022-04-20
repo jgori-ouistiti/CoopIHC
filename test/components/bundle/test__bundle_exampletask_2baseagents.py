@@ -71,8 +71,8 @@ def test_reset_turn0():
     assert bundle.turn_number == 0
     assert assert_action_states(bundle)
     assert assert_agent_states(bundle)
-    assert bundle.user.inference_engine.buffer is None
-    assert bundle.assistant.inference_engine.buffer is None
+    assert bundle.user.inference_engine.buffer.is_empty()
+    assert bundle.assistant.inference_engine.buffer.is_empty()
 
 
 def test_reset_turn1():
@@ -84,8 +84,8 @@ def test_reset_turn1():
     assert bundle.turn_number == 1
     assert assert_action_states(bundle)
     assert assert_agent_states(bundle)
-    assert bundle.user.inference_engine.buffer is not None
-    assert bundle.assistant.inference_engine.buffer is None
+    assert not bundle.user.inference_engine.buffer.is_empty()
+    assert bundle.assistant.inference_engine.buffer.is_empty()
 
 
 def test_reset_turn2():
@@ -97,8 +97,8 @@ def test_reset_turn2():
     assert bundle.turn_number == 2
     assert assert_action_states(bundle)
     assert assert_agent_states(bundle)
-    assert bundle.user.inference_engine.buffer is not None
-    assert bundle.assistant.inference_engine.buffer is None
+    assert not bundle.user.inference_engine.buffer.is_empty()
+    assert bundle.assistant.inference_engine.buffer.is_empty()
 
 
 def test_reset_turn3():
@@ -110,8 +110,8 @@ def test_reset_turn3():
     assert bundle.turn_number == 3
     assert assert_action_states(bundle)
     assert assert_agent_states(bundle)
-    assert bundle.user.inference_engine.buffer is not None
-    assert bundle.assistant.inference_engine.buffer is not None
+    assert not bundle.user.inference_engine.buffer.is_empty()
+    assert not bundle.assistant.inference_engine.buffer.is_empty()
 
 
 def test_reset_turn2_to_3():
@@ -123,8 +123,8 @@ def test_reset_turn2_to_3():
     assert bundle.turn_number == 3
     assert assert_action_states(bundle)
     assert assert_agent_states(bundle)
-    assert bundle.user.inference_engine.buffer is None
-    assert bundle.assistant.inference_engine.buffer is not None
+    assert bundle.user.inference_engine.buffer.is_empty()
+    assert not bundle.assistant.inference_engine.buffer.is_empty()
 
 
 def test_reset_string():
@@ -136,8 +136,8 @@ def test_reset_string():
     assert bundle.turn_number == 3
     assert assert_action_states(bundle)
     assert assert_agent_states(bundle)
-    assert bundle.user.inference_engine.buffer is None
-    assert bundle.assistant.inference_engine.buffer is not None
+    assert bundle.user.inference_engine.buffer.is_empty()
+    assert not bundle.assistant.inference_engine.buffer.is_empty()
 
 
 def test_reset_turn():

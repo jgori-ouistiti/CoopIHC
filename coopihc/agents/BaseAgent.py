@@ -7,6 +7,7 @@ from coopihc.observation.RuleObservationEngine import RuleObservationEngine
 from coopihc.observation.utils import base_user_engine_specification
 from coopihc.observation.utils import base_assistant_engine_specification
 from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
+from coopihc.inference.utils import BufferNotFilledError
 
 import numpy
 import copy
@@ -285,11 +286,10 @@ class BaseAgent:
     @property
     def observation(self):
         """Last agent observation"""
-        return (
-            self.inference_engine.buffer[-1]
-            if self.inference_engine.buffer is not None
-            else None
-        )
+        try:
+            return self.inference_engine.buffer[-1]
+        except BufferNotFilledError:
+            return None
 
     @property
     def action(self):
@@ -444,7 +444,6 @@ class BaseAgent:
         :param random: whether spaces should be sampled randomly upon reset, defaults to True
         :type random: bool, optional
         """
-        print(self.__class__.__name__)
         if "policy" in components or components == "all":
             self.policy.reset(random=random)
         if "inference" in components or components == "all":
@@ -505,7 +504,7 @@ class BaseAgent:
 
         :meta public:
         """
-        self._base_reset(all=True, dic=dic, random=random)
+        self._base_reset(components="all", dic=dic, random=random)
 
     def finit(self):
         """Finish initializing.

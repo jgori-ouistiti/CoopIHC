@@ -101,7 +101,7 @@ def test_init_args():
     # ----------- Check inference engine default
     infeng = new_agent.inference_engine
     assert infeng.host is new_agent
-    assert infeng.buffer_depth == 1
+    assert infeng.buffer.depth == 1
     infeng.add_observation(observed_gamestate)
     new_state, reward = infeng.infer()
     assert reward == 0
@@ -132,7 +132,7 @@ def test_init_agent_inference_engine():
     new_agent = BaseAgent("user", agent_inference_engine=inference_engine)
     assert inference_engine.host is new_agent
     assert new_agent.inference_engine is inference_engine
-    assert new_agent.inference_engine.buffer_depth == 10
+    assert new_agent.inference_engine.buffer.depth == 10
 
 
 def test_init_observation_engine():
