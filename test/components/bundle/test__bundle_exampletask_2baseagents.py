@@ -290,17 +290,17 @@ def on_user_action_useronly(bundle, task_state_value):
 def test_step_useronly():
     global bundle
     bundle.reset(go_to=1)
-    x = bundle.game_state["task_state"]["x"].squeeze().tolist()
+    x = copy.deepcopy(bundle.game_state["task_state"]["x"])
     assert null_step_useronly(bundle, x)
     bundle.reset(go_to=1)
-    x = bundle.game_state["task_state"]["x"].squeeze().tolist()
+    x = copy.deepcopy(bundle.game_state["task_state"]["x"])
     assert on_user_action_useronly(bundle, x)
 
 
 def test_multistep_both():
     global bundle
     bundle.reset(go_to=1)
-    x = bundle.game_state["task_state"]["x"].squeeze().tolist()
+    x = copy.deepcopy(bundle.game_state["task_state"]["x"])
     while True:
         state, rewards, is_done = bundle.step(user_action=1, assistant_action=0)
         if x + 1 == 4:
@@ -310,13 +310,13 @@ def test_multistep_both():
             assert is_done == False
 
         assert state["task_state"]["x"] == x + 1
-        x = state["task_state"]["x"].squeeze().tolist()
+        x = copy.deepcopy(state["task_state"]["x"])
 
 
 def test_multistep_single():
     global bundle
     bundle.reset(go_to=1)
-    x = bundle.game_state["task_state"]["x"].squeeze().tolist()
+    x = copy.deepcopy(bundle.game_state["task_state"]["x"])
     while True:
         state, rewards, is_done = bundle.step(user_action=1)
         assistant_action = state["assistant_action"]["action"]
@@ -328,13 +328,13 @@ def test_multistep_single():
             assert is_done == False
 
         assert state["task_state"]["x"] == new_value
-        x = state["task_state"]["x"].squeeze().tolist()
+        x = copy.deepcopy(state["task_state"]["x"])
 
 
 def test_multistep_none():
     global bundle
     bundle.reset(go_to=1)
-    x = bundle.game_state["task_state"]["x"].squeeze().tolist()
+    x = copy.deepcopy(bundle.game_state["task_state"]["x"])
     while True:
         state, rewards, is_done = bundle.step()
         user_action = state["user_action"]["action"]
@@ -347,10 +347,8 @@ def test_multistep_none():
         else:
             assert is_done == False
 
-        assert state["task_state"]["x"].view(numpy.ndarray) == new_value.view(
-            numpy.ndarray
-        )  # should not be needed, hack for now
-        x = state["task_state"]["x"].squeeze().tolist()
+        assert state["task_state"]["x"] == new_value
+        x = copy.deepcopy(state["task_state"]["x"])
 
 
 def test_multistep():
