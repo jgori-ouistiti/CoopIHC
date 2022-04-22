@@ -46,6 +46,7 @@ class BaseInferenceEngine:
     """"""
 
     def __init__(self, *args, buffer_depth=1, seedsequence=None, **kwargs):
+        # print(f"{self.__class__.__name__} buffer_depth:{buffer_depth}")
         self.buffer = Buffer(buffer_depth)
         self.render_flag = None
         self.ax = None

@@ -25,7 +25,7 @@ class BasePolicy:
             action_state = State()
             action_state["action"] = cat_element(N=2, init=0)
 
-        self.action_state = action_state
+        self._action_state = action_state
         self._host = None
         self.seedsequence = seedsequence
 
@@ -45,6 +45,10 @@ class BasePolicy:
         return numpy.random.default_rng(child_seeds[0])
 
     @property
+    def action_state(self):
+        return self._action_state
+
+    @property
     def parameters(self):
         return self._host.parameters
 
@@ -61,7 +65,7 @@ class BasePolicy:
 
     def __getattr__(self, value):
         # https://stackoverflow.com/questions/47299243/recursionerror-when-python-copy-deepcopy
-        if value.startswith("_"):
+        if value.startswith("__"):
             raise AttributeError
 
         try:

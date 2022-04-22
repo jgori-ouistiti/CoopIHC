@@ -9,6 +9,7 @@ from .agents.lqrcontrollers.LQRController import LQRController
 
 from .bundle.BaseBundle import BaseBundle
 from .bundle.Bundle import Bundle
+from .bundle.Simulator import Simulator
 from .bundle.wrappers.Train import TrainGym
 from .bundle.WsServer import WsServer
 from .bundle.wrappers import PipedTaskBundleWrapper
@@ -19,6 +20,7 @@ from .inference.ExampleInferenceEngine import ExampleInferenceEngine
 from .inference.ContinuousKalmanUpdate import ContinuousKalmanUpdate
 from .inference.GoalInferenceWithUserPolicyGiven import GoalInferenceWithUserPolicyGiven
 from .inference.LinearGaussianContinuous import LinearGaussianContinuous
+from .inference.DualInferenceEngine import DualInferenceEngine
 from .inference.utils import BufferNotFilledError
 
 from .interactiontask.ClassicControlTask import ClassicControlTask
@@ -38,6 +40,7 @@ from .policy.LinearFeedback import LinearFeedback
 from .policy.RLPolicy import RLPolicy
 from .policy.WrapAsPolicy import WrapAsPolicy
 from .policy.ExamplePolicy import ExamplePolicy
+from .policy.DualPolicy import DualPolicy
 
 
 from .base.Space import BaseSpace
@@ -61,6 +64,7 @@ from .base.utils import SpaceLengthError
 from .base.utils import StateNotContainedError
 from .base.utils import SpacesNotIdenticalError
 from .base.utils import NotASpaceError
+from .inference.utils import BufferNotFilledError
 
 # -------------------- shortcuts
 # from .base.elements import lin_space

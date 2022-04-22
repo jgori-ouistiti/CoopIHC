@@ -2,7 +2,6 @@ from coopihc.base.State import State
 from coopihc.base.elements import cat_element
 from coopihc.policy.BasePolicy import BasePolicy
 
-
 # ============== General Policies ===============
 
 
@@ -24,9 +23,6 @@ class DualPolicy(BasePolicy):
 
         self._host = None
         self._action_state = None
-        delattr(self, "action_state")
-        delattr(self, "host")
-
         self._mode = "primary"
 
     @property
@@ -39,6 +35,7 @@ class DualPolicy(BasePolicy):
 
     @host.setter
     def host(self, value):
+        self._host = value
         self.primary_policy.host = value
         self.dual_policy.host = value
 
@@ -48,11 +45,6 @@ class DualPolicy(BasePolicy):
             return self.primary_policy.action_state
         else:
             return self.dual_policy.action_state
-
-    def _base_sample(self):
-        action, reward = self.sample(observation=None)
-        self.action = action
-        return self.action, reward
 
     @BasePolicy.default_value
     def sample(self, agent_observation=None, agent_state=None):

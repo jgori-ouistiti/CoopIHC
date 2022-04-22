@@ -3,16 +3,29 @@ from coopihc.bundle.Bundle import Bundle
 
 class Simulator(Bundle):
     def __init__(
-        self, *args, task_model=None, user_model=None, assistant=None, **kwargs
+        self,
+        name="Simulator",
+        task_model=None,
+        user_model=None,
+        assistant=None,
+        use_primary_inference=False,
+        use_primary_policy=False,
+        **kwargs
     ):
+        self.name = name
+
         super().__init__(
-            task=task_model, user=user_model, assistant=assistant, *args, **kwargs
+            task=task_model, user=user_model, assistant=assistant, **kwargs
         )
-        self.open()
+
+        self.use_primary_inference = use_primary_inference
+        self.use_primary_policy = use_primary_policy
 
     def open(self):
-        self.assistant.policy._mode = "dual"
-        self.assistant.inference_engine._mode = "dual"
+        if not self.use_primary_policy:
+            self.assistant.policy._mode = "dual"
+        if not self.use_primary_inference:
+            self.assistant.inference_engine._mode = "dual"
         self.assistant.bundle = self
 
     def close(self):

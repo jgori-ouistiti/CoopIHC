@@ -182,6 +182,7 @@ class RuleObservationEngine(BaseObservationEngine):
         :return: observation
         :rtype: :py:class:`State <coopihc.base.State.State>`
         """
+        game_state = copy.deepcopy(game_state)
         observation = State()
         for (
             substate,

@@ -334,7 +334,10 @@ class State(dict):
         table = []
         line_no = 0
         for n, (key, value) in enumerate(self.items()):
-            tab, tablines = value._tabulate()
+            try:
+                tab, tablines = value._tabulate()
+            except AttributeError:  # value has no _tabulate method (because not a StateElement)
+                tab, tablines = ([[str(value), type(value)]], 1)
 
             nline = 1  # deal with empty substates
 

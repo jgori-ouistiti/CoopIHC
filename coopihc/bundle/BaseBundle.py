@@ -49,6 +49,7 @@ class BaseBundle:
         seed=None,
         **kwargs,
     ):
+
         self._reset_random = reset_random
         self._reset_start_after = reset_start_after
         self._reset_go_to = reset_go_to
@@ -272,6 +273,14 @@ class BaseBundle:
                 dic=assistant_dic, random=random_reset, components=assistant_components
             )
 
+        user_obs = dic.get("user_observation", None)
+        if user_obs is not None:
+            self.user.inference_engine.buffer.data[-1] = user_obs
+
+        assistant_obs = dic.get("assistant_observation", None)
+        if assistant_obs is not None:
+            self.assistant.inference_engine.buffer.data[-1] = assistant_obs
+
         round_index = dic.get("game_info", {}).get("round_index", 0)
         self.round_number = round_index
 
@@ -354,7 +363,6 @@ class BaseBundle:
         rewards["second_task_reward"] = 0
 
         while self.turn_number != go_to or (not _started):
-
             _started = True
             # User observes and infers
             if self.turn_number == 0 and "no-user" != self.kwargs.get("name"):
@@ -400,10 +408,12 @@ class BaseBundle:
             # Assistant takes action and receives reward from task
             elif self.turn_number == 3 and "no-assistant" != self.kwargs.get("name"):
                 if assistant_action is None:
+
                     (
                         assistant_action,
                         assistant_policy_reward,
                     ) = self.assistant.take_action(increment_turn=False)
+
                 else:
                     self.assistant.action = assistant_action
                     assistant_policy_reward = 0
@@ -411,6 +421,7 @@ class BaseBundle:
                 task_reward, is_done = self._assistant_second_half_step(
                     assistant_action
                 )
+
                 rewards["assistant_policy_reward"] = assistant_policy_reward
                 rewards["second_task_reward"] = task_reward
                 if is_done:
