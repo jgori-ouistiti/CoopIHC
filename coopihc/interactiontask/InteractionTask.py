@@ -230,7 +230,7 @@ class InteractionTask(ABC):
         """
         ret = self.on_user_action(*args, **kwargs)
         if ret is None:
-            return self.state, -1 / 2, False
+            return self.state, 0, False
         else:
             return ret
 
@@ -245,7 +245,7 @@ class InteractionTask(ABC):
         """
         ret = self.on_assistant_action(*args, **kwargs)
         if ret is None:
-            return self.state, -1 / 2, False
+            return self.state, 0, False
         else:
             return ret
 
