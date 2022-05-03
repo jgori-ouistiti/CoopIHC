@@ -268,12 +268,9 @@ class StateElement(numpy.ndarray):
 
         """
         # The except clause is here to support numpy broadcasting when indexing.
-        print("inside")
-        print(value, self.space[key], self.out_of_bounds_mode)
         value = StateElement._process_input_values(
             value, self.space[key], self.out_of_bounds_mode
         )
-        print(value)
         super().__setitem__(key, value)
 
     def __iter__(self):
