@@ -46,7 +46,10 @@ class BIGGain(BaseAgent):
     def finit(self):
         del self.policy.action_state["action"]
         self.policy.action_state["action"] = discrete_array_element(
-            init=0, low=0, high=self.bundle.task.gridsize, out_of_bounds_mode="error"
+            init=0,
+            low=0,
+            high=self.bundle.task.gridsize - 1,
+            out_of_bounds_mode="error",
         )
 
         user_policy_model = copy.deepcopy(self.bundle.user.policy)
