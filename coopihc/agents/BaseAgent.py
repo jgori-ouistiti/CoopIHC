@@ -513,7 +513,6 @@ class BaseAgent:
 
         :meta public:
         """
-
         pass
 
     def take_action(

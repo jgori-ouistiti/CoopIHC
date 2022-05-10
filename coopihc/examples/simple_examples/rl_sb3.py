@@ -160,6 +160,7 @@ modified_env.step(
 # check_env(sb3env, warn=True)
 # # [end-define-SB3wrapper]
 
+# random action
 # ============= function to make env
 
 # [start-make-env]

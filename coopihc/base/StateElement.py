@@ -5,7 +5,7 @@ import json
 import itertools
 import warnings
 
-from coopihc.base.Space import BaseSpace
+from coopihc.base.Space import BaseSpace, CatSet
 from coopihc.base.utils import (
     StateNotContainedError,
     StateNotContainedWarning,
@@ -389,6 +389,46 @@ class StateElement(numpy.ndarray):
         if self.out_of_bounds_mode != other.out_of_bounds_mode:
             return numpy.full(self.shape, False)
         return numpy.full(self.shape, True)
+
+    def filter(self, value=Ellipsis, mode="array", copy_values=False, **kwargs):
+        if isinstance(value, StateElement):
+            try:
+                value = slice(0, len(value), 1)
+            except TypeError:  # Deal with 0-D arrays
+                value = Ellipsis  # slice(0, 1, 1)
+        if mode == "space":
+            _SEspace = self.space
+            return_value = _SEspace
+        elif mode == "array":
+            return_value = (self[value]).view(numpy.ndarray)
+        elif mode == "array-Gym":
+            v = (self[value]).view(numpy.ndarray)
+            if isinstance(self.space, CatSet):
+                return_value = int(v)
+            elif self.space.shape == ():
+                return_value = numpy.atleast_1d(v)
+            else:
+                return_value = v
+        elif mode == "stateelement":
+            # try:
+            return_value = self[value, {"space": True}]
+            # except IndexError:
+            #     new_state[key] = self[key][..., {"space": True}]
+        else:
+            raise ValueError(
+                f"You want to filter by {mode}, but only modes 'space', 'array', 'array-Gym', 'stateelement' are supported."
+            )
+
+        if not copy_values:
+            return return_value
+        elif copy_values == "shallow":
+            return copy.copy(return_value)
+        elif copy_values == "deep":
+            return copy.deepcopy(return_value)
+        else:
+            raise ValueError(
+                f'copy_values keyword argument is {copy_values}, but only False, "shallow", and "deep" are accepted'
+            )
 
     def cast(self, other, mode="center"):
         """Convert values of a StateElement taking values in one space to those of another space, if a one-to-one mapping is possible.
