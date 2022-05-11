@@ -351,14 +351,7 @@ def test_multistep_none():
         else:
             assert is_done == False
 
-        try:
-            assert state["task_state"]["x"] == new_value
-        except AssertionError:
-            print(init)
-            print(state["task_state"]["x"])
-            print(new_value)
-            exit()
-
+        assert state["task_state"]["x"] == new_value
         x = copy.deepcopy(state["task_state"]["x"])
 
 
