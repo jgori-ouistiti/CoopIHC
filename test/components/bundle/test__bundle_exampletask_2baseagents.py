@@ -275,7 +275,7 @@ def on_user_action_useronly(bundle, task_state_value):
     assistant_action = state["assistant_action"]["action"]
 
     assert bundle.game_state["task_state"]["x"] == numpy.clip(
-        x + 1 + assistant_action, -1, 4
+        numpy.clip(x + 1, -1, 4) + assistant_action, -1, 4
     )
     assert bundle.round_number == 1
     assert bundle.turn_number == 1
@@ -322,7 +322,7 @@ def test_multistep_single():
     while True:
         state, rewards, is_done = bundle.step(user_action=1)
         assistant_action = state["assistant_action"]["action"]
-        new_value = numpy.clip(x + 1 + assistant_action, -1, 4)
+        new_value = numpy.clip(numpy.clip(x + 1, -1, 4) + assistant_action, -1, 4)
         if new_value >= 4:
             assert is_done == True
             return
@@ -343,7 +343,9 @@ def test_multistep_none():
         state, rewards, is_done = bundle.step()
         user_action = state["user_action"]["action"]
         assistant_action = state["assistant_action"]["action"]
-        new_value = numpy.clip(x + user_action + assistant_action, -1, 4)
+        new_value = numpy.clip(
+            numpy.clip(x + user_action, -1, 4) + assistant_action, -1, 4
+        )
         if new_value >= 4:
             assert is_done == True
             assert state["task_state"]["x"] == 4
@@ -351,13 +353,7 @@ def test_multistep_none():
         else:
             assert is_done == False
 
-        try:
-            assert state["task_state"]["x"] == new_value
-        except AssertionError:
-            print(init)
-            print(state["task_state"]["x"])
-            print(new_value)
-            exit()
+        assert state["task_state"]["x"] == new_value
 
         x = copy.deepcopy(state["task_state"]["x"])
 
