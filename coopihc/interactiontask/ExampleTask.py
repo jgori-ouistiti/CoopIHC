@@ -39,7 +39,7 @@ class ExampleTask(InteractionTask):
         # self.state["x"] = self.state["x"] + self.user_action
         self.state["x"] += self.user_action
 
-        # Stopping condition, return is_done boolean floag
+        # Stopping condition, return is_done boolean float
         if self.state["x"] == 4:
             is_done = True
 
@@ -50,7 +50,7 @@ class ExampleTask(InteractionTask):
         is_done = False
         # Modify the state in place, adding the assistant action
         self.state["x"] += self.assistant_action
-        # Stopping condition, return is_done boolean floag
+        # Stopping condition, return is_done boolean float
         if self.state["x"] == 4:
             is_done = True
 
