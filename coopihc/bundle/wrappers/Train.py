@@ -77,6 +77,7 @@ class TrainGym(gym.Env):
         self.train_user = train_user
         self.train_assistant = train_assistant
         self.bundle = bundle
+        self.bundle.trainer = self
         self.observation_dict = observation_dict
         self.reset_dic = reset_dic
         self.filter_observation = filter_observation
@@ -141,6 +142,10 @@ class TrainGym(gym.Env):
             return self.get_agent_observation_space("user")
         if self.train_assistant:
             return self.get_agent_observation_space("assistant")
+
+    # def _unpack_observation(self, observation):
+
+    # def predict(self, observation):
 
     def get_agent_observation_space(self, agent):
 
@@ -270,3 +275,31 @@ class GymConvertor(RLConvertor):
         )
 
         return dic
+
+
+def apply_wrappers(action, wrapped_env):
+    """
+
+    In rl_sb3.py, you can check that this works, after having defined the env:
+
+    .. code-block:: python
+
+        action = bundle.user.policy.sample()[0]
+        from coopihc.bundle.wrappers.Train import apply_wrappers
+
+        gym_action = apply_wrappers(action, modified_env)
+    """
+    action_wrappers = []
+    while True:
+        action_w = getattr(wrapped_env, "action", None)
+        if action_w is not None:
+            action_wrappers.append(wrapped_env)
+        wrapped_env = getattr(wrapped_env, "env", None)
+        if wrapped_env is None:
+            break
+
+    action_wrappers.reverse()
+    for _action_w in action_wrappers[::-1]:
+        action = _action_w.reverse_action(action)
+
+    return action

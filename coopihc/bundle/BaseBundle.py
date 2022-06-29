@@ -2,6 +2,8 @@ from random import random
 from coopihc.base.State import State
 from coopihc.base.elements import discrete_array_element, array_element, cat_element
 from coopihc.base.elements import discrete_array_element, cat_element
+from coopihc.base.bundle.wrappers.Train import TrainGym
+
 
 import numpy
 import yaml
@@ -53,6 +55,8 @@ class BaseBundle:
         self._reset_random = reset_random
         self._reset_start_after = reset_start_after
         self._reset_go_to = reset_go_to
+
+        self.trainer = None
 
         self.kwargs = kwargs
         self.task = task
@@ -642,6 +646,34 @@ class BaseBundle:
             task_reward,
             is_done,
         )
+
+    def convert_to_gym_env(
+        self,
+        bundle,
+        *args,
+        train_user=False,
+        train_assistant=False,
+        observation_dict=None,
+        reset_dic={},
+        reset_turn=None,
+        filter_observation=None,
+        passed_action_wrappers=None,
+        passed_observation_wrappers=None,
+        **kwargs,
+    ):
+        env = TrainGym(
+            bundle,
+            *args,
+            train_user=train_user,
+            train_assistant=train_assistant,
+            observation_dict=observation_dict,
+            reset_dic=reset_dic,
+            reset_turn=reset_turn,
+            filter_observation=filter_observation,
+            **kwargs,
+        )
+        env.passed_action_wrappers = passed_action_wrappers
+        env.passed_observation_wrappers = passed_observation_wrappers
 
     def _on_assistant_action(self, *args):
         """Turns 3 and 4

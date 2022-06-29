@@ -8,6 +8,7 @@ from coopihc.observation.utils import base_user_engine_specification
 from coopihc.observation.utils import base_assistant_engine_specification
 from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 from coopihc.inference.utils import BufferNotFilledError
+from coopihc.bundle.wrappers.Train import TrainGym
 
 import numpy
 import copy
@@ -516,9 +517,19 @@ class BaseAgent:
         pass
 
     def predict(self, obs, deterministic=True):
+
+        if not isinstance(self.bundle.trainer, TrainGym):
+            raise RuntimeError(
+                "predict method should only be called if bundle is wrapped by a Traingym."
+            )
+
         if not deterministic:
             raise NotImplementedError
-        return (self.take_action(agent_observation=obs, increment_turn=False)[0], None)
+        action = self.take_action(agent_observation=obs, increment_turn=False)[0]
+        for wrapper in self.bundle.trainer.passed_action_wrappers:
+            action = wrapper.reverse_action(action)
+
+        return action, None
 
     def take_action(
         self,
