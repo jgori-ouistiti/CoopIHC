@@ -515,6 +515,11 @@ class BaseAgent:
         """
         pass
 
+    def predict(self, obs, deterministic=True):
+        if not deterministic:
+            raise NotImplementedError
+        return (self.take_action(agent_observation=obs, increment_turn=False)[0], None)
+
     def take_action(
         self,
         agent_observation=None,
