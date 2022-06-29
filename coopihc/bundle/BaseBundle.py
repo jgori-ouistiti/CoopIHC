@@ -649,7 +649,6 @@ class BaseBundle:
 
     def convert_to_gym_env(
         self,
-        bundle,
         *args,
         train_user=False,
         train_assistant=False,
@@ -657,23 +656,19 @@ class BaseBundle:
         reset_dic={},
         reset_turn=None,
         filter_observation=None,
-        passed_action_wrappers=None,
-        passed_observation_wrappers=None,
         **kwargs,
     ):
         env = TrainGym(
-            bundle,
+            self,
             *args,
             train_user=train_user,
             train_assistant=train_assistant,
             observation_dict=observation_dict,
             reset_dic=reset_dic,
             reset_turn=reset_turn,
-            filter_observation=filter_observation,
+            filter_observation=filter_observation
             **kwargs,
         )
-        env.passed_action_wrappers = passed_action_wrappers
-        env.passed_observation_wrappers = passed_observation_wrappers
 
     def _on_assistant_action(self, *args):
         """Turns 3 and 4
