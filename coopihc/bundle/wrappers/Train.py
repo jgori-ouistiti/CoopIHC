@@ -74,6 +74,9 @@ class TrainGym(gym.Env):
         filter_observation=None,
         **kwargs,
     ):
+
+        self.wrapper_list = []
+
         self.train_user = train_user
         self.train_assistant = train_assistant
         self.bundle = bundle
@@ -142,10 +145,6 @@ class TrainGym(gym.Env):
             return self.get_agent_observation_space("user")
         if self.train_assistant:
             return self.get_agent_observation_space("assistant")
-
-    # def _unpack_observation(self, observation):
-
-    # def predict(self, observation):
 
     def get_agent_observation_space(self, agent):
 
@@ -303,3 +302,8 @@ def apply_wrappers(action, wrapped_env):
         action = _action_w.reverse_action(action)
 
     return action
+
+
+class WrapperReferencer:
+    def __init__(self, env):
+        self.env.unwrapped.wrapper_list.append(self)

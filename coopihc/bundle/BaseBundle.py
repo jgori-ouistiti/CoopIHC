@@ -2,7 +2,7 @@ from random import random
 from coopihc.base.State import State
 from coopihc.base.elements import discrete_array_element, array_element, cat_element
 from coopihc.base.elements import discrete_array_element, cat_element
-from coopihc.base.bundle.wrappers.Train import TrainGym
+from coopihc.bundle.wrappers.Train import TrainGym
 
 
 import numpy

@@ -155,7 +155,7 @@ class BasePolicy:
         return self
 
     def default_value(func):
-        """Apply this decorator to use bundle.game_state as default value to observe if game_state = None"""
+        """Apply this decorator to use ..."""
 
         def wrapper_default_value(self, agent_observation=None, agent_state=None):
             if agent_observation is None:
