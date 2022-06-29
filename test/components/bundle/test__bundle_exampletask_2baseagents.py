@@ -274,7 +274,9 @@ def on_user_action_useronly(bundle, task_state_value):
     state, rewards, is_done = bundle.step(user_action=1)
     assistant_action = state["assistant_action"]["action"]
 
-    assert bundle.game_state["task_state"]["x"] == x + 1 + assistant_action
+    assert bundle.game_state["task_state"]["x"] == numpy.clip(
+        numpy.clip(x + 1, -1, 4) + assistant_action, -1, 4
+    )
     assert bundle.round_number == 1
     assert bundle.turn_number == 1
     if x + 1 == 4:
@@ -309,7 +311,7 @@ def test_multistep_both():
         else:
             assert is_done == False
 
-        assert state["task_state"]["x"] == x + 1
+        assert state["task_state"]["x"] == numpy.clip(x + 1, -1, 4)
         x = copy.deepcopy(state["task_state"]["x"])
 
 
@@ -320,7 +322,7 @@ def test_multistep_single():
     while True:
         state, rewards, is_done = bundle.step(user_action=1)
         assistant_action = state["assistant_action"]["action"]
-        new_value = x + 1 + assistant_action
+        new_value = numpy.clip(numpy.clip(x + 1, -1, 4) + assistant_action, -1, 4)
         if new_value >= 4:
             assert is_done == True
             return
@@ -333,13 +335,17 @@ def test_multistep_single():
 
 def test_multistep_none():
     global bundle
+
     bundle.reset(go_to=1)
     x = copy.deepcopy(bundle.game_state["task_state"]["x"])
+    init = copy.deepcopy(x)
     while True:
         state, rewards, is_done = bundle.step()
         user_action = state["user_action"]["action"]
         assistant_action = state["assistant_action"]["action"]
-        new_value = x + user_action + assistant_action
+        new_value = numpy.clip(
+            numpy.clip(x + user_action, -1, 4) + assistant_action, -1, 4
+        )
         if new_value >= 4:
             assert is_done == True
             assert state["task_state"]["x"] == 4
@@ -348,6 +354,7 @@ def test_multistep_none():
             assert is_done == False
 
         assert state["task_state"]["x"] == new_value
+
         x = copy.deepcopy(state["task_state"]["x"])
 
 

@@ -143,6 +143,10 @@ class TrainGym(gym.Env):
         if self.train_assistant:
             return self.get_agent_observation_space("assistant")
 
+    # def _unpack_observation(self, observation):
+
+    # def predict(self, observation):
+
     def get_agent_observation_space(self, agent):
 
         obs_dic = OrderedDict({})
