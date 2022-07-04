@@ -525,9 +525,9 @@ class BaseAgent:
 
         if not deterministic:
             raise NotImplementedError
-        action = self.take_action(agent_observation=obs, increment_turn=increment_turn)[
-            0
-        ]
+        action = self.take_action(
+            agent_observation=None, increment_turn=increment_turn
+        )[0]
         action = apply_wrappers(action, self.bundle.trainer.wrapper_list[0])
 
         return action, None
