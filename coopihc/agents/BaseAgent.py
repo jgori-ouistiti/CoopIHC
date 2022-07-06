@@ -516,7 +516,9 @@ class BaseAgent:
         """
         pass
 
-    def predict(self, obs, deterministic=True, increment_turn=False):
+    def predict(
+        self, obs, deterministic=True, increment_turn=False, wrappers=True, **kwargs
+    ):
 
         if not isinstance(self.bundle.trainer, TrainGym):
             raise RuntimeError(
@@ -528,7 +530,9 @@ class BaseAgent:
         action = self.take_action(
             agent_observation=None, increment_turn=increment_turn
         )[0]
-        action = apply_wrappers(action, self.bundle.trainer.wrapper_list[0])
+
+        if wrappers:
+            action = apply_wrappers(action, self.bundle.trainer.wrapper_list[0])
 
         return action, None
 
