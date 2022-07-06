@@ -304,5 +304,36 @@ def apply_wrappers(action, wrapped_env):
 
 
 class WrapperReferencer:
+    """Reference Wrappers for Train objects
+
+    When applying wrappers (e.g. Gym wrappers) to ``Train`` objects, the ``Train`` object does not have a reference to those wrappers (from a wrapped environment called ``env``, you can access the ``Train`` object) by doing ``env.unwrapped``, but there is no way to access the lis of wrappers from the ``Train`` object.
+    To make the reference, simply make sure your wrapper subclasses WrapperReferencer as well. For example:
+
+    .. code-block:: python
+
+        class AssistantActionWrapper(ActionWrapper, WrapperReferencer):
+            def __init__(self, env):
+                ActionWrapper.__init__(self, env)
+                WrapperReferencer.__init__(self, env)
+                _as = env.action_space["assistant_action__action"]
+                self.action_space = Box(low=-1, high=1, shape=_as.shape, dtype=np.float32)
+                self.low, self.high = _as.low, _as.high
+                self.half_amp = (self.high - self.low) / 2
+                self.mean = (self.high + self.low) / 2
+
+            def action(self, action):
+                return {"assistant_action__action": int(action * self.half_amp + self.mean)}
+
+            def reverse_action(self, action):
+                raw = action["assistant_action__action"]
+                return (raw - self.mean) / self.half_amp
+
+    This will add a ``wrapper_list`` attribute to the ``Train`` object.
+
+    Doing this is required to use an agent's predict method with ``wrappers=True``.
+
+
+    """
+
     def __init__(self, env):
         self.env.unwrapped.wrapper_list.append(self)
