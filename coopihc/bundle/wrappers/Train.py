@@ -297,7 +297,6 @@ def apply_wrappers(action, wrapped_env):
         if wrapped_env is None:
             break
 
-    # action_wrappers.reverse()
     for _action_w in action_wrappers[::-1]:
         action = _action_w.reverse_action(action)
 

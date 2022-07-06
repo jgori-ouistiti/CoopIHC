@@ -658,7 +658,7 @@ class BaseBundle:
         filter_observation=None,
         **kwargs,
     ):
-        env = TrainGym(
+        return TrainGym(
             self,
             *args,
             train_user=train_user,
@@ -666,7 +666,7 @@ class BaseBundle:
             observation_dict=observation_dict,
             reset_dic=reset_dic,
             reset_turn=reset_turn,
-            filter_observation=filter_observation
+            filter_observation=filter_observation,
             **kwargs,
         )
 
