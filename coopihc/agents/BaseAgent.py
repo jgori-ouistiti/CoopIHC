@@ -460,7 +460,7 @@ class BaseAgent:
             return
 
         # forced reset with dic
-        for key in list(self.state.keys()):
+        for key in self.state:
             value = dic.get(key)
             if isinstance(value, StateElement):
                 self.state[key] = value
@@ -526,7 +526,9 @@ class BaseAgent:
             )
 
         if not deterministic:
-            raise NotImplementedError
+            raise NotImplementedError(
+                "BaseAgents do not have a deterministic or probabilistic mode. Set deterministic = True"
+            )
         action = self.take_action(
             agent_observation=None, increment_turn=increment_turn
         )[0]

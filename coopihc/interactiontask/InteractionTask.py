@@ -202,7 +202,7 @@ class InteractionTask(ABC):
             return
 
         # forced reset with dic
-        for key in list(self.state.keys()):
+        for key in self.state:
             value = dic.get(key)
             if isinstance(value, StateElement):
                 self.state[key] = value

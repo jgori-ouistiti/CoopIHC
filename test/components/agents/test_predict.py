@@ -62,7 +62,7 @@ def make_simple_pointing_env():
     return env
 
 
-def test_predict():
+def test_predict_one_step():
     env = make_simple_pointing_env()
     for i in range(100):
         env.reset()
@@ -73,5 +73,26 @@ def test_predict():
         assert (_action) + 1 * 19 / 2
 
 
+def test_predict_increment_False():
+    env = make_simple_pointing_env()
+    env.reset()
+    action, reward = env.bundle.assistant.take_action(increment_turn=False)
+    for i in range(100):
+        assert action == env.bundle.assistant.take_action(increment_turn=False)[0]
+
+
+# def test_predict_with_step():
+#     import copy
+
+# env = make_simple_pointing_env()
+# env.reset()
+# action, reward = env.bundle.assistant.take_action(increment_turn=False)
+# copied_env = copy.deepcopy(env)
+#     _action, _ = copied_env.bundle.assistant.predict(None, increment_turn=True)
+#     env.step(_action)
+#     assert env.unwrapped.bundle.state == copied_env.unwrapped.bundle.state
+
+
 if __name__ == "__main__":
-    test_predict()
+    test_predict_one_step()
+    test_predict_increment_False()

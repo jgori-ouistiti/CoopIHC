@@ -123,7 +123,7 @@ class BasePolicy:
     @property
     def action_keys(self):
         if self._action_keys is None:
-            self._action_keys = self.action_state.keys()
+            self._action_keys = list(iter(self.action_state))
 
         return self._action_keys
 

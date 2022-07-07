@@ -404,7 +404,7 @@ class State(dict):
         return new_state
 
     def __content__(self):
-        return list(self.keys())
+        return list(iter(self))
 
     def __copy__(self):
         cls = self.__class__
