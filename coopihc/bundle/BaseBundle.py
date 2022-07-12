@@ -203,6 +203,7 @@ class BaseBundle:
         user_components="all",
         assistant_components="all",
     ):
+
         """Reset bundle.
 
         1. Reset the game and start at a specific turn number.
@@ -381,6 +382,7 @@ class BaseBundle:
 
             # User takes action and receives reward from task
             elif self.turn_number == 1 and "no-user" != self.kwargs.get("name"):
+
                 if user_action is None:
                     user_action, user_policy_reward = self.user.take_action(
                         increment_turn=False
@@ -396,6 +398,7 @@ class BaseBundle:
                     return self.game_state, rewards, is_done
 
             elif self.turn_number == 2 and "no-assistant" == self.kwargs.get("name"):
+
                 self.round_number = self.round_number + 1
 
             # Assistant observes and infers

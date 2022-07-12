@@ -44,7 +44,6 @@ while True:
         break
 # [end-check-task]
 
-
 # [start-check-taskuser]
 
 
@@ -56,7 +55,7 @@ class ExampleTaskWithoutAssistant(ExampleTask):
 example_task = ExampleTaskWithoutAssistant()
 example_user = ExampleUser()
 bundle = Bundle(task=example_task, user=example_user)
-bundle.reset()
+bundle.reset(go_to = 1)
 
 while True:
     state, rewards, is_done = bundle.step()

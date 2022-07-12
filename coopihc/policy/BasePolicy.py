@@ -179,18 +179,42 @@ class BasePolicy:
         if random:
             self.action_state.reset()
 
-    def _base_sample(self, agent_observation=None, agent_state=None):
+    def _base_sample(
+        self, agent_observation=None, agent_state=None, update_action_state=True
+    ):
+        if not update_action_state:
+            copied_action = copy.copy(self.action[...])
+            copied_action_state = copy.deepcopy(self.action_state)
+
         action, reward = self.sample(
             agent_observation=agent_observation, agent_state=agent_state
         )
-        self.action = action
-        return self.action, reward
+
+        if update_action_state:
+            self.action = action
+            return self.action, reward
+
+        # else:
+        self.action[...] = copied_action
+        try:
+            next(iter(action))
+        except TypeError:
+            action = (action,)
+        for _action, key in zip(action, self.action_keys):
+            copied_action_state[key][...] = _action
+        actions = tuple(copied_action_state.values())
+        if len(actions) == 1:
+            return next(iter(actions)), reward
 
     @default_value
     def sample(self, agent_observation=None, agent_state=None):
         """sample
 
-        (Randomly) Sample from the policy
+        (Randomly) Sample from the policy;
+
+        .. warning::
+
+            Don't set self.action here
 
         :return: (action, action reward)
         :rtype: (StateElement<coopihc.base.StateElement.StateElement>, float)

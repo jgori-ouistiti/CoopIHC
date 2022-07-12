@@ -1,3 +1,4 @@
+from curses import wrapper
 from coopihc.examples.simplepointing.users import CarefulPointer
 from coopihc.examples.simplepointing.envs import SimplePointingTask
 from coopihc.examples.simplepointing.assistants import BIGGain
@@ -48,12 +49,11 @@ def make_simple_pointing_env():
         user=user,
         assistant=assistant,
         random_reset=True,
-        reset_turn=3,
+        start_after=3,
         reset_skip_user_step=False,
     )
 
     env = bundle.convert_to_gym_env(train_user=False, train_assistant=True)
-
     env = FlattenObservation(FilterObservation(env, obs_keys))
     env = AssistantActionWrapper(env)
 
@@ -81,18 +81,31 @@ def test_predict_increment_False():
         assert action == env.bundle.assistant.take_action(increment_turn=False)[0]
 
 
-# def test_predict_with_step():
-#     import copy
+def test_predict_with_step():
+    import copy
 
-# env = make_simple_pointing_env()
-# env.reset()
-# action, reward = env.bundle.assistant.take_action(increment_turn=False)
-# copied_env = copy.deepcopy(env)
-#     _action, _ = copied_env.bundle.assistant.predict(None, increment_turn=True)
-#     env.step(_action)
-#     assert env.unwrapped.bundle.state == copied_env.unwrapped.bundle.state
+    env = make_simple_pointing_env()
+    env.reset()
+    copied_env = copy.deepcopy(env)
+
+    state_just_after_initial_reset = copy.deepcopy(env.unwrapped.bundle.state)
+    action, reward = env.unwrapped.bundle.assistant.take_action(increment_turn=False, update_action_state = False)
+    state_after_action_increment_turn__false = env.unwrapped.bundle.state
+    assert state_just_after_initial_reset == state_after_action_increment_turn__false
+
+    # before trying out things make sure we have the same object:
+    assert env.unwrapped.bundle.state == copied_env.unwrapped.bundle.state
+    # play action with increment = True
+    _action, _ = copied_env.unwrapped.bundle.assistant.predict(
+        None, increment_turn=True, wrapper=True, update_action_state = True
+    )
+    # Play the bundle forward so that we can compare with step
+    # copied_env.unwrapped.bundle.step(go_to=3)
+    env.step(_action)
+    assert env.unwrapped.bundle.state == copied_env.unwrapped.bundle.state
 
 
 if __name__ == "__main__":
     test_predict_one_step()
     test_predict_increment_False()
+    test_predict_with_step()

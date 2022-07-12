@@ -543,6 +543,7 @@ class BaseAgent:
         agent_observation=None,
         agent_state=None,
         increment_turn=True,
+        update_action_state = True,
     ):
         """Select an action
 
@@ -570,7 +571,10 @@ class BaseAgent:
                 self.bundle.turn_number = (self.bundle.turn_number + 1) % 4
 
         return self.policy._base_sample(
-            agent_observation=agent_observation, agent_state=agent_state
+            agent_observation=agent_observation,
+            agent_state=agent_state,
+            # increment_turn=increment_turn,
+            update_action_state=update_action_state,
         )
 
     def observe(
