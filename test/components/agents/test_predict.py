@@ -100,7 +100,7 @@ def test_predict_with_step():
         None, increment_turn=True, wrapper=True, update_action_state = True
     )
     # Play the bundle forward so that we can compare with step
-    # copied_env.unwrapped.bundle.step(go_to=3)
+    copied_env.unwrapped.bundle.step(go_to=3)
     env.step(_action)
     assert env.unwrapped.bundle.state == copied_env.unwrapped.bundle.state
 
