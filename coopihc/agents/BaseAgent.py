@@ -517,7 +517,7 @@ class BaseAgent:
         pass
 
     def predict(
-        self, obs, deterministic=True, increment_turn=False, wrappers=True, **kwargs
+        self, obs, deterministic=True, increment_turn=False, wrappers=True, update_action_state = False, **kwargs
     ):
 
         if not isinstance(self.bundle.trainer, TrainGym):
@@ -530,7 +530,7 @@ class BaseAgent:
                 "BaseAgents do not have a deterministic or probabilistic mode. Set deterministic = True"
             )
         action = self.take_action(
-            agent_observation=None, increment_turn=increment_turn
+            agent_observation=None, increment_turn=increment_turn, update_action_state= update_action_state
         )[0]
 
         if wrappers:

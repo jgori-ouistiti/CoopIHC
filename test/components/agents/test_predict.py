@@ -90,18 +90,26 @@ def test_predict_with_step():
 
     state_just_after_initial_reset = copy.deepcopy(env.unwrapped.bundle.state)
     action, reward = env.unwrapped.bundle.assistant.take_action(increment_turn=False, update_action_state = False)
-    state_after_action_increment_turn__false = env.unwrapped.bundle.state
-    assert state_just_after_initial_reset == state_after_action_increment_turn__false
+    state_after_action_increment_turn_and_update_action_state__false = env.unwrapped.bundle.state
+    assert state_just_after_initial_reset == state_after_action_increment_turn_and_update_action_state__false
+
+    for i in range(100):
+        action, reward = env.unwrapped.bundle.assistant.take_action(increment_turn=False, update_action_state = False)
+        assert state_just_after_initial_reset == state_after_action_increment_turn_and_update_action_state__false
+
 
     # before trying out things make sure we have the same object:
     assert env.unwrapped.bundle.state == copied_env.unwrapped.bundle.state
-    # play action with increment = True
+    # pick action, step
     _action, _ = copied_env.unwrapped.bundle.assistant.predict(
-        None, increment_turn=True, wrapper=True, update_action_state = True
+        None, increment_turn=False, wrapper=True, update_action_state = False
     )
-    # Play the bundle forward so that we can compare with step
-    copied_env.unwrapped.bundle.step(go_to=3)
     env.step(_action)
+
+    # Play the copied bundle forward so that we can compare with step
+    copied_env.unwrapped.bundle.step(go_to=3)
+    
+    # assert env.unwrapped.bundle.state == copied_env.unwrapped.bundle.state
     assert env.unwrapped.bundle.state == copied_env.unwrapped.bundle.state
 
 
