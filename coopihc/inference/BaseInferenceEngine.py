@@ -53,6 +53,9 @@ class BaseInferenceEngine:
         self._host = None
         self.seedsequence = seedsequence
 
+    def finit(self, *args, **kwargs):
+        pass
+
     def _set_seed(self, seedsequence=None):
         if seedsequence is None:
             seedsequence = self.seedsequence
@@ -128,15 +131,12 @@ class BaseInferenceEngine:
         :return: agent state
         :rtype: :py:class:`State<coopihc.base.State.State>`
         """
-        try:  # use state from obs
+        try:
             return self.buffer[-1]["{}_state".format(self.host.role)]
         except AttributeError:
-            try:  # if no obs, try to access bundle state directly
-                self.bundle.state
-            except AttributeError:
-                return AttributeError(
-                    "This agent is not capable of observing its internal state. Think about changing your observation engine."
-                )
+            return AttributeError(
+                "This agent is not capable of observing its internal state. Think about changing your observation engine."
+            )
 
     @property
     def action(self):

@@ -514,7 +514,7 @@ class BaseAgent:
 
         :meta public:
         """
-        pass
+        self.inference_engine.finit()
 
     def predict(
         self,
