@@ -83,6 +83,10 @@ class BaseInferenceEngine:
     def host(self, value):
         self._host = value
 
+    @property
+    def bundle(self):
+        return self.host.bundle
+
     def __getattr__(self, value):
         # https://stackoverflow.com/questions/47299243/recursionerror-when-python-copy-deepcopy
         if value.startswith("_"):
@@ -137,6 +141,8 @@ class BaseInferenceEngine:
             return AttributeError(
                 "This agent is not capable of observing its internal state. Think about changing your observation engine."
             )
+        except BufferNotFilledError:
+            return self.bundle.state["{}_state".format(self.host.role)]
 
     @property
     def action(self):
