@@ -102,6 +102,18 @@ class TrainGym(gym.Env):
 
         # Below: Using ordereddict here is forced due to Open AI gym's behavior: when initializing the Dict space, it tries to order the dict by keys, which may change the order of the dict entries. This is actually useless since Python 3.7 because dicts are ordered by default.
 
+    @property
+    def user(self):
+        return self.bundle.user
+
+    @property
+    def assistant(self):
+        return self.bundle.assistant
+
+    @property
+    def task(self):
+        return self.bundle.task
+
     def get_action_space(self):
         """get_action_space
 
