@@ -128,12 +128,15 @@ class BaseInferenceEngine:
         :return: agent state
         :rtype: :py:class:`State<coopihc.base.State.State>`
         """
-        try:
+        try:  # use state from obs
             return self.buffer[-1]["{}_state".format(self.host.role)]
         except AttributeError:
-            return AttributeError(
-                "This agent is not capable of observing its internal state. Think about changing your observation engine."
-            )
+            try:  # if no obs, try to access bundle state directly
+                self.bundle.state
+            except AttributeError:
+                return AttributeError(
+                    "This agent is not capable of observing its internal state. Think about changing your observation engine."
+                )
 
     @property
     def action(self):
