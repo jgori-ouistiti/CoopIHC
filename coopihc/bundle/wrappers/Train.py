@@ -69,7 +69,7 @@ class TrainGym(gym.Env):
         train_user=False,
         train_assistant=False,
         observation_dict=None,
-        reset_dic={},
+        reset_dic=None,
         reset_turn=None,
         filter_observation=None,
         **kwargs,
@@ -170,8 +170,9 @@ class TrainGym(gym.Env):
 
         return gym.spaces.Dict(obs_dic)
 
-    def reset(self):
-        self.bundle.reset(dic=self.reset_dic, go_to=self.reset_turn)
+    def reset(self, dic=None):
+        dic = self.reset_dic if dic is None else dic
+        self.bundle.reset(dic=dic, go_to=self.reset_turn)
         if self.train_user and self.train_assistant:
             raise NotImplementedError
         if self.train_user:
