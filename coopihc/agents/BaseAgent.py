@@ -526,41 +526,44 @@ class BaseAgent:
         **kwargs,
     ):
 
-        ########## deal with vectorized input
-        obs_is_vectorized = False
+        if obs is None:
+            obs = self.observation
+        else:
+            ########## deal with vectorized input
+            obs_is_vectorized = False
 
-        expected_obs_space = self.bundle.trainer.wrapper_list[0].observation_space
+            expected_obs_space = self.bundle.trainer.wrapper_list[0].observation_space
 
-        if expected_obs_space.shape != obs.shape:
-            if expected_obs_space.shape == obs.shape[1:]:
-                obs_is_vectorized = True
-            else:
-                raise NotImplementedError(
-                    "The observations you are providing dont match with the observation space of the expert. Maybe it can not deal with vectorized input like this."
-                )
+            if expected_obs_space.shape != obs.shape:
+                if expected_obs_space.shape == obs.shape[1:]:
+                    obs_is_vectorized = True
+                else:
+                    raise NotImplementedError(
+                        "The observations you are providing dont match with the observation space of the expert. Maybe it can not deal with vectorized input like this."
+                    )
 
-        #### vectorized
-        if obs_is_vectorized:
-            _actions, _states = [], []
-            for _obs in obs:
-                a, s = self.predict(
-                    obs=_obs,
-                    deterministic=deterministic,
-                    increment_turn=increment_turn,
-                    wrappers=wrappers,
-                    update_action_state=update_action_state,
-                    **kwargs,
-                )
-            _actions.append(a)
-            _states.append(s)
+            #### vectorized
+            if obs_is_vectorized:
+                _actions, _states = [], []
+                for _obs in obs:
+                    a, s = self.predict(
+                        obs=_obs,
+                        deterministic=deterministic,
+                        increment_turn=increment_turn,
+                        wrappers=wrappers,
+                        update_action_state=update_action_state,
+                        **kwargs,
+                    )
+                _actions.append(a)
+                _states.append(s)
 
-            return _actions, _states
+                return _actions, _states
 
         ########## end deal with vectorized input
 
         if not isinstance(self.bundle.trainer, TrainGym):
             raise RuntimeError(
-                "predict method should only be called if bundle is wrapped by a Traingym."
+                "predict method should only be called if bundle is wrapped by a Train object."
             )
 
         if not deterministic:
