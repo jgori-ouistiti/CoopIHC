@@ -80,7 +80,7 @@ class TrainGym(gym.Env):
         self.train_user = train_user
         self.train_assistant = train_assistant
         self.bundle = bundle
-        self.bundle.trainer = self
+        self.bundle.env = self
         self.observation_dict = observation_dict
         self.reset_dic = reset_dic
         self.filter_observation = filter_observation

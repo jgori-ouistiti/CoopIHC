@@ -532,7 +532,7 @@ class BaseAgent:
             ########## deal with vectorized input
             obs_is_vectorized = False
 
-            expected_obs_space = self.bundle.trainer.wrapper_list[0].observation_space
+            expected_obs_space = self.bundle.env.wrapper_list[0].observation_space
 
             if expected_obs_space.shape != obs.shape:
                 if expected_obs_space.shape == obs.shape[1:]:
@@ -561,7 +561,7 @@ class BaseAgent:
 
         ########## end deal with vectorized input
 
-        if not isinstance(self.bundle.trainer, TrainGym):
+        if not isinstance(self.bundle.env, TrainGym):
             raise RuntimeError(
                 "predict method should only be called if bundle is wrapped by a Train object."
             )
@@ -577,7 +577,7 @@ class BaseAgent:
         )[0]
 
         if wrappers:
-            action = apply_wrappers(action, self.bundle.trainer.wrapper_list[0])
+            action = apply_wrappers(action, self.bundle.env.wrapper_list[0])
 
         return action, None
 
