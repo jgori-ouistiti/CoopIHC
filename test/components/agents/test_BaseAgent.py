@@ -1,3 +1,4 @@
+from symbol import return_stmt
 import pytest
 import numpy
 import copy
@@ -164,9 +165,27 @@ def test_init_observation_engine():
     assert obs == gamestate
 
 
+def test_reset_agent_outside_bundle():
+    class CustomAgent(BaseAgent):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
+    class CustomPolicy(BasePolicy):
+        def __init__(self):
+            super().__init__()
+
+        def reset(self, *args, **kwargs):
+            self._RESET_FLAG = True
+
+    agent_one = CustomAgent("user", agent_policy=CustomPolicy())
+    agent_one.reset_all()
+    assert agent_one.policy._RESET_FLAG == True
+
+
 if __name__ == "__main__":
     test_init_args()
     test_init_agent_state()
     test_init_agent_policy()
     test_init_agent_inference_engine()
     test_init_observation_engine()
+    test_reset_agent_outside_bundle()

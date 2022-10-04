@@ -75,6 +75,7 @@ and **bundling** them back together using a so-called :py:mod:`Bundle <../coopih
     guide/inference_engine
     guide/bundles
     guide/rng
+    guide/rendering
     guide/parameters
     guide/highlevel_objects
     guide/user_modeling
@@ -95,6 +96,10 @@ and **bundling** them back together using a so-called :py:mod:`Bundle <../coopih
 
 Known Caveats
 =====================
+
+1. The mechanism for implementing parameters can lead to a stack overflow: if you try to access an attribute of a CoopIHC class without having run the super class's ``__init__()``, then you will likely get a stack overflow instead of an ``AttributeError``. Either call the super class's ``__init__()``, or set ``self._bundle = None`` and ``self.parameters = {}`` in the object's init.
+
+I think these are fixed:
 
 1. In place additions e.g. ``self.state['x'] += 1`` work, but do not trigger the expected ``out_of_bounds_mode`` behavior. in short, the reason for that is that in place addition calls ``__iadd__`` which is not a Numpy ``__ufunc__``. There are several workarounds possible. One based on the ``@implements`` mechanism described in the ``StateElement`` page which would fix the problem for everyone. Another is simply to do something like ``self.state['x'] = self.state['x'] + 1``
 2. Some forms of indexing do not work e.g. ``self.state['x'][:,1] = [2,3]`` does not work. The problem could be overcome if someone shows interest. In practical cases you can work around this limitation.

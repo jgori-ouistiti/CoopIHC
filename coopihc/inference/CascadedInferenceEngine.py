@@ -32,6 +32,10 @@ class CascadedInferenceEngine(BaseInferenceEngine):
         for eng in self.engine_list:
             eng.host = value
 
+    @property
+    def observation(self):
+        return self.engine_list[-1].observation
+
     def add_observation(self, observation):
         """add observation
 
@@ -41,12 +45,12 @@ class CascadedInferenceEngine(BaseInferenceEngine):
         :type observation: :py:class:`State<coopihc.base.State.State>`
         """
 
-        if self.buffer is None:
-            self.buffer = []
-        if len(self.buffer) < self.buffer_depth:
-            self.buffer.append(observation)
-        else:
-            self.buffer = self.buffer[1:] + [observation]
+        # if self.buffer is None:
+        #     self.buffer = []
+        # if len(self.buffer) < self.buffer_depth:
+        #     self.buffer.append(observation)
+        # else:
+        #     self.buffer = self.buffer[1:] + [observation]
 
         # Broadcast observations to contained inference engines
         for eng in self.engine_list:
@@ -60,18 +64,32 @@ class CascadedInferenceEngine(BaseInferenceEngine):
             }
         }
 
-    @BaseInferenceEngine.default_value
+    # Don't put the default value decorator here, it will cause an error + not needed because the engine's inference engines are already decorated
     def infer(self, agent_observation=None):
 
-        user_state = agent_observation["user_state"]
+        user_state = (
+            agent_observation.get("user_state", {})
+            if agent_observation is not None
+            else {}
+        )
         rewards = 0
         for engine in self.engine_list:
             new_state, new_reward = engine.infer(agent_observation=agent_observation)
             rewards += new_reward
             user_state.update(new_state)
+            # agent_observation[f"{self.host.role}_state"].update(new_state)
 
         return user_state, rewards
 
-    def render(self, *args, **kwargs):
+    def render(
+        self, mode=None, ax_user=None, ax_assistant=None, ax_task=None, **kwargs
+    ):
+
         for eng in self.engine_list:
-            eng.render(*args, **kwargs)
+            eng.render(
+                ax_task=ax_task,
+                ax_user=ax_user,
+                ax_assistant=ax_assistant,
+                mode=mode,
+                **kwargs,
+            )

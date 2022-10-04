@@ -117,7 +117,68 @@ def test_assistant_param():
     assert bundle.user.policy.parameters == task_dic
 
 
+class CustomAgent(BaseAgent):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.parameters = {"attribute_shared": 1}
+
+
+class SharedCustomPolicy(BasePolicy):
+    def __init__(self):
+        super().__init__()
+
+    def reset(self, *args, **kwargs):
+        assert hasattr(self, "attribute_shared")
+
+
+class NotSharedCustomPolicy(BasePolicy):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def reset(self, *args, **kwargs):
+        assert not hasattr(self, "attribute_not_shared")
+
+
+def test_parameter_in_policy():
+
+    agent_one = CustomAgent("user", agent_policy=SharedCustomPolicy())
+    agent_one.reset_all()
+
+
+def test_parameter_not_in_policy():
+    agent_one = CustomAgent("user", agent_policy=NotSharedCustomPolicy())
+    agent_one.reset_all()
+
+
+def test_policy_in_agent():
+    test_parameter_in_policy()
+    test_parameter_not_in_policy()
+
+
+def test_parameter_in_policy_in_bundle():
+    agent_one = CustomAgent("user", agent_policy=SharedCustomPolicy())
+    agent_two = BaseAgent("assistant")
+    task = ExampleTask()
+    bundle = Bundle(task=task, user=agent_one, assistant=agent_two)
+    bundle.reset()
+
+
+def test_parameter_not_in_policy_in_bundle():
+    agent_one = CustomAgent("user", agent_policy=NotSharedCustomPolicy())
+    agent_two = BaseAgent("assistant")
+    task = ExampleTask()
+    bundle = Bundle(task=task, user=agent_one, assistant=agent_two)
+    bundle.reset()
+
+
+def test_policy_in_bundle():
+    test_parameter_in_policy_in_bundle()
+    test_parameter_not_in_policy_in_bundle()
+
+
 if __name__ == "__main__":
     test_task_param()
     test_user_param()
     test_assistant_param()
+    test_policy_in_agent()
+    test_policy_in_bundle()

@@ -13,6 +13,8 @@ from coopihc.bundle.wrappers.Train import TrainGym, apply_wrappers
 import numpy
 import copy
 
+from abc import abstractmethod
+
 
 class BaseAgent:
     """A *Coopihc* agent.
@@ -288,7 +290,7 @@ class BaseAgent:
     def observation(self):
         """Last agent observation"""
         try:
-            return self.inference_engine.buffer[-1]
+            return self.inference_engine.observation
         except BufferNotFilledError:
             return None
 
@@ -478,6 +480,7 @@ class BaseAgent:
                 except:
                     raise NotImplementedError
 
+    @abstractmethod
     def reset(self):
         """reset the agent --- Override this
 
@@ -491,7 +494,6 @@ class BaseAgent:
 
         :meta public:
         """
-        pass
 
     def reset_all(self, dic=None, random=True):
         """reset the agent and all its components
@@ -587,6 +589,7 @@ class BaseAgent:
         agent_state=None,
         increment_turn=True,
         update_action_state=True,
+        task_transition=False,
     ):
         """Select an action
 
@@ -613,12 +616,19 @@ class BaseAgent:
             else:  # Re-raise exception
                 self.bundle.turn_number = (self.bundle.turn_number + 1) % 4
 
-        return self.policy._base_sample(
+        action, reward = self.policy._base_sample(
             agent_observation=agent_observation,
             agent_state=agent_state,
-            # increment_turn=increment_turn,
             update_action_state=update_action_state,
         )
+
+        if task_transition:
+            if self.bundle is not None:
+                self.bundle.task.base_on_user_action(user_action=action)
+            else:
+                raise Exception("AgentNotConnectedToBundleError")
+
+        return action, reward
 
     def observe(
         self,
@@ -677,7 +687,7 @@ class BaseAgent:
             self.inference_engine.add_observation(observation)
         return observation, reward
 
-    def infer(self, agent_observation=None, affect_bundle=True):
+    def infer(self, agent_observation=None, affect_bundle=True, increment_turn=False):
         """infer the agent's internal state
 
         Infer the new agent state from the agent's observation. By default, the agent will select the agent's last observation. To bypass this behavior, you can provide a given agent_observation.
@@ -696,6 +706,8 @@ class BaseAgent:
         )
         if affect_bundle:
             self.state.update(agent_state)
+        if increment_turn:
+            self.bundle.turn_number = (self.bundle.turn_number + 1) % 4
         return agent_state, agent_infer_reward
 
     def _agent_step(self, infer=True):
@@ -749,6 +761,8 @@ class BaseAgent:
             agent_state, agent_infer_reward = self.infer(
                 agent_observation=agent_observation, affect_bundle=affect_bundle
             )
+        else:
+            raise NotImplementedError
         return agent_obs_reward + agent_infer_reward
 
     def render(self, mode="text", ax_user=None, ax_assistant=None, ax_task=None):
@@ -778,3 +792,7 @@ class BaseAgent:
                 self.ax.set_title(type(self).__name__ + " State")
         if "text" in mode:
             print(type(self).__name__ + " State")
+
+        self.inference_engine.render(
+            mode=mode, ax_user=ax_user, ax_assistant=ax_assistant, ax_task=ax_task
+        )

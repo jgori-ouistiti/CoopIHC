@@ -46,13 +46,12 @@ class PseudoRandomPolicy(BasePolicy):
 
     @BasePolicy.default_value
     def sample(self, agent_observation=None, agent_state=None):
-
         x = agent_observation.task_state.x
 
         _action_value = (
             8 + self.state.p0 * x + self.state.p1 * x * x + self.state.p2 * x * x * x
         ) % 10
-
+        print(f"sampled: {_action_value}")
         return _action_value, 0
 
 

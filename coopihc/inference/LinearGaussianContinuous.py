@@ -79,19 +79,16 @@ class LinearGaussianContinuous(BaseInferenceEngine):
             state = agent_observation["assistant_state"]
 
         # Likelihood model
-        y, v = state["y"].view(numpy.ndarray), state["Sigma_0"].view(numpy.ndarray)
+        y, v = state["y"], state["Sigma_0"]
         # Prior
-        oldmu, oldsigma = state["belief-mu"].view(numpy.ndarray), state[
-            "belief-sigma"
-        ].view(numpy.ndarray)
+        oldmu, oldsigma = state["belief-mu"], state["belief-sigma"]
 
         # Posterior
         new_sigma = numpy.linalg.inv((numpy.linalg.inv(oldsigma) + numpy.linalg.inv(v)))
         newmu = new_sigma @ (
             numpy.linalg.inv(v) @ y + numpy.linalg.inv(oldsigma) @ oldmu
         )
-        # state["belief-mu"][:] = newmu
-        # state["belief-sigma"][:, :] = new_sigma
+
         state["belief-mu"] = newmu
         state["belief-sigma"] = new_sigma
 
@@ -102,11 +99,6 @@ class LinearGaussianContinuous(BaseInferenceEngine):
 
         Draws the beliefs (mean value and ellipsis or confidence intervals according to dimension).
         """
-        render_flag = False
-        for r in self.render_tag:
-            if r in mode:
-                render_flag = True
-
         if "plot" in mode:
             if self.host.role == "user":
                 ax = ax_user

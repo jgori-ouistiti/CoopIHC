@@ -6,6 +6,33 @@ from coopihc.base.elements import discrete_array_element, array_element, cat_ele
 from coopihc.base.elements import cat_element
 
 
+## Included in Python 3.10, code taken from PEP 618
+def zip_strict(*iterables, strict=True):
+    if not iterables:
+        return
+    iterators = tuple(iter(iterable) for iterable in iterables)
+    try:
+        while True:
+            items = []
+            for iterator in iterators:
+                items.append(next(iterator))
+            yield tuple(items)
+    except StopIteration:
+        if not strict:
+            return
+    if items:
+        i = len(items)
+        plural = " " if i == 1 else "s 1-"
+        msg = f"zip() argument {i+1} is shorter than argument{plural}{i}"
+        raise ValueError(msg)
+    sentinel = object()
+    for i, iterator in enumerate(iterators[1:], 1):
+        if next(iterator, sentinel) is not sentinel:
+            plural = " " if i == 1 else "s 1-"
+            msg = f"zip() argument {i+1} is longer than argument{plural}{i}"
+            raise ValueError(msg)
+
+
 # ============== General Policies ===============
 
 
@@ -143,12 +170,18 @@ class BasePolicy:
 
     @action.setter
     def action(self, item):
-        try:
+
+        try:  # make single items iterable
             next(iter(item))
         except TypeError:
             item = (item,)
-        for _action, key in zip(item, self.action_keys):
-            self.action_state[key][...] = _action
+
+        try:  # see whether item can be mapped to actions
+            for _action, key in zip_strict(item, self.action_keys):
+                self.action_state[key][...] = _action
+        except ValueError:  # if not, we likely have a multidimensional action, that can be mapped directly
+            action = next(iter(self.action_state))
+            self.action_state[action] = item
 
     @property
     def unwrapped(self):

@@ -69,7 +69,7 @@ class TrainGym(gym.Env):
         train_user=False,
         train_assistant=False,
         observation_dict=None,
-        reset_dic=None,
+        reset_dic={},
         reset_turn=None,
         filter_observation=None,
         **kwargs,

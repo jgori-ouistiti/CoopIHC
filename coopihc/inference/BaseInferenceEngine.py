@@ -238,25 +238,18 @@ class BaseInferenceEngine:
 
     def render(self, mode="text", ax_user=None, ax_assistant=None, ax_task=None):
 
-        render_flag = False
-        for r in self.render_tag:
-            if r in mode:
-                render_flag = True
-
-        if render_flag:
-
-            if "plot" in mode:
-                if self.ax is not None:
-                    pass
+        if "plot" in mode:
+            if self.ax is not None:
+                pass
+            else:
+                if ax_user is not None:
+                    self.ax = ax_user
+                elif ax_assistant is not None:
+                    self.ax = ax_assistant
                 else:
-                    if ax_user is not None:
-                        self.ax = ax_user
-                    elif ax_assistant is not None:
-                        self.ax = ax_assistant
-                    else:
-                        self.ax = ax_task
+                    self.ax = ax_task
 
-                    self.ax.set_title(type(self).__name__)
+                self.ax.set_title(type(self).__name__)
 
-            if "text" in mode:
-                print(type(self).__name__)
+        if "text" in mode:
+            print(type(self).__name__)

@@ -30,6 +30,7 @@ bundle = Bundle(
         "assistant",
         override_policy=(BasePolicy, {"action_state": assistant_action_state}),
     ),
+    seed=1234,
 )
 
 # ============== Helpers =============
@@ -411,13 +412,59 @@ def agent_step():
     assert bundle.round_number == 1
 
 
+def agent_step_precise():
+
+    bundle = Bundle(
+        task=ExampleTask(),
+        # Here policy = None, will call BasePolicy of BaseAgent with kwargs policy_kwargs
+        user=ExampleUser(),
+        # Here, we use the override mechanism directly. Both are equivalent
+        assistant=BaseAgent(
+            "assistant",
+            override_policy=(BasePolicy, {"action_state": assistant_action_state}),
+        ),
+        seed=1234,
+    )
+
+    bundle_copy = copy.deepcopy(bundle)
+    bundle.reset()
+    bundle_copy.reset()
+    assert bundle.state == bundle_copy.state
+
+    ## 0->1
+    bundle.quarter_step()
+    bundle_state = bundle.state
+    bundle_user_observation = bundle.user.observation
+    bundle_user_state = bundle.user.state
+    obs, reward = bundle_copy.user.observe(affect_bundle=True)
+    state, reward = bundle_copy.user.infer(affect_bundle=True, increment_turn=True)
+    bundle_copy_state = bundle_copy.state
+    bundle_copy_user_observation = bundle_copy.user.observation
+    bundle_copy_user_state = bundle_copy.user.state
+
+    assert bundle_state == bundle_copy_state
+    assert bundle_user_observation == bundle_copy_user_observation
+    assert bundle_user_state == bundle_copy_user_state
+
+    ## 1->2
+
+    bundle.quarter_step()
+    bundle_state = bundle.state
+    action, reward = bundle_copy.user.take_action(
+        increment_turn=True, task_transition=True
+    )
+    bundle_copy_state = bundle_copy.state
+    assert bundle_copy_state == bundle_state
+
+
 def test_step():
-    test_step_both()
-    test_step_useronly()
-    test_multistep()
-    test_partial_round()
-    quarter_step()
-    agent_step()
+    # test_step_both()
+    # test_step_useronly()
+    # test_multistep()
+    # test_partial_round()
+    # quarter_step()
+    # agent_step()
+    agent_step_precise()
 
 
 if __name__ == "__main__":

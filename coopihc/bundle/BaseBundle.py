@@ -524,10 +524,10 @@ class BaseBundle:
 
             plt.tight_layout()
 
-        if not ("plot" in mode or "text" in mode):
-            self.task.render(None, mode=mode, *args, **kwargs)
-            self.user.render(None, mode=mode, *args, **kwargs)
-            self.assistant.render(None, mode=mode, *args, **kwargs)
+        else:
+            self.task.render(mode=mode, *args, **kwargs)
+            self.user.render(mode=mode, *args, **kwargs)
+            self.assistant.render(mode=mode, *args, **kwargs)
 
     def close(self):
         """close
@@ -542,7 +542,7 @@ class BaseBundle:
     def _user_first_half_step(self):
         """_user_first_half_step
 
-        Turn 1, where the user observes the game state and updates its state via inference.
+        Turn 0->1, where the user observes the game state and updates its state via inference.
 
         :return: user observation and inference reward
         :rtype: tuple(float, float)
@@ -569,7 +569,7 @@ class BaseBundle:
     def _user_second_half_step(self, user_action):
         """_user_second_half_step
 
-        Turn 2, where the operaror takes an action.
+        Turn 1->2, where the operaror takes an action.
 
         :param user_action: user action
         :param type: Any
@@ -588,7 +588,7 @@ class BaseBundle:
     def _assistant_first_half_step(self):
         """_assistant_first_half_step
 
-        Turn 3, where the assistant observes the game state and updates its state via inference.
+        Turn 2->3, where the assistant observes the game state and updates its state via inference.
 
         :return: assistant observation and inference reward
         :rtype: tuple(float, float)
@@ -603,7 +603,7 @@ class BaseBundle:
     def _assistant_second_half_step(self, assistant_action):
         """_assistant_second_half_step
 
-        Turn 4, where the assistant takes an action.
+        Turn 3->0, where the assistant takes an action.
 
         :param user_action: assistant action
         :param type: Any
@@ -621,7 +621,7 @@ class BaseBundle:
         return task_reward, is_done
 
     def _on_user_action(self, *args):
-        """Turns 1 and 2
+        """Turns 0-> 2
 
         :param \*args: either provide the user action or not. If no action is provided the action is determined by the agent's policy using sample()
         :param type: (None or list)
@@ -674,7 +674,7 @@ class BaseBundle:
         )
 
     def _on_assistant_action(self, *args):
-        """Turns 3 and 4
+        """Turns 2->0
 
         :param \*args: either provide the assistant action or not. If no action is provided the action is determined by the agent's policy using sample()
         :param type: (None or list)
