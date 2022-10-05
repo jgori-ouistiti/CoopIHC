@@ -76,7 +76,10 @@ class SimplePointingTask(InteractionTask):
         """
         # Finish task if cursor on top of the goal
         is_done = False
-        if self.state["position"] == self.bundle.user.state["goal"]:
+        if (
+            self.state["position"] == self.bundle.user.state["goal"]
+            and user_action == 0
+        ):
             is_done = True
 
         return self.state, -1, is_done

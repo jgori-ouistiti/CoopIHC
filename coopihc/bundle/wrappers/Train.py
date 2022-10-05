@@ -55,6 +55,10 @@ class TrainGym(gym.Env):
 
     You can always filter out observations later using an ObservationWrapper. Difference in performance between the two approaches is unknown.
 
+    .. note::
+
+        This wrapper only works currently for single actions for agent labeled "action" i.e. the agent's action state looks like this:             ``action_state = State({'action': array_element(...)})``
+
     :type observation_dict: collections.OrderedDict, optional
     :param reset_dic: During training, the bundle will be repeatedly reset. Pass the reset_dic here if needed (see Bundle reset mechanism), defaults to {}
     :type reset_dic: dict, optional
@@ -182,8 +186,18 @@ class TrainGym(gym.Env):
 
     def step(self, action):
 
+        ### Code below should be changed, quick fix for now/
         user_action = action.get("user_action__action", None)
+        if user_action is None and self.train_user:
+            raise ValueError(
+                "Error in step, the dictionary you have provided is not recognized --> should be user_action__action"
+            )
         assistant_action = action.get("assistant_action__action", None)
+        if assistant_action is None and self.train_assistant:
+            raise ValueError(
+                "Error in step, the dictionary you have provided is not recognized --> should be assistant_action__action"
+            )
+        ###################################################
 
         obs, rewards, flag = self.bundle.step(
             user_action=user_action, assistant_action=assistant_action
