@@ -15,8 +15,6 @@ def test_simple_examples():
     import coopihc.examples.simple_examples.lqr_example
     import coopihc.examples.simple_examples.lqg_example
     import coopihc.examples.simple_examples.assistant_has_user_model
-    import coopihc.examples.simple_examples.rl_sb3
-    import coopihc.examples.simple_examples.exploit_rlnet
 
 
 def test_poiting_examples():
