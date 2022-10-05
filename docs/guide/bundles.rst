@@ -63,7 +63,29 @@ There are several ways in which you can indicate how to move the bundle from a s
 Moving rounds 
 ^^^^^^^^^^^^^^^
 
-To move rounds, you can simply call ``step(user_action= None, assistant_action = None, go_to=None)``. This will move the bundle from turn T and round R to turn T and round T+1, by having the 4 turns be executed. If ``user_action=None``, then the user action is sampled from its policy engine. Otherwise, the provided action is used. This allows you to test the effect of a different policy on the same agent straightforwardly. The same holds for the assistant. If ``go_to = k``, then the turns will be played until the turn k is reached without completing the full round.  
+- **step-by-step** To move rounds, you can simply call ``step(user_action= None, assistant_action = None, go_to=None)``. This will move the bundle from turn T and round R to turn T and round T+1, by having the 4 turns be executed. If ``user_action=None``, then the user action is sampled from its policy engine. Otherwise, the provided action is used. This allows you to test the effect of a different policy on the same agent straightforwardly. The same holds for the assistant. If ``go_to = k``, then the turns will be played until the turn k is reached without completing the full round.  
+
+- **Episodic sampling** You can sample complete episodes at once with bundles sample method e.g. ``sample(n_turns = 10)`` will sample 10 complete episodes (i.e. reset the bundle, step through it until the task is done, and in total 10 times).
+
+The equivalence between step by step interaction and episodic sampling is shown below.
+
+.. code-block:: python
+
+    # Interaction loop starts
+    bundle.reset()
+    bundle.render("plottext")
+    plt.tight_layout()
+
+    while True:
+        obs, rewards, is_done = bundle.step()
+        bundle.render("plottext")
+        if is_done:
+            bundle.close()
+            break
+    # Interaction loop ends
+
+    # Interaction loop is equivalent to this (without render)
+    data = bundle.sample(n_turns=1)
 
 Moving turns 
 ^^^^^^^^^^^^^^^
@@ -95,17 +117,17 @@ Moving turns
         * if ``agent_state`` and ``agent_observation`` are given, then these will be used to select the action, otherwise the agent will use values internal to the bundle. 
         * if ``update_action_state = True``, then the produced action is propagated to the bundle. This allows you to query your agent even though it is inside a bundle, without affecting the bundle.
 
-- **being even more precise.** You can also access the workings of each component at a more precise level:
-    .. code-block:: python
+- **being even more precise.** You can also access the workings of each component at a more precise level.
 
+    .. code-block:: python
 
         ## 0->1 equivalent to bundle.quarter_step()
         obs, reward = user.observe(affect_bundle=True)
         state, reward = user.infer(affect_bundle=True, increment_turn=True)
 
         ## 1->2 equivalent to bundle.quarter_step()
-        action, reward = user.take_action(
-            increment_turn=True, task_transition=True
-        )
+        action, reward = user.take_action( increment_turn=True, task_transition=True)
+
+    You will find this useful if you need to query an agent without affecting the bundle.
        
 

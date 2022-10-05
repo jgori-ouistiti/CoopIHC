@@ -3,7 +3,7 @@ from coopihc.base.State import State
 from coopihc.base.elements import discrete_array_element, array_element, cat_element
 from coopihc.base.elements import discrete_array_element, cat_element
 from coopihc.bundle.wrappers.Train import TrainGym
-
+from coopihc.bundle.utils.Sampler import Sampler
 
 import numpy
 import yaml
@@ -706,3 +706,10 @@ class BaseBundle:
             task_reward,
             is_done,
         )
+
+    def sample(self, n_turns=10):
+        episodes = []
+        sampler = Sampler(self, n_turns=n_turns)
+        for states, rewards in sampler:
+            episodes.append([states, rewards])
+        return episodes
