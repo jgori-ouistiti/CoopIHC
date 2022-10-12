@@ -33,7 +33,8 @@ class CascadedObservationEngine(BaseObservationEngine):
             }
         }
 
-    def observe(self, game_state):
+    @BaseObservationEngine.default_value
+    def observe(self, game_state=None):
         """observe
 
         Serial observations (i.e. output of an engine becomes input of the next one)
@@ -46,7 +47,7 @@ class CascadedObservationEngine(BaseObservationEngine):
         game_state = copy.deepcopy(game_state)
         rewards = 0
         for engine in self.engine_list:
-            new_obs, new_reward = engine.observe(game_state)
+            new_obs, new_reward = engine.observe(game_state=game_state)
             game_state.update(new_obs)
             rewards += new_reward
 

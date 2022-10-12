@@ -12,28 +12,28 @@ class WrapAsObservationEngine(BaseObservationEngine):
 
     def __init__(self, obs_bundle):
 
-        self.bundle = obs_bundle
-        self.bundle.reset()
+        self.observation_bundle = obs_bundle
+        self.observation_bundle.reset()
 
     def __content__(self):
         return {
             "Name": self.__class__.__name__,
-            "Bundle": self.bundle.__content__(),
+            "Bundle": self.observation_bundle.__content__(),
         }
 
     @property
     def unwrapped(self):
-        return self.bundle.unwrapped
+        return self.observation_bundle.unwrapped
 
     @property
     def game_state(self):
-        return self.bundle.game_state
+        return self.observation_bundle.game_state
 
     def reset(self, *args, **kwargs):
-        return self.bundle.reset(*args, **kwargs)
+        return self.observation_bundle.reset(*args, **kwargs)
 
     def step(self, *args, **kwargs):
-        return self.bundle.step(*args, **kwargs)
+        return self.observation_bundle.step(*args, **kwargs)
 
     def observe(self, game_state):
         pass
@@ -41,7 +41,9 @@ class WrapAsObservationEngine(BaseObservationEngine):
         # return observation, rewards
 
     def __str__(self):
-        return "{} <[ {} ]>".format(self.__class__.__name__, self.bundle.__str__())
+        return "{} <[ {} ]>".format(
+            self.__class__.__name__, self.observation_bundle.__str__()
+        )
 
     def __repr__(self):
         return self.__str__()

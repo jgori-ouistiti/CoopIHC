@@ -9,7 +9,7 @@ The main structure of *CoopIHC* is a multi-agent decision making model known as 
 
 The steps of this example are:
 
-1. Define the Bundle as usual, where the policy of the agent to be trained has the right actions (without a mechanism to select those actions).
+1. Define the Bundle as usual, where the policy of the agent to be trained has the correct action state but does not have a mechanism to select actions (e.g. random policy).
 2. Wrap the bundle in a ``TrainGym`` wrapper, making it compatible with the `Gym API <https://gym.openai.com/>`_ --- a widely used standard in DRL research.
 3. Train the agent's policy (i.e. attempt to solve the underlying POMDP). To do so, a machinery entirely specific to DRL and not *CoopIHC* is used. We will use `Stable-Baselines 3 (SB3) <https://stable-baselines3.readthedocs.io/en/master/>`_ to do so, which may add a few more constraints for step 2.
 4. Apply the proper wrapper to make the trained policy compatible with *CoopIHC*.

@@ -707,9 +707,27 @@ class BaseBundle:
             is_done,
         )
 
-    def sample(self, n_turns=10):
+    def sample(self, n_turns=10, verbose=False):
+        """Generate n_turns episodes
+
+        Generate n_turns episodes, by resetting the bundle and stepping until it ends.
+        Collects all bundle  states and rewards during the episode, and also return the average reward.
+
+        :param n_turns: number of episodes, defaults to 10
+        :type n_turns: int, optional
+        :param verbose: print out information, defaults to False
+        :type verbose: bool, optional
+        :return: episodes, average reward
+        :rtype: list, float
+        """
         episodes = []
         sampler = Sampler(self, n_turns=n_turns)
-        for states, rewards in sampler:
+        reward_sum = 0
+        for ne, (states, rewards) in enumerate(sampler):
             episodes.append([states, rewards])
-        return episodes
+            reward_sum += sum(
+                [sum(rew.values()) if rew is not None else 0 for rew in rewards]
+            )
+            if verbose:
+                print(f"Episode {ne}")
+        return episodes, reward_sum / n_turns
