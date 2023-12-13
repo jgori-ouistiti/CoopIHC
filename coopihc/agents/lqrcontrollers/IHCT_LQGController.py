@@ -113,14 +113,6 @@ class IHCT_LQGController(BaseAgent):
         action_state = State()
         action_state["action"] = array_element(shape=(1, 1))
 
-        # StateElement(
-        #     numpy.zeros((1, 1)),
-        #     Space(
-        #         [numpy.full((1, 1), -numpy.inf), numpy.full((1, 1), numpy.inf)],
-        #         "continuous",
-        #     ),
-        # )
-
         # Linear Feedback with LQ reward
         class LFwithLQreward(LinearFeedback):
             def __init__(self, R, *args, **kwargs):
@@ -140,19 +132,20 @@ class IHCT_LQGController(BaseAgent):
             ("user_state", "xhat"),
         )
 
-        # =========== Observation Engine ==============
-        # Rule Observation Engine with LQ reward
-        class RuleObswithLQreward(RuleObservationEngine):
-            def __init__(self, Q, *args, **kwargs):
-                super().__init__(*args, **kwargs)
-                self.Q = Q
+        # # =========== Observation Engine ==============
+        # # Rule Observation Engine with LQ reward
+        # class RuleObswithLQreward(RuleObservationEngine):
+        #     def __init__(self, Q, *args, **kwargs):
+        #         super().__init__(*args, **kwargs)
+        #         self.Q = Q
 
-            @BaseObservationEngine.default_value
-            def observe(self, game_state=None):
-                observation, _ = super().observe(game_state=game_state)
-                x = observation["task_state"]["x"]
-                reward = x.T @ self.Q @ x
-                return observation, reward
+        #     @BaseObservationEngine.default_value
+        #     def observe(self, game_state=None):
+        #         observation, _ = super().observe(game_state=game_state)
+        #         print(observation)
+        #         x = observation["task_state"]["x"]
+        #         reward = x.T @ self.Q @ x
+        #         return observation, reward
 
         # Base Spec
         user_engine_specification = [
@@ -205,7 +198,8 @@ class IHCT_LQGController(BaseAgent):
         extraprobabilisticrules = {}
         extraprobabilisticrules.update(agn_rule)
 
-        observation_engine = RuleObswithLQreward(
+        observation_engine = RuleObservationEngine(
+            # observation_engine = RuleObswithLQreward(
             self.Q,
             deterministic_specification=user_engine_specification,
             extradeterministicrules=extradeterministicrules,
@@ -321,7 +315,8 @@ class IHCT_LQGController(BaseAgent):
         :rtype: tuple(numpy.ndarray, numpy.ndarray)
         """
         A, B, C, D, G, H, Q, R, U = matrices
-        Y = B @ H.reshape(1, -1)
+        # Y = B @ H.reshape(1, -1)
+        Y = H
         Lnorm = []
         Knorm = []
         K = numpy.random.rand(*C.T.shape)
@@ -448,7 +443,7 @@ class IHCT_LQGController(BaseAgent):
                 )
             )
             K, L = self._compute_Kalman_matrices(
-                matrices, N=int(20 * 1.3 ** self.check_KL.calls)
+                matrices, N=int(20 * 1.3 ** self._check_KL.calls)
             )
         else:
             return K, L

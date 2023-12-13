@@ -73,10 +73,6 @@ class ClassicControlTask(InteractionTask):
     :type noise: str, optional
     """
 
-    @property
-    def user_action(self):
-        return super().user_action[0]
-
     def __init__(
         self,
         timestep,
@@ -184,9 +180,8 @@ class ClassicControlTask(InteractionTask):
         # For readability
         A, B, F, G, H = self.A, self.B, self.F, self.G, self.H
 
-        _u = self.user_action.view(numpy.ndarray)
-
-        _x = self.state["x"].view(numpy.ndarray)
+        _u = self.user_action
+        _x = self.state["x"]
 
         # Generate noise samples
         if self.noise == "on":

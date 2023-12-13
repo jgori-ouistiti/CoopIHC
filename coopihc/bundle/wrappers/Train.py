@@ -78,7 +78,6 @@ class TrainGym(gym.Env):
         filter_observation=None,
         **kwargs,
     ):
-
         self.wrapper_list = []
 
         self.train_user = train_user
@@ -163,7 +162,6 @@ class TrainGym(gym.Env):
             return self.get_agent_observation_space("assistant")
 
     def get_agent_observation_space(self, agent):
-
         obs_dic = OrderedDict({})
 
         observation = getattr(self.bundle, agent).observation
@@ -185,7 +183,6 @@ class TrainGym(gym.Env):
             return self._convertor.filter_gamestate(self.bundle.assistant.observation)
 
     def step(self, action):
-
         ### Code below should be changed, quick fix for now/
         user_action = action.get("user_action__action", None)
         if user_action is None and self.train_user:
@@ -247,7 +244,6 @@ class RLConvertor(ABC):
     """
 
     def __init__(self, interface="gym", **kwargs):
-
         self.interface = interface
         if self.interface != "gym":
             raise NotImplementedError

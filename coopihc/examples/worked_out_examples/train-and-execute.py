@@ -49,6 +49,7 @@ observation_dict = OrderedDict(
     {"task_state": OrderedDict({"position": 0}), "user_state": OrderedDict({"goal": 0})}
 )
 
+
 # We are going to use PPO to solve the POMDP, which works with
 # continuous action spaces, but our policy has discrete actions. So we introduce a wrapper to pass between continuous and discrete spaces. This is classical in RL, and does not depend on Coopihc
 class ThisActionWrapper(gym.ActionWrapper):
@@ -73,6 +74,7 @@ md_env = ThisActionWrapper(
 from stable_baselines3.common.env_checker import check_env
 
 check_env(md_env)
+exit()
 
 
 # Wrap everything above in a make_env function, used to parallelize
