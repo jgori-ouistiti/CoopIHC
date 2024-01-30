@@ -4,7 +4,7 @@ from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.utils import set_random_seed
 
 from coopihc import State, BasePolicy, Bundle, discrete_array_element
-from coopihc.bundle.wrappers.Train import TrainGym, TrainGym2SB3ActionWrapper
+from coopihc.bundle.wrappers.Train import GymWrapper
 
 import numpy
 import gym
@@ -42,27 +42,37 @@ observation = bundle.reset()
 # [end-define-bundle]
 
 # [start-define-traingym]
-
-env = TrainGym(
+rl_env = GymWrapper(
     bundle,
     train_user=True,
     train_assistant=False,
 )
-obs = env.reset()
+
+obs = rl_env.reset()
 # >>> print(env.action_space)
 # Dict(user_action__action:Box([-5], [5], (1,), int64))
 # >>> print(env.observation_space)
 # Dict(game_info__turn_index:Discrete(4), game_info__round_index:Box([0], [9223372036854775807], (1,), int64), task_state__position:Box([0], [30], (1,), int64), task_state__targets:Box([0 0 0 0 0 0 0 0], [30 30 30 30 30 30 30 30], (8,), int64), user_state__goal:Box([0], [30], (1,), int64), user_action__action:Box([-5], [5], (1,), int64), assistant_action__action:Box([1], [1], (1,), int64))
 
-obs, reward, is_done, inf = env.step({"user_action__action": 1})
+obs, reward, terminated_flag, truncated_flag, inf = rl_env.step(
+    {"user_action__action": 1}
+)
 
 # Use env_checker from stable_baselines3 to verify that the env adheres to the Gym API
 from stable_baselines3.common.env_checker import check_env
 
-check_env(env, warn=False)
+check_env(rl_env, warn=False)
 # [end-define-traingym]
 
 
+#### MARL test
+from coopihc.bundle.wrappers.Train import PettingZooWrapper
+from pettingzoo.test import api_test
+
+marl_env = PettingZooWrapper(bundle)
+
+api_test(marl_env, num_cycles=1000, verbose_progess=False)
+exit()
 # [start-define-mywrappers]
 
 TEN_EPSILON64 = 10 * numpy.finfo(numpy.float64).eps
@@ -162,10 +172,10 @@ modified_env.step(
 # random action
 # ============= function to make env
 
+
 # [start-make-env]
 def make_env():
     def _init():
-
         task = SimplePointingTask(gridsize=31, number_of_targets=8)
         unitcdgain = ConstantCDGain(1)
 
@@ -199,7 +209,6 @@ pytest.skip("not testing the learning", allow_module_level=True)
 
 # [start-train]
 if __name__ == "__main__":
-
     env = SubprocVecEnv([make_env() for i in range(4)])
     # to track rewards on tensorboard
     from stable_baselines3.common.vec_env import VecMonitor

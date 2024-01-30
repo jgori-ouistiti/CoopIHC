@@ -2,9 +2,12 @@ from coopihc.base.StateElement import StateElement
 from coopihc.base.Space import Numeric, CatSet
 
 import numpy
-import gym
+import gymnasium as gym
+import pettingzoo
 from collections import OrderedDict
 from abc import ABC, abstractmethod
+
+import warnings
 
 
 class TrainGym2SB3ActionWrapper(gym.ActionWrapper):
@@ -30,7 +33,347 @@ class TrainGym2SB3ActionWrapper(gym.ActionWrapper):
         return gym.spaces.utils.flatten(action)
 
 
-class TrainGym(gym.Env):
+class _GymnasiumBasedEnv:
+    def __init__(
+        self,
+        bundle,
+        *args,
+        train_user=False,
+        train_assistant=False,
+        observation_dict=None,
+        reset_dic={},
+        reset_turn=None,
+        filter_observation=None,
+        **kwargs,
+    ):
+        self.wrapper_list = []
+        self.bundle = bundle
+        self.bundle.env = self
+        self.observation_dict = observation_dict
+        self.reset_dic = reset_dic
+        self.filter_observation = filter_observation
+
+        self._convertor = GymConvertor(filter_observation=self.filter_observation)
+
+        # The asymmetry of these two should be resolved. Currently, some fiddling is needed due to Issue # 58 https://github.com/jgori-ouistiti/CoopIHC/issues/58 . It is expected that when issue 58 is resolved, this code can be cleaned up.
+        self.action_space = self.get_action_space()
+        self.observation_space = self.get_observation_space()
+
+        # Below: Using ordereddict here is forced due to Open AI gym's behavior: when initializing the Dict space, it tries to order the dict by keys, which may change the order of the dict entries. This is actually useless since Python 3.7 because dicts are ordered by default.
+
+    @property
+    def user(self):
+        return self.bundle.user
+
+    @property
+    def assistant(self):
+        return self.bundle.assistant
+
+    @property
+    def task(self):
+        return self.bundle.task
+
+    def get_agent_observation_space(self, agent):
+        obs_dic = OrderedDict({})
+
+        observation = getattr(self.bundle, agent).observation
+        for key, value in observation.filter(
+            mode="stateelement", flat=True, filterdict=self.filter_observation
+        ).items():
+            obs_dic.update({key: self.convert_space(value)})
+
+        return gym.spaces.Dict(obs_dic)
+
+    def convert_space(self, object):
+        if isinstance(object, StateElement):
+            object = object.space
+        return self._convertor.convert_space(object)
+
+
+class GymWrapper(gym.Env, _GymnasiumBasedEnv):
+    def __init__(
+        self,
+        bundle,
+        train_user=False,
+        train_assistant=False,
+        observation_dict=None,
+        reset_dic=None,
+        reset_turn=None,
+        filter_observation=None,
+        **kwargs,
+    ):
+        self.train_user = train_user
+        self.train_assistant = train_assistant
+
+        if reset_turn is None:
+            if self.train_user:
+                self.reset_turn = 1
+            if train_assistant:  # override reset_turn if train_assistant is True
+                self.reset_turn = 3
+
+        else:
+            self.reset_turn = reset_turn
+
+        _GymnasiumBasedEnv.__init__(
+            bundle,
+            observation_dict=observation_dict,
+            reset_dic=reset_dic,
+            reset_turn=reset_turn,
+            filter_observation=filter_observation,
+            **kwargs,
+        )
+
+    def get_action_space(self):
+        """get_action_space
+
+        Create a gym.spaces.Dict out of the action states of the Bundle.
+
+        """
+        # ----- Init Action space -------
+        action_dict = OrderedDict({})
+        if self.train_user:
+            for key, value in self.bundle.user.action_state.filter(
+                mode="stateelement"
+            ).items():
+                action_dict.update({"user_action__" + key: self.convert_space(value)})
+
+        if self.train_assistant:
+            for key, value in self.bundle.assistant.action_state.filter(
+                mode="stateelement"
+            ).items():
+                action_dict.update(
+                    {"assistant_action__" + key: self.convert_space(value)}
+                )
+
+        return gym.spaces.Dict(action_dict)
+
+    def get_observation_space(self):
+        """get_observation_space
+
+        Same as get_action_space for observations.
+
+
+        """
+        self.bundle.reset(go_to=self.reset_turn)
+        # ------- Init Observation space
+
+        if self.train_user and self.train_assistant:
+            raise NotImplementedError(
+                "Currently this wrapper can not deal with simultaneous training of users and assistants."
+            )
+
+        if self.train_user:
+            return self.get_agent_observation_space("user")
+        if self.train_assistant:
+            return self.get_agent_observation_space("assistant")
+
+    def reset(self, seed=None, options=None):
+        reset_kw = {
+            "dic": self.reset_dic,
+            "go_to": self.reset_turn,
+            "seed": seed,
+        }  # default dict
+        if options is not None:
+            reset_kw.update(options)
+
+        self.bundle.reset(**reset_kw)
+        if self.train_user and self.train_assistant:
+            raise NotImplementedError
+        if self.train_user:
+            return self._convertor.filter_gamestate(self.bundle.user.observation), {
+                "name": "CoopIHC Bundle {}".format(str(self.bundle))
+            }
+        if self.train_assistant:
+            return (
+                self._convertor.filter_gamestate(self.bundle.assistant.observation),
+                {"name": "CoopIHC Bundle {}".format(str(self.bundle))},
+            )
+
+    def step(self, action):
+        ### Code below should be changed, quick fix for now/
+        user_action = action.get("user_action__action", None)
+        if user_action is None and self.train_user:
+            raise ValueError(
+                "Error in step, the dictionary you have provided is not recognized --> should be user_action__action"
+            )
+        assistant_action = action.get("assistant_action__action", None)
+        if assistant_action is None and self.train_assistant:
+            raise ValueError(
+                "Error in step, the dictionary you have provided is not recognized --> should be assistant_action__action"
+            )
+        ###################################################
+
+        obs, rewards, flag = self.bundle.step(
+            user_action=user_action, assistant_action=assistant_action
+        )
+
+        if self.train_user and self.train_assistant:
+            raise NotImplementedError(
+                "Wrong wrapper class. For a multi agent reinforcement learning environment, you should inherit from pettingzoo's AEC"
+            )
+        if self.train_user:
+            obs = self._convertor.filter_gamestate(self.bundle.user.observation)
+        if self.train_assistant:
+            obs = self._convertor.filter_gamestate(self.bundle.assistant.observation)
+
+        return (
+            obs,
+            float(sum(rewards.values())),
+            flag,
+            False,
+            {"name": "CoopIHC Bundle {}".format(str(self.bundle))},
+        )
+
+
+class PettingZooWrapper(pettingzoo.utils.env.AECEnv, _GymnasiumBasedEnv):
+    def __init__(
+        self,
+        *args,
+        bundle,
+        observation_dict=None,
+        reset_dic=None,
+        reset_turn=None,
+        filter_observation=None,
+        task_rewards_weights=[
+            [1 / 2, 1 / 2],
+            [1 / 2, 1 / 2],
+        ],  # [[w_user_step_1, w_assistant_step_1] [w_user_step_2, w_assistant_step_2]]
+        **kwargs,
+    ):
+        if (task_rewards_weights[0][0] + task_rewards_weights[0][1] != 1) or (
+            task_rewards_weights[1][0] + task_rewards_weights[1][1] != 1
+        ):
+            warnings.warn(
+                "Task rewards to not sum to 1. The task reward weights structure should be [[w_user_step_1, w_assistant_step_1] [w_user_step_2, w_assistant_step_2]]"
+            )
+
+        self.possible_agents = ["user", "assistant"]
+        self.reset_turn = reset_turn
+        _GymnasiumBasedEnv.__init__(
+            bundle,
+            observation_dict=observation_dict,
+            reset_dic=reset_dic,
+            reset_turn=reset_turn,
+            filter_observation=filter_observation,
+            **kwargs,
+        )
+
+    def get_action_space(self):
+        """get_action_space
+
+        Create a gym.spaces.Dict out of the action states of the Bundle.
+
+        """
+        # ----- Init Action space -------
+        user_action_dict = {}
+
+        for key, value in self.bundle.user.action_state.filter(
+            mode="stateelement"
+        ).items():
+            user_action_dict.update({"user_action__" + key: self.convert_space(value)})
+
+        assistant_action_dict = {}
+
+        for key, value in self.bundle.assistant.action_state.filter(
+            mode="stateelement"
+        ).items():
+            assistant_action_dict.update(
+                {"assistant_action__" + key: self.convert_space(value)}
+            )
+
+        return {"user": user_action_dict, "assistant": assistant_action_dict}
+
+    def get_observation_space(self):
+        """get_observation_space
+
+        Same as get_action_space for observations.
+
+
+        """
+        self.bundle.reset(go_to=self.reset_turn)
+
+        return gym.spaces.Dict(
+            {
+                "user": self.get_agent_observation_space("user"),
+                "assistant": self.get_agent_observation_space("assistant"),
+            }
+        )
+
+    def reset(self, seed=None, options=None):
+        reset_kw = {
+            "dic": self.reset_dic,
+            "go_to": self.reset_turn,
+            "seed": seed,
+        }  # default dict
+        if options is not None:
+            reset_kw.update(options)
+
+        self.agents = copy(self.possible_agents)
+        self.bundle.reset(**reset_kw)
+
+        observation = {
+            a: getattr(
+                getattr(self._convertor.filter_gamestate(self.bundle, a), "observation")
+            )
+            for a in self.agents
+        }
+
+        return observation, {
+            a: {"name": "CoopIHC Bundle {}".format(str(self.bundle))}
+            for a in self.agents
+        }
+
+    def step(self, action):
+        ### Code below should be changed, quick fix for now/
+        user_action = action.get("user_action__action", None)
+        if user_action is None and self.train_user:
+            raise ValueError(
+                "Error in step, the dictionary you have provided is not recognized --> should be user_action__action"
+            )
+        assistant_action = action.get("assistant_action__action", None)
+        if assistant_action is None and self.train_assistant:
+            raise ValueError(
+                "Error in step, the dictionary you have provided is not recognized --> should be assistant_action__action"
+            )
+        ###################################################
+
+        obs, rewards, flag = self.bundle.step(
+            user_action=user_action, assistant_action=assistant_action
+        )
+
+        user_obs = self._convertor.filter_gamestate(self.bundle.user.observation)
+        assistant_obs = self._convertor.filter_gamestate(
+            self.bundle.assistant.observation
+        )
+
+        obs = {"user": user_obs, "assistant": assistant_obs}
+        rewards = {
+            "user": rewards["user_observation_reward"]
+            + rewards["user_inference_reward"]
+            + rewards["user_policy_reward"]
+            + self.task_rewards_weights[0][0] * rewards["first_task_reward"]
+            + task_rewards_weights[1][0] * rewards["second_task_reward"],
+            "assistant": rewards["assistant_observation_reward"]
+            + rewards["assistant_inference_reward"]
+            + rewards["assistant_policy_reward"]
+            + self.task_rewards_weights[0][1] * rewards["first_task_reward"]
+            + task_rewards_weights[1][1] * rewards["second_task_reward"],
+        }
+
+        flag = {a: flag for a in self.agents}
+        termination = {a: False for a in self.agents}
+        infos = {
+            a: {"name": "CoopIHC Bundle {}".format(str(self.bundle))}
+            for a in self.agents
+        }
+
+        if flag:
+            self.agents = []
+
+        return (obs, rewards, flag, termination, infos)
+
+
+class GymWrapper(gym.Env):
     """Generic Wrapper to make bundles compatibles with gym.Env
 
     This is a Wrapper to make a Bundle compatible with gym.Env. Read more on the Train class.
@@ -172,15 +515,27 @@ class TrainGym(gym.Env):
 
         return gym.spaces.Dict(obs_dic)
 
-    def reset(self, dic=None):
-        dic = self.reset_dic if dic is None else dic
-        self.bundle.reset(dic=dic, go_to=self.reset_turn)
+    def reset(self, seed=None, options=None):
+        reset_kw = {
+            "dic": self.reset_dic,
+            "go_to": self.reset_turn,
+            "seed": seed,
+        }  # default dict
+        if options is not None:
+            reset_kw.update(options)
+
+        self.bundle.reset(**reset_kw)
         if self.train_user and self.train_assistant:
             raise NotImplementedError
         if self.train_user:
-            return self._convertor.filter_gamestate(self.bundle.user.observation)
+            return self._convertor.filter_gamestate(self.bundle.user.observation), {
+                "name": "CoopIHC Bundle {}".format(str(self.bundle))
+            }
         if self.train_assistant:
-            return self._convertor.filter_gamestate(self.bundle.assistant.observation)
+            return (
+                self._convertor.filter_gamestate(self.bundle.assistant.observation),
+                {"name": "CoopIHC Bundle {}".format(str(self.bundle))},
+            )
 
     def step(self, action):
         ### Code below should be changed, quick fix for now/
@@ -211,6 +566,7 @@ class TrainGym(gym.Env):
             obs,
             float(sum(rewards.values())),
             flag,
+            False,
             {"name": "CoopIHC Bundle {}".format(str(self.bundle))},
         )
 

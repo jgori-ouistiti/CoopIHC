@@ -10,7 +10,7 @@ from .agents.lqrcontrollers.LQRController import LQRController
 from .bundle.BaseBundle import BaseBundle
 from .bundle.Bundle import Bundle
 from .bundle.Simulator import Simulator
-from .bundle.wrappers.Train import TrainGym
+from .bundle.wrappers.Train import GymWrapper
 from .bundle.wrappers.Train import WrapperReferencer
 from .bundle.WsServer import WsServer
 from .bundle.wrappers import PipedTaskBundleWrapper

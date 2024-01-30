@@ -2,7 +2,7 @@ import copy
 
 from coopihc.base.State import State
 from coopihc.policy.BasePolicy import BasePolicy
-from coopihc.bundle.wrappers.Train import TrainGym
+from coopihc.bundle.wrappers.Train import GymWrapper
 
 # ======================= RL Policy
 
@@ -21,7 +21,7 @@ class RLPolicy(BasePolicy):
         action_state["action"] = StateElement(0, autospace([-5 + i for i in range(11)]))
 
         # env
-        env = TrainGym(
+        env = GymWrapper(
         bundle,
         train_user=True,
         train_assistant=False,

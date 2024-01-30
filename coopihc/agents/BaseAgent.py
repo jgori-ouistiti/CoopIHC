@@ -8,7 +8,7 @@ from coopihc.observation.utils import base_user_engine_specification
 from coopihc.observation.utils import base_assistant_engine_specification
 from coopihc.inference.BaseInferenceEngine import BaseInferenceEngine
 from coopihc.inference.utils import BufferNotFilledError
-from coopihc.bundle.wrappers.Train import TrainGym, apply_wrappers
+from coopihc.bundle.wrappers.Train import GymWrapper, apply_wrappers
 
 import numpy
 import copy
@@ -97,7 +97,6 @@ class BaseAgent:
         seedsequence=None,
         **kwargs,
     ):
-
         # Bundles stuff
         self._bundle = None
         self._bundle_memory = None
@@ -527,7 +526,6 @@ class BaseAgent:
         update_action_state=False,
         **kwargs,
     ):
-
         if obs is None:
             obs = self.observation
         else:
@@ -563,7 +561,7 @@ class BaseAgent:
 
         ########## end deal with vectorized input
 
-        if not isinstance(self.bundle.env, TrainGym):
+        if not isinstance(self.bundle.env, GymWrapper):
             raise RuntimeError(
                 "predict method should only be called if bundle is wrapped by a Train object."
             )

@@ -2,7 +2,7 @@ from random import random
 from coopihc.base.State import State
 from coopihc.base.elements import discrete_array_element, array_element, cat_element
 from coopihc.base.elements import discrete_array_element, cat_element
-from coopihc.bundle.wrappers.Train import TrainGym
+from coopihc.bundle.wrappers.Train import GymWrapper
 from coopihc.bundle.utils.Sampler import Sampler
 
 import numpy
@@ -51,7 +51,6 @@ class BaseBundle:
         seed=None,
         **kwargs,
     ):
-
         self._reset_random = reset_random
         self._reset_start_after = reset_start_after
         self._reset_go_to = reset_go_to
@@ -202,8 +201,8 @@ class BaseBundle:
         random_reset=False,
         user_components="all",
         assistant_components="all",
+        seed=None,
     ):
-
         """Reset bundle.
 
         1. Reset the game and start at a specific turn number.
@@ -250,6 +249,9 @@ class BaseBundle:
         :return: new game state
         :rtype: :py:class:`State<coopihc.base.State.State>`
         """
+
+        if seed is not None:
+            self._set_seed(numpy.random.SeedSequence(seed))
 
         if go_to is None:
             go_to = self._reset_go_to
@@ -382,7 +384,6 @@ class BaseBundle:
 
             # User takes action and receives reward from task
             elif self.turn_number == 1 and "no-user" != self.kwargs.get("name"):
-
                 if user_action is None:
                     user_action, user_policy_reward = self.user.take_action(
                         increment_turn=False
@@ -398,7 +399,6 @@ class BaseBundle:
                     return self.game_state, rewards, is_done
 
             elif self.turn_number == 2 and "no-assistant" == self.kwargs.get("name"):
-
                 self.round_number = self.round_number + 1
 
             # Assistant observes and infers
@@ -415,7 +415,6 @@ class BaseBundle:
             # Assistant takes action and receives reward from task
             elif self.turn_number == 3 and "no-assistant" != self.kwargs.get("name"):
                 if assistant_action is None:
-
                     (
                         assistant_action,
                         assistant_policy_reward,
@@ -661,7 +660,7 @@ class BaseBundle:
         filter_observation=None,
         **kwargs,
     ):
-        return TrainGym(
+        return GymWrapper(
             self,
             *args,
             train_user=train_user,
