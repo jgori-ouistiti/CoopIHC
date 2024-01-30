@@ -43,14 +43,15 @@ class BasePolicy:
     """
 
     def __init__(self, *args, action_state=None, seedsequence=None, **kwargs):
-
         self._action_keys = None  # For actionkeys property
 
         # If a state is provided, use it; else create one (important not to lose the reference w/r the game_state)
 
         if action_state is None:
             action_state = State()
-            action_state["action"] = cat_element(N=2, init=0)
+            action_state["action"] = array_element(
+                init=numpy.array([1]), low=numpy.array([-100]), high=numpy.array([100])
+            )
 
         self._action_state = action_state
         self._host = None
@@ -170,7 +171,6 @@ class BasePolicy:
 
     @action.setter
     def action(self, item):
-
         try:  # make single items iterable
             next(iter(item))
         except TypeError:
@@ -179,7 +179,9 @@ class BasePolicy:
         try:  # see whether item can be mapped to actions
             for _action, key in zip_strict(item, self.action_keys):
                 self.action_state[key][...] = _action
-        except ValueError:  # if not, we likely have a multidimensional action, that can be mapped directly
+        except (
+            ValueError
+        ):  # if not, we likely have a multidimensional action, that can be mapped directly
             action = next(iter(self.action_state))
             self.action_state[action] = item
 

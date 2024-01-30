@@ -351,7 +351,6 @@ class BaseBundle:
         :return: gamestate, reward, game finished flag
         :rtype: tuple(:py:class:`State<coopihc.base.State.State>`, collections.OrderedDict, boolean)
         """
-
         if go_to is None:
             go_to = int(self.turn_number)
 
@@ -423,11 +422,9 @@ class BaseBundle:
                 else:
                     self.assistant.action = assistant_action
                     assistant_policy_reward = 0
-
                 task_reward, is_done = self._assistant_second_half_step(
                     assistant_action
                 )
-
                 rewards["assistant_policy_reward"] = assistant_policy_reward
                 rewards["second_task_reward"] = task_reward
                 if is_done:
