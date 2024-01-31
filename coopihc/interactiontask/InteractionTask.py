@@ -38,7 +38,6 @@ class InteractionTask(ABC):
     """
 
     def __init__(self, *args, seedsequence=None, **kwargs):
-
         self._state = State()
         self.bundle = None
         self.timestep = 0.1
@@ -49,6 +48,9 @@ class InteractionTask(ABC):
         self.ax = None
 
     def finit(self):
+        return
+
+    def on_bundle_constraints(self):
         return
 
     def _set_seed(self, seedsequence=None):

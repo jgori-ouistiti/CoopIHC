@@ -28,8 +28,6 @@ Some comments on the code snippet above:
     + A render method is available if you want to render the task online, see `:py:class:InteractionTask<coopihc.interactiontask.InteractionTask>`
 
 
-
-
 .. TODO: link to check_task function once it exists 
 
 .. You can verify that the task works as intended by bundling it with two ``BaseAgents`` (the simplest version of agents). Make sur that the actions spaces make sense, by specifying the policy for the two baseagents.
@@ -41,6 +39,28 @@ Some comments on the code snippet above:
 ..    :end-before: [end-check-task]
 
 .. end-quickstart-task
+
+
+More control mechanisms
+-------------------------
+There are a few more control mechanisms:
+
+    * ``finit``, which stands for finish initialization, and acts as an extra ``__init__`` function that is called by the bundle. It is useful when the initialization of the task or agents depend on one another. For example 
+
+    .. code-block:: python
+
+        def finit(self):
+            self.a = self.bundle.user.state['goal'].shape
+
+    * ``on_bundle_constraints`` which is called by a bundle after the finits. Its purpose is to enforce task constraints that valid agents should have. It should return errors or nothing, for example:
+
+    .. code-block:: python
+
+        def on_bundle_constraints(self):
+            if not hasattr(self.bundle.user.state, "goal"):
+                raise AttributeError(
+                    "You must pair this task with a user that has a 'goal' state"
+                )
 
 
 ClassicControlTask

@@ -88,6 +88,9 @@ class BaseBundle:
         self.user.finit()
         self.assistant.finit()
 
+        #
+        self.task.on_bundle_constraints()
+
         self.game_state["user_action"] = self.user.policy.action_state
         self.game_state["assistant_action"] = self.assistant.policy.action_state
 
