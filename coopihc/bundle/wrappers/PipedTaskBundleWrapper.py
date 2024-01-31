@@ -1,5 +1,6 @@
 from coopihc.bundle.BaseBundle import BaseBundle
 import time
+from coopihc import Bundle
 
 
 class PipedTaskBundleWrapper(BaseBundle):
@@ -22,15 +23,16 @@ class PipedTaskBundleWrapper(BaseBundle):
         self.pipe = pipe
         pipedtask = taskwrapper(bundle.task, pipe)
         self.bundle.task = pipedtask  # replace the task with the piped task
-        bundle_kwargs = bundle.kwargs
-        bundle_class = self.bundle.__class__
-        self.bundle = bundle_class(
-            pipedtask, bundle.user, bundle.assistant, **bundle_kwargs
-        )
-
+        # bundle_kwargs = bundle.kwargs
+        # self.bundle = Bundle(
+        #     task=pipedtask,
+        #     user=bundle.user,
+        #     assistant=bundle.assistant,
+        #     **bundle_kwargs
+        # )
         self.framerate = 1000
         self.iter = 0
-
+        print("Done initializing PipedTaskBundleWrapper")
         self.run()
 
     def run(self, reset_dic={}, **kwargs):
@@ -47,7 +49,7 @@ class PipedTaskBundleWrapper(BaseBundle):
         self.bundle.reset(dic=reset_dic, **reset_kwargs)
         time.sleep(1 / self.framerate)
         while True:
-            obs, sum_reward, is_done, rewards = self.bundle.step()
+            obs, rewards, is_done = self.bundle.step()
             time.sleep(1 / self.framerate)
             if is_done:
                 break

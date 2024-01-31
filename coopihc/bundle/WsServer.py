@@ -4,7 +4,7 @@ import time
 from multiprocessing import Process, Pipe
 
 from coopihc.interactiontask import PipeTaskWrapper
-from coopihc.bundle.wrappers import PipedTaskBundleWrapper
+from coopihc.bundle.wrappers.PipedTaskBundleWrapper import PipedTaskBundleWrapper
 
 
 # like functools.partial, but with arguments added from the back
@@ -18,6 +18,8 @@ def partialback(func, *extra_args):
     def wrapper(*args):
         args = list(args)
         args.extend(extra_args)
+        print("---------")
+        print(len(args))
         return func(*args)
 
     return wrapper
@@ -40,8 +42,8 @@ class WsServer:
 
     def __init__(self, bundle, taskwrapper, address="localhost", port=4000):
         self.start_server = websockets.serve(
-            partialback(self.bundlehandler, bundle, taskwrapper), address, port
-        )
+            partialback(self.bundlehandler, self, bundle, taskwrapper), address, port
+        )  # async def apparently not being called as a method but as a function, so make sure to pass self.
         self.user = None
         self.bundle = bundle
 
@@ -71,6 +73,7 @@ class WsServer:
 
         await self.register(websocket)
         bundlepipeup, bundlepipedown = Pipe()
+
         process = Process(
             target=PipedTaskBundleWrapper, args=(bundle, taskwrapper, bundlepipedown)
         )

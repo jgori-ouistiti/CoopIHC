@@ -17,11 +17,12 @@ class PipeTaskWrapper(InteractionTask, ABC):
     :type pipe: subprocess.Pipe
     """
 
-    def __init__(self, task, pipe):
+    def __init__(self, task, pipe, init_message=None):
         self.__dict__ = task.__dict__
         self.task = task
         self.pipe = pipe
-        self.pipe.send({"type": "init", "parameters": self.parameters})
+        init_message = {} if init_message is None else init_message
+        self.pipe.send({"type": "init", "init_message": init_message})
         is_done = False
         while True:
             self.pipe.poll(None)
@@ -37,8 +38,7 @@ class PipeTaskWrapper(InteractionTask, ABC):
         if self.__dict__:
             return getattr(self.__dict__["task"], attr)
         else:
-            # should never happen
-            pass
+            raise AttributeError
 
     def __setattr__(self, name, value):
         if name == "__dict__" or name == "task":
@@ -106,7 +106,7 @@ class PipeTaskWrapper(InteractionTask, ABC):
         received_dic = self.pipe.recv()
         received_state = received_dic["state"]
         self.update_state(received_state)
-        return self.state, received_dic["reward"], received_dic["is_done"], {}
+        return self.state, received_dic["reward"], received_dic["is_done"]
 
     def on_assistant_action(self, *args, **kwargs):
         """on_assistant_action
@@ -126,7 +126,7 @@ class PipeTaskWrapper(InteractionTask, ABC):
         received_dic = self.pipe.recv()
         received_state = received_dic["state"]
         self.update_state(received_state)
-        return self.state, received_dic["reward"], received_dic["is_done"], {}
+        return self.state, received_dic["reward"], received_dic["is_done"]
 
     def reset(self, dic=None):
         """reset

@@ -85,6 +85,7 @@ class ELLDiscretePolicy(BasePolicy):
         """
 
         actions, llh = self.forward_summary(agent_observation)
+        print(actions, llh)
         action = actions[self.rng.choice(len(llh), p=llh)]
 
         return action, 0

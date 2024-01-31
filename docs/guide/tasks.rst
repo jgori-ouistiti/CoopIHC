@@ -52,7 +52,7 @@ There are a few more control mechanisms:
         def finit(self):
             self.a = self.bundle.user.state['goal'].shape
 
-    * ``on_bundle_constraints`` which is called by a bundle after the finits. Its purpose is to enforce task constraints that valid agents should have. It should return errors or nothing, for example:
+    * ``on_bundle_constraints`` which is called by a bundle after the finits. Its purpose is to enforce task constraints that valid agents should have. It should return errors or nothing, for example
 
     .. code-block:: python
 

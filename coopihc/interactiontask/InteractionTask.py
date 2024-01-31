@@ -274,7 +274,7 @@ class InteractionTask(ABC):
         return None
 
     @abstractmethod
-    def reset(self):
+    def reset(self, dic=None):
         """reset
 
         Redefine this to specify how to reinitialize the task before each new
