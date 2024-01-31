@@ -42,6 +42,17 @@ You can verify that the user model works as intended, by bundling it with the ta
 .. end-quickstart-agent
 
 
+Overriding components
+----------------------
+Sometimes, you want to change just one component of an agent. To make this easy, you can override components by calling the ``override_X`` keyword. For example, here is an example on how to override the policy of the agent ``NonMinimalAgent`` which already has a predefined policy by a ``BasePolicy``. You can pass keyword arguments to the policy.
+
+.. literalinclude:: ../../test/components/agents/test_subclass_baseagent.py
+    :language: python
+    :linenos:
+    :start-after: [start-override-poliy]
+    :end-before: [end-override-policy]
+
+
 LQRControllers
 --------------------
 Not documented yet, see API Reference

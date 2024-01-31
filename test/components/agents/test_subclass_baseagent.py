@@ -18,7 +18,6 @@ class MinimalAgent(BaseAgent):
 
 class NonMinimalAgent(BaseAgent):
     def __init__(self, *args, **kwargs):
-
         # custom policy
         action_state = State()
         action_state["action"] = discrete_array_element(init=2, low=1, high=3)
@@ -167,8 +166,10 @@ def test_override_state():
 
 
 def test_override_policy():
+    # [start-override-poliy]
     policy = BasePolicy()
     agent = NonMinimalAgent(override_policy=(policy, {}))
+    # [end-override-policy]
     assert isinstance(agent.policy, BasePolicy)
     assert agent.action == cat_element(N=2)
 
