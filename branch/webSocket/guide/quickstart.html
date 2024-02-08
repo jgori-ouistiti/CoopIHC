@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quick Start &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="More Complex Example" href="more_complex_example.html" />
+    <link rel="prev" title="Welcome to CoopIHC’s documentation!" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quick Start</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#interaction-model">Interaction Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#high-level-view-of-coopihc-code">High-level view of <em>CoopIHC</em> code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#quick-states">Quick-States</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#quick-tasks">Quick-Tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#quick-agents">Quick-Agents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#quick-policies">Quick-Policies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#quick-observation-engines">Quick-Observation Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#quick-inference-engines">Quick-Inference Engines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#quick-bundles">Quick-Bundles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#an-overview-of-coopihc">An overview of <em>CoopIHC</em></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rng.html">Random Number Generators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rendering.html">Rendering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="highlevel_objects.html">High-Level objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Quick Start</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/guide/quickstart.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="quick-start">
+<h1>Quick Start<a class="headerlink" href="#quick-start" title="Permalink to this headline"></a></h1>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h2>
+<p><em>CoopIHC</em> is currently available on PyPI. You can install the package using pip with the following command:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">coopihc</span>
+</pre></div>
+</div>
+<p>You can also build directly from the github repository to get the latest version. To do so, install poetry, and run</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>poetry<span class="w"> </span>install
+</pre></div>
+</div>
+<p>from within the folder. This will install <em>CoopIHC</em> in editable mode (basically equivalent to <code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">-m</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code>), together with all its dependencies. You might need to download and install <em>CoopIHC-Zoo</em> as well for this to work.</p>
+</section>
+<section id="interaction-model">
+<h2>Interaction Model<a class="headerlink" href="#interaction-model" title="Permalink to this headline"></a></h2>
+<p><em>CoopIHC</em> builds on a <a class="reference internal" href="interaction_model.html"><span class="doc">sequential two agent decision-making model</span></a>. You should read through the model to get a grasp of what each component does.</p>
+</section>
+<section id="high-level-view-of-coopihc-code">
+<h2>High-level view of <em>CoopIHC</em> code<a class="headerlink" href="#high-level-view-of-coopihc-code" title="Permalink to this headline"></a></h2>
+<p>At a high level, your <em>CoopIHC</em> code will usually look like this</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="c1"># Define a task</span>
+<span class="linenos"> 2</span><span class="n">example_task</span> <span class="o">=</span> <span class="n">ExampleTask</span><span class="p">()</span>
+<span class="linenos"> 3</span><span class="c1"># Define a user</span>
+<span class="linenos"> 4</span><span class="n">example_user</span> <span class="o">=</span> <span class="n">ExampleUser</span><span class="p">()</span>
+<span class="linenos"> 5</span><span class="c1"># Define an assistant</span>
+<span class="linenos"> 6</span><span class="n">example_assistant</span> <span class="o">=</span> <span class="n">ExampleAssistant</span><span class="p">()</span>
+<span class="linenos"> 7</span><span class="c1"># Bundle them together</span>
+<span class="linenos"> 8</span><span class="n">bundle</span> <span class="o">=</span> <span class="n">Bundle</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="n">example_task</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">example_user</span><span class="p">,</span> <span class="n">assistant</span><span class="o">=</span><span class="n">example_assistant</span><span class="p">)</span>
+<span class="linenos"> 9</span><span class="c1"># Reset the bundle (i.e. initialize it to a random or prescribed states)</span>
+<span class="linenos">10</span><span class="n">bundle</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span>
+<span class="linenos">11</span>    <span class="n">go_to</span><span class="o">=</span><span class="mi">1</span>
+<span class="linenos">12</span><span class="p">)</span>  <span class="c1"># Reset in a state where the user has already produced an observation and made an inference.</span>
+<span class="linenos">13</span>
+<span class="linenos">14</span><span class="c1"># Step through the bundle (i.e. play full rounds)</span>
+<span class="linenos">15</span><span class="k">while</span> <span class="mi">1</span><span class="p">:</span>
+<span class="linenos">16</span>    <span class="n">state</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">is_done</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">user_action</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">assistant_action</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="linenos">17</span>    <span class="c1"># Do something with the state or the rewards</span>
+<span class="linenos">18</span>    <span class="k">if</span> <span class="n">is_done</span><span class="p">:</span>
+<span class="linenos">19</span>        <span class="k">break</span>
+</pre></div>
+</div>
+<p>You will usually define a task, a user, an assistant, and bundle them together. You can then play several rounds of interaction until the game ends, and based on the collected data, you can do something.</p>
+</section>
+<section id="quick-states">
+<h2>Quick-States<a class="headerlink" href="#quick-states" title="Permalink to this headline"></a></h2>
+<p>The interaction model uses the concept of states, a collection of useful variables for the system. In <em>CoopIHC</em> you define them via a <code class="docutils literal notranslate"><span class="pre">State</span></code> object. The states are containers that hold elements called <code class="docutils literal notranslate"><span class="pre">StateElement</span></code>. A <code class="docutils literal notranslate"><span class="pre">StateElement</span></code> is a collection of a value and a <code class="docutils literal notranslate"><span class="pre">Space</span></code>, its associated domain. A <code class="docutils literal notranslate"><span class="pre">State</span></code> may be nested and contain another <code class="docutils literal notranslate"><span class="pre">State</span></code>.</p>
+<p>In the example below, a super-state is defined using a State. This super-state is itself defined by two substates. Each of those two substates holds a <code class="docutils literal notranslate"><span class="pre">StateElement</span></code>, defined here via shortcuts such as <code class="docutils literal notranslate"><span class="pre">array_element</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span>
+<span class="linenos"> 2</span><span class="n">state</span> <span class="o">=</span> <span class="n">State</span><span class="p">()</span>
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span><span class="n">substate</span> <span class="o">=</span> <span class="n">State</span><span class="p">()</span>
+<span class="linenos"> 5</span><span class="n">substate</span><span class="p">[</span><span class="s2">&quot;x1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">discrete_array_element</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="linenos"> 6</span><span class="n">substate</span><span class="p">[</span><span class="s2">&quot;x3&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">array_element</span><span class="p">(</span>
+<span class="linenos"> 7</span>    <span class="n">init</span><span class="o">=</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span> <span class="n">low</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span> <span class="n">high</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="linenos"> 8</span><span class="p">)</span>
+<span class="linenos"> 9</span>
+<span class="linenos">10</span><span class="n">substate2</span> <span class="o">=</span> <span class="n">State</span><span class="p">()</span>
+<span class="linenos">11</span><span class="n">substate2</span><span class="p">[</span><span class="s2">&quot;y1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">discrete_array_element</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="linenos">12</span>
+<span class="linenos">13</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;sub1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">substate</span>
+<span class="linenos">14</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;sub2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">substate2</span>
+<span class="linenos">15</span>
+</pre></div>
+</div>
+<p><cite>:py:class:States&lt;coopihc.base.State&gt;</cite> and <cite>:py:class:StateElementss&lt;coopihc.base.StateElements&gt;</cite> subclass respectively Python’s built-in dictionary and NumPy arrays types. Interacting with these objects should prove relatively familiar to most Python users. To find out more about this and for extra details, go to <a class="reference internal" href="space.html"><span class="doc">Space</span></a>, <a class="reference internal" href="stateelement.html"><span class="doc">StateElement</span></a> and <a class="reference internal" href="state.html"><span class="doc">State</span></a>.</p>
+</section>
+<section id="quick-tasks">
+<h2>Quick-Tasks<a class="headerlink" href="#quick-tasks" title="Permalink to this headline"></a></h2>
+<p>Tasks represent the agent’s environment. Usually in the <em>CoopIHC</em> context, the task will represent the part of an interface that the user can interact with and drive to a certain state.</p>
+<p>Essentially, tasks are characterized by:</p>
+<ul class="simple">
+<li><p>An internal state called the <strong>task</strong> <code class="docutils literal notranslate"><span class="pre">state</span></code> which holds all the task’s information; for example, the state of the interface.</p></li>
+<li><p>A <code class="docutils literal notranslate"><span class="pre">on_user_action()</span></code> method, which is a transition function that describes how the task state changes on receiving a user action.</p></li>
+<li><p>An <code class="docutils literal notranslate"><span class="pre">on_assistant_action()</span></code> method, which is a transition function that describes how the task state changes based on the assistant action.</p></li>
+</ul>
+<p>As an example, let’s define a simple task where the goal of the user is to drive the substate called ‘x’ to a value of 4. Both the user and the assistant can provide three actions: -1, +0 and +1. We define a task by inheriting from <code class="docutils literal notranslate"><span class="pre">InteractionTask</span></code> and redefining a few methods.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">class</span> <span class="nc">ExampleTask</span><span class="p">(</span><span class="n">InteractionTask</span><span class="p">):</span>
+<span class="linenos"> 2</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;ExampleTask</span>
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span><span class="sd">    An example algebraic task which a single task state &#39;x&#39;, which finishes when x = 4.</span>
+<span class="linenos"> 5</span>
+<span class="linenos"> 6</span><span class="sd">    &quot;&quot;&quot;</span>
+<span class="linenos"> 7</span>
+<span class="linenos"> 8</span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="linenos"> 9</span>
+<span class="linenos">10</span>        <span class="c1"># Call super().__init__() beofre anything else, which initializes some useful attributes, including a State (self.state) for the task</span>
+<span class="linenos">11</span>
+<span class="linenos">12</span>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="linenos">13</span>
+<span class="linenos">14</span>        <span class="c1"># Describe the state. Here it is a single item which takes value in [-4, -3, ..., 3, 4]. The StateElement has out_of_bounds_mode = clip, which means that values outside the range will automatically be clipped to fit the space.</span>
+<span class="linenos">15</span>        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">discrete_array_element</span><span class="p">(</span>
+<span class="linenos">16</span>            <span class="n">init</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">low</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">out_of_bounds_mode</span><span class="o">=</span><span class="s2">&quot;clip&quot;</span>
+<span class="linenos">17</span>        <span class="p">)</span>
+<span class="linenos">18</span>
+<span class="linenos">19</span>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dic</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="linenos">20</span>        <span class="c1"># Always start with state &#39;x&#39; at 0</span>
+<span class="linenos">21</span>        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">22</span>        <span class="k">return</span>
+<span class="linenos">23</span>
+<span class="linenos">24</span>    <span class="k">def</span> <span class="nf">on_user_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="linenos">25</span>        <span class="c1"># Modify the state in place, adding the user action</span>
+<span class="linenos">26</span>        <span class="n">is_done</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="linenos">27</span>        <span class="c1"># self.state[&quot;x&quot;] = self.state[&quot;x&quot;] + self.user_action</span>
+<span class="linenos">28</span>        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_action</span>
+<span class="linenos">29</span>
+<span class="linenos">30</span>        <span class="c1"># Stopping condition, return is_done boolean float</span>
+<span class="linenos">31</span>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+<span class="linenos">32</span>            <span class="n">is_done</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="linenos">33</span>
+<span class="linenos">34</span>        <span class="n">reward</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="linenos">35</span>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">is_done</span>
+<span class="linenos">36</span>
+<span class="linenos">37</span>    <span class="k">def</span> <span class="nf">on_assistant_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="linenos">38</span>        <span class="n">is_done</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="linenos">39</span>        <span class="c1"># Modify the state in place, adding the assistant action</span>
+<span class="linenos">40</span>        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assistant_action</span>
+<span class="linenos">41</span>        <span class="c1"># Stopping condition, return is_done boolean float</span>
+<span class="linenos">42</span>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+<span class="linenos">43</span>            <span class="n">is_done</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="linenos">44</span>
+<span class="linenos">45</span>        <span class="n">reward</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="linenos">46</span>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">is_done</span>
+</pre></div>
+</div>
+<p>Some comments on the code snippet above:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>The task state <code class="docutils literal notranslate"><span class="pre">'x'</span></code> is defined in the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method. Remember to always call <code class="docutils literal notranslate"><span class="pre">super()</span></code>’s <code class="docutils literal notranslate"><span class="pre">__init__</span></code> before anything else to ensure all necessary variables internal to <em>CoopIHC</em> are set.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">reset</span></code> method resets the task to an initial state, in this case <code class="docutils literal notranslate"><span class="pre">'x'=0</span></code>. You don’t have to define a reset method, in which case it will inherit it from <cite>:py:class:InteractionTask&lt;coopihc.interactiontask.InteractionTask&gt;</cite>, and the reset method will randomly pick values for each state.</p></li>
+<li><p>You have to define a user and assistant step function otherwise an error will be raised. Both of these are expected to return the triple (task state, reward, is_done).</p></li>
+<li><p>A render method is available if you want to render the task online, see <cite>:py:class:InteractionTask&lt;coopihc.interactiontask.InteractionTask&gt;</cite></p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="quick-agents">
+<h2>Quick-Agents<a class="headerlink" href="#quick-agents" title="Permalink to this headline"></a></h2>
+<p>Agents are defined by four components:</p>
+<ul class="simple">
+<li><p>An internal state, which essentially gives memory to the agent;</p></li>
+<li><p>An observation engine, which generates observations from the game state, giving the agent the ability to perceive;</p></li>
+<li><p>An inference engine, with which the agent modifies its internal state, giving it the ability to learn;</p></li>
+<li><p>A policy, used to take actions, giving the agent the ability to make decisions.</p></li>
+</ul>
+<div class="figure" id="id1" style="text-align: center"><p><img width="100%" src="../_images/tikz-97b800b6656d66dbc9a3cdcd24dbc90c7392f8bc.png" alt="Figure made with TikZ" /></p>
+<p><span class="caption-number">Fig. 1 </span><span class="caption-text">Agent structure</span></p>
+</div><p>You define a new agent by subclassing the <code class="docutils literal notranslate"><span class="pre">BaseAgent</span></code> class. As an example, we now create an agent which goes with the ExampleTask that we defined in <a class="reference internal" href="tasks.html"><span class="doc">Tasks</span></a>. We make an agent with a <code class="docutils literal notranslate"><span class="pre">'goal'</span></code> state to indicate the value for <code class="docutils literal notranslate"><span class="pre">'x'</span></code> that it wants to achieve, and make its available actions <span class="math notranslate nohighlight">\([-1,0,1]\)</span>. These actions are chosen via the <code class="docutils literal notranslate"><span class="pre">ExamplePolicy</span></code> (see <a class="reference internal" href="policy.html"><span class="doc">Policies</span></a>).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">class</span> <span class="nc">ExampleUser</span><span class="p">(</span><span class="n">BaseAgent</span><span class="p">):</span>
+<span class="linenos"> 2</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;An Example of a User.</span>
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span><span class="sd">    An agent that handles the ExamplePolicy, has a single 1d state, and has the default observation and inference engines.</span>
+<span class="linenos"> 5</span><span class="sd">    See the documentation of the :py:mod:`BaseAgent &lt;coopihc.agents.BaseAgent.BaseAgent&gt;` class for more details.</span>
+<span class="linenos"> 6</span>
+<span class="linenos"> 7</span><span class="sd">    :meta public:</span>
+<span class="linenos"> 8</span><span class="sd">    &quot;&quot;&quot;</span>
+<span class="linenos"> 9</span>
+<span class="linenos">10</span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="linenos">11</span>
+<span class="linenos">12</span>        <span class="c1"># Define an internal state with a &#39;goal&#39; substate</span>
+<span class="linenos">13</span>        <span class="n">state</span> <span class="o">=</span> <span class="n">State</span><span class="p">()</span>
+<span class="linenos">14</span>        <span class="n">state</span><span class="p">[</span><span class="s2">&quot;goal&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">discrete_array_element</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">low</span><span class="o">=-</span><span class="mi">4</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="linenos">15</span>
+<span class="linenos">16</span>        <span class="c1"># Define policy</span>
+<span class="linenos">17</span>        <span class="n">action_state</span> <span class="o">=</span> <span class="n">State</span><span class="p">()</span>
+<span class="linenos">18</span>        <span class="n">action_state</span><span class="p">[</span><span class="s2">&quot;action&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">discrete_array_element</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">low</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="linenos">19</span>        <span class="n">agent_policy</span> <span class="o">=</span> <span class="n">ExamplePolicy</span><span class="p">(</span><span class="n">action_state</span><span class="o">=</span><span class="n">action_state</span><span class="p">)</span>
+<span class="linenos">20</span>
+<span class="linenos">21</span>        <span class="c1"># Use default observation and inference engines</span>
+<span class="linenos">22</span>        <span class="n">observation_engine</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="linenos">23</span>        <span class="n">inference_engine</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="linenos">24</span>
+<span class="linenos">25</span>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+<span class="linenos">26</span>            <span class="s2">&quot;user&quot;</span><span class="p">,</span>
+<span class="linenos">27</span>            <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+<span class="linenos">28</span>            <span class="n">agent_policy</span><span class="o">=</span><span class="n">agent_policy</span><span class="p">,</span>
+<span class="linenos">29</span>            <span class="n">agent_observation_engine</span><span class="o">=</span><span class="n">observation_engine</span><span class="p">,</span>
+<span class="linenos">30</span>            <span class="n">agent_inference_engine</span><span class="o">=</span><span class="n">inference_engine</span><span class="p">,</span>
+<span class="linenos">31</span>            <span class="n">agent_state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
+<span class="linenos">32</span>            <span class="o">**</span><span class="n">kwargs</span>
+<span class="linenos">33</span>        <span class="p">)</span>
+<span class="linenos">34</span>
+<span class="linenos">35</span>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dic</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="linenos">36</span><span class="w">        </span><span class="sd">&quot;&quot;&quot;reset</span>
+<span class="linenos">37</span>
+<span class="linenos">38</span><span class="sd">        Override default behaviour of BaseAgent which would randomly sample new goal values on each reset. Here for purpose of demonstration we impose a goal = 4</span>
+<span class="linenos">39</span>
+<span class="linenos">40</span><span class="sd">        :meta public:</span>
+<span class="linenos">41</span><span class="sd">        &quot;&quot;&quot;</span>
+<span class="linenos">42</span>        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;goal&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All 4 components default to their corresponding base implementation if not provided.</p>
+</div>
+<p>You can verify that the user model works as intended, by bundling it with the task. Since we haven’t provided an assistant yet, we slightly change the task very, redefining its <code class="docutils literal notranslate"><span class="pre">on_assistant_action()</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span>
+<span class="linenos"> 2</span>
+<span class="linenos"> 3</span><span class="k">class</span> <span class="nc">ExampleTaskWithoutAssistant</span><span class="p">(</span><span class="n">ExampleTask</span><span class="p">):</span>
+<span class="linenos"> 4</span>    <span class="k">def</span> <span class="nf">on_assistant_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="linenos"> 5</span>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">False</span>
+<span class="linenos"> 6</span>
+<span class="linenos"> 7</span>
+<span class="linenos"> 8</span><span class="n">example_task</span> <span class="o">=</span> <span class="n">ExampleTaskWithoutAssistant</span><span class="p">()</span>
+<span class="linenos"> 9</span><span class="n">example_user</span> <span class="o">=</span> <span class="n">ExampleUser</span><span class="p">()</span>
+<span class="linenos">10</span><span class="n">bundle</span> <span class="o">=</span> <span class="n">Bundle</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="n">example_task</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">example_user</span><span class="p">)</span>
+<span class="linenos">11</span><span class="n">bundle</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">go_to</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+<span class="linenos">12</span>
+<span class="linenos">13</span><span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<span class="linenos">14</span>    <span class="n">state</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">is_done</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+<span class="linenos">15</span>    <span class="k">if</span> <span class="n">is_done</span><span class="p">:</span>
+<span class="linenos">16</span>        <span class="k">break</span>
+</pre></div>
+</div>
+</section>
+<section id="quick-policies">
+<h2>Quick-Policies<a class="headerlink" href="#quick-policies" title="Permalink to this headline"></a></h2>
+<p>To define a policy, simply subclass <cite>:py:class:BasePolicy&lt;coopihc.policy.BasePolicy&gt;</cite> and redefine its <code class="docutils literal notranslate"><span class="pre">sample()</span></code> method. Below, we show how <code class="docutils literal notranslate"><span class="pre">ExamplePolicy</span></code> has been defined.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">class</span> <span class="nc">ExamplePolicy</span><span class="p">(</span><span class="n">BasePolicy</span><span class="p">):</span>
+<span class="linenos"> 2</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;ExamplePolicy</span>
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span><span class="sd">    A simple policy which assumes that the agent using it has a &#39;goal&#39; state and that the task has an &#39;x&#39; state. x is compared to the goal and appropriate action is taken to make sure x reaches the goal.</span>
+<span class="linenos"> 5</span>
+<span class="linenos"> 6</span>
+<span class="linenos"> 7</span><span class="sd">    &quot;&quot;&quot;</span>
+<span class="linenos"> 8</span>
+<span class="linenos"> 9</span>    <span class="k">def</span> <span class="nf">__init____init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">action_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="linenos">10</span>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">action_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="linenos">11</span>
+<span class="linenos">12</span>    <span class="nd">@BasePolicy</span><span class="o">.</span><span class="n">default_value</span>
+<span class="linenos">13</span>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_observation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">agent_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="linenos">14</span><span class="w">        </span><span class="sd">&quot;&quot;&quot;sample</span>
+<span class="linenos">15</span>
+<span class="linenos">16</span><span class="sd">        Compares &#39;x&#39; to goal and issues +-1 accordingly.</span>
+<span class="linenos">17</span>
+<span class="linenos">18</span><span class="sd">        :return: action, reward</span>
+<span class="linenos">19</span><span class="sd">        :rtype: tuple(`StateElement&lt;coopihc.base.StateElement.StateElement&gt;`, float)</span>
+<span class="linenos">20</span><span class="sd">        &quot;&quot;&quot;</span>
+<span class="linenos">21</span>
+<span class="linenos">22</span>        <span class="k">if</span> <span class="p">(</span>
+<span class="linenos">23</span>            <span class="n">agent_observation</span><span class="p">[</span><span class="s2">&quot;task_state&quot;</span><span class="p">][</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+<span class="linenos">24</span>            <span class="o">&lt;</span> <span class="n">agent_observation</span><span class="p">[</span><span class="s2">&quot;user_state&quot;</span><span class="p">][</span><span class="s2">&quot;goal&quot;</span><span class="p">]</span>
+<span class="linenos">25</span>        <span class="p">):</span>
+<span class="linenos">26</span>            <span class="n">_action_value</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="linenos">27</span>        <span class="k">elif</span> <span class="p">(</span>
+<span class="linenos">28</span>            <span class="n">agent_observation</span><span class="p">[</span><span class="s2">&quot;task_state&quot;</span><span class="p">][</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+<span class="linenos">29</span>            <span class="o">&gt;</span> <span class="n">agent_observation</span><span class="p">[</span><span class="s2">&quot;user_state&quot;</span><span class="p">][</span><span class="s2">&quot;goal&quot;</span><span class="p">]</span>
+<span class="linenos">30</span>        <span class="p">):</span>
+<span class="linenos">31</span>            <span class="n">_action_value</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="linenos">32</span>        <span class="k">else</span><span class="p">:</span>
+<span class="linenos">33</span>            <span class="n">_action_value</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">34</span>
+<span class="linenos">35</span>        <span class="k">return</span> <span class="n">_action_value</span><span class="p">,</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Don’t forget to return a reward with the action.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can virtually put anything inside this function: that includes the output of a neural network, of a complex simulation process, and even the output of another bundle (see <a class="reference internal" href="modularity.html"><span class="doc">Modularity</span></a> for an example.)</p>
+</div>
+</section>
+<section id="quick-observation-engines">
+<h2>Quick-Observation Engines<a class="headerlink" href="#quick-observation-engines" title="Permalink to this headline"></a></h2>
+<p>States are rarely perfectly observable by agents:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>the other agent’s internal states are usually unknown,</p></li>
+<li><p>the task’s state may be partially observable; for example, a human observer may produce noisy observations,</p></li>
+<li><p>an agent’s own internal state may be partially observable; for example, a human observer might have poor retention capabilities.</p></li>
+</ul>
+</div></blockquote>
+<p>Furthermore, there might be a cost associated with making observations:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>There can be a tradeoff between the time needed to produce an observation and its quality; for example, precise observations may be costly (in terms of time).</p></li>
+<li><p>A human observer may enjoy making observations which are very different (according to some criterion) to the previous ones, in which case it would be rewarded for differing observations, satisfying its curiosity.</p></li>
+</ul>
+</div></blockquote>
+<p><em>CoopIHC</em> provides a generic object called an observation engine which specifies how an observation is created from the game state. To create a new observation engine, you can base it off an existing observation engine or subclass the <code class="docutils literal notranslate"><span class="pre">BaseObservationEngine</span></code>.</p>
+<p>To create a new engine by subclassing the <code class="docutils literal notranslate"><span class="pre">BaseObservationEngine</span></code> class, you have to redefine the <code class="docutils literal notranslate"><span class="pre">observe()</span></code> method. You can virtually put anything inside this function: that includes the output of a neural network, of a complex simulation process, and even the output of another bundle (see <a class="reference internal" href="modularity.html"><span class="doc">Modularity</span></a> for an example). Below, we show a basic example where we define an engine that only looks at a particular substate.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">class</span> <span class="nc">ExampleObservationEngine</span><span class="p">(</span><span class="n">BaseObservationEngine</span><span class="p">):</span>
+<span class="linenos"> 2</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;ExampleObservationEngine</span>
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span><span class="sd">    A simple example where the engine is only able to see a particular state (observable_state).</span>
+<span class="linenos"> 5</span>
+<span class="linenos"> 6</span><span class="sd">    :param observable_state: only state that can be observed</span>
+<span class="linenos"> 7</span><span class="sd">    :type observable_state: string</span>
+<span class="linenos"> 8</span><span class="sd">    &quot;&quot;&quot;</span>
+<span class="linenos"> 9</span>
+<span class="linenos">10</span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observable_state</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="linenos">11</span>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="linenos">12</span>        <span class="bp">self</span><span class="o">.</span><span class="n">observable_state</span> <span class="o">=</span> <span class="n">observable_state</span>
+<span class="linenos">13</span>
+<span class="linenos">14</span>    <span class="c1"># @BaseObservationEngine.get_params</span>
+<span class="linenos">15</span>    <span class="nd">@BaseObservationEngine</span><span class="o">.</span><span class="n">default_value</span>
+<span class="linenos">16</span>    <span class="k">def</span> <span class="nf">observe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">game_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="linenos">17</span><span class="w">        </span><span class="sd">&quot;&quot;&quot;observe</span>
+<span class="linenos">18</span>
+<span class="linenos">19</span><span class="sd">        Select only state observable_state.</span>
+<span class="linenos">20</span>
+<span class="linenos">21</span><span class="sd">        :param game_state: game state</span>
+<span class="linenos">22</span><span class="sd">        :type game_state: `State&lt;coopihc.base.State.State`</span>
+<span class="linenos">23</span><span class="sd">        :return: (observation, obs reward)</span>
+<span class="linenos">24</span><span class="sd">        :rtype: tuple(`State&lt;coopihc.base.State.State`, float)</span>
+<span class="linenos">25</span><span class="sd">        &quot;&quot;&quot;</span>
+<span class="linenos">26</span>        <span class="k">return</span> <span class="p">(</span>
+<span class="linenos">27</span>            <span class="n">State</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">observable_state</span><span class="p">:</span> <span class="n">game_state</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">observable_state</span><span class="p">]}),</span>
+<span class="linenos">28</span>            <span class="mi">0</span><span class="p">,</span>
+<span class="linenos">29</span>        <span class="p">)</span>
+</pre></div>
+</div>
+<p>Don’t forget to return a reward with the observation. The effect of this engine can be tested by plugging in a simple State:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">obs_engine</span> <span class="o">=</span> <span class="n">ExampleObservationEngine</span><span class="p">(</span><span class="s2">&quot;substate1&quot;</span><span class="p">)</span>
+<span class="linenos"> 2</span><span class="c1"># Game state before observation</span>
+<span class="linenos"> 3</span><span class="c1"># &gt;&gt;&gt; print(S)</span>
+<span class="linenos"> 4</span><span class="c1"># ----------  ----------  -  ---------</span>
+<span class="linenos"> 5</span><span class="c1"># substate1   substate_x  0  Numeric()</span>
+<span class="linenos"> 6</span><span class="c1">#             substate_y  2  Numeric()</span>
+<span class="linenos"> 7</span><span class="c1"># substate_2  substate_a  0  CatSet(3)</span>
+<span class="linenos"> 8</span><span class="c1"># ----------  ----------  -  ---------</span>
+<span class="linenos"> 9</span>
+<span class="linenos">10</span><span class="nb">print</span><span class="p">(</span><span class="n">obs_engine</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="n">game_state</span><span class="o">=</span><span class="n">S</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+<span class="linenos">11</span><span class="c1"># Produced Observation</span>
+<span class="linenos">12</span><span class="c1"># &gt;&gt;&gt; print(obs_engine.observe(S)[0])</span>
+<span class="linenos">13</span><span class="c1"># ---------  ----------  -  ----------</span>
+<span class="linenos">14</span><span class="c1"># substate1  substate_x  0  Cont(1, 1)</span>
+<span class="linenos">15</span><span class="c1">#            substate_y  2  Discr(3)</span>
+<span class="linenos">16</span><span class="c1"># ---------  ----------  -  ----------</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The signature <code class="docutils literal notranslate"><span class="pre">observe(self,</span> <span class="pre">game_state=None)</span></code> is expected. When called with <code class="docutils literal notranslate"><span class="pre">game_state</span> <span class="pre">=</span> <span class="pre">None</span></code>, the engine will fetch the agent’s observation. If the game state is actually passed, it will use the input state as basis to produce the observation. This is useful, for example, when testing your engine and you want to control the input.</p>
+</div>
+</section>
+<section id="quick-inference-engines">
+<h2>Quick-Inference Engines<a class="headerlink" href="#quick-inference-engines" title="Permalink to this headline"></a></h2>
+<p>Agents should be able to learn (infer parameters from observed data) and to adapt (change policy parameters based on observed data). As in observation engines, there might be a cost associated with making inferences:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Making an inference can be time costly.</p></li>
+<li><p>Inferring may be rewarding; for example, because it is enjoyable.</p></li>
+</ul>
+</div></blockquote>
+<p><em>CoopIHC</em> provides a generic object called inference engines to update internal states from observations. Although the name might suggest otherwise, these engines may use (any) other mechanisms than statistical inference that update the internal state. To create a new inference engine, you can base it off an existing engine or subclass the <code class="docutils literal notranslate"><span class="pre">BaseInferenceEngine</span></code>.</p>
+<p>Essentially, the <code class="docutils literal notranslate"><span class="pre">BaseInferenceEngine</span></code> provides a simple first-in-first-out (FIFO) buffer that stores observations. When subclassing <code class="docutils literal notranslate"><span class="pre">BaseInferenceEngine</span></code>, you simply have to redefine the <code class="docutils literal notranslate"><span class="pre">infer</span></code> method (by default, no inference is produced). An example is provided below, where the engine stores the last 5 observations.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">class</span> <span class="nc">ExampleInferenceEngine</span><span class="p">(</span><span class="n">BaseInferenceEngine</span><span class="p">):</span>
+<span class="linenos"> 2</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;ExampleInferenceEngine</span>
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span><span class="sd">    Example class</span>
+<span class="linenos"> 5</span>
+<span class="linenos"> 6</span><span class="sd">    &quot;&quot;&quot;</span>
+<span class="linenos"> 7</span>
+<span class="linenos"> 8</span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="linenos"> 9</span>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="linenos">10</span>
+<span class="linenos">11</span>    <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_observation</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="linenos">12</span><span class="w">        </span><span class="sd">&quot;&quot;&quot;infer</span>
+<span class="linenos">13</span>
+<span class="linenos">14</span><span class="sd">        Do nothing. Same behavior as parent ``BaseInferenceEngine``</span>
+<span class="linenos">15</span>
+<span class="linenos">16</span><span class="sd">        :return: (new internal state, reward)</span>
+<span class="linenos">17</span><span class="sd">        :rtype: tuple(:py:class:`State&lt;coopihc.base.State.State&gt;`, float)</span>
+<span class="linenos">18</span><span class="sd">        &quot;&quot;&quot;</span>
+<span class="linenos">19</span>        <span class="k">if</span> <span class="n">agent_observation</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">20</span>            <span class="n">agent_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span>
+<span class="linenos">21</span>
+<span class="linenos">22</span>        <span class="n">reward</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">23</span>        <span class="c1"># Do something</span>
+<span class="linenos">24</span>        <span class="c1"># agent_state = ..</span>
+<span class="linenos">25</span>        <span class="c1"># reward = ...</span>
+<span class="linenos">26</span>
+<span class="linenos">27</span>        <span class="k">return</span> <span class="n">agent_state</span><span class="p">,</span> <span class="n">reward</span>
+<span class="linenos">28</span>
+<span class="linenos">29</span>
+<span class="linenos">30</span><span class="n">ExampleInferenceEngine</span><span class="p">(</span><span class="n">buffer_depth</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="quick-bundles">
+<h2>Quick-Bundles<a class="headerlink" href="#quick-bundles" title="Permalink to this headline"></a></h2>
+<p>Bundles are the objects that compose the three main components (task, user and assistant) into a game. It forms the joint state, collects the rewards and ensure synchronous sequential sequences of observations, inferences and actions of the two agents.</p>
+<a class="reference internal image-reference" href="../_images/bundle.png"><img alt="../_images/bundle.png" class="align-center" src="../_images/bundle.png" style="width: 800px;" /></a>
+<p>They are useful because they allow you to orchestrate the interaction how you want it.</p>
+<p>In most cases, there is no need to define a new Bundle, and you can straightaway use the standard existing <code class="docutils literal notranslate"><span class="pre">Bundle</span></code>. For example, you can create a bundle and interact with it like so:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span>
+<span class="linenos"> 2</span>
+<span class="linenos"> 3</span><span class="k">class</span> <span class="nc">ExampleTaskWithoutAssistant</span><span class="p">(</span><span class="n">ExampleTask</span><span class="p">):</span>
+<span class="linenos"> 4</span>    <span class="k">def</span> <span class="nf">on_assistant_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="linenos"> 5</span>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">False</span>
+<span class="linenos"> 6</span>
+<span class="linenos"> 7</span>
+<span class="linenos"> 8</span><span class="n">example_task</span> <span class="o">=</span> <span class="n">ExampleTaskWithoutAssistant</span><span class="p">()</span>
+<span class="linenos"> 9</span><span class="n">example_user</span> <span class="o">=</span> <span class="n">ExampleUser</span><span class="p">()</span>
+<span class="linenos">10</span><span class="n">bundle</span> <span class="o">=</span> <span class="n">Bundle</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="n">example_task</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">example_user</span><span class="p">)</span>
+<span class="linenos">11</span><span class="n">bundle</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">go_to</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+<span class="linenos">12</span>
+<span class="linenos">13</span><span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<span class="linenos">14</span>    <span class="n">state</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">is_done</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+<span class="linenos">15</span>    <span class="k">if</span> <span class="n">is_done</span><span class="p">:</span>
+<span class="linenos">16</span>        <span class="k">break</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Bundles also handle joint rendering as well as other practical things. More details can be found on <a class="reference internal" href="bundles.html"><span class="doc">Bundle’s reference page</span></a>.</p>
+</div>
+</section>
+<section id="an-overview-of-coopihc">
+<h2>An overview of <em>CoopIHC</em><a class="headerlink" href="#an-overview-of-coopihc" title="Permalink to this headline"></a></h2>
+<ol class="arabic simple">
+<li><p>Several implementations of user models, tasks and assistants exist in <em>CoopIHC</em>’s repository <a class="reference external" href="https://github.com/jgori-ouistiti/CoopIHC-zoo">CoopIHC-Zoo</a></p></li>
+<li><p>Several worked-out examples are given in this documentation. Those should give you a good idea about what can be done with <em>CoopIHC</em>.</p></li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="Welcome to CoopIHC’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="more_complex_example.html" class="btn btn-neutral float-right" title="More Complex Example" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

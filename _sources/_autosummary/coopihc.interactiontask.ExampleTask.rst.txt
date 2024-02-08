@@ -1,0 +1,33 @@
+coopihc.interactiontask.ExampleTask
+===================================
+
+.. automodule:: coopihc.interactiontask.ExampleTask
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      CoordinatedTask
+      ExampleTask
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,43 @@
+coopihc.inference.DualInferenceEngine.DualInferenceEngine
+=========================================================
+
+.. currentmodule:: coopihc.inference.DualInferenceEngine
+
+.. autoclass:: DualInferenceEngine
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~DualInferenceEngine.add_observation
+      ~DualInferenceEngine.bind
+      ~DualInferenceEngine.default_value
+      ~DualInferenceEngine.infer
+      ~DualInferenceEngine.render
+      ~DualInferenceEngine.reset
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~DualInferenceEngine.action
+      ~DualInferenceEngine.buffer
+      ~DualInferenceEngine.host
+      ~DualInferenceEngine.mode
+      ~DualInferenceEngine.observation
+      ~DualInferenceEngine.role
+      ~DualInferenceEngine.state
+      ~DualInferenceEngine.unwrapped
+   
+   

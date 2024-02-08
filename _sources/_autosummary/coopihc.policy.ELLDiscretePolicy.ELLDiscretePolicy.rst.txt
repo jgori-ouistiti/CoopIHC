@@ -1,0 +1,40 @@
+coopihc.policy.ELLDiscretePolicy.ELLDiscretePolicy
+==================================================
+
+.. currentmodule:: coopihc.policy.ELLDiscretePolicy
+
+.. autoclass:: ELLDiscretePolicy
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~ELLDiscretePolicy.attach_likelihood_function
+      ~ELLDiscretePolicy.default_value
+      ~ELLDiscretePolicy.forward_summary
+      ~ELLDiscretePolicy.reset
+      ~ELLDiscretePolicy.sample
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~ELLDiscretePolicy.action
+      ~ELLDiscretePolicy.action_keys
+      ~ELLDiscretePolicy.observation
+      ~ELLDiscretePolicy.parameters
+      ~ELLDiscretePolicy.state
+      ~ELLDiscretePolicy.unwrapped
+   
+   

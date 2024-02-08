@@ -1,0 +1,39 @@
+coopihc.bundle.Bundle.Bundle
+============================
+
+.. currentmodule:: coopihc.bundle.Bundle
+
+.. autoclass:: Bundle
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~Bundle.close
+      ~Bundle.quarter_step
+      ~Bundle.render
+      ~Bundle.reset
+      ~Bundle.step
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Bundle.parameters
+      ~Bundle.round_number
+      ~Bundle.state
+      ~Bundle.turn_dict
+      ~Bundle.turn_number
+   
+   

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coopihc.policy.ELLDiscretePolicy &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../_autosummary/coopihc.html">    API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>coopihc.policy.ELLDiscretePolicy</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coopihc.policy.ELLDiscretePolicy</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">from</span> <span class="nn">coopihc.policy.BasePolicy</span> <span class="kn">import</span> <span class="n">BasePolicy</span>
+<span class="kn">from</span> <span class="nn">coopihc.base.Space</span> <span class="kn">import</span> <span class="n">Space</span>
+
+
+<div class="viewcode-block" id="BadlyDefinedLikelihoodError"><a class="viewcode-back" href="../../../_autosummary/coopihc.policy.ELLDiscretePolicy.BadlyDefinedLikelihoodError.html#coopihc.policy.ELLDiscretePolicy.BadlyDefinedLikelihoodError">[docs]</a><span class="k">class</span> <span class="nc">BadlyDefinedLikelihoodError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="ELLDiscretePolicy"><a class="viewcode-back" href="../../../_autosummary/coopihc.policy.ELLDiscretePolicy.ELLDiscretePolicy.html#coopihc.policy.ELLDiscretePolicy.ELLDiscretePolicy">[docs]</a><span class="k">class</span> <span class="nc">ELLDiscretePolicy</span><span class="p">(</span><span class="n">BasePolicy</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;ELLDiscretePolicy</span>
+
+<span class="sd">    Explicitly defined Likelihood Policy. A policy which is described by an explicit probabilistic model.</span>
+
+<span class="sd">    This policy expects you to bind the actual likelihood model. An example is as follows:</span>
+
+<span class="sd">     .. code-block:: python</span>
+
+<span class="sd">        se = StateElement(</span>
+<span class="sd">            1, autospace([0, 1, 2, 3, 4, 5, 6]), seed=_seed</span>
+<span class="sd">        )</span>
+<span class="sd">        action_state = State(**{&quot;action&quot;: se})</span>
+<span class="sd">        policy = ELLDiscretePolicy(action_state, seed=_seed)</span>
+
+<span class="sd">        # Define the likelihood model</span>
+<span class="sd">        def likelihood_model(self, action, observation, *args, **kwargs):</span>
+<span class="sd">            if action == 0:</span>
+<span class="sd">                return 1 / 7</span>
+<span class="sd">            elif action == 1:</span>
+<span class="sd">                return 1 / 7 + 0.05</span>
+<span class="sd">            elif action == 2:</span>
+<span class="sd">                return 1 / 7 - 0.05</span>
+<span class="sd">            elif action == 3:</span>
+<span class="sd">                return 1 / 7 + 0.1</span>
+<span class="sd">            elif action == 4:</span>
+<span class="sd">                return 1 / 7 - 0.1</span>
+<span class="sd">            elif action == 5:</span>
+<span class="sd">                return 1 / 7 + 0.075</span>
+<span class="sd">            elif action == 6:</span>
+<span class="sd">                return 1 / 7 - 0.075</span>
+<span class="sd">            else:</span>
+<span class="sd">                raise RuntimeError(</span>
+<span class="sd">                    &quot;warning, unable to compute likelihood. You may have not covered all cases in the likelihood definition&quot;</span>
+<span class="sd">                )</span>
+
+<span class="sd">        # Attach it</span>
+<span class="sd">        policy.attach_likelihood_function(likelihood_model)</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">        The signature of the likelihood model should be the same signature as a bound method (i.e. the first argument is self)</span>
+
+<span class="sd">    :param action_state: See the BasePolicy keyword argument with the same name</span>
+<span class="sd">    :type action_state: See the BasePolicy keyword argument with the same name</span>
+<span class="sd">    :param seed: seed for the RNG</span>
+<span class="sd">    :type seed: int, optional</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action_state</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">action_state</span><span class="o">=</span><span class="n">action_state</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">explicit_likelihood</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rng</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ELLDiscretePolicy.attach_likelihood_function"><a class="viewcode-back" href="../../../_autosummary/coopihc.policy.ELLDiscretePolicy.ELLDiscretePolicy.html#coopihc.policy.ELLDiscretePolicy.ELLDiscretePolicy.attach_likelihood_function">[docs]</a>    <span class="k">def</span> <span class="nf">attach_likelihood_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_function</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;attach_likelihood_function</span>
+
+<span class="sd">        Bind the likelihood model by calling BasePolicy&#39;s _bind method.</span>
+
+<span class="sd">        :param _function: likelihood model to bind to the policy</span>
+<span class="sd">        :type _function: function</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bind</span><span class="p">(</span><span class="n">_function</span><span class="p">,</span> <span class="s2">&quot;compute_likelihood&quot;</span><span class="p">)</span></div>
+
+    <span class="nd">@BasePolicy</span><span class="o">.</span><span class="n">default_value</span>
+    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_observation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">agent_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;sample from likelihood model.</span>
+
+<span class="sd">        Select an action according to its probability as defined by the likelihood model. You can pass an observation as well, in which case the policy will not look up he actual observation but use the observation you passed. This is useful e.g. when debugging the policy.</span>
+
+<span class="sd">        :param observation: if passed, this is the observation upon which action selection is based upon. Otherwise, the policy will look at the actual agent observation, defaults to None</span>
+<span class="sd">        :type observation: `State&lt;coopihc.base.State.State&gt;`, optional</span>
+<span class="sd">        :return: action, reward</span>
+<span class="sd">        :rtype: tuple(`StateElement&lt;coopihc.base.StateElement.StateElement&gt;`, float)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">actions</span><span class="p">,</span> <span class="n">llh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward_summary</span><span class="p">(</span><span class="n">agent_observation</span><span class="p">)</span>
+        <span class="n">action</span> <span class="o">=</span> <span class="n">actions</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">llh</span><span class="p">),</span> <span class="n">p</span><span class="o">=</span><span class="n">llh</span><span class="p">)]</span>
+
+        <span class="k">return</span> <span class="n">action</span><span class="p">,</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="ELLDiscretePolicy.forward_summary"><a class="viewcode-back" href="../../../_autosummary/coopihc.policy.ELLDiscretePolicy.ELLDiscretePolicy.html#coopihc.policy.ELLDiscretePolicy.ELLDiscretePolicy.forward_summary">[docs]</a>    <span class="k">def</span> <span class="nf">forward_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observation</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;forward_summary</span>
+
+<span class="sd">        Compute the likelihood of each action, given the current observation</span>
+
+<span class="sd">        :param observation: current agent observation</span>
+<span class="sd">        :type observation: `State&lt;coopihc.base.State.State&gt;`</span>
+<span class="sd">        :return: [description]</span>
+<span class="sd">        :rtype: [type]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">llh</span><span class="p">,</span> <span class="n">actions</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="n">action_stateelement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_state</span><span class="p">[</span><span class="s2">&quot;action&quot;</span><span class="p">]</span>
+        <span class="n">action_space</span> <span class="o">=</span> <span class="n">action_stateelement</span><span class="o">.</span><span class="n">space</span>
+
+        <span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">Space</span><span class="o">.</span><span class="n">cartesian_product</span><span class="p">(</span><span class="n">action_space</span><span class="p">)[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">llh</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">compute_likelihood</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="n">observation</span><span class="p">))</span>
+            <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+        <span class="n">ACCEPTABLE_ERROR</span> <span class="o">=</span> <span class="mf">1e-13</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="n">llh</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">error</span> <span class="o">&gt;</span> <span class="n">ACCEPTABLE_ERROR</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">BadlyDefinedLikelihoodError</span><span class="p">(</span>
+                <span class="s2">&quot;Likelihood does not sum to 1: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">llh</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">actions</span><span class="p">,</span> <span class="n">llh</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

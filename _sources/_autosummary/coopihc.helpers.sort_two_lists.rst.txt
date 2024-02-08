@@ -1,0 +1,6 @@
+coopihc.helpers.sort\_two\_lists
+================================
+
+.. currentmodule:: coopihc.helpers
+
+.. autofunction:: sort_two_lists

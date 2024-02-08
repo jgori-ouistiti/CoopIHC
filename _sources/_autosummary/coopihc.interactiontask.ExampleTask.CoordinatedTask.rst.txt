@@ -1,0 +1,42 @@
+coopihc.interactiontask.ExampleTask.CoordinatedTask
+===================================================
+
+.. currentmodule:: coopihc.interactiontask.ExampleTask
+
+.. autoclass:: CoordinatedTask
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~CoordinatedTask.base_on_assistant_action
+      ~CoordinatedTask.base_on_user_action
+      ~CoordinatedTask.finit
+      ~CoordinatedTask.on_assistant_action
+      ~CoordinatedTask.on_user_action
+      ~CoordinatedTask.render
+      ~CoordinatedTask.reset
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~CoordinatedTask.assistant_action
+      ~CoordinatedTask.parameters
+      ~CoordinatedTask.round_number
+      ~CoordinatedTask.state
+      ~CoordinatedTask.turn_number
+      ~CoordinatedTask.user_action
+   
+   

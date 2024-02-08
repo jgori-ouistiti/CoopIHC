@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coopihc.agents.BaseAgent.BaseAgent &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="coopihc.agents.ExampleAssistant" href="coopihc.agents.ExampleAssistant.html" />
+    <link rel="prev" title="coopihc.agents.BaseAgent" href="coopihc.agents.BaseAgent.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">    Home page</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="coopihc.html">    API reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="coopihc.agents.html">coopihc.agents</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="coopihc.agents.BaseAgent.html">coopihc.agents.BaseAgent</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">coopihc.agents.BaseAgent.BaseAgent</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.agents.ExampleAssistant.html">coopihc.agents.ExampleAssistant</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.agents.ExampleUser.html">coopihc.agents.ExampleUser</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.agents.lqrcontrollers.html">coopihc.agents.lqrcontrollers</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.base.html">coopihc.base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.bundle.html">coopihc.bundle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.helpers.html">coopihc.helpers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.inference.html">coopihc.inference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.interactiontask.html">coopihc.interactiontask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.observation.html">coopihc.observation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.policy.html">coopihc.policy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="coopihc.html">coopihc</a> &raquo;</li>
+          <li><a href="coopihc.agents.html">coopihc.agents</a> &raquo;</li>
+          <li><a href="coopihc.agents.BaseAgent.html">coopihc.agents.BaseAgent</a> &raquo;</li>
+      <li>coopihc.agents.BaseAgent.BaseAgent</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/coopihc.agents.BaseAgent.BaseAgent.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="coopihc-agents-baseagent-baseagent">
+<h1>coopihc.agents.BaseAgent.BaseAgent<a class="headerlink" href="#coopihc-agents-baseagent-baseagent" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="coopihc.agents.BaseAgent.BaseAgent">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">BaseAgent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">role</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_inference_engine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_observation_engine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inference_engine_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observation_engine_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/agents/BaseAgent.html#BaseAgent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.agents.BaseAgent.BaseAgent" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A <em>Coopihc</em> agent.</p>
+<p>Instantiate or subclass this class to define an agent that is compatible with <em>CoopIHC</em>.</p>
+<p>An agent has 4 components:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>An internal state</p></li>
+<li><p>An observation engine, that produces observations of the task and the other agent</p></li>
+<li><p>An inference engine, that uses this observation to make the internal state transition towards a new state</p></li>
+<li><p>A policy, which, based on the agent’s internal state and its observation, picks an action.</p></li>
+</ul>
+</div></blockquote>
+<p>By default, this class will be initialized with an empty internal <a class="reference internal" href="coopihc.base.State.html#module-coopihc.base.State" title="coopihc.base.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a>, a random binary <a class="reference internal" href="coopihc.policy.BasePolicy.html#module-coopihc.policy.BasePolicy" title="coopihc.policy.BasePolicy"><code class="xref py py-class docutils literal notranslate"><span class="pre">BasePolicy</span></code></a>, a <a class="reference internal" href="coopihc.observation.RuleObservationEngine.html#module-coopihc.observation.RuleObservationEngine" title="coopihc.observation.RuleObservationEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuleObservationEngine</span></code></a> that sees everything except the other agent’s internal state, and a <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseInference</span></code> engine which does not update the state.</p>
+<p>The API methods that users of this class can redefine are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">finit</span></code>: a second round of initialization once a bundle has been formed – useful because at that point the agent has a reference to the other agent and task.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reset</span></code>: to specify how to initialize the agent’s state at the end of each game. Policies, inference engines, and observation engines handle their own resets methods.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">render</span></code>: specifies what to display.</p></li>
+</ul>
+</div></blockquote>
+<p>Some things to know:</p>
+<ul class="simple">
+<li><p>The agent can be used to produce observations, inferences and actions outside of any Bundle. See methods <code class="docutils literal notranslate"><span class="pre">observe(),</span> <span class="pre">infer(),</span> <span class="pre">take_action()</span></code>.</p></li>
+<li><p>You can override some components, e.g. to override the existing policy of an agent named <code class="docutils literal notranslate"><span class="pre">MyNewUser</span></code> with some other policy, you can do the following</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">changed_policy_user</span> <span class="o">=</span> <span class="n">MyNewUser</span><span class="p">(</span><span class="n">override_agent_policy</span> <span class="o">=</span> <span class="p">(</span><span class="n">some_other_policy</span><span class="p">,</span> <span class="n">other_policy_kwargs</span><span class="p">))</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>role</strong> (<em>str</em>) – “user” or “assistant”</p></li>
+<li><p><strong>**kwargs</strong> (<em>type</em>) – <p>keyword values ( each agent_X key expects a valid X object, and X_kwargs expects a valid dictionary of keyword arguments for X)</p>
+<ul>
+<li><p>agent_policy</p></li>
+<li><p>agent_inference_engine</p></li>
+<li><p>agent_observation_engine</p></li>
+<li><p>agent_state</p></li>
+<li><p>policy_kwargs</p></li>
+<li><p>inference_engine_kwargs</p></li>
+<li><p>observation_engine_kwargs</p></li>
+<li><p>state_kwargs</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A <em>CoopIHC</em> and <a class="reference internal" href="coopihc.bundle.html#module-coopihc.bundle" title="coopihc.bundle"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bundle</span></code></a>-compatible agent</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#coopihc.agents.BaseAgent.BaseAgent" title="coopihc.agents.BaseAgent.BaseAgent">BaseAgent</a></p>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.agents.BaseAgent.BaseAgent.finit" title="coopihc.agents.BaseAgent.BaseAgent.finit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">finit</span></code></a></p></td>
+<td><p>Finish initializing.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.agents.BaseAgent.BaseAgent.infer" title="coopihc.agents.BaseAgent.BaseAgent.infer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">infer</span></code></a></p></td>
+<td><p>infer the agent's internal state</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.agents.BaseAgent.BaseAgent.observe" title="coopihc.agents.BaseAgent.BaseAgent.observe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">observe</span></code></a></p></td>
+<td><p>produce an observation</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">prepare_action</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.agents.BaseAgent.BaseAgent.render" title="coopihc.agents.BaseAgent.BaseAgent.render"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render</span></code></a></p></td>
+<td><p>render the agent</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.agents.BaseAgent.BaseAgent.reset" title="coopihc.agents.BaseAgent.BaseAgent.reset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset</span></code></a></p></td>
+<td><p>reset the agent --- Override this</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.agents.BaseAgent.BaseAgent.reset_all" title="coopihc.agents.BaseAgent.BaseAgent.reset_all"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_all</span></code></a></p></td>
+<td><p>reset the agent and all its components</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.agents.BaseAgent.BaseAgent.take_action" title="coopihc.agents.BaseAgent.BaseAgent.take_action"><code class="xref py py-obj docutils literal notranslate"><span class="pre">take_action</span></code></a></p></td>
+<td><p>Select an action</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.agents.BaseAgent.BaseAgent.action" title="coopihc.agents.BaseAgent.BaseAgent.action"><code class="xref py py-obj docutils literal notranslate"><span class="pre">action</span></code></a></p></td>
+<td><p>Last agent action</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.agents.BaseAgent.BaseAgent.assistant" title="coopihc.agents.BaseAgent.BaseAgent.assistant"><code class="xref py py-obj docutils literal notranslate"><span class="pre">assistant</span></code></a></p></td>
+<td><p>Connected assistant</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bundle</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bundle_memory</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.agents.BaseAgent.BaseAgent.inference_engine" title="coopihc.agents.BaseAgent.BaseAgent.inference_engine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">inference_engine</span></code></a></p></td>
+<td><p>Agent inference engine</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.agents.BaseAgent.BaseAgent.observation" title="coopihc.agents.BaseAgent.BaseAgent.observation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">observation</span></code></a></p></td>
+<td><p>Last agent observation</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.agents.BaseAgent.BaseAgent.observation_engine" title="coopihc.agents.BaseAgent.BaseAgent.observation_engine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">observation_engine</span></code></a></p></td>
+<td><p>Agent observation engine</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">parameters</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.agents.BaseAgent.BaseAgent.policy" title="coopihc.agents.BaseAgent.BaseAgent.policy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">policy</span></code></a></p></td>
+<td><p>Agent policy</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.agents.BaseAgent.BaseAgent.state" title="coopihc.agents.BaseAgent.BaseAgent.state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">state</span></code></a></p></td>
+<td><p>Agent internal state</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.agents.BaseAgent.BaseAgent.task" title="coopihc.agents.BaseAgent.BaseAgent.task"><code class="xref py py-obj docutils literal notranslate"><span class="pre">task</span></code></a></p></td>
+<td><p>Connected task</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.agents.BaseAgent.BaseAgent.user" title="coopihc.agents.BaseAgent.BaseAgent.user"><code class="xref py py-obj docutils literal notranslate"><span class="pre">user</span></code></a></p></td>
+<td><p>Connected user</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py property">
+<dt class="sig sig-object py" id="coopihc.agents.BaseAgent.BaseAgent.action">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action</span></span><a class="headerlink" href="#coopihc.agents.BaseAgent.BaseAgent.action" title="Permalink to this definition"></a></dt>
+<dd><p>Last agent action</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="coopihc.agents.BaseAgent.BaseAgent.assistant">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">assistant</span></span><a class="headerlink" href="#coopihc.agents.BaseAgent.BaseAgent.assistant" title="Permalink to this definition"></a></dt>
+<dd><p>Connected assistant</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.agents.BaseAgent.BaseAgent.finit">
+<span class="sig-name descname"><span class="pre">finit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/agents/BaseAgent.html#BaseAgent.finit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.agents.BaseAgent.BaseAgent.finit" title="Permalink to this definition"></a></dt>
+<dd><p>Finish initializing.</p>
+<p>Method that specifies what happens when initializing the agent for the very first time (similar to __init__), but after a bundle has been initialized already. This allows to finish initializing (finit) the agent when information from another component is required to do so.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.agents.BaseAgent.BaseAgent.infer">
+<span class="sig-name descname"><span class="pre">infer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agent_observation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affect_bundle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/agents/BaseAgent.html#BaseAgent.infer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.agents.BaseAgent.BaseAgent.infer" title="Permalink to this definition"></a></dt>
+<dd><p>infer the agent’s internal state</p>
+<p>Infer the new agent state from the agent’s observation. By default, the agent will select the agent’s last observation. To bypass this behavior, you can provide a given agent_observation.
+The affect_bundle flag determines whether or not the agent’s internal state is actually updated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>agent_observation</strong> (<em>:py:class:State&lt;coopihc.base.State&gt;</em><em>, </em><em>optional</em>) – last agent observation, defaults to None. If None, gets the observation from the inference engine’s buffer.</p></li>
+<li><p><strong>affect_bundle</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether or not the agent’s state is updated with the new inferred state, defaults to True.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="coopihc.agents.BaseAgent.BaseAgent.inference_engine">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inference_engine</span></span><a class="headerlink" href="#coopihc.agents.BaseAgent.BaseAgent.inference_engine" title="Permalink to this definition"></a></dt>
+<dd><p>Agent inference engine</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="coopihc.agents.BaseAgent.BaseAgent.observation">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation</span></span><a class="headerlink" href="#coopihc.agents.BaseAgent.BaseAgent.observation" title="Permalink to this definition"></a></dt>
+<dd><p>Last agent observation</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="coopihc.agents.BaseAgent.BaseAgent.observation_engine">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation_engine</span></span><a class="headerlink" href="#coopihc.agents.BaseAgent.BaseAgent.observation_engine" title="Permalink to this definition"></a></dt>
+<dd><p>Agent observation engine</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.agents.BaseAgent.BaseAgent.observe">
+<span class="sig-name descname"><span class="pre">observe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">game_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affect_bundle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">game_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">assistant_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_action</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">assistant_action</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/agents/BaseAgent.html#BaseAgent.observe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.agents.BaseAgent.BaseAgent.observe" title="Permalink to this definition"></a></dt>
+<dd><p>produce an observation</p>
+<p>Produce an observation based on state information, by querying the agent’s observation engine. By default, the agent will find the appropriate states to observe. To bypass this behavior, you can provide state information. When doing so, either provide the full game state, or provide the needed individual states.
+The affect_bundle flag determines whether or not the observation produces like this becomes the agent’s last observation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>game_state</strong> (<cite>:py:class:State&lt;coopihc.base.State&gt;</cite>, optional) – the full game state as defined in the <em>CoopIHC</em> interaction model, defaults to None.</p></li>
+<li><p><strong>affect_bundle</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether or not the observation is stored and becomes the agent’s last observation, defaults to True.</p></li>
+<li><p><strong>game_info</strong> (<cite>:py:class:State&lt;coopihc.base.State&gt;</cite>, optional) – game_info substate, see the <em>CoopIHC</em> interaction model, defaults to {}.</p></li>
+<li><p><strong>task_state</strong> (<cite>:py:class:State&lt;coopihc.base.State&gt;</cite>, optional) – task_state substate, see the <em>CoopIHC</em> interaction model, defaults to {}</p></li>
+<li><p><strong>user_state</strong> (<cite>:py:class:State&lt;coopihc.base.State&gt;</cite>, optional) – user_state substate, see the <em>CoopIHC</em> interaction model, defaults to {}</p></li>
+<li><p><strong>assistant_state</strong> (<cite>:py:class:State&lt;coopihc.base.State&gt;</cite>, optional) – assistant_state substate, see the <em>CoopIHC</em> interaction model, defaults to {}</p></li>
+<li><p><strong>user_action</strong> (<cite>:py:class:State&lt;coopihc.base.State&gt;</cite>, optional) – user_action substate, see the <em>CoopIHC</em> interaction model, defaults to {}</p></li>
+<li><p><strong>assistant_action</strong> (<cite>:py:class:State&lt;coopihc.base.State&gt;</cite>, optional) – assistant_action substate, see the <em>CoopIHC</em> interaction model, defaults to {}</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="coopihc.agents.BaseAgent.BaseAgent.policy">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">policy</span></span><a class="headerlink" href="#coopihc.agents.BaseAgent.BaseAgent.policy" title="Permalink to this definition"></a></dt>
+<dd><p>Agent policy</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.agents.BaseAgent.BaseAgent.render">
+<span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'text'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax_user</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax_assistant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax_task</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/agents/BaseAgent.html#BaseAgent.render"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.agents.BaseAgent.BaseAgent.render" title="Permalink to this definition"></a></dt>
+<dd><p>render the agent</p>
+<p>Displays agent information on the passed axes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mode</strong> (<em>str</em><em>, </em><em>optional</em>) – display mode, defaults to “text”. Also supports “plot”.</p></li>
+<li><p><strong>ax_user</strong> (<em>Matploblib axis</em><em>, </em><em>optional</em>) – user axis, defaults to None</p></li>
+<li><p><strong>ax_assistant</strong> (<em>Matploblib axis</em><em>, </em><em>optional</em>) – assistant axis, defaults to None</p></li>
+<li><p><strong>ax_task</strong> (<em>Matploblib axis</em><em>, </em><em>optional</em>) – task axis, defaults to None</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.agents.BaseAgent.BaseAgent.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/agents/BaseAgent.html#BaseAgent.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.agents.BaseAgent.BaseAgent.reset" title="Permalink to this definition"></a></dt>
+<dd><p>reset the agent — Override this</p>
+<p>Override this method to specify how the components of the agent will be reset. By default, the agent will already call the reset method of all 4 components (policy, inference engine, observation engine, state). You can specify some added behavior here e.g. if you want each game to begin with a specific state value, you can specify that here. For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Sets the value of state &#39;x&#39; to 0</span>
+<span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="mi">123</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.agents.BaseAgent.BaseAgent.reset_all">
+<span class="sig-name descname"><span class="pre">reset_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/agents/BaseAgent.html#BaseAgent.reset_all"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.agents.BaseAgent.BaseAgent.reset_all" title="Permalink to this definition"></a></dt>
+<dd><p>reset the agent and all its components</p>
+<p>In addition to running the agent’s <code class="docutils literal notranslate"><span class="pre">reset()</span></code>, <code class="docutils literal notranslate"><span class="pre">reset_all()</span></code> also calls state, observation engine, inference engine and policies’ <code class="docutils literal notranslate"><span class="pre">reset()</span></code> method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dic</strong> (<em>dictionary</em><em>, </em><em>optional</em>) – reset_dictionnary, defaults to None. See the <code class="docutils literal notranslate"><span class="pre">reset()</span></code> method in <cite>py:class:Bundle&lt;coopihc.bundle.Bundle&gt;</cite> for more information.</p></li>
+<li><p><strong>random</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether states should be randomly reset, defaults to True. See the <code class="docutils literal notranslate"><span class="pre">reset()</span></code> method in <cite>py:class:Bundle&lt;coopihc.bundle.Bundle&gt;</cite> for more information.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="coopihc.agents.BaseAgent.BaseAgent.state">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">state</span></span><a class="headerlink" href="#coopihc.agents.BaseAgent.BaseAgent.state" title="Permalink to this definition"></a></dt>
+<dd><p>Agent internal state</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.agents.BaseAgent.BaseAgent.take_action">
+<span class="sig-name descname"><span class="pre">take_action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agent_observation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">increment_turn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/agents/BaseAgent.html#BaseAgent.take_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.agents.BaseAgent.BaseAgent.take_action" title="Permalink to this definition"></a></dt>
+<dd><p>Select an action</p>
+<p>Select an action based on agent_observation and agent_state, by querying the agent’s policy. If either of these arguments is not provided, then the argument is deduced from the agent’s internals.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>agent_observation</strong> (<em>:py:class:State&lt;coopihc.base.State&gt;</em><em>, </em><em>optional</em>) – last agent observation, defaults to None. If None, gets the observation from the inference engine’s buffer.</p></li>
+<li><p><strong>agent_state</strong> (<em>:py:class:State&lt;coopihc.base.State&gt;</em><em>, </em><em>optional</em>) – current value of the agent’s internal state, defaults to None. If None, gets the state from itself.</p></li>
+<li><p><strong>increment_turn</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether to update bundle’s turn and round</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="coopihc.agents.BaseAgent.BaseAgent.task">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">task</span></span><a class="headerlink" href="#coopihc.agents.BaseAgent.BaseAgent.task" title="Permalink to this definition"></a></dt>
+<dd><p>Connected task</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="coopihc.agents.BaseAgent.BaseAgent.user">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">user</span></span><a class="headerlink" href="#coopihc.agents.BaseAgent.BaseAgent.user" title="Permalink to this definition"></a></dt>
+<dd><p>Connected user</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="coopihc.agents.BaseAgent.html" class="btn btn-neutral float-left" title="coopihc.agents.BaseAgent" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="coopihc.agents.ExampleAssistant.html" class="btn btn-neutral float-right" title="coopihc.agents.ExampleAssistant" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

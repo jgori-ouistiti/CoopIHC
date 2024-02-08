@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coopihc.agents.lqrcontrollers.LQRController &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../_autosummary/coopihc.html">    API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>coopihc.agents.lqrcontrollers.LQRController</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coopihc.agents.lqrcontrollers.LQRController</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span>
+
+
+<span class="kn">from</span> <span class="nn">coopihc.agents.BaseAgent</span> <span class="kn">import</span> <span class="n">BaseAgent</span>
+<span class="kn">from</span> <span class="nn">coopihc.base.State</span> <span class="kn">import</span> <span class="n">State</span>
+<span class="kn">from</span> <span class="nn">coopihc.base.elements</span> <span class="kn">import</span> <span class="n">discrete_array_element</span><span class="p">,</span> <span class="n">array_element</span><span class="p">,</span> <span class="n">cat_element</span>
+<span class="kn">from</span> <span class="nn">coopihc.policy.LinearFeedback</span> <span class="kn">import</span> <span class="n">LinearFeedback</span>
+<span class="kn">from</span> <span class="nn">coopihc.observation.RuleObservationEngine</span> <span class="kn">import</span> <span class="n">RuleObservationEngine</span>
+<span class="kn">from</span> <span class="nn">coopihc.observation.utils</span> <span class="kn">import</span> <span class="n">base_task_engine_specification</span>
+
+
+<div class="viewcode-block" id="LQRController"><a class="viewcode-back" href="../../../../_autosummary/coopihc.agents.lqrcontrollers.LQRController.LQRController.html#coopihc.agents.lqrcontrollers.LQRController.LQRController">[docs]</a><span class="k">class</span> <span class="nc">LQRController</span><span class="p">(</span><span class="n">BaseAgent</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A Linear Quadratic Regulator.</span>
+
+<span class="sd">    This agent will read a state named &#39;x&#39; from the task, and produce actions according to:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\text{action} =  -K X</span>
+
+<span class="sd">    where K is the so-called feedback gain, which has to be specified externally. For an example, see the :py:class:`coopihc.agents.lqrcontrollers.FHDT_LQRController.FHDT_LQRController` source code.</span>
+
+<span class="sd">    The controller will also output observation rewards J, for state X and action u</span>
+
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        J = -X^t Q X - u^t R u</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">        This class is meant to be subclassed</span>
+
+<span class="sd">    .. warning::</span>
+
+<span class="sd">        Tested only on 1d output.</span>
+
+<span class="sd">    :param role: &quot;user&quot; or &quot;assistant&quot;</span>
+<span class="sd">    :type role: string</span>
+<span class="sd">    :param Q: State cost</span>
+<span class="sd">    :type Q: numpy.ndarray</span>
+<span class="sd">    :param R: Control cost</span>
+<span class="sd">    :type R: numpy.ndarray</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">R</span> <span class="o">=</span> <span class="n">R</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Q</span> <span class="o">=</span> <span class="n">Q</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">=</span> <span class="n">role</span>
+
+        <span class="c1"># ================== Policy ================</span>
+        <span class="n">action_state</span> <span class="o">=</span> <span class="n">State</span><span class="p">()</span>
+        <span class="n">action_state</span><span class="p">[</span><span class="s2">&quot;action&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">array_element</span><span class="p">(</span>
+            <span class="n">low</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">inf</span><span class="p">),</span> <span class="n">high</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">agent_policy</span> <span class="o">=</span> <span class="n">LinearFeedback</span><span class="p">(</span>
+            <span class="n">action_state</span><span class="p">,</span>
+            <span class="p">(</span><span class="s2">&quot;task_state&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># ================== Observation Engine</span>
+
+        <span class="k">class</span> <span class="nc">RuleObsWithRewards</span><span class="p">(</span><span class="n">RuleObservationEngine</span><span class="p">):</span>
+            <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span>
+                <span class="n">Q</span><span class="p">,</span>
+                <span class="n">R</span><span class="p">,</span>
+                <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+                <span class="n">deterministic_specification</span><span class="o">=</span><span class="n">base_task_engine_specification</span><span class="p">,</span>
+                <span class="n">extradeterministicrules</span><span class="o">=</span><span class="p">{},</span>
+                <span class="n">extraprobabilisticrules</span><span class="o">=</span><span class="p">{},</span>
+                <span class="n">mapping</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">R</span> <span class="o">=</span> <span class="n">R</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">Q</span> <span class="o">=</span> <span class="n">Q</span>
+                <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+                    <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+                    <span class="n">deterministic_specification</span><span class="o">=</span><span class="n">base_task_engine_specification</span><span class="p">,</span>
+                    <span class="n">extradeterministicrules</span><span class="o">=</span><span class="p">{},</span>
+                    <span class="n">extraprobabilisticrules</span><span class="o">=</span><span class="p">{},</span>
+                    <span class="n">mapping</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">kwargs</span>
+                <span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">observe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">game_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                <span class="n">obs</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="n">game_state</span><span class="o">=</span><span class="n">game_state</span><span class="p">)</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">obs</span><span class="p">[</span><span class="s2">&quot;task_state&quot;</span><span class="p">][</span><span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+                <span class="n">u</span> <span class="o">=</span> <span class="n">obs</span><span class="p">[</span><span class="s2">&quot;user_action&quot;</span><span class="p">][</span><span class="s2">&quot;action&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+                <span class="n">reward</span> <span class="o">=</span> <span class="o">-</span><span class="n">x</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">R</span> <span class="o">@</span> <span class="n">x</span> <span class="o">-</span> <span class="n">u</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">Q</span> <span class="o">@</span> <span class="n">u</span>
+                <span class="k">return</span> <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span>
+
+        <span class="n">observation_engine</span> <span class="o">=</span> <span class="n">RuleObsWithRewards</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">R</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Q</span><span class="p">,</span> <span class="n">deterministic_specification</span><span class="o">=</span><span class="n">base_task_engine_specification</span>
+        <span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="s2">&quot;user&quot;</span><span class="p">,</span>
+            <span class="n">agent_policy</span><span class="o">=</span><span class="n">agent_policy</span><span class="p">,</span>
+            <span class="n">agent_observation_engine</span><span class="o">=</span><span class="n">observation_engine</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="LQRController.render"><a class="viewcode-back" href="../../../../_autosummary/coopihc.agents.lqrcontrollers.LQRController.LQRController.html#coopihc.agents.lqrcontrollers.LQRController.LQRController.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;render</span>
+
+<span class="sd">        Displays actions selected by the LQR agent.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mode&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;text&quot;</span>
+
+        <span class="k">if</span> <span class="s2">&quot;plot&quot;</span> <span class="ow">in</span> <span class="n">mode</span><span class="p">:</span>
+            <span class="n">axtask</span><span class="p">,</span> <span class="n">axuser</span><span class="p">,</span> <span class="n">axassistant</span> <span class="o">=</span> <span class="n">args</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ax</span> <span class="o">=</span> <span class="n">axuser</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Time (s)&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Action&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">round_number</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">timestep</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="p">,</span>
+                    <span class="s2">&quot;bo&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;text&quot;</span> <span class="ow">in</span> <span class="n">mode</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Action&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

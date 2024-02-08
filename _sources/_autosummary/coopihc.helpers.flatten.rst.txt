@@ -1,0 +1,6 @@
+coopihc.helpers.flatten
+=======================
+
+.. currentmodule:: coopihc.helpers
+
+.. autofunction:: flatten

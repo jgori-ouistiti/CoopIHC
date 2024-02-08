@@ -1,0 +1,44 @@
+coopihc.bundle.wrappers.Train.TrainGym
+======================================
+
+.. currentmodule:: coopihc.bundle.wrappers.Train
+
+.. autoclass:: TrainGym
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~TrainGym.close
+      ~TrainGym.convert_space
+      ~TrainGym.get_action_space
+      ~TrainGym.get_agent_observation_space
+      ~TrainGym.get_observation_space
+      ~TrainGym.render
+      ~TrainGym.reset
+      ~TrainGym.seed
+      ~TrainGym.step
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~TrainGym.action_space
+      ~TrainGym.metadata
+      ~TrainGym.observation_space
+      ~TrainGym.reward_range
+      ~TrainGym.spec
+      ~TrainGym.unwrapped
+   
+   

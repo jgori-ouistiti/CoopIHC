@@ -1,0 +1,41 @@
+coopihc.policy.DualPolicy.DualPolicy
+====================================
+
+.. currentmodule:: coopihc.policy.DualPolicy
+
+.. autoclass:: DualPolicy
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~DualPolicy.default_value
+      ~DualPolicy.reset
+      ~DualPolicy.sample
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~DualPolicy.action
+      ~DualPolicy.action_keys
+      ~DualPolicy.action_state
+      ~DualPolicy.host
+      ~DualPolicy.mode
+      ~DualPolicy.observation
+      ~DualPolicy.parameters
+      ~DualPolicy.state
+      ~DualPolicy.unwrapped
+   
+   

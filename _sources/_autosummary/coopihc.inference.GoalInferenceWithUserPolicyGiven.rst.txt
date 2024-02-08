@@ -1,0 +1,32 @@
+coopihc.inference.GoalInferenceWithUserPolicyGiven
+==================================================
+
+.. automodule:: coopihc.inference.GoalInferenceWithUserPolicyGiven
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      GoalInferenceWithUserPolicyGiven
+   
+   
+
+   
+   
+   
+
+
+

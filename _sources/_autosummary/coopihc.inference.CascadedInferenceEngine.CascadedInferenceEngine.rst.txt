@@ -1,0 +1,41 @@
+coopihc.inference.CascadedInferenceEngine.CascadedInferenceEngine
+=================================================================
+
+.. currentmodule:: coopihc.inference.CascadedInferenceEngine
+
+.. autoclass:: CascadedInferenceEngine
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~CascadedInferenceEngine.add_observation
+      ~CascadedInferenceEngine.bind
+      ~CascadedInferenceEngine.default_value
+      ~CascadedInferenceEngine.infer
+      ~CascadedInferenceEngine.render
+      ~CascadedInferenceEngine.reset
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~CascadedInferenceEngine.action
+      ~CascadedInferenceEngine.host
+      ~CascadedInferenceEngine.observation
+      ~CascadedInferenceEngine.role
+      ~CascadedInferenceEngine.state
+      ~CascadedInferenceEngine.unwrapped
+   
+   

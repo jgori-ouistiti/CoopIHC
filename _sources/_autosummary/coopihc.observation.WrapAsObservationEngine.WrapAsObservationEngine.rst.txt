@@ -1,0 +1,39 @@
+coopihc.observation.WrapAsObservationEngine.WrapAsObservationEngine
+===================================================================
+
+.. currentmodule:: coopihc.observation.WrapAsObservationEngine
+
+.. autoclass:: WrapAsObservationEngine
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~WrapAsObservationEngine.default_value
+      ~WrapAsObservationEngine.observe
+      ~WrapAsObservationEngine.observe_from_substates
+      ~WrapAsObservationEngine.reset
+      ~WrapAsObservationEngine.step
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~WrapAsObservationEngine.action
+      ~WrapAsObservationEngine.bundle
+      ~WrapAsObservationEngine.game_state
+      ~WrapAsObservationEngine.observation
+      ~WrapAsObservationEngine.unwrapped
+   
+   

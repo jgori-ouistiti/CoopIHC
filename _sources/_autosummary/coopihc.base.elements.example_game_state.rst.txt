@@ -1,0 +1,6 @@
+coopihc.base.elements.example\_game\_state
+==========================================
+
+.. currentmodule:: coopihc.base.elements
+
+.. autofunction:: example_game_state

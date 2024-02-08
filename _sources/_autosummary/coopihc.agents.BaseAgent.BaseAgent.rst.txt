@@ -1,0 +1,49 @@
+coopihc.agents.BaseAgent.BaseAgent
+==================================
+
+.. currentmodule:: coopihc.agents.BaseAgent
+
+.. autoclass:: BaseAgent
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~BaseAgent.finit
+      ~BaseAgent.infer
+      ~BaseAgent.observe
+      ~BaseAgent.prepare_action
+      ~BaseAgent.render
+      ~BaseAgent.reset
+      ~BaseAgent.reset_all
+      ~BaseAgent.take_action
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~BaseAgent.action
+      ~BaseAgent.assistant
+      ~BaseAgent.bundle
+      ~BaseAgent.bundle_memory
+      ~BaseAgent.inference_engine
+      ~BaseAgent.observation
+      ~BaseAgent.observation_engine
+      ~BaseAgent.parameters
+      ~BaseAgent.policy
+      ~BaseAgent.state
+      ~BaseAgent.task
+      ~BaseAgent.user
+   
+   

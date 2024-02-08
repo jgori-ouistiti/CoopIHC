@@ -1,0 +1,6 @@
+coopihc.base.elements.box\_space
+================================
+
+.. currentmodule:: coopihc.base.elements
+
+.. autofunction:: box_space

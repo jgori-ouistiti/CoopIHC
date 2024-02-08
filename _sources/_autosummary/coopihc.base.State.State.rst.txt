@@ -1,0 +1,39 @@
+coopihc.base.State.State
+========================
+
+.. currentmodule:: coopihc.base.State
+
+.. autoclass:: State
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~State.clear
+      ~State.copy
+      ~State.equals
+      ~State.filter
+      ~State.fromkeys
+      ~State.get
+      ~State.items
+      ~State.keys
+      ~State.pop
+      ~State.popitem
+      ~State.reset
+      ~State.serialize
+      ~State.setdefault
+      ~State.update
+      ~State.values
+   
+   
+
+   
+   
+   

@@ -1,0 +1,42 @@
+coopihc.inference.ExampleInferenceEngine.CoordinatedInferenceEngine
+===================================================================
+
+.. currentmodule:: coopihc.inference.ExampleInferenceEngine
+
+.. autoclass:: CoordinatedInferenceEngine
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~CoordinatedInferenceEngine.add_observation
+      ~CoordinatedInferenceEngine.bind
+      ~CoordinatedInferenceEngine.default_value
+      ~CoordinatedInferenceEngine.infer
+      ~CoordinatedInferenceEngine.render
+      ~CoordinatedInferenceEngine.reset
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~CoordinatedInferenceEngine.action
+      ~CoordinatedInferenceEngine.host
+      ~CoordinatedInferenceEngine.observation
+      ~CoordinatedInferenceEngine.role
+      ~CoordinatedInferenceEngine.simulation_bundle
+      ~CoordinatedInferenceEngine.state
+      ~CoordinatedInferenceEngine.unwrapped
+   
+   

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coopihc.interactiontask.ClassicControlTask &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../_autosummary/coopihc.html">    API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>coopihc.interactiontask.ClassicControlTask</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coopihc.interactiontask.ClassicControlTask</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="kn">from</span> <span class="nn">coopihc.helpers</span> <span class="kn">import</span> <span class="n">flatten</span>
+<span class="kn">from</span> <span class="nn">coopihc.base.State</span> <span class="kn">import</span> <span class="n">State</span>
+<span class="kn">from</span> <span class="nn">coopihc.base.elements</span> <span class="kn">import</span> <span class="n">discrete_array_element</span><span class="p">,</span> <span class="n">array_element</span><span class="p">,</span> <span class="n">cat_element</span>
+<span class="kn">from</span> <span class="nn">coopihc.base.elements</span> <span class="kn">import</span> <span class="n">array_element</span>
+<span class="kn">from</span> <span class="nn">coopihc.interactiontask.InteractionTask</span> <span class="kn">import</span> <span class="n">InteractionTask</span>
+
+
+<div class="viewcode-block" id="ClassicControlTask"><a class="viewcode-back" href="../../../_autosummary/coopihc.interactiontask.ClassicControlTask.ClassicControlTask.html#coopihc.interactiontask.ClassicControlTask.ClassicControlTask">[docs]</a><span class="k">class</span> <span class="nc">ClassicControlTask</span><span class="p">(</span><span class="n">InteractionTask</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;ClassicControlTask </span>
+
+<span class="sd">    A task used for a classic control setting with signal dependent and independent noise. You can account for control-dependent noise with an appropriate noise model in the policy or the observation engine.</span>
+
+<span class="sd">    The task has a state x(.) which evolves according to </span>
+
+<span class="sd">    .. math ::</span>
+
+<span class="sd">        \\begin{align}</span>
+<span class="sd">            x(+.) = Ax(.) + Bu(.) + Fx(.).d\\beta + G.d\\omega + Hu(.)d\\gamma \\\\</span>
+<span class="sd">        \\end{align}</span>
+
+<span class="sd">    for &quot;timespace=discrete&quot; and</span>
+
+<span class="sd">    .. math ::</span>
+
+<span class="sd">        \\begin{align}</span>
+<span class="sd">            x(+.) = (Ax(.) + Bu(.))dt + Fx(.).d\\beta + G.d\\omega + Hu(.)d\\gamma \\\\</span>
+<span class="sd">        \\end{align}</span>
+
+<span class="sd">    for &quot;timespace=continuous&quot;.</span>
+
+<span class="sd">    where :math:``u(.)`` is the user action. The task is finised when the first component x[0,0] is close enough to 0. Currently this is implemented as the condition ``abs(x[0, 0]) &lt;= 0.01``.</span>
+
+<span class="sd">    where :math:`\\beta, \\omega \\sim \\mathcal{N}(0, \\sqrt{dt})` are Wiener processes.</span>
+
+<span class="sd">    A and B may represent continuous or discrete dynamics. A conversion is implictly made following the value of discrete_dynamics keyword:</span>
+
+<span class="sd">    .. math ::</span>
+
+<span class="sd">        \\begin{align}</span>
+<span class="sd">            A_c = \\frac{1}{dt} (A - I) \\\\</span>
+<span class="sd">            B_c = B \\frac{1}{dt}</span>
+<span class="sd">        \\end{align}</span>
+
+<span class="sd">    .. math ::</span>
+
+<span class="sd">        \\begin{align}</span>
+<span class="sd">            A_d = I + dt \cdot{} A \\\\</span>
+<span class="sd">            B_d = dt \cdot{} B</span>
+<span class="sd">        \\end{align}</span>
+
+
+
+<span class="sd">    :param timestep: dt</span>
+<span class="sd">    :type timestep: float</span>
+<span class="sd">    :param A: Passive dynamics</span>
+<span class="sd">    :type A: numpy.ndarray</span>
+<span class="sd">    :param B: Response to command</span>
+<span class="sd">    :type B: numpy.ndarray</span>
+<span class="sd">    :param F: signal dependent noise, defaults to None</span>
+<span class="sd">    :type F: numpy.ndarray, optional</span>
+<span class="sd">    :param G: independent noise, defaults to None</span>
+<span class="sd">    :type G: numpy.ndarray, optional</span>
+<span class="sd">    :param H: control-dependent noise, defaults to None</span>
+<span class="sd">    :type H: numpy.ndarray, optional</span>
+<span class="sd">    :param discrete_dynamics: whether A and B are continuous or discrete, defaults to True</span>
+<span class="sd">    :type discrete_dynamics: bool, optional</span>
+<span class="sd">    :param noise: whether to include noise, defaults to &quot;on&quot;</span>
+<span class="sd">    :type noise: str, optional</span>
+<span class="sd">    :param timespace: if the task is modeled as discrete or continuous, defaults to &quot;discrete&quot;</span>
+<span class="sd">    :type noise: str, optional</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">user_action</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">user_action</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">timestep</span><span class="p">,</span>
+        <span class="n">A</span><span class="p">,</span>
+        <span class="n">B</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="n">F</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">G</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">H</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">discrete_dynamics</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">noise</span><span class="o">=</span><span class="s2">&quot;on&quot;</span><span class="p">,</span>
+        <span class="n">timespace</span><span class="o">=</span><span class="s2">&quot;discrete&quot;</span><span class="p">,</span>
+        <span class="n">end</span><span class="o">=</span><span class="s2">&quot;standard&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">State</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">array_element</span><span class="p">(</span>
+            <span class="n">low</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">inf</span><span class="p">),</span>
+            <span class="n">high</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">inf</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_last_x</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timestep</span> <span class="o">=</span> <span class="n">timestep</span>
+
+        <span class="k">if</span> <span class="n">F</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">F</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">F</span> <span class="o">=</span> <span class="n">F</span>
+        <span class="k">if</span> <span class="n">G</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="n">G</span>
+        <span class="k">if</span> <span class="n">H</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">H</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">H</span> <span class="o">=</span> <span class="n">H</span>
+        <span class="c1"># Convert dynamics between discrete and continuous.</span>
+        <span class="k">if</span> <span class="n">discrete_dynamics</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">A_d</span> <span class="o">=</span> <span class="n">A</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">B_d</span> <span class="o">=</span> <span class="n">B</span>
+            <span class="c1"># Euler method</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">A_c</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">timestep</span> <span class="o">*</span> <span class="p">(</span><span class="n">A</span> <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">B_c</span> <span class="o">=</span> <span class="n">B</span> <span class="o">/</span> <span class="n">timestep</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">A_c</span> <span class="o">=</span> <span class="n">A</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">B_c</span> <span class="o">=</span> <span class="n">B</span>
+            <span class="c1"># Euler Method</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">A_d</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">timestep</span> <span class="o">*</span> <span class="n">A</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">B_d</span> <span class="o">=</span> <span class="n">timestep</span> <span class="o">*</span> <span class="n">B</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">noise</span> <span class="o">=</span> <span class="n">noise</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timespace</span> <span class="o">=</span> <span class="n">timespace</span>
+
+        <span class="k">if</span> <span class="n">end</span> <span class="o">==</span> <span class="s2">&quot;standard&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="mf">0.01</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">end</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_last_x</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="ClassicControlTask.finit"><a class="viewcode-back" href="../../../_autosummary/coopihc.interactiontask.ClassicControlTask.ClassicControlTask.html#coopihc.interactiontask.ClassicControlTask.ClassicControlTask.finit">[docs]</a>    <span class="k">def</span> <span class="nf">finit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;finit</span>
+
+<span class="sd">        Define whether to use continuous or discrete representation for A and B</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">timespace</span> <span class="o">==</span> <span class="s2">&quot;continuous&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">A_c</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">B</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">B_c</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">A_d</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">B</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">B_d</span></div>
+
+<div class="viewcode-block" id="ClassicControlTask.reset"><a class="viewcode-back" href="../../../_autosummary/coopihc.interactiontask.ClassicControlTask.ClassicControlTask.html#coopihc.interactiontask.ClassicControlTask.ClassicControlTask.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dic</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Force all substates except the first to be null.</span>
+
+<span class="sd">        Force all substates except the first to be null. Also stores the last state as an attribute (for rendering).</span>
+
+
+<span class="sd">        :param dic: reset_dic, see :py:class:``InteractionTask &lt;coopihc.interactiontask.InteractionTask.InteractionTask&gt;``, defaults to None</span>
+<span class="sd">        :type dic: dictionnary, optional</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Force zero velocity</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="ClassicControlTask.on_user_action"><a class="viewcode-back" href="../../../_autosummary/coopihc.interactiontask.ClassicControlTask.ClassicControlTask.html#coopihc.interactiontask.ClassicControlTask.ClassicControlTask.on_user_action">[docs]</a>    <span class="k">def</span> <span class="nf">on_user_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">user_action</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;user step</span>
+
+<span class="sd">        Takes the state from x(.) to x(+.) according to</span>
+
+<span class="sd">        .. math ::</span>
+
+<span class="sd">            \\begin{align}</span>
+<span class="sd">                x(+.) = Ax(.) + Bu(.) + Fx(.).\\beta + G.\\omega \\\\</span>
+<span class="sd">            \\end{align}</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Call super for counters</span>
+
+        <span class="c1"># For readability</span>
+        <span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">H</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">B</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">F</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">H</span>
+
+        <span class="n">_u</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_action</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+
+        <span class="n">_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+
+        <span class="c1"># Generate noise samples</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise</span> <span class="o">==</span> <span class="s2">&quot;on&quot;</span><span class="p">:</span>
+            <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">timestep</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">omega</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">timestep</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">omega</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="c1"># Store last_x for render</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_last_x</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">_x</span><span class="p">)</span>
+        <span class="c1"># Deterministic update + State dependent noise + independent noise</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">timespace</span> <span class="o">==</span> <span class="s2">&quot;discrete&quot;</span><span class="p">:</span>
+            <span class="n">_x</span> <span class="o">=</span> <span class="p">(</span><span class="n">A</span> <span class="o">@</span> <span class="n">_x</span> <span class="o">+</span> <span class="n">B</span> <span class="o">*</span> <span class="n">_u</span><span class="p">)</span> <span class="o">+</span> <span class="n">F</span> <span class="o">@</span> <span class="n">_x</span> <span class="o">*</span> <span class="n">beta</span> <span class="o">+</span> <span class="n">G</span> <span class="o">@</span> <span class="n">omega</span> <span class="o">+</span> <span class="n">H</span> <span class="o">*</span> <span class="n">_u</span> <span class="o">*</span> <span class="n">gamma</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_x</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="p">(</span><span class="n">A</span> <span class="o">@</span> <span class="n">_x</span> <span class="o">+</span> <span class="n">B</span> <span class="o">*</span> <span class="n">_u</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestep</span>
+                <span class="o">+</span> <span class="n">F</span> <span class="o">@</span> <span class="n">_x</span> <span class="o">*</span> <span class="n">beta</span>
+                <span class="o">+</span> <span class="n">G</span> <span class="o">@</span> <span class="n">omega</span>
+                <span class="o">+</span> <span class="n">H</span> <span class="o">*</span> <span class="n">_u</span> <span class="o">*</span> <span class="n">gamma</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_x</span>
+
+        <span class="n">is_done</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopping_condition</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">is_done</span></div>
+
+    <span class="k">def</span> <span class="nf">stopping_condition</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">_x</span><span class="p">[:])</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="ClassicControlTask.on_assistant_action"><a class="viewcode-back" href="../../../_autosummary/coopihc.interactiontask.ClassicControlTask.ClassicControlTask.html#coopihc.interactiontask.ClassicControlTask.ClassicControlTask.on_assistant_action">[docs]</a>    <span class="k">def</span> <span class="nf">on_assistant_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;on_assistant_action&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="ClassicControlTask.render"><a class="viewcode-back" href="../../../_autosummary/coopihc.interactiontask.ClassicControlTask.ClassicControlTask.html#coopihc.interactiontask.ClassicControlTask.ClassicControlTask.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="n">ax_user</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ax_assistant</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ax_task</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;render</span>
+
+<span class="sd">        Text mode: print task state</span>
+
+<span class="sd">        plot mode: Dynamically update axes with state trajectories.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;text&quot;</span>
+
+        <span class="k">if</span> <span class="s2">&quot;text&quot;</span> <span class="ow">in</span> <span class="n">mode</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;state&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s2">&quot;plot&quot;</span> <span class="ow">in</span> <span class="n">mode</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">turn_number</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span>
+                        <span class="n">handles</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">)]</span>
+                    <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;g&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;m&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;k&quot;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;x[</span><span class="si">{:d}</span><span class="s2">]&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">)]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">axes</span> <span class="o">=</span> <span class="p">[</span><span class="n">ax_task</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ax</span> <span class="o">=</span> <span class="n">ax_task</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">twinx</span><span class="p">())</span>
+
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">):</span>
+                    <span class="c1"># ax.yaxis.label.set_color(self.color[i])</span>
+                    <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_last_x</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_last_x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">round_number</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestep</span><span class="p">,</span>
+                        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">round_number</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestep</span><span class="p">,</span>
+                    <span class="p">],</span>
+                    <span class="n">flatten</span><span class="p">(</span>
+                        <span class="p">[</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">state_last_x</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                        <span class="p">]</span>
+                    <span class="p">),</span>
+                    <span class="s2">&quot;-&quot;</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="n">label</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

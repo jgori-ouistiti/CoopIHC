@@ -1,0 +1,49 @@
+coopihc.agents.lqrcontrollers.LQRController.LQRController
+=========================================================
+
+.. currentmodule:: coopihc.agents.lqrcontrollers.LQRController
+
+.. autoclass:: LQRController
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~LQRController.finit
+      ~LQRController.infer
+      ~LQRController.observe
+      ~LQRController.prepare_action
+      ~LQRController.render
+      ~LQRController.reset
+      ~LQRController.reset_all
+      ~LQRController.take_action
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~LQRController.action
+      ~LQRController.assistant
+      ~LQRController.bundle
+      ~LQRController.bundle_memory
+      ~LQRController.inference_engine
+      ~LQRController.observation
+      ~LQRController.observation_engine
+      ~LQRController.parameters
+      ~LQRController.policy
+      ~LQRController.state
+      ~LQRController.task
+      ~LQRController.user
+   
+   

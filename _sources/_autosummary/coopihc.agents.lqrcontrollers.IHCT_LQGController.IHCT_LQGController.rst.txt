@@ -1,0 +1,50 @@
+coopihc.agents.lqrcontrollers.IHCT\_LQGController.IHCT\_LQGController
+=====================================================================
+
+.. currentmodule:: coopihc.agents.lqrcontrollers.IHCT_LQGController
+
+.. autoclass:: IHCT_LQGController
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~IHCT_LQGController.counted_decorator
+      ~IHCT_LQGController.finit
+      ~IHCT_LQGController.infer
+      ~IHCT_LQGController.observe
+      ~IHCT_LQGController.prepare_action
+      ~IHCT_LQGController.render
+      ~IHCT_LQGController.reset
+      ~IHCT_LQGController.reset_all
+      ~IHCT_LQGController.take_action
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~IHCT_LQGController.action
+      ~IHCT_LQGController.assistant
+      ~IHCT_LQGController.bundle
+      ~IHCT_LQGController.bundle_memory
+      ~IHCT_LQGController.inference_engine
+      ~IHCT_LQGController.observation
+      ~IHCT_LQGController.observation_engine
+      ~IHCT_LQGController.parameters
+      ~IHCT_LQGController.policy
+      ~IHCT_LQGController.state
+      ~IHCT_LQGController.task
+      ~IHCT_LQGController.user
+   
+   

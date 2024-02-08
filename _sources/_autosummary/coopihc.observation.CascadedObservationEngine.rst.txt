@@ -1,0 +1,32 @@
+coopihc.observation.CascadedObservationEngine
+=============================================
+
+.. automodule:: coopihc.observation.CascadedObservationEngine
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      CascadedObservationEngine
+   
+   
+
+   
+   
+   
+
+
+

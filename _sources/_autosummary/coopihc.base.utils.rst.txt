@@ -1,0 +1,23 @@
+coopihc.base.utils
+==================
+
+.. automodule:: coopihc.base.utils
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

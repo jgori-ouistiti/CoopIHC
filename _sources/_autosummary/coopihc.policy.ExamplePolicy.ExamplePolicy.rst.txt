@@ -1,0 +1,38 @@
+coopihc.policy.ExamplePolicy.ExamplePolicy
+==========================================
+
+.. currentmodule:: coopihc.policy.ExamplePolicy
+
+.. autoclass:: ExamplePolicy
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~ExamplePolicy.default_value
+      ~ExamplePolicy.reset
+      ~ExamplePolicy.sample
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~ExamplePolicy.action
+      ~ExamplePolicy.action_keys
+      ~ExamplePolicy.observation
+      ~ExamplePolicy.parameters
+      ~ExamplePolicy.state
+      ~ExamplePolicy.unwrapped
+   
+   

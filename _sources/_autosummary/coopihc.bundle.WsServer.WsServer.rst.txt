@@ -1,0 +1,30 @@
+coopihc.bundle.WsServer.WsServer
+================================
+
+.. currentmodule:: coopihc.bundle.WsServer
+
+.. autoclass:: WsServer
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~WsServer.bundlehandler
+      ~WsServer.consumer_handler
+      ~WsServer.producer
+      ~WsServer.producer_handler
+      ~WsServer.register
+      ~WsServer.start
+   
+   
+
+   
+   
+   

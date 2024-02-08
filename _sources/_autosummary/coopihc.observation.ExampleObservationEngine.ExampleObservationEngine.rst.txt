@@ -1,0 +1,37 @@
+coopihc.observation.ExampleObservationEngine.ExampleObservationEngine
+=====================================================================
+
+.. currentmodule:: coopihc.observation.ExampleObservationEngine
+
+.. autoclass:: ExampleObservationEngine
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~ExampleObservationEngine.default_value
+      ~ExampleObservationEngine.observe
+      ~ExampleObservationEngine.observe_from_substates
+      ~ExampleObservationEngine.reset
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~ExampleObservationEngine.action
+      ~ExampleObservationEngine.bundle
+      ~ExampleObservationEngine.observation
+      ~ExampleObservationEngine.unwrapped
+   
+   

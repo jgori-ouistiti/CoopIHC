@@ -1,0 +1,108 @@
+coopihc.base.StateElement.StateElement
+======================================
+
+.. currentmodule:: coopihc.base.StateElement
+
+.. autoclass:: StateElement
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~StateElement.all
+      ~StateElement.any
+      ~StateElement.argmax
+      ~StateElement.argmin
+      ~StateElement.argpartition
+      ~StateElement.argsort
+      ~StateElement.astype
+      ~StateElement.byteswap
+      ~StateElement.cast
+      ~StateElement.choose
+      ~StateElement.clip
+      ~StateElement.compress
+      ~StateElement.conj
+      ~StateElement.conjugate
+      ~StateElement.copy
+      ~StateElement.cumprod
+      ~StateElement.cumsum
+      ~StateElement.diagonal
+      ~StateElement.dot
+      ~StateElement.dump
+      ~StateElement.dumps
+      ~StateElement.equals
+      ~StateElement.fill
+      ~StateElement.flatten
+      ~StateElement.getfield
+      ~StateElement.item
+      ~StateElement.itemset
+      ~StateElement.max
+      ~StateElement.mean
+      ~StateElement.min
+      ~StateElement.newbyteorder
+      ~StateElement.nonzero
+      ~StateElement.partition
+      ~StateElement.prod
+      ~StateElement.ptp
+      ~StateElement.put
+      ~StateElement.ravel
+      ~StateElement.repeat
+      ~StateElement.reset
+      ~StateElement.reshape
+      ~StateElement.resize
+      ~StateElement.round
+      ~StateElement.searchsorted
+      ~StateElement.serialize
+      ~StateElement.setfield
+      ~StateElement.setflags
+      ~StateElement.sort
+      ~StateElement.squeeze
+      ~StateElement.std
+      ~StateElement.sum
+      ~StateElement.swapaxes
+      ~StateElement.take
+      ~StateElement.tobytes
+      ~StateElement.tofile
+      ~StateElement.tolist
+      ~StateElement.tostring
+      ~StateElement.trace
+      ~StateElement.transpose
+      ~StateElement.var
+      ~StateElement.view
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~StateElement.HANDLED_FUNCTIONS
+      ~StateElement.SAFE_FUNCTIONS
+      ~StateElement.T
+      ~StateElement.base
+      ~StateElement.ctypes
+      ~StateElement.data
+      ~StateElement.dtype
+      ~StateElement.flags
+      ~StateElement.flat
+      ~StateElement.imag
+      ~StateElement.itemsize
+      ~StateElement.nbytes
+      ~StateElement.ndim
+      ~StateElement.real
+      ~StateElement.seed
+      ~StateElement.shape
+      ~StateElement.size
+      ~StateElement.spacetype
+      ~StateElement.strides
+   
+   

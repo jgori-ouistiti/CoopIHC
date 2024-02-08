@@ -1,0 +1,6 @@
+coopihc.base.elements.integer\_set
+==================================
+
+.. currentmodule:: coopihc.base.elements
+
+.. autofunction:: integer_set

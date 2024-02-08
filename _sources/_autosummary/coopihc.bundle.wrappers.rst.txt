@@ -1,0 +1,31 @@
+coopihc.bundle.wrappers
+=======================
+
+.. automodule:: coopihc.bundle.wrappers
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. autosummary::
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+
+   coopihc.bundle.wrappers.PipedTaskBundleWrapper
+   coopihc.bundle.wrappers.Train
+

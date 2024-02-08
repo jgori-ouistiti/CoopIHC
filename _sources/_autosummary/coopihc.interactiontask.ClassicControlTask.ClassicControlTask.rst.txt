@@ -1,0 +1,44 @@
+coopihc.interactiontask.ClassicControlTask.ClassicControlTask
+=============================================================
+
+.. currentmodule:: coopihc.interactiontask.ClassicControlTask
+
+.. autoclass:: ClassicControlTask
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~ClassicControlTask.base_on_assistant_action
+      ~ClassicControlTask.base_on_user_action
+      ~ClassicControlTask.draw
+      ~ClassicControlTask.finit
+      ~ClassicControlTask.on_assistant_action
+      ~ClassicControlTask.on_user_action
+      ~ClassicControlTask.render
+      ~ClassicControlTask.reset
+      ~ClassicControlTask.stopping_condition
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~ClassicControlTask.assistant_action
+      ~ClassicControlTask.parameters
+      ~ClassicControlTask.round_number
+      ~ClassicControlTask.state
+      ~ClassicControlTask.turn_number
+      ~ClassicControlTask.user_action
+   
+   

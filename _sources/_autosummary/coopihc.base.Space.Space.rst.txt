@@ -1,0 +1,25 @@
+coopihc.base.Space.Space
+========================
+
+.. currentmodule:: coopihc.base.Space
+
+.. autoclass:: Space
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~Space.cartesian_product
+   
+   
+
+   
+   
+   

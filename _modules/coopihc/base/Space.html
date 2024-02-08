@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coopihc.base.Space &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../_autosummary/coopihc.html">    API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>coopihc.base.Space</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coopihc.base.Space</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+
+<div class="viewcode-block" id="BaseSpace"><a class="viewcode-back" href="../../../_autosummary/coopihc.base.Space.BaseSpace.html#coopihc.base.Space.BaseSpace">[docs]</a><span class="k">class</span> <span class="nc">BaseSpace</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Base space from which other spaces inherit.</span>
+
+<span class="sd">    :param seed: seed used by the rng, defaults to None</span>
+<span class="sd">    :type seed: int, optional</span>
+<span class="sd">    :param dtype: dtype to which the space will be coerced, defaults to None. If None, the dtype is inferred from the supplied data.</span>
+<span class="sd">    :type dtype: numpy.dtype, optional</span>
+<span class="sd">    :param contains: how the Python ``in`` keyword is evaluated, defaults to &quot;numpy&quot;. If &quot;numpy&quot;, a value is considered in the space according to numpy&#39;s ``in``</span>
+<span class="sd">    :type contains: str, optional</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">contains</span><span class="o">=</span><span class="s2">&quot;numpy&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">seed</span> <span class="o">=</span> <span class="n">seed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">contains</span> <span class="o">=</span> <span class="n">contains</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rng</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spacetype</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">spacetype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spacetype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
+                <span class="k">return</span> <span class="s2">&quot;discrete&quot;</span>
+            <span class="k">elif</span> <span class="n">numpy</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">floating</span><span class="p">):</span>
+                <span class="k">return</span> <span class="s2">&quot;continuous&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+
+<div class="viewcode-block" id="Space"><a class="viewcode-back" href="../../../_autosummary/coopihc.base.Space.Space.html#coopihc.base.Space.Space">[docs]</a><span class="k">class</span> <span class="nc">Space</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;_summary_</span>
+
+<span class="sd">    :param low: see `Numeric&lt;coopihc.base.Space.Numeric&gt;`, defaults to None</span>
+<span class="sd">    :type low: see `Numeric&lt;coopihc.base.Space.Numeric&gt;`, optional</span>
+<span class="sd">    :param high: see `Numeric&lt;coopihc.base.Space.Numeric&gt;`, defaults to None</span>
+<span class="sd">    :type high: see `Numeric&lt;coopihc.base.Space.Numeric&gt;`, optional</span>
+<span class="sd">    :param array: see `CatSet&lt;coopihc.base.Space.CatSet&gt;`, defaults to None</span>
+<span class="sd">    :type array: see `CatSet&lt;coopihc.base.Space.CatSet&gt;`, optional</span>
+<span class="sd">    :param N: for future, defaults to None</span>
+<span class="sd">    :type N: for future, optional</span>
+<span class="sd">    :param _function: for future, defaults to None</span>
+<span class="sd">    :type _function: for future, optional</span>
+
+<span class="sd">    :return: A CoopIHC space</span>
+<span class="sd">    :rtype: `Numeric&lt;coopihc.base.Space.Numeric&gt;` or `CatSet&lt;coopihc.base.Space.CatSet&gt;`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">low</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">high</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">array</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">N</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">_function</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">contains</span><span class="o">=</span><span class="s2">&quot;numpy&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="n">low</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">high</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Numeric</span><span class="p">(</span>
+                <span class="n">low</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">low</span><span class="p">),</span>
+                <span class="n">high</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">high</span><span class="p">),</span>
+                <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
+                <span class="n">contains</span><span class="o">=</span><span class="n">contains</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">array</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">CatSet</span><span class="p">(</span>
+                <span class="n">array</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">array</span><span class="p">),</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">contains</span><span class="o">=</span><span class="n">contains</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">N</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">_function</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;You have to specify either low and high, or a set, or N and function, but you provided low = </span><span class="si">{}</span><span class="s2">, high = </span><span class="si">{}</span><span class="s2">, set = </span><span class="si">{}</span><span class="s2">, N = </span><span class="si">{}</span><span class="s2">, function = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">_function</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="Space.cartesian_product"><a class="viewcode-back" href="../../../_autosummary/coopihc.base.Space.Space.html#coopihc.base.Space.Space.cartesian_product">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">cartesian_product</span><span class="p">(</span><span class="o">*</span><span class="n">spaces</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;cartesian_product</span>
+
+<span class="sd">        Computes the cartesian product of the spaces provided in input. For this method, continuous spaces are treated as singletons {None}.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            s = space(array=numpy.array([1, 2, 3], dtype=numpy.int16))</span>
+<span class="sd">            q = space(array=numpy.array([-3, -2, -1], dtype=numpy.int16))</span>
+<span class="sd">            cp, shape = cartesian_product(s, q)</span>
+<span class="sd">            assert (</span>
+<span class="sd">                cp</span>
+<span class="sd">                == numpy.array(</span>
+<span class="sd">                    [</span>
+<span class="sd">                        [1, -3],</span>
+<span class="sd">                        [1, -2],</span>
+<span class="sd">                        [1, -1],</span>
+<span class="sd">                        [2, -3],</span>
+<span class="sd">                        [2, -2],</span>
+<span class="sd">                        [2, -1],</span>
+<span class="sd">                        [3, -3],</span>
+<span class="sd">                        [3, -2],</span>
+<span class="sd">                        [3, -1],</span>
+<span class="sd">                    ]</span>
+<span class="sd">                )</span>
+<span class="sd">            ).all()</span>
+
+
+<span class="sd">        :return: cartesian product and shape of associated spaces</span>
+<span class="sd">        :rtype: tuple(numpy.ndarray, list(tuples))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">arrays</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">space</span> <span class="ow">in</span> <span class="n">spaces</span><span class="p">:</span>
+            <span class="n">shape</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">space</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">CatSet</span><span class="p">):</span>
+                <span class="n">arrays</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">space</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">Numeric</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">space</span><span class="o">.</span><span class="n">spacetype</span> <span class="o">==</span> <span class="s2">&quot;discrete&quot;</span><span class="p">:</span>
+                    <span class="n">arrays</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">space</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">arrays</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="kc">None</span><span class="p">]))</span>
+
+        <span class="n">la</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">arrays</span><span class="p">)</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">result_type</span><span class="p">(</span><span class="o">*</span><span class="n">arrays</span><span class="p">)</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">arrays</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">la</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="o">*</span><span class="n">arrays</span><span class="p">)):</span>
+            <span class="n">arr</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span>
+        <span class="k">return</span> <span class="n">arr</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">la</span><span class="p">),</span> <span class="n">shape</span></div></div>
+
+
+<div class="viewcode-block" id="Numeric"><a class="viewcode-back" href="../../../_autosummary/coopihc.base.Space.Numeric.html#coopihc.base.Space.Numeric">[docs]</a><span class="k">class</span> <span class="nc">Numeric</span><span class="p">(</span><span class="n">BaseSpace</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Numeric</span>
+
+<span class="sd">    An interval that defines the space for a StateElement.</span>
+
+<span class="sd">    You can define an Numeric by specifying the lower and upper bounds:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        s = Numeric(</span>
+<span class="sd">        low=-numpy.ones((2, 2), dtype=numpy.float32),</span>
+<span class="sd">        high=numpy.ones((2, 2), dtype=numpy.float32),</span>
+<span class="sd">        )</span>
+
+<span class="sd">        assert s.dtype == numpy.float32</span>
+<span class="sd">        assert (s.high == numpy.ones((2, 2))).all()</span>
+<span class="sd">        assert (s.low == -numpy.ones((2, 2))).all()</span>
+<span class="sd">        assert s.shape == (2, 2)</span>
+
+<span class="sd">    You can further set the seed of the space (useful when sampling from the space), force the dtype of the space and specify how membership to the space is checked via the keyword arguments. See ``BaseSpace`` for more information.</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">        lower and upper bounds must be valid numpy objects. For example, to specify a 0-D space, you should do: ``Numeric(low = -numpy.float64(1), high = numpy.float64(1))``</span>
+
+
+
+<span class="sd">    :param low: lower bound, defaults to -numpy.array([1])</span>
+<span class="sd">    :type low: numpy.ndarray, optional</span>
+<span class="sd">    :param high: upper bound, defaults to numpy.array([1])</span>
+<span class="sd">    :type high: numpy.ndarray, optional</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">low</span><span class="o">=-</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">]),</span>
+        <span class="n">high</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">]),</span>
+        <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">contains</span><span class="o">=</span><span class="s2">&quot;numpy&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">low</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">low</span><span class="p">)</span>
+        <span class="n">high</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">high</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_N</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">low</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">high</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">low</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">high</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+                <span class="k">return</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Low and high must have the same shape, but low and high have shape </span><span class="si">{}</span><span class="s2"> and </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">low</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">high</span><span class="o">.</span><span class="n">shape</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="o">=</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">contains</span><span class="o">=</span><span class="n">contains</span><span class="p">)</span>
+
+        <span class="c1"># converting numpy.inf to integer is not standardized and</span>
+        <span class="c1"># self.low = low.astype(self.dtype)</span>
+        <span class="c1"># self.high = high.astype(self.dtype)</span>
+        <span class="c1"># will not work</span>
+        <span class="c1">#  Currently, it will give -2**(nbits) /2 for both numpy.inf and -numpy.inf. Hack below</span>
+
+        <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">low</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="n">neginf</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">iinfo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="p">,</span> <span class="n">posinf</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">iinfo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">low</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;shape</span>
+
+<span class="sd">        Returns the numpy shape of the bounds.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;dtype</span>
+
+<span class="sd">        Determines the numpy dtype of data contained in the space.</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            If you input two different integer dtypes, the result will be a numpy.float64, per https://numpy.org/doc/stable/reference/generated/numpy.common_type.html</span>
+
+<span class="sd">        :return: _description_</span>
+<span class="sd">        :rtype: _type_</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="o">.</span><span class="n">dtype</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">common_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="p">))</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">low</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">N</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_N</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_N</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">low</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_N</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">array</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_array</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;__iter__&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_iter_low</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_iter_high</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;__next__&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span>
+            <span class="n">low</span><span class="o">=</span><span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_iter_low</span><span class="p">),</span>
+            <span class="n">high</span><span class="o">=</span><span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_iter_high</span><span class="p">),</span>
+            <span class="n">seed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+            <span class="n">contains</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">contains</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;__getitem__</span>
+
+<span class="sd">        Numpy Indexing is valid:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            s = Numeric(</span>
+<span class="sd">                low=-numpy.ones((2, 2), dtype=numpy.float32),</span>
+<span class="sd">                high=numpy.ones((2, 2), dtype=numpy.float32),</span>
+<span class="sd">            )</span>
+<span class="sd">            assert s[0] == Numeric(</span>
+<span class="sd">                low=-numpy.ones((2,), dtype=numpy.float32),</span>
+<span class="sd">                high=numpy.ones((2,), dtype=numpy.float32),</span>
+<span class="sd">            )</span>
+
+
+<span class="sd">            s = Numeric(</span>
+<span class="sd">                low=-numpy.ones((2, 2), dtype=numpy.float32),</span>
+<span class="sd">                high=numpy.ones((2, 2), dtype=numpy.float32),</span>
+<span class="sd">            )</span>
+<span class="sd">            assert s[:, 0] == Numeric(</span>
+<span class="sd">                low=-numpy.ones((2,), dtype=numpy.float32),</span>
+<span class="sd">                high=numpy.ones((2,), dtype=numpy.float32),</span>
+<span class="sd">            )</span>
+<span class="sd">            assert s[0, :] == Numeric(</span>
+<span class="sd">                low=-numpy.ones((2,), dtype=numpy.float32),</span>
+<span class="sd">                high=numpy.ones((2,), dtype=numpy.float32),</span>
+<span class="sd">            )</span>
+<span class="sd">            assert s[:, :] == s</span>
+<span class="sd">            assert s[...] == s</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span>
+            <span class="n">low</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">[</span><span class="n">key</span><span class="p">],</span>
+            <span class="n">high</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="p">[</span><span class="n">key</span><span class="p">],</span>
+            <span class="n">seed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+            <span class="n">contains</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">contains</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;__eq__</span>
+
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">                s = Numeric(low=-numpy.ones((2, 2)), high=numpy.ones((2, 2)))</span>
+<span class="sd">                assert s == Numeric(low=-numpy.ones((2, 2)), high=numpy.ones((2, 2)))</span>
+<span class="sd">                assert s != Numeric(low=-1.5 * numpy.ones((2, 2)), high=2 * numpy.ones((2, 2)))</span>
+<span class="sd">                assert s != Numeric(low=-numpy.ones((1,)), high=numpy.ones((1,)))</span>
+
+<span class="sd">        :param other: space to compare to</span>
+<span class="sd">        :type other: Numeric</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">shape</span>
+            <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">low</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">high</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">dtype</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check whether ``item`` belongs to the space</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            s = Numeric(</span>
+<span class="sd">                low=-numpy.ones((2, 2)),</span>
+<span class="sd">                high=numpy.ones((2, 2)),</span>
+<span class="sd">            )</span>
+
+<span class="sd">            assert [0.0, 0.0, 0.0, 0.0] not in s</span>
+<span class="sd">            assert [[0.0, 0.0], [0.0, 0.0]] in s</span>
+<span class="sd">            assert numpy.array([0.0, 0.0, 0.0, 0.0]) not in s</span>
+<span class="sd">            assert numpy.array([[0.0, 0.0], [0.0, 0.0]]) in s</span>
+
+<span class="sd">            assert 1.0 * numpy.ones((2, 2)) in s</span>
+<span class="sd">            assert -1.0 * numpy.ones((2, 2)) in s</span>
+
+<span class="sd">            assert numpy.ones((2, 2), dtype=numpy.int16) in s</span>
+
+<span class="sd">        :param item: item</span>
+<span class="sd">        :type item: numpy.ndarray</span>
+<span class="sd">        :param mode: see &quot;contains&quot; keyword argument, defaults to None</span>
+<span class="sd">        :type mode: string, optional</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contains</span>
+
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;numpy&quot;</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">item</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">)</span> <span class="ow">and</span> <span class="n">numpy</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">item</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">seed</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">([</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="si">}</span><span class="s2">]) -- </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">([</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="si">}</span><span class="s2">]) -- </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2"> -- seed: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">seed</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__flat__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">seed</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">) -- </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">) -- </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2"> -- seed: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">seed</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<div class="viewcode-block" id="Numeric.sample"><a class="viewcode-back" href="../../../_autosummary/coopihc.base.Space.Numeric.html#coopihc.base.Space.Numeric.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;sample</span>
+
+<span class="sd">        Generate values by sampling from the interval. If the interval represents integers, sampling is uniform. Otherwise, sampling is Gaussian. You can set the seed to sample, see keyword arguments at init.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            s = Numeric(low=-numpy.ones((2, 2)), high=numpy.ones((2, 2)), seed=123)</span>
+<span class="sd">            q = Numeric(low=-numpy.ones((2, 2)), high=numpy.ones((2, 2)), seed=123)</span>
+<span class="sd">            r = Numeric(low=-numpy.ones((2, 2)), high=numpy.ones((2, 2)), seed=12)</span>
+
+<span class="sd">            _s, _q, _r = s.sample(), q.sample(), r.sample()</span>
+<span class="sd">            assert _s in s</span>
+<span class="sd">            assert _q in q</span>
+<span class="sd">            assert _r in r</span>
+<span class="sd">            assert (_s == _q).all()</span>
+<span class="sd">            assert (_s != _r).any()</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
+
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span>
+                <span class="n">low</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">type</span>
+            <span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">),</span> <span class="n">nan</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">posinf</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">type</span><span class="p">)</span> <span class="o">+</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="n">neginf</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Numeric.serialize"><a class="viewcode-back" href="../../../_autosummary/coopihc.base.Space.Numeric.html#coopihc.base.Space.Numeric.serialize">[docs]</a>    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;serialize to JSON&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;space&quot;</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="s2">&quot;seed&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span>
+            <span class="s2">&quot;low,high&quot;</span><span class="p">:</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="o">.</span><span class="n">tolist</span><span class="p">()],</span>
+            <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+            <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+        <span class="p">}</span></div></div>
+
+
+<div class="viewcode-block" id="CatSet"><a class="viewcode-back" href="../../../_autosummary/coopihc.base.Space.CatSet.html#coopihc.base.Space.CatSet">[docs]</a><span class="k">class</span> <span class="nc">CatSet</span><span class="p">(</span><span class="n">BaseSpace</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Categorical Set</span>
+
+<span class="sd">    A categorical set defined explicitly. Use this for data where traditional distance is meaningless i.e. when 1 is not closer to 0 then to 5.</span>
+<span class="sd">    Performance of this object for large dimensions may be bad, because the whole array is stored in memory.</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        s = space(array=numpy.array([1, 2, 3], dtype=numpy.int16))</span>
+<span class="sd">        assert s.dtype == numpy.int16</span>
+<span class="sd">        assert s.N == 3</span>
+<span class="sd">        assert s.shape == ()</span>
+
+<span class="sd">    You can further set the seed of the space (useful when sampling from the space), force the dtype of the space and specify how membership to the space is checked via the keyword arguments. See ``BaseSpace`` for more information.</span>
+
+
+<span class="sd">    :param array: set of values, defaults to None</span>
+<span class="sd">    :type array: numpy.ndarray, optional</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">contains</span><span class="o">=</span><span class="s2">&quot;numpy&quot;</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">array</span> <span class="o">=</span> <span class="n">array</span>
+
+        <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;dtype has to be an integer type&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">contains</span><span class="o">=</span><span class="n">contains</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">N</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Cardinality of the set&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;numpy.dtype of data&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;numpy shape of the data that belongs to the set&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="o">=</span> <span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">low</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># Should be removed, doesn&#39;t make sense</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">high</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># Should be removed, doesn&#39;t make sense</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;__iter__&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;__next__&quot;&quot;&quot;</span>
+
+        <span class="k">raise</span> <span class="ne">StopIteration</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;__getitem__</span>
+
+<span class="sd">        The set can not be separated into different elements, and indexing over the set is only possible in edge cases:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">        s = CatSet(array=numpy.array([1, 2, 3], dtype=numpy.int16))</span>
+<span class="sd">        s[0] # raises a ``SpaceNotSeparableError``</span>
+<span class="sd">        assert s[...] == s</span>
+<span class="sd">        assert s[:] == s</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="bp">Ellipsis</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+        <span class="kn">from</span> <span class="nn">coopihc.base.utils</span> <span class="kn">import</span> <span class="n">SpaceNotSeparableError</span>
+
+        <span class="k">raise</span> <span class="n">SpaceNotSeparableError</span><span class="p">(</span><span class="s2">&quot;This space is not separable&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;__eq__</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            s = CatSet(array=numpy.array([1, 2, 3], dtype=numpy.int16))</span>
+<span class="sd">            assert s == space(array=numpy.array([1, 2, 3], dtype=numpy.int16))</span>
+<span class="sd">            assert s != space(array=numpy.array([1, 2, 3, 4], dtype=numpy.int16))</span>
+
+
+<span class="sd">        :param other: other space</span>
+<span class="sd">        :type other: CatSet</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">dtype</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">array</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">dtype</span>
+
+    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;__contains__</span>
+
+<span class="sd">        Checks if item belong to the space. By default, this check is done leniently, according to Numpy __contains__, see kwargs in init for more information.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            s = CatSet(array=numpy.array([1, 2, 3], dtype=numpy.int16))</span>
+<span class="sd">            assert 1 in s</span>
+<span class="sd">            assert [1] in s</span>
+<span class="sd">            assert [[1]] in s</span>
+<span class="sd">            assert numpy.array(1) in s</span>
+<span class="sd">            assert numpy.array([1]) in s</span>
+<span class="sd">            assert numpy.array([[1]]) in s</span>
+
+<span class="sd">            assert numpy.array([2]) in s</span>
+<span class="sd">            assert numpy.array([3]) in s</span>
+
+<span class="sd">            assert numpy.array([1.0]) in s</span>
+<span class="sd">            assert numpy.array([2]) in s</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contains</span>
+
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;numpy&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__flat__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+<div class="viewcode-block" id="CatSet.sample"><a class="viewcode-back" href="../../../_autosummary/coopihc.base.Space.CatSet.html#coopihc.base.Space.CatSet.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;sample</span>
+
+<span class="sd">        Generate values by sampling uniformly from the set. You can set the seed to the rng, see keyword arguments at init.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            s = CatSet(array=numpy.arange(1000), seed=123)</span>
+<span class="sd">            q = CatSet(array=numpy.arange(1000), seed=123)</span>
+<span class="sd">            r = CatSet(array=numpy.arange(1000), seed=12)</span>
+<span class="sd">            _s, _q, _r = s.sample(), q.sample(), r.sample()</span>
+<span class="sd">            assert _s in s</span>
+<span class="sd">            assert _q in q</span>
+<span class="sd">            assert _r in r</span>
+<span class="sd">            assert _s == _q</span>
+<span class="sd">            assert _s != _r</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;space&quot;</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="s2">&quot;seed&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span>
+            <span class="s2">&quot;array&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+        <span class="p">}</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

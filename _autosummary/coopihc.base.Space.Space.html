@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coopihc.base.Space.Space &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="coopihc.base.State" href="coopihc.base.State.html" />
+    <link rel="prev" title="coopihc.base.Space.Numeric" href="coopihc.base.Space.Numeric.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">    Home page</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="coopihc.html">    API reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="coopihc.agents.html">coopihc.agents</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="coopihc.base.html">coopihc.base</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="coopihc.base.Space.html">coopihc.base.Space</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="coopihc.base.Space.BaseSpace.html">coopihc.base.Space.BaseSpace</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coopihc.base.Space.CatSet.html">coopihc.base.Space.CatSet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coopihc.base.Space.Numeric.html">coopihc.base.Space.Numeric</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">coopihc.base.Space.Space</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.base.State.html">coopihc.base.State</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.base.StateElement.html">coopihc.base.StateElement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.base.elements.html">coopihc.base.elements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.base.utils.html">coopihc.base.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.bundle.html">coopihc.bundle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.helpers.html">coopihc.helpers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.inference.html">coopihc.inference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.interactiontask.html">coopihc.interactiontask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.observation.html">coopihc.observation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.policy.html">coopihc.policy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="coopihc.html">coopihc</a> &raquo;</li>
+          <li><a href="coopihc.base.html">coopihc.base</a> &raquo;</li>
+          <li><a href="coopihc.base.Space.html">coopihc.base.Space</a> &raquo;</li>
+      <li>coopihc.base.Space.Space</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/coopihc.base.Space.Space.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="coopihc-base-space-space">
+<h1>coopihc.base.Space.Space<a class="headerlink" href="#coopihc-base-space-space" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="coopihc.base.Space.Space">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">low</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_function</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contains</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'numpy'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/base/Space.html#Space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.base.Space.Space" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>_summary_</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>low</strong> (see <cite>Numeric&lt;coopihc.base.Space.Numeric&gt;</cite>, optional) – see <cite>Numeric&lt;coopihc.base.Space.Numeric&gt;</cite>, defaults to None</p></li>
+<li><p><strong>high</strong> (see <cite>Numeric&lt;coopihc.base.Space.Numeric&gt;</cite>, optional) – see <cite>Numeric&lt;coopihc.base.Space.Numeric&gt;</cite>, defaults to None</p></li>
+<li><p><strong>array</strong> (see <cite>CatSet&lt;coopihc.base.Space.CatSet&gt;</cite>, optional) – see <cite>CatSet&lt;coopihc.base.Space.CatSet&gt;</cite>, defaults to None</p></li>
+<li><p><strong>N</strong> (<em>for future</em><em>, </em><em>optional</em>) – for future, defaults to None</p></li>
+<li><p><strong>_function</strong> (<em>for future</em><em>, </em><em>optional</em>) – for future, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A CoopIHC space</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><cite>Numeric&lt;coopihc.base.Space.Numeric&gt;</cite> or <cite>CatSet&lt;coopihc.base.Space.CatSet&gt;</cite></p>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.base.Space.Space.cartesian_product" title="coopihc.base.Space.Space.cartesian_product"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cartesian_product</span></code></a></p></td>
+<td><p>Computes the cartesian product of the spaces provided in input.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.base.Space.Space.cartesian_product">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cartesian_product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">spaces</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/base/Space.html#Space.cartesian_product"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.base.Space.Space.cartesian_product" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the cartesian product of the spaces provided in input. For this method, continuous spaces are treated as singletons {None}.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">s</span> <span class="o">=</span> <span class="n">space</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int16</span><span class="p">))</span>
+<span class="n">q</span> <span class="o">=</span> <span class="n">space</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int16</span><span class="p">))</span>
+<span class="n">cp</span><span class="p">,</span> <span class="n">shape</span> <span class="o">=</span> <span class="n">cartesian_product</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+<span class="k">assert</span> <span class="p">(</span>
+    <span class="n">cp</span>
+    <span class="o">==</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+<span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>cartesian product and shape of associated spaces</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tuple(numpy.ndarray, list(tuples))</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="coopihc.base.Space.Numeric.html" class="btn btn-neutral float-left" title="coopihc.base.Space.Numeric" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="coopihc.base.State.html" class="btn btn-neutral float-right" title="coopihc.base.State" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,44 @@
+coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous
+===================================================================
+
+.. currentmodule:: coopihc.inference.LinearGaussianContinuous
+
+.. autoclass:: LinearGaussianContinuous
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~LinearGaussianContinuous.add_observation
+      ~LinearGaussianContinuous.bind
+      ~LinearGaussianContinuous.confidence_ellipse
+      ~LinearGaussianContinuous.confidence_interval
+      ~LinearGaussianContinuous.default_value
+      ~LinearGaussianContinuous.draw_beliefs
+      ~LinearGaussianContinuous.infer
+      ~LinearGaussianContinuous.render
+      ~LinearGaussianContinuous.reset
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~LinearGaussianContinuous.action
+      ~LinearGaussianContinuous.host
+      ~LinearGaussianContinuous.observation
+      ~LinearGaussianContinuous.role
+      ~LinearGaussianContinuous.state
+      ~LinearGaussianContinuous.unwrapped
+   
+   

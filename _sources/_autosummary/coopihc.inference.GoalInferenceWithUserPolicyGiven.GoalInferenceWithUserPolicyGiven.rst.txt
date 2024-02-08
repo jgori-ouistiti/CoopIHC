@@ -1,0 +1,42 @@
+coopihc.inference.GoalInferenceWithUserPolicyGiven.GoalInferenceWithUserPolicyGiven
+===================================================================================
+
+.. currentmodule:: coopihc.inference.GoalInferenceWithUserPolicyGiven
+
+.. autoclass:: GoalInferenceWithUserPolicyGiven
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~GoalInferenceWithUserPolicyGiven.add_observation
+      ~GoalInferenceWithUserPolicyGiven.attach_set_theta
+      ~GoalInferenceWithUserPolicyGiven.bind
+      ~GoalInferenceWithUserPolicyGiven.default_value
+      ~GoalInferenceWithUserPolicyGiven.infer
+      ~GoalInferenceWithUserPolicyGiven.render
+      ~GoalInferenceWithUserPolicyGiven.reset
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~GoalInferenceWithUserPolicyGiven.action
+      ~GoalInferenceWithUserPolicyGiven.host
+      ~GoalInferenceWithUserPolicyGiven.observation
+      ~GoalInferenceWithUserPolicyGiven.role
+      ~GoalInferenceWithUserPolicyGiven.state
+      ~GoalInferenceWithUserPolicyGiven.unwrapped
+   
+   

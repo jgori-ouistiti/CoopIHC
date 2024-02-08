@@ -1,0 +1,6 @@
+coopihc.policy.ELLDiscretePolicy.BadlyDefinedLikelihoodError
+============================================================
+
+.. currentmodule:: coopihc.policy.ELLDiscretePolicy
+
+.. autoexception:: BadlyDefinedLikelihoodError

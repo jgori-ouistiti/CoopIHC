@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coopihc.inference.ContinuousKalmanUpdate &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../_autosummary/coopihc.html">    API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>coopihc.inference.ContinuousKalmanUpdate</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coopihc.inference.ContinuousKalmanUpdate</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">from</span> <span class="nn">coopihc.inference.BaseInferenceEngine</span> <span class="kn">import</span> <span class="n">BaseInferenceEngine</span>
+
+
+<div class="viewcode-block" id="ContinuousKalmanUpdate"><a class="viewcode-back" href="../../../_autosummary/coopihc.inference.ContinuousKalmanUpdate.ContinuousKalmanUpdate.html#coopihc.inference.ContinuousKalmanUpdate.ContinuousKalmanUpdate">[docs]</a><span class="k">class</span> <span class="nc">ContinuousKalmanUpdate</span><span class="p">(</span><span class="n">BaseInferenceEngine</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;ContinuousKalmanUpdate</span>
+
+<span class="sd">    An inference engine which estimates the new state according to a continuous kalman filter, where state transition dynamics and kalman gains are provided externally.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">action</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">action</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fmd_flag</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">K_flag</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="ContinuousKalmanUpdate.set_forward_model_dynamics"><a class="viewcode-back" href="../../../_autosummary/coopihc.inference.ContinuousKalmanUpdate.ContinuousKalmanUpdate.html#coopihc.inference.ContinuousKalmanUpdate.ContinuousKalmanUpdate.set_forward_model_dynamics">[docs]</a>    <span class="k">def</span> <span class="nf">set_forward_model_dynamics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;set forward model dynamics</span>
+
+<span class="sd">        Call this externally to supply the linear dynamic matrices that describe the deterministic part of the state transitions:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \\begin{align*}</span>
+<span class="sd">            d\\hat{x} = A\\hat{x}dt + Budt \\\\</span>
+<span class="sd">            dy = C \\hat{x} dt</span>
+<span class="sd">            \\end{align*}</span>
+
+<span class="sd">        :param A: see equation above</span>
+<span class="sd">        :type A: numpy.ndarray</span>
+<span class="sd">        :param B: see equation above</span>
+<span class="sd">        :type B: numpy.ndarray</span>
+<span class="sd">        :param C: see equation above</span>
+<span class="sd">        :type C: numpy.ndarray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fmd_flag</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">=</span> <span class="n">A</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">B</span> <span class="o">=</span> <span class="n">B</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">=</span> <span class="n">C</span></div>
+
+<div class="viewcode-block" id="ContinuousKalmanUpdate.set_K"><a class="viewcode-back" href="../../../_autosummary/coopihc.inference.ContinuousKalmanUpdate.ContinuousKalmanUpdate.html#coopihc.inference.ContinuousKalmanUpdate.ContinuousKalmanUpdate.set_K">[docs]</a>    <span class="k">def</span> <span class="nf">set_K</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">K</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;set_K</span>
+
+<span class="sd">        Set the Kalman gain</span>
+
+<span class="sd">        :param K: Kalman Gain</span>
+<span class="sd">        :type K: numpy.ndarray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">K_flag</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">K</span> <span class="o">=</span> <span class="n">K</span></div>
+
+    <span class="nd">@BaseInferenceEngine</span><span class="o">.</span><span class="n">default_value</span>
+    <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_observation</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;infer</span>
+
+<span class="sd">        Infer the state based on the observation.</span>
+
+<span class="sd">        :return: (new state, reward)</span>
+<span class="sd">        :rtype: tuple(py:class:`State&lt;coopihc.base.State.State&gt;`, float)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">fmd_flag</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;You have to set the forward model dynamics, by calling the set_forward_model_dynamics() method with inference engine </span><span class="si">{}</span><span class="s2">  before using it&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">K_flag</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;You have to set the K Matrix, by calling the set_K() method with inference engine </span><span class="si">{}</span><span class="s2">  before using it&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">observation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">observation</span><span class="p">[</span><span class="s2">&quot;task_state&quot;</span><span class="p">][</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">timestep</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dy</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">dy</span> <span class="o">=</span> <span class="n">dy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dy</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">&quot;Substate Xhat of </span><span class="si">{}</span><span class="s2"> is expected to be of type numpy.ndarray&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="n">state</span> <span class="o">=</span> <span class="n">observation</span><span class="p">[</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">_state&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">role</span><span class="p">)]</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+
+        <span class="n">xhat</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;xhat&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+
+        <span class="n">xhat</span> <span class="o">=</span> <span class="n">xhat</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">deltaxhat</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">@</span> <span class="n">xhat</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">B</span> <span class="o">@</span> <span class="n">u</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">timestep</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">K</span> <span class="o">@</span> <span class="p">(</span>
+            <span class="n">dy</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">@</span> <span class="n">xhat</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">timestep</span>
+        <span class="p">)</span>
+        <span class="n">xhat</span> <span class="o">+=</span> <span class="n">deltaxhat</span>
+        <span class="n">state</span><span class="p">[</span><span class="s2">&quot;xhat&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xhat</span>
+
+        <span class="c1"># Here, we use the classical definition of rewards in the LQG setup, but this requires having the true value of the state. This may or may not realistic...</span>
+        <span class="c1"># ====================== Rewards ===============</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">xhat</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">U</span> <span class="o">@</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">xhat</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">state</span><span class="p">,</span> <span class="n">reward</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

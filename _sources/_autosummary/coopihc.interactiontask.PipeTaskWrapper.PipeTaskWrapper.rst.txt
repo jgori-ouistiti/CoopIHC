@@ -1,0 +1,45 @@
+coopihc.interactiontask.PipeTaskWrapper.PipeTaskWrapper
+=======================================================
+
+.. currentmodule:: coopihc.interactiontask.PipeTaskWrapper
+
+.. autoclass:: PipeTaskWrapper
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~PipeTaskWrapper.base_on_assistant_action
+      ~PipeTaskWrapper.base_on_user_action
+      ~PipeTaskWrapper.finit
+      ~PipeTaskWrapper.on_assistant_action
+      ~PipeTaskWrapper.on_user_action
+      ~PipeTaskWrapper.render
+      ~PipeTaskWrapper.reset
+      ~PipeTaskWrapper.update_state
+      ~PipeTaskWrapper.update_task_state
+      ~PipeTaskWrapper.update_user_state
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PipeTaskWrapper.assistant_action
+      ~PipeTaskWrapper.parameters
+      ~PipeTaskWrapper.round_number
+      ~PipeTaskWrapper.state
+      ~PipeTaskWrapper.turn_number
+      ~PipeTaskWrapper.user_action
+   
+   

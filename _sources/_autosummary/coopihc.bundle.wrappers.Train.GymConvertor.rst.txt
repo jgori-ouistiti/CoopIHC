@@ -1,0 +1,26 @@
+coopihc.bundle.wrappers.Train.GymConvertor
+==========================================
+
+.. currentmodule:: coopihc.bundle.wrappers.Train
+
+.. autoclass:: GymConvertor
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~GymConvertor.convert_space
+      ~GymConvertor.filter_gamestate
+   
+   
+
+   
+   
+   

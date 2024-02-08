@@ -1,0 +1,32 @@
+coopihc.base.State
+==================
+
+.. automodule:: coopihc.base.State
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      State
+   
+   
+
+   
+   
+   
+
+
+

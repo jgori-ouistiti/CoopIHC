@@ -1,0 +1,6 @@
+coopihc.base.elements.array\_element
+====================================
+
+.. currentmodule:: coopihc.base.elements
+
+.. autofunction:: array_element

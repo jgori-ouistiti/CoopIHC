@@ -1,0 +1,32 @@
+coopihc.agents.lqrcontrollers.IHDT\_LQRController
+=================================================
+
+.. automodule:: coopihc.agents.lqrcontrollers.IHDT_LQRController
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      IHDT_LQRController
+   
+   
+
+   
+   
+   
+
+
+

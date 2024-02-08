@@ -1,0 +1,38 @@
+coopihc.policy.RLPolicy.RLPolicy
+================================
+
+.. currentmodule:: coopihc.policy.RLPolicy
+
+.. autoclass:: RLPolicy
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~RLPolicy.default_value
+      ~RLPolicy.reset
+      ~RLPolicy.sample
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~RLPolicy.action
+      ~RLPolicy.action_keys
+      ~RLPolicy.observation
+      ~RLPolicy.parameters
+      ~RLPolicy.state
+      ~RLPolicy.unwrapped
+   
+   

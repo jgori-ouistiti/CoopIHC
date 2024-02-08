@@ -1,0 +1,32 @@
+coopihc.helpers
+===============
+
+.. automodule:: coopihc.helpers
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      flatten
+      sort_two_lists
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coopihc.inference.CascadedInferenceEngine &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../_autosummary/coopihc.html">    API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>coopihc.inference.CascadedInferenceEngine</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coopihc.inference.CascadedInferenceEngine</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">coopihc.inference.BaseInferenceEngine</span> <span class="kn">import</span> <span class="n">BaseInferenceEngine</span>
+
+
+<div class="viewcode-block" id="CascadedInferenceEngine"><a class="viewcode-back" href="../../../_autosummary/coopihc.inference.CascadedInferenceEngine.CascadedInferenceEngine.html#coopihc.inference.CascadedInferenceEngine.CascadedInferenceEngine">[docs]</a><span class="k">class</span> <span class="nc">CascadedInferenceEngine</span><span class="p">(</span><span class="n">BaseInferenceEngine</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;ExampleInferenceEngine</span>
+
+<span class="sd">    Combine two or more inference engines serially. Example code:</span>
+
+<span class="sd">    .. code-block::</span>
+
+<span class="sd">        first_inference_engine = ProvideLikelihoodInferenceEngine(perceptualnoise)</span>
+<span class="sd">        second_inference_engine = LinearGaussianContinuous()</span>
+<span class="sd">        inference_engine = CascadedInferenceEngine(</span>
+<span class="sd">            [first_inference_engine, second_inference_engine]</span>
+<span class="sd">        )</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">engine_list</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine_list</span> <span class="o">=</span> <span class="n">engine_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">render_tag</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="s2">&quot;plot&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_host</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">host</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_host</span>
+
+    <span class="nd">@host</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">host</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_host</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">for</span> <span class="n">eng</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine_list</span><span class="p">:</span>
+            <span class="n">eng</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">value</span>
+
+<div class="viewcode-block" id="CascadedInferenceEngine.add_observation"><a class="viewcode-back" href="../../../_autosummary/coopihc.inference.CascadedInferenceEngine.CascadedInferenceEngine.html#coopihc.inference.CascadedInferenceEngine.CascadedInferenceEngine.add_observation">[docs]</a>    <span class="k">def</span> <span class="nf">add_observation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observation</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;add observation</span>
+
+<span class="sd">        Add an observation to a buffer. If the buffer does not exist, create a naive buffer. The buffer has a size given by buffer length</span>
+
+<span class="sd">        :param observation: observation produced by an engine</span>
+<span class="sd">        :type observation: :py:class:`State&lt;coopihc.base.State.State&gt;`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer_depth</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">observation</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="p">[</span><span class="n">observation</span><span class="p">]</span>
+
+        <span class="c1"># Broadcast observations to contained inference engines</span>
+        <span class="k">for</span> <span class="n">eng</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine_list</span><span class="p">:</span>
+            <span class="n">eng</span><span class="o">.</span><span class="n">add_observation</span><span class="p">(</span><span class="n">observation</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__content__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;Engine</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ni</span><span class="p">):</span> <span class="n">i</span><span class="o">.</span><span class="n">__content__</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">ni</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine_list</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+    <span class="nd">@BaseInferenceEngine</span><span class="o">.</span><span class="n">default_value</span>
+    <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_observation</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="n">user_state</span> <span class="o">=</span> <span class="n">agent_observation</span><span class="p">[</span><span class="s2">&quot;user_state&quot;</span><span class="p">]</span>
+        <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">engine</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine_list</span><span class="p">:</span>
+            <span class="n">new_state</span><span class="p">,</span> <span class="n">new_reward</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span><span class="n">agent_observation</span><span class="o">=</span><span class="n">agent_observation</span><span class="p">)</span>
+            <span class="n">rewards</span> <span class="o">+=</span> <span class="n">new_reward</span>
+            <span class="n">user_state</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">new_state</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">user_state</span><span class="p">,</span> <span class="n">rewards</span>
+
+    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">eng</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine_list</span><span class="p">:</span>
+            <span class="n">eng</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

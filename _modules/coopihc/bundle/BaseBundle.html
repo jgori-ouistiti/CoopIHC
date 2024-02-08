@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coopihc.bundle.BaseBundle &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../_autosummary/coopihc.html">    API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>coopihc.bundle.BaseBundle</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coopihc.bundle.BaseBundle</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">random</span>
+<span class="kn">from</span> <span class="nn">coopihc.base.State</span> <span class="kn">import</span> <span class="n">State</span>
+<span class="kn">from</span> <span class="nn">coopihc.base.elements</span> <span class="kn">import</span> <span class="n">discrete_array_element</span><span class="p">,</span> <span class="n">array_element</span><span class="p">,</span> <span class="n">cat_element</span>
+<span class="kn">from</span> <span class="nn">coopihc.base.elements</span> <span class="kn">import</span> <span class="n">discrete_array_element</span><span class="p">,</span> <span class="n">cat_element</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+
+<div class="viewcode-block" id="BaseBundle"><a class="viewcode-back" href="../../../_autosummary/coopihc.bundle.BaseBundle.BaseBundle.html#coopihc.bundle.BaseBundle.BaseBundle">[docs]</a><span class="k">class</span> <span class="nc">BaseBundle</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Main class for bundles.</span>
+
+<span class="sd">    Main class for bundles. This class is subclassed by Bundle, which defines the interface with which to interact.</span>
+
+<span class="sd">    A bundle combines a task with a user and an assistant. The bundle creates the ``game_state`` by combining the task, user and assistant states with the turn index and both agent&#39;s actions.</span>
+
+<span class="sd">    The bundle takes care of all the messaging between classes, making sure the gamestate and all individual states are synchronized at all times.</span>
+
+<span class="sd">    The bundle implements a forced reset mechanism, where each state of the bundle can be forced to a particular state via a dictionnary mechanism (see :py:func:reset)</span>
+
+<span class="sd">    The bundle also takes care of rendering each of the three component in a single place.</span>
+
+
+<span class="sd">    :param task: (:py:class:`coopihc.interactiontask.InteractionTask.InteractionTask`) A task that inherits from ``InteractionTask``</span>
+<span class="sd">    :param user: (:py:class:`coopihc.agents.BaseAgent.BaseAgent`) a user which inherits from ``BaseAgent``</span>
+<span class="sd">    :param assistant: (:py:class:`coopihc.agents.BaseAgent.BaseAgent`) an assistant which inherits from ``BaseAgent``</span>
+
+<span class="sd">    :meta public:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">turn_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;after_assistant_action&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;before_user_action&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;after_user_action&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s2">&quot;before_assistant_action&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">task</span><span class="p">,</span>
+        <span class="n">user</span><span class="p">,</span>
+        <span class="n">assistant</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="n">reset_random</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">reset_start_after</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">reset_go_to</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_random</span> <span class="o">=</span> <span class="n">reset_random</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_start_after</span> <span class="o">=</span> <span class="n">reset_start_after</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_go_to</span> <span class="o">=</span> <span class="n">reset_go_to</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">=</span> <span class="n">task</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">bundle</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">user</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">bundle</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assistant</span> <span class="o">=</span> <span class="n">assistant</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assistant</span><span class="o">.</span><span class="n">bundle</span> <span class="o">=</span> <span class="bp">self</span>
+
+        <span class="c1"># Form complete game state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span> <span class="o">=</span> <span class="n">State</span><span class="p">()</span>
+
+        <span class="n">turn_index</span> <span class="o">=</span> <span class="n">cat_element</span><span class="p">(</span>
+            <span class="n">N</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">out_of_bounds_mode</span><span class="o">=</span><span class="s2">&quot;raw&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int8</span>
+        <span class="p">)</span>
+        <span class="n">round_index</span> <span class="o">=</span> <span class="n">discrete_array_element</span><span class="p">(</span>
+            <span class="n">init</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">iinfo</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="n">out_of_bounds_mode</span><span class="o">=</span><span class="s2">&quot;raw&quot;</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;game_info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">State</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;game_info&quot;</span><span class="p">][</span><span class="s2">&quot;turn_index&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">turn_index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;game_info&quot;</span><span class="p">][</span><span class="s2">&quot;round_index&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">round_index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;task_state&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;user_state&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;assistant_state&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">assistant</span><span class="o">.</span><span class="n">state</span>
+
+        <span class="c1"># here there is a small caveat: you can not access action states in the game_state at finit, you have to pass through the agent instead. This is due to the current way of creating the game_state.</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">finit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">finit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assistant</span><span class="o">.</span><span class="n">finit</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">user</span><span class="o">.</span><span class="n">policy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;user_action&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">policy</span><span class="o">.</span><span class="n">action_state</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;user_action&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">State</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;user_action&quot;</span><span class="p">][</span><span class="s2">&quot;action&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">array_element</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">assistant</span><span class="o">.</span><span class="n">policy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;assistant_action&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">assistant</span><span class="o">.</span><span class="n">policy</span><span class="o">.</span><span class="n">action_state</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;assistant_action&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">State</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;assistant_action&quot;</span><span class="p">][</span><span class="s2">&quot;action&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">array_element</span><span class="p">()</span>
+
+        <span class="c1"># This will not work sometimes</span>
+
+        <span class="c1"># self.task.finit()</span>
+        <span class="c1"># self.user.finit()</span>
+        <span class="c1"># self.assistant.finit()</span>
+
+        <span class="c1"># Needed for render</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active_render_figure</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">figure_layout</span> <span class="o">=</span> <span class="p">[</span><span class="mi">211</span><span class="p">,</span> <span class="mi">223</span><span class="p">,</span> <span class="mi">224</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rendered_mode</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">render_perm</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">playspeed</span> <span class="o">=</span> <span class="mf">0.1</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;__repr__</span>
+
+<span class="sd">        Pretty representation for Bundles.</span>
+
+<span class="sd">        :return: pretty bundle print</span>
+<span class="sd">        :rtype: string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span> <span class="o">+</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_dump</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__content__</span><span class="p">()</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__content__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;__content__</span>
+
+<span class="sd">        Custom class representation</span>
+
+<span class="sd">        :return: class repr</span>
+<span class="sd">        :rtype: dictionnary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;Task&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">__content__</span><span class="p">(),</span>
+            <span class="s2">&quot;User&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">__content__</span><span class="p">(),</span>
+            <span class="s2">&quot;Assistant&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">assistant</span><span class="o">.</span><span class="n">__content__</span><span class="p">(),</span>
+        <span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">_parameters</span><span class="p">,</span>
+            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">_parameters</span><span class="p">,</span>
+            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">assistant</span><span class="o">.</span><span class="n">_parameters</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">turn_number</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;turn_number</span>
+
+<span class="sd">        The turn number in the game (0 to 3)</span>
+
+<span class="sd">        :return: turn number</span>
+<span class="sd">        :rtype: numpy.ndarray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;game_info&quot;</span><span class="p">][</span><span class="s2">&quot;turn_index&quot;</span><span class="p">]</span>
+
+    <span class="nd">@turn_number</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">turn_number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_turn_number</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;game_info&quot;</span><span class="p">][</span><span class="s2">&quot;turn_index&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">round_number</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;round_number</span>
+
+<span class="sd">        The round number in the game (0 to N)</span>
+
+<span class="sd">        :return: turn number</span>
+<span class="sd">        :rtype: numpy.ndarray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;game_info&quot;</span><span class="p">][</span><span class="s2">&quot;round_index&quot;</span><span class="p">]</span>
+
+    <span class="nd">@round_number</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">round_number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_round_number</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;game_info&quot;</span><span class="p">][</span><span class="s2">&quot;round_index&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span>
+
+<div class="viewcode-block" id="BaseBundle.reset"><a class="viewcode-back" href="../../../_autosummary/coopihc.bundle.BaseBundle.BaseBundle.html#coopihc.bundle.BaseBundle.BaseBundle.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">go_to</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">start_after</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">task</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">user</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">assistant</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">dic</span><span class="o">=</span><span class="p">{},</span>
+        <span class="n">random_reset</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reset bundle.</span>
+
+<span class="sd">        1. Reset the game and start at a specific turn number.</span>
+<span class="sd">        2. select which components to reset</span>
+<span class="sd">        3. forced reset mechanism using dictionnaries</span>
+
+
+<span class="sd">        Example:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            new_target_value = self.game_state[&quot;task_state&quot;][&quot;targets&quot;]</span>
+<span class="sd">            new_fixation_value = self.game_state[&quot;task_state&quot;][&quot;fixation&quot;]</span>
+<span class="sd">            )</span>
+<span class="sd">            reset_dic = {&quot;task_state&quot;: {&quot;targets&quot;: new_target_value, &quot;fixation&quot;: new_fixation_value}}</span>
+<span class="sd">            self.reset(dic=reset_dic, turn = 1)</span>
+
+<span class="sd">        Will set the substates &quot;targets&quot; and &quot;fixation&quot; of state &quot;task_state&quot; to some value.</span>
+
+
+<span class="sd">        .. note ::</span>
+
+<span class="sd">            If subclassing BaseBundle, make sure to call super().reset() in the new reset method.</span>
+
+
+<span class="sd">        :param turn: game turn number. Can also be set globally at the bundle level by passing the &quot;reset_turn&quot; keyword argument, defaults to 0</span>
+<span class="sd">        :type turn: int, optional</span>
+<span class="sd">        :param start_after: which turn to start at (allows skipping some turns during reset), defaults to 0</span>
+<span class="sd">        :type start_after: int, optional</span>
+<span class="sd">        :param task: reset task?, defaults to True</span>
+<span class="sd">        :type task: bool, optional</span>
+<span class="sd">        :param user: reset user?, defaults to True</span>
+<span class="sd">        :type user: bool, optional</span>
+<span class="sd">        :param assistant: reset assistant?, defaults to True</span>
+<span class="sd">        :type assistant: bool, optional</span>
+<span class="sd">        :param dic: reset_dic, defaults to {}</span>
+<span class="sd">        :type dic: dict, optional</span>
+<span class="sd">        :param random_reset: whether during resetting values should be randomized or not if not set by a reset dic, default to False</span>
+<span class="sd">        :type random_reset: bool, optional</span>
+<span class="sd">        :return: new game state</span>
+<span class="sd">        :rtype: :py:class:`State&lt;coopihc.base.State.State&gt;`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">go_to</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">go_to</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reset_go_to</span>
+
+        <span class="k">if</span> <span class="n">start_after</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">start_after</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reset_start_after</span>
+
+        <span class="n">random_reset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reset_random</span> <span class="ow">or</span> <span class="n">random_reset</span>
+
+        <span class="k">if</span> <span class="n">task</span><span class="p">:</span>
+            <span class="n">task_dic</span> <span class="o">=</span> <span class="n">dic</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;task_state&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">_base_reset</span><span class="p">(</span>
+                <span class="n">dic</span><span class="o">=</span><span class="n">task_dic</span><span class="p">,</span>
+                <span class="n">random</span><span class="o">=</span><span class="n">random_reset</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">user</span><span class="p">:</span>
+            <span class="n">user_dic</span> <span class="o">=</span> <span class="n">dic</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;user_state&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">_base_reset</span><span class="p">(</span>
+                <span class="n">dic</span><span class="o">=</span><span class="n">user_dic</span><span class="p">,</span>
+                <span class="n">random</span><span class="o">=</span><span class="n">random_reset</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">assistant</span><span class="p">:</span>
+            <span class="n">assistant_dic</span> <span class="o">=</span> <span class="n">dic</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;assistant_state&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assistant</span><span class="o">.</span><span class="n">_base_reset</span><span class="p">(</span>
+                <span class="n">dic</span><span class="o">=</span><span class="n">assistant_dic</span><span class="p">,</span>
+                <span class="n">random</span><span class="o">=</span><span class="n">random_reset</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">round_number</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">go_to</span><span class="p">,</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">integer</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+            <span class="n">go_to</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">turn_dict</span><span class="p">[</span><span class="n">go_to</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start_after</span><span class="p">,</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">integer</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+            <span class="n">start_after</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">turn_dict</span><span class="p">[</span><span class="n">start_after</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">turn_number</span> <span class="o">=</span> <span class="n">go_to</span>
+
+        <span class="k">if</span> <span class="n">go_to</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">start_after</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span>
+        <span class="k">if</span> <span class="n">start_after</span> <span class="o">&lt;=</span> <span class="n">go_to</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">go_to</span> <span class="o">&gt;=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">start_after</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_user_first_half_step</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">go_to</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">start_after</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">user_action</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">take_action</span><span class="p">(</span><span class="n">increment_turn</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">action</span> <span class="o">=</span> <span class="n">user_action</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_user_second_half_step</span><span class="p">(</span><span class="n">user_action</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">go_to</span> <span class="o">&gt;=</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">start_after</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_assistant_first_half_step</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;start_after (</span><span class="si">{</span><span class="n">start_after</span><span class="si">}</span><span class="s2">) can not be after go_to (</span><span class="si">{</span><span class="n">go_to</span><span class="si">}</span><span class="s2">). You can likely use a combination of reset and step to achieve what you are looking for&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span></div>
+
+    <span class="k">def</span> <span class="nf">quarter_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_action</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">assistant_action</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">(</span>
+            <span class="n">user_action</span><span class="o">=</span><span class="n">user_action</span><span class="p">,</span>
+            <span class="n">assistant_action</span><span class="o">=</span><span class="n">assistant_action</span><span class="p">,</span>
+            <span class="n">go_to</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">turn_number</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="BaseBundle.step"><a class="viewcode-back" href="../../../_autosummary/coopihc.bundle.BaseBundle.BaseBundle.html#coopihc.bundle.BaseBundle.BaseBundle.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_action</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">assistant_action</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">go_to</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Play a round</span>
+
+<span class="sd">        Play a round of the game. A round consists in 4 turns. If go_to is not None, the round is only played until that turn.</span>
+<span class="sd">        If a user action and assistant action are passed as arguments, then these are used as actions to play the round. Otherwise, these actions are sampled from each agent&#39;s policy.</span>
+
+<span class="sd">        :param user action: user action</span>
+<span class="sd">        :type: any</span>
+<span class="sd">        :param assistant action: assistant action</span>
+<span class="sd">        :type: any</span>
+<span class="sd">        :param go_to: turn at which round stops, defaults to None</span>
+<span class="sd">        :type go_to: int, optional</span>
+<span class="sd">        :return: gamestate, reward, game finished flag</span>
+<span class="sd">        :rtype: tuple(:py:class:`State&lt;coopihc.base.State.State&gt;`, collections.OrderedDict, boolean)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">go_to</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">go_to</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">turn_number</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">go_to</span><span class="p">,</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">integer</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+            <span class="n">go_to</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">turn_dict</span><span class="p">[</span><span class="n">go_to</span><span class="p">]</span>
+
+        <span class="n">_started</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">rewards</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">rewards</span><span class="p">[</span><span class="s2">&quot;user_observation_reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">rewards</span><span class="p">[</span><span class="s2">&quot;user_inference_reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">rewards</span><span class="p">[</span><span class="s2">&quot;user_policy_reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">rewards</span><span class="p">[</span><span class="s2">&quot;first_task_reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">rewards</span><span class="p">[</span><span class="s2">&quot;assistant_observation_reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">rewards</span><span class="p">[</span><span class="s2">&quot;assistant_inference_reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">rewards</span><span class="p">[</span><span class="s2">&quot;assistant_policy_reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">rewards</span><span class="p">[</span><span class="s2">&quot;second_task_reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">turn_number</span> <span class="o">!=</span> <span class="n">go_to</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="n">_started</span><span class="p">):</span>
+
+            <span class="n">_started</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="c1"># User observes and infers</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">turn_number</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="s2">&quot;no-user&quot;</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">):</span>
+                <span class="p">(</span>
+                    <span class="n">user_obs_reward</span><span class="p">,</span>
+                    <span class="n">user_infer_reward</span><span class="p">,</span>
+                <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_first_half_step</span><span class="p">()</span>
+                <span class="p">(</span>
+                    <span class="n">rewards</span><span class="p">[</span><span class="s2">&quot;user_observation_reward&quot;</span><span class="p">],</span>
+                    <span class="n">rewards</span><span class="p">[</span><span class="s2">&quot;user_inference_reward&quot;</span><span class="p">],</span>
+                <span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">user_obs_reward</span><span class="p">,</span> <span class="n">user_infer_reward</span><span class="p">)</span>
+
+            <span class="c1"># User takes action and receives reward from task</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">turn_number</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="s2">&quot;no-user&quot;</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">user_action</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">user_action</span><span class="p">,</span> <span class="n">user_policy_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">take_action</span><span class="p">(</span>
+                        <span class="n">increment_turn</span><span class="o">=</span><span class="kc">False</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">action</span> <span class="o">=</span> <span class="n">user_action</span>
+                    <span class="n">user_policy_reward</span> <span class="o">=</span> <span class="mi">0</span>
+
+                <span class="n">task_reward</span><span class="p">,</span> <span class="n">is_done</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_second_half_step</span><span class="p">(</span><span class="n">user_action</span><span class="p">)</span>
+                <span class="n">rewards</span><span class="p">[</span><span class="s2">&quot;user_policy_reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_policy_reward</span>
+                <span class="n">rewards</span><span class="p">[</span><span class="s2">&quot;first_task_reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">task_reward</span>
+                <span class="k">if</span> <span class="n">is_done</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">is_done</span>
+
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">turn_number</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="s2">&quot;no-assistant&quot;</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">round_number</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">round_number</span> <span class="o">+</span> <span class="mi">1</span>
+
+            <span class="c1"># Assistant observes and infers</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">turn_number</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="s2">&quot;no-assistant&quot;</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">):</span>
+                <span class="p">(</span>
+                    <span class="n">assistant_obs_reward</span><span class="p">,</span>
+                    <span class="n">assistant_infer_reward</span><span class="p">,</span>
+                <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_assistant_first_half_step</span><span class="p">()</span>
+                <span class="p">(</span>
+                    <span class="n">rewards</span><span class="p">[</span><span class="s2">&quot;assistant_observation_reward&quot;</span><span class="p">],</span>
+                    <span class="n">rewards</span><span class="p">[</span><span class="s2">&quot;assistant_inference_reward&quot;</span><span class="p">],</span>
+                <span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">assistant_obs_reward</span><span class="p">,</span> <span class="n">assistant_infer_reward</span><span class="p">)</span>
+
+            <span class="c1"># Assistant takes action and receives reward from task</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">turn_number</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="s2">&quot;no-assistant&quot;</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">assistant_action</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="p">(</span>
+                        <span class="n">assistant_action</span><span class="p">,</span>
+                        <span class="n">assistant_policy_reward</span><span class="p">,</span>
+                    <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assistant</span><span class="o">.</span><span class="n">take_action</span><span class="p">(</span><span class="n">increment_turn</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">assistant</span><span class="o">.</span><span class="n">action</span> <span class="o">=</span> <span class="n">assistant_action</span>
+                    <span class="n">assistant_policy_reward</span> <span class="o">=</span> <span class="mi">0</span>
+
+                <span class="n">task_reward</span><span class="p">,</span> <span class="n">is_done</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_assistant_second_half_step</span><span class="p">(</span>
+                    <span class="n">assistant_action</span>
+                <span class="p">)</span>
+                <span class="n">rewards</span><span class="p">[</span><span class="s2">&quot;assistant_policy_reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">assistant_policy_reward</span>
+                <span class="n">rewards</span><span class="p">[</span><span class="s2">&quot;second_task_reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">task_reward</span>
+                <span class="k">if</span> <span class="n">is_done</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">is_done</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">round_number</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">round_number</span> <span class="o">+</span> <span class="mi">1</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">turn_number</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">turn_number</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">4</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="BaseBundle.render"><a class="viewcode-back" href="../../../_autosummary/coopihc.bundle.BaseBundle.BaseBundle.html#coopihc.bundle.BaseBundle.BaseBundle.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;render</span>
+
+<span class="sd">        Combines all render methods.</span>
+
+<span class="sd">        :param mode: &quot;text&quot; or &quot;plot&quot;</span>
+<span class="sd">        :param type: string</span>
+
+<span class="sd">        :meta public:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rendered_mode</span> <span class="o">=</span> <span class="n">mode</span>
+        <span class="k">if</span> <span class="s2">&quot;text&quot;</span> <span class="ow">in</span> <span class="n">mode</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Round number </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">round_number</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Task Render&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;User Render&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Assistant Render&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assistant</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;log&quot;</span> <span class="ow">in</span> <span class="n">mode</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;log&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;log&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assistant</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;log&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;plot&quot;</span> <span class="ow">in</span> <span class="n">mode</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_render_figure</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">pause</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">playspeed</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">render</span><span class="p">(</span>
+                    <span class="n">ax_task</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">axtask</span><span class="p">,</span>
+                    <span class="n">ax_user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">axuser</span><span class="p">,</span>
+                    <span class="n">ax_assistant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">axassistant</span><span class="p">,</span>
+                    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;plot&quot;</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">render</span><span class="p">(</span>
+                    <span class="n">ax_task</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">axtask</span><span class="p">,</span>
+                    <span class="n">ax_user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">axuser</span><span class="p">,</span>
+                    <span class="n">ax_assistant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">axassistant</span><span class="p">,</span>
+                    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;plot&quot;</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assistant</span><span class="o">.</span><span class="n">render</span><span class="p">(</span>
+                    <span class="n">ax_task</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">axtask</span><span class="p">,</span>
+                    <span class="n">ax_user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">axuser</span><span class="p">,</span>
+                    <span class="n">ax_assistant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">axassistant</span><span class="p">,</span>
+                    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;plot&quot;</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">active_render_figure</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">axtask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">figure_layout</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">axtask</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Task State&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">axuser</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">figure_layout</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">axuser</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;User State&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">axassistant</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">figure_layout</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">axassistant</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Assistant State&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">render</span><span class="p">(</span>
+                    <span class="n">ax_task</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">axtask</span><span class="p">,</span>
+                    <span class="n">ax_user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">axuser</span><span class="p">,</span>
+                    <span class="n">ax_assistant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">axassistant</span><span class="p">,</span>
+                    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;plot&quot;</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">render</span><span class="p">(</span>
+                    <span class="n">ax_task</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">axtask</span><span class="p">,</span>
+                    <span class="n">ax_user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">axuser</span><span class="p">,</span>
+                    <span class="n">ax_assistant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">axassistant</span><span class="p">,</span>
+                    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;plot&quot;</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assistant</span><span class="o">.</span><span class="n">render</span><span class="p">(</span>
+                    <span class="n">ax_task</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">axtask</span><span class="p">,</span>
+                    <span class="n">ax_user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">axuser</span><span class="p">,</span>
+                    <span class="n">ax_assistant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">axassistant</span><span class="p">,</span>
+                    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;plot&quot;</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+            <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="s2">&quot;plot&quot;</span> <span class="ow">in</span> <span class="n">mode</span> <span class="ow">or</span> <span class="s2">&quot;text&quot;</span> <span class="ow">in</span> <span class="n">mode</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assistant</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BaseBundle.close"><a class="viewcode-back" href="../../../_autosummary/coopihc.bundle.BaseBundle.BaseBundle.html#coopihc.bundle.BaseBundle.BaseBundle.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;close</span>
+
+<span class="sd">        Close the bundle once the game is finished.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_render_figure</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="p">)</span></div>
+            <span class="c1"># self.active_render_figure = None</span>
+
+    <span class="k">def</span> <span class="nf">_user_first_half_step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;_user_first_half_step</span>
+
+<span class="sd">        Turn 1, where the user observes the game state and updates its state via inference.</span>
+
+<span class="sd">        :return: user observation and inference reward</span>
+<span class="sd">        :rtype: tuple(float, float)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;onreset_deterministic_first_half_step&quot;</span><span class="p">):</span>
+            <span class="n">user_obs_reward</span><span class="p">,</span> <span class="n">user_infer_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">_agent_step</span><span class="p">()</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Store the probabilistic rules</span>
+            <span class="n">store</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">observation_engine</span><span class="o">.</span><span class="n">extraprobabilisticrules</span>
+            <span class="c1"># Remove the probabilistic rules</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">observation_engine</span><span class="o">.</span><span class="n">extraprobabilisticrules</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="c1"># Generate an observation without generating an inference</span>
+            <span class="n">user_obs_reward</span><span class="p">,</span> <span class="n">user_infer_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">_agent_step</span><span class="p">(</span><span class="n">infer</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="c1"># Reposition the probabilistic rules, and reset mapping</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">observation_engine</span><span class="o">.</span><span class="n">extraprobabilisticrules</span> <span class="o">=</span> <span class="n">store</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">observation_engine</span><span class="o">.</span><span class="n">mapping</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;onreset_deterministic_first_half_step&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="n">user_obs_reward</span><span class="p">,</span> <span class="n">user_infer_reward</span>
+
+    <span class="k">def</span> <span class="nf">_user_second_half_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_action</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;_user_second_half_step</span>
+
+<span class="sd">        Turn 2, where the operaror takes an action.</span>
+
+<span class="sd">        :param user_action: user action</span>
+<span class="sd">        :param type: Any</span>
+
+<span class="sd">        :return: task reward, task done?</span>
+<span class="sd">        :rtype: tuple(float, boolean)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Play user&#39;s turn in the task</span>
+        <span class="n">task_state</span><span class="p">,</span> <span class="n">task_reward</span><span class="p">,</span> <span class="n">is_done</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">base_on_user_action</span><span class="p">(</span>
+            <span class="n">user_action</span><span class="o">=</span><span class="n">user_action</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">task_reward</span><span class="p">,</span> <span class="n">is_done</span>
+
+    <span class="k">def</span> <span class="nf">_assistant_first_half_step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;_assistant_first_half_step</span>
+
+<span class="sd">        Turn 3, where the assistant observes the game state and updates its state via inference.</span>
+
+<span class="sd">        :return: assistant observation and inference reward</span>
+<span class="sd">        :rtype: tuple(float, float)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="p">(</span>
+            <span class="n">assistant_obs_reward</span><span class="p">,</span>
+            <span class="n">assistant_infer_reward</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assistant</span><span class="o">.</span><span class="n">_agent_step</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">assistant_obs_reward</span><span class="p">,</span> <span class="n">assistant_infer_reward</span>
+
+    <span class="k">def</span> <span class="nf">_assistant_second_half_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">assistant_action</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;_assistant_second_half_step</span>
+
+<span class="sd">        Turn 4, where the assistant takes an action.</span>
+
+<span class="sd">        :param user_action: assistant action</span>
+<span class="sd">        :param type: Any</span>
+
+<span class="sd">        :return: task reward, task done?</span>
+<span class="sd">        :rtype: tuple(float, boolean)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Play assistant&#39;s turn in the task</span>
+
+        <span class="n">task_state</span><span class="p">,</span> <span class="n">task_reward</span><span class="p">,</span> <span class="n">is_done</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">base_on_assistant_action</span><span class="p">(</span>
+            <span class="n">assistant_action</span><span class="o">=</span><span class="n">assistant_action</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">task_reward</span><span class="p">,</span> <span class="n">is_done</span>
+
+    <span class="k">def</span> <span class="nf">_on_user_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Turns 1 and 2</span>
+
+<span class="sd">        :param \*args: either provide the user action or not. If no action is provided the action is determined by the agent&#39;s policy using sample()</span>
+<span class="sd">        :param type: (None or list)</span>
+<span class="sd">        :return: user observation, inference, policy and task rewards, game is done flag</span>
+<span class="sd">        :return type: tuple(float, float, float, float, bool)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">user_obs_reward</span><span class="p">,</span> <span class="n">user_infer_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_first_half_step</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># If human input is provided</span>
+            <span class="n">user_action</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="c1"># else sample from policy</span>
+            <span class="n">user_action</span><span class="p">,</span> <span class="n">user_policy_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">take_action</span><span class="p">(</span>
+                <span class="n">increment_turn</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">action</span> <span class="o">=</span> <span class="n">user_action</span>
+
+        <span class="n">task_reward</span><span class="p">,</span> <span class="n">is_done</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_second_half_step</span><span class="p">(</span><span class="n">user_action</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">user_obs_reward</span><span class="p">,</span>
+            <span class="n">user_infer_reward</span><span class="p">,</span>
+            <span class="n">user_policy_reward</span><span class="p">,</span>
+            <span class="n">task_reward</span><span class="p">,</span>
+            <span class="n">is_done</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_on_assistant_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Turns 3 and 4</span>
+
+<span class="sd">        :param \*args: either provide the assistant action or not. If no action is provided the action is determined by the agent&#39;s policy using sample()</span>
+<span class="sd">        :param type: (None or list)</span>
+<span class="sd">        :return: assistant observation, inference, policy and task rewards, game is done flag</span>
+<span class="sd">        :return type: tuple(float, float, float, float, bool)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="p">(</span>
+            <span class="n">assistant_obs_reward</span><span class="p">,</span>
+            <span class="n">assistant_infer_reward</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_assistant_first_half_step</span><span class="p">()</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># If human input is provided</span>
+            <span class="n">assistant_action</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="c1"># else sample from policy</span>
+            <span class="p">(</span>
+                <span class="n">assistant_action</span><span class="p">,</span>
+                <span class="n">assistant_policy_reward</span><span class="p">,</span>
+            <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assistant</span><span class="o">.</span><span class="n">take_action</span><span class="p">(</span><span class="n">increment_turn</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assistant</span><span class="o">.</span><span class="n">action</span> <span class="o">=</span> <span class="n">assistant_action</span>
+
+        <span class="n">task_reward</span><span class="p">,</span> <span class="n">is_done</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_assistant_second_half_step</span><span class="p">(</span><span class="n">assistant_action</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">assistant_obs_reward</span><span class="p">,</span>
+            <span class="n">assistant_infer_reward</span><span class="p">,</span>
+            <span class="n">assistant_policy_reward</span><span class="p">,</span>
+            <span class="n">task_reward</span><span class="p">,</span>
+            <span class="n">is_done</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

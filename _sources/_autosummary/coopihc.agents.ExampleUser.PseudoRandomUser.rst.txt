@@ -1,0 +1,49 @@
+coopihc.agents.ExampleUser.PseudoRandomUser
+===========================================
+
+.. currentmodule:: coopihc.agents.ExampleUser
+
+.. autoclass:: PseudoRandomUser
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~PseudoRandomUser.finit
+      ~PseudoRandomUser.infer
+      ~PseudoRandomUser.observe
+      ~PseudoRandomUser.prepare_action
+      ~PseudoRandomUser.render
+      ~PseudoRandomUser.reset
+      ~PseudoRandomUser.reset_all
+      ~PseudoRandomUser.take_action
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PseudoRandomUser.action
+      ~PseudoRandomUser.assistant
+      ~PseudoRandomUser.bundle
+      ~PseudoRandomUser.bundle_memory
+      ~PseudoRandomUser.inference_engine
+      ~PseudoRandomUser.observation
+      ~PseudoRandomUser.observation_engine
+      ~PseudoRandomUser.parameters
+      ~PseudoRandomUser.policy
+      ~PseudoRandomUser.state
+      ~PseudoRandomUser.task
+      ~PseudoRandomUser.user
+   
+   

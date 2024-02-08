@@ -1,0 +1,36 @@
+coopihc.base.Space.Numeric
+==========================
+
+.. currentmodule:: coopihc.base.Space
+
+.. autoclass:: Numeric
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~Numeric.sample
+      ~Numeric.serialize
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Numeric.N
+      ~Numeric.array
+      ~Numeric.dtype
+      ~Numeric.shape
+      ~Numeric.spacetype
+   
+   

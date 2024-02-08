@@ -1,0 +1,45 @@
+coopihc.policy.BIGDiscretePolicy.BIGDiscretePolicy
+==================================================
+
+.. currentmodule:: coopihc.policy.BIGDiscretePolicy
+
+.. autoclass:: BIGDiscretePolicy
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~BIGDiscretePolicy.HY__OoXx
+      ~BIGDiscretePolicy.HY__Xx
+      ~BIGDiscretePolicy.IG
+      ~BIGDiscretePolicy.PYy_Xx
+      ~BIGDiscretePolicy.attach_set_theta
+      ~BIGDiscretePolicy.attach_transition_function
+      ~BIGDiscretePolicy.default_value
+      ~BIGDiscretePolicy.find_best_action
+      ~BIGDiscretePolicy.reset
+      ~BIGDiscretePolicy.sample
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~BIGDiscretePolicy.action
+      ~BIGDiscretePolicy.action_keys
+      ~BIGDiscretePolicy.observation
+      ~BIGDiscretePolicy.parameters
+      ~BIGDiscretePolicy.state
+      ~BIGDiscretePolicy.unwrapped
+   
+   

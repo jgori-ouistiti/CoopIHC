@@ -1,0 +1,37 @@
+coopihc.policy
+==============
+
+.. automodule:: coopihc.policy
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. autosummary::
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+
+   coopihc.policy.BIGDiscretePolicy
+   coopihc.policy.BasePolicy
+   coopihc.policy.DualPolicy
+   coopihc.policy.ELLDiscretePolicy
+   coopihc.policy.ExamplePolicy
+   coopihc.policy.LinearFeedback
+   coopihc.policy.RLPolicy
+   coopihc.policy.WrapAsPolicy
+

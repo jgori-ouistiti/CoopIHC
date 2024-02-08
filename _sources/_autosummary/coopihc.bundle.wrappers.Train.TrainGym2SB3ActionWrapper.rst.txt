@@ -1,0 +1,44 @@
+coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper
+=======================================================
+
+.. currentmodule:: coopihc.bundle.wrappers.Train
+
+.. autoclass:: TrainGym2SB3ActionWrapper
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~TrainGym2SB3ActionWrapper.action
+      ~TrainGym2SB3ActionWrapper.class_name
+      ~TrainGym2SB3ActionWrapper.close
+      ~TrainGym2SB3ActionWrapper.compute_reward
+      ~TrainGym2SB3ActionWrapper.render
+      ~TrainGym2SB3ActionWrapper.reset
+      ~TrainGym2SB3ActionWrapper.reverse_action
+      ~TrainGym2SB3ActionWrapper.seed
+      ~TrainGym2SB3ActionWrapper.step
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~TrainGym2SB3ActionWrapper.action_space
+      ~TrainGym2SB3ActionWrapper.metadata
+      ~TrainGym2SB3ActionWrapper.observation_space
+      ~TrainGym2SB3ActionWrapper.reward_range
+      ~TrainGym2SB3ActionWrapper.spec
+      ~TrainGym2SB3ActionWrapper.unwrapped
+   
+   

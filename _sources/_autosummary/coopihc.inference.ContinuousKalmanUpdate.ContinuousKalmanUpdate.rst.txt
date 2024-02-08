@@ -1,0 +1,43 @@
+coopihc.inference.ContinuousKalmanUpdate.ContinuousKalmanUpdate
+===============================================================
+
+.. currentmodule:: coopihc.inference.ContinuousKalmanUpdate
+
+.. autoclass:: ContinuousKalmanUpdate
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~ContinuousKalmanUpdate.add_observation
+      ~ContinuousKalmanUpdate.bind
+      ~ContinuousKalmanUpdate.default_value
+      ~ContinuousKalmanUpdate.infer
+      ~ContinuousKalmanUpdate.render
+      ~ContinuousKalmanUpdate.reset
+      ~ContinuousKalmanUpdate.set_K
+      ~ContinuousKalmanUpdate.set_forward_model_dynamics
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~ContinuousKalmanUpdate.action
+      ~ContinuousKalmanUpdate.host
+      ~ContinuousKalmanUpdate.observation
+      ~ContinuousKalmanUpdate.role
+      ~ContinuousKalmanUpdate.state
+      ~ContinuousKalmanUpdate.unwrapped
+   
+   

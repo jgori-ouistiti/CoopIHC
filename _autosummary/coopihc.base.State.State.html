@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coopihc.base.State.State &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="coopihc.base.StateElement" href="coopihc.base.StateElement.html" />
+    <link rel="prev" title="coopihc.base.State" href="coopihc.base.State.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">    Home page</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="coopihc.html">    API reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="coopihc.agents.html">coopihc.agents</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="coopihc.base.html">coopihc.base</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="coopihc.base.Space.html">coopihc.base.Space</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="coopihc.base.State.html">coopihc.base.State</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">coopihc.base.State.State</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.base.StateElement.html">coopihc.base.StateElement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.base.elements.html">coopihc.base.elements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.base.utils.html">coopihc.base.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.bundle.html">coopihc.bundle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.helpers.html">coopihc.helpers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.inference.html">coopihc.inference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.interactiontask.html">coopihc.interactiontask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.observation.html">coopihc.observation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.policy.html">coopihc.policy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="coopihc.html">coopihc</a> &raquo;</li>
+          <li><a href="coopihc.base.html">coopihc.base</a> &raquo;</li>
+          <li><a href="coopihc.base.State.html">coopihc.base.State</a> &raquo;</li>
+      <li>coopihc.base.State.State</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/coopihc.base.State.State.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="coopihc-base-state-state">
+<h1>coopihc.base.State.State<a class="headerlink" href="#coopihc-base-state-state" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="coopihc.base.State.State">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">State</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/base/State.html#State"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.base.State.State" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></p>
+<p>The container class for States. State subclasses dictionnary and adds a few methods:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>reset(dic = reset_dic), which passes reset values to the StateElements it holds and triggers their reset method</p></li>
+<li><p>filter(mode=mode, filterdict=filterdict), which filters out the state to extract some information.</p></li>
+<li><p>serialize(), which transforms the state into a format that can be serializable, e.g. to send as a JSON format.</p></li>
+</ul>
+</div></blockquote>
+<p>Initializing a State is straightforward:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">state</span> <span class="o">=</span> <span class="n">State</span><span class="p">()</span>
+<span class="n">substate</span> <span class="o">=</span> <span class="n">State</span><span class="p">()</span>
+<span class="n">substate</span><span class="p">[</span><span class="s2">&quot;x1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">discrete_array_element</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">substate</span><span class="p">[</span><span class="s2">&quot;x3&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">array_element</span><span class="p">(</span>
+    <span class="n">init</span><span class="o">=</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span> <span class="n">low</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span> <span class="n">high</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="p">)</span>
+
+<span class="n">substate2</span> <span class="o">=</span> <span class="n">State</span><span class="p">()</span>
+<span class="n">substate2</span><span class="p">[</span><span class="s2">&quot;y1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">discrete_array_element</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="n">state</span><span class="p">[</span><span class="s2">&quot;sub1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">substate</span>
+<span class="n">state</span><span class="p">[</span><span class="s2">&quot;sub2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">substate2</span>
+</pre></div>
+</div>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.base.State.State.clear" title="coopihc.base.State.State.clear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.base.State.State.copy" title="coopihc.base.State.State.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.base.State.State.equals" title="coopihc.base.State.State.equals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">equals</span></code></a></p></td>
+<td><p>equality checks that also checks for spaces (hard).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.base.State.State.filter" title="coopihc.base.State.State.filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter</span></code></a></p></td>
+<td><p>Extract some part of the state information</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.base.State.State.fromkeys" title="coopihc.base.State.State.fromkeys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fromkeys</span></code></a></p></td>
+<td><p>Create a new dictionary with keys from iterable and values set to value.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.base.State.State.get" title="coopihc.base.State.State.get"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get</span></code></a></p></td>
+<td><p>Return the value for key if key is in the dictionary, else default.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.base.State.State.items" title="coopihc.base.State.State.items"><code class="xref py py-obj docutils literal notranslate"><span class="pre">items</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.base.State.State.keys" title="coopihc.base.State.State.keys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">keys</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.base.State.State.pop" title="coopihc.base.State.State.pop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pop</span></code></a></p></td>
+<td><p>If key is not found, d is returned if given, otherwise KeyError is raised</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.base.State.State.popitem" title="coopihc.base.State.State.popitem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">popitem</span></code></a></p></td>
+<td><p>Remove and return a (key, value) pair as a 2-tuple.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.base.State.State.reset" title="coopihc.base.State.State.reset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset</span></code></a></p></td>
+<td><p>Initialize the state.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.base.State.State.serialize" title="coopihc.base.State.State.serialize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">serialize</span></code></a></p></td>
+<td><p>Makes the state serializable.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.base.State.State.setdefault" title="coopihc.base.State.State.setdefault"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setdefault</span></code></a></p></td>
+<td><p>Insert key with a value of default if key is not in the dictionary.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.base.State.State.update" title="coopihc.base.State.State.update"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update</span></code></a></p></td>
+<td><p>If E is present and has a .keys() method, then does:  for k in E: D[k] = E[k] If E is present and lacks a .keys() method, then does:  for k, v in E: D[k] = v In either case, this is followed by: for k in F:  D[k] = F[k]</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.base.State.State.values" title="coopihc.base.State.State.values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">values</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.base.State.State.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None.</span>&#160; <span class="pre">Remove</span> <span class="pre">all</span> <span class="pre">items</span> <span class="pre">from</span> <span class="pre">D.</span></span></span><a class="headerlink" href="#coopihc.base.State.State.clear" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.base.State.State.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">a</span> <span class="pre">shallow</span> <span class="pre">copy</span> <span class="pre">of</span> <span class="pre">D</span></span></span><a class="headerlink" href="#coopihc.base.State.State.copy" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.base.State.State.equals">
+<span class="sig-name descname"><span class="pre">equals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'hard'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/base/State.html#State.equals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.base.State.State.equals" title="Permalink to this definition"></a></dt>
+<dd><p>equality checks that also checks for spaces (hard).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">_example_state</span> <span class="o">=</span> <span class="n">example_game_state</span><span class="p">()</span>
+<span class="n">obs</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;game_info&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;turn_index&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="s2">&quot;round_index&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mi">0</span><span class="p">)},</span>
+    <span class="s2">&quot;task_state&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="s2">&quot;targets&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])},</span>
+    <span class="s2">&quot;user_action&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mi">0</span><span class="p">)},</span>
+    <span class="s2">&quot;assistant_action&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mi">2</span><span class="p">)},</span>
+<span class="p">}</span>
+<span class="k">del</span> <span class="n">_example_state</span><span class="p">[</span><span class="s2">&quot;user_state&quot;</span><span class="p">]</span>
+<span class="k">del</span> <span class="n">_example_state</span><span class="p">[</span><span class="s2">&quot;assistant_state&quot;</span><span class="p">]</span>
+<span class="k">assert</span> <span class="ow">not</span> <span class="n">_example_state</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;hard&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.base.State.State.filter">
+<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'array'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filterdict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/base/State.html#State.filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.base.State.State.filter" title="Permalink to this definition"></a></dt>
+<dd><p>Extract some part of the state information</p>
+<p>An example for filterdict’s structure is as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">filterdict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;sub1&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">({</span><span class="s2">&quot;x1&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;x3&quot;</span><span class="p">:</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)}),</span>
+        <span class="s2">&quot;sub2&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">({</span><span class="s2">&quot;y1&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}),</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>This will filter out</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>the first component (index 0) for subsubstate x1 in substate sub1,</p></li>
+<li><p>the first and second components for subsubstate x3 in substate sub1,</p></li>
+<li><p>the first component for subsubstate y1 in substate sub2.</p></li>
+</ul>
+</div></blockquote>
+<p>Example usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Filter out spaces</span>
+<span class="n">f_state</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;space&quot;</span><span class="p">,</span> <span class="n">filterdict</span><span class="o">=</span><span class="n">filterdict</span><span class="p">)</span>
+
+<span class="c1"># Filter out as arrays</span>
+<span class="n">f_state</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;array&quot;</span><span class="p">,</span> <span class="n">filterdict</span><span class="o">=</span><span class="n">filterdict</span><span class="p">)</span>
+
+<span class="c1"># Filter out as StateElement</span>
+<span class="n">f_state</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;stateelement&quot;</span><span class="p">,</span> <span class="n">filterdict</span><span class="o">=</span><span class="n">filterdict</span><span class="p">)</span>
+
+<span class="c1"># Get spaces</span>
+<span class="n">f_state</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;space&quot;</span><span class="p">)</span>
+
+<span class="c1"># Get arrays</span>
+<span class="n">f_state</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;array&quot;</span><span class="p">)</span>
+
+<span class="c1"># Get Gym Compatible arrays</span>
+<span class="n">f_state</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;array-Gym&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mode</strong> (<em>str</em><em>, </em><em>optional</em>) – “array” or “spaces” or “stateelement”, defaults to “array”. If “stateelement”, returns a dictionnary with the selected stateelements. If “spaces”, returns the same dictionnary, but with only the spaces (no array information). If “array”, returns the same dictionnary, but with only the value arrays (no space information).</p></li>
+<li><p><strong>filterdict</strong> (<em>dictionnary</em><em>, </em><em>optional</em>) – the dictionnary that indicates which components to filter out, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The dictionnary with the filtered state</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dictionnary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.base.State.State.fromkeys">
+<span class="sig-name descname"><span class="pre">fromkeys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coopihc.base.State.State.fromkeys" title="Permalink to this definition"></a></dt>
+<dd><p>Create a new dictionary with keys from iterable and values set to value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.base.State.State.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coopihc.base.State.State.get" title="Permalink to this definition"></a></dt>
+<dd><p>Return the value for key if key is in the dictionary, else default.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.base.State.State.items">
+<span class="sig-name descname"><span class="pre">items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">a</span> <span class="pre">set-like</span> <span class="pre">object</span> <span class="pre">providing</span> <span class="pre">a</span> <span class="pre">view</span> <span class="pre">on</span> <span class="pre">D's</span> <span class="pre">items</span></span></span><a class="headerlink" href="#coopihc.base.State.State.items" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.base.State.State.keys">
+<span class="sig-name descname"><span class="pre">keys</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">a</span> <span class="pre">set-like</span> <span class="pre">object</span> <span class="pre">providing</span> <span class="pre">a</span> <span class="pre">view</span> <span class="pre">on</span> <span class="pre">D's</span> <span class="pre">keys</span></span></span><a class="headerlink" href="#coopihc.base.State.State.keys" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.base.State.State.pop">
+<span class="sig-name descname"><span class="pre">pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="optional">]</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">v,</span> <span class="pre">remove</span> <span class="pre">specified</span> <span class="pre">key</span> <span class="pre">and</span> <span class="pre">return</span> <span class="pre">the</span> <span class="pre">corresponding</span> <span class="pre">value.</span></span></span><a class="headerlink" href="#coopihc.base.State.State.pop" title="Permalink to this definition"></a></dt>
+<dd><p>If key is not found, d is returned if given, otherwise KeyError is raised</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.base.State.State.popitem">
+<span class="sig-name descname"><span class="pre">popitem</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coopihc.base.State.State.popitem" title="Permalink to this definition"></a></dt>
+<dd><p>Remove and return a (key, value) pair as a 2-tuple.</p>
+<p>Pairs are returned in LIFO (last-in, first-out) order.
+Raises KeyError if the dict is empty.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.base.State.State.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/base/State.html#State.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.base.State.State.reset" title="Permalink to this definition"></a></dt>
+<dd><p>Initialize the state. See StateElement</p>
+<p>Example usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Normal reset</span>
+<span class="n">state</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+
+<span class="c1"># Forced reset</span>
+<span class="n">reset_dic</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;sub1&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x1&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
+    <span class="s2">&quot;sub2&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;y1&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
+<span class="p">}</span>
+<span class="n">state</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">dic</span><span class="o">=</span><span class="n">reset_dic</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.base.State.State.serialize">
+<span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/base/State.html#State.serialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.base.State.State.serialize" title="Permalink to this definition"></a></dt>
+<dd><p>Makes the state serializable.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">state</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>serializable dictionnary</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.base.State.State.setdefault">
+<span class="sig-name descname"><span class="pre">setdefault</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coopihc.base.State.State.setdefault" title="Permalink to this definition"></a></dt>
+<dd><p>Insert key with a value of default if key is not in the dictionary.</p>
+<p>Return the value for key if key is in the dictionary, else default.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.base.State.State.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <span class="optional">]</span><em class="sig-param"><span class="n"><span class="pre">**F</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None.</span>&#160; <span class="pre">Update</span> <span class="pre">D</span> <span class="pre">from</span> <span class="pre">dict/iterable</span> <span class="pre">E</span> <span class="pre">and</span> <span class="pre">F.</span></span></span><a class="headerlink" href="#coopihc.base.State.State.update" title="Permalink to this definition"></a></dt>
+<dd><p>If E is present and has a .keys() method, then does:  for k in E: D[k] = E[k]
+If E is present and lacks a .keys() method, then does:  for k, v in E: D[k] = v
+In either case, this is followed by: for k in F:  D[k] = F[k]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.base.State.State.values">
+<span class="sig-name descname"><span class="pre">values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">an</span> <span class="pre">object</span> <span class="pre">providing</span> <span class="pre">a</span> <span class="pre">view</span> <span class="pre">on</span> <span class="pre">D's</span> <span class="pre">values</span></span></span><a class="headerlink" href="#coopihc.base.State.State.values" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="coopihc.base.State.html" class="btn btn-neutral float-left" title="coopihc.base.State" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="coopihc.base.StateElement.html" class="btn btn-neutral float-right" title="coopihc.base.StateElement" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

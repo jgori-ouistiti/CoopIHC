@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coopihc.base.Space.CatSet &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="coopihc.base.Space.Numeric" href="coopihc.base.Space.Numeric.html" />
+    <link rel="prev" title="coopihc.base.Space.BaseSpace" href="coopihc.base.Space.BaseSpace.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">    Home page</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="coopihc.html">    API reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="coopihc.agents.html">coopihc.agents</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="coopihc.base.html">coopihc.base</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="coopihc.base.Space.html">coopihc.base.Space</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="coopihc.base.Space.BaseSpace.html">coopihc.base.Space.BaseSpace</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">coopihc.base.Space.CatSet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coopihc.base.Space.Numeric.html">coopihc.base.Space.Numeric</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coopihc.base.Space.Space.html">coopihc.base.Space.Space</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.base.State.html">coopihc.base.State</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.base.StateElement.html">coopihc.base.StateElement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.base.elements.html">coopihc.base.elements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.base.utils.html">coopihc.base.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.bundle.html">coopihc.bundle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.helpers.html">coopihc.helpers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.inference.html">coopihc.inference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.interactiontask.html">coopihc.interactiontask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.observation.html">coopihc.observation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.policy.html">coopihc.policy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="coopihc.html">coopihc</a> &raquo;</li>
+          <li><a href="coopihc.base.html">coopihc.base</a> &raquo;</li>
+          <li><a href="coopihc.base.Space.html">coopihc.base.Space</a> &raquo;</li>
+      <li>coopihc.base.Space.CatSet</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/coopihc.base.Space.CatSet.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="coopihc-base-space-catset">
+<h1>coopihc.base.Space.CatSet<a class="headerlink" href="#coopihc-base-space-catset" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="coopihc.base.Space.CatSet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CatSet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contains</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'numpy'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/base/Space.html#CatSet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.base.Space.CatSet" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="coopihc.base.Space.BaseSpace.html#coopihc.base.Space.BaseSpace" title="coopihc.base.Space.BaseSpace"><code class="xref py py-class docutils literal notranslate"><span class="pre">coopihc.base.Space.BaseSpace</span></code></a></p>
+<p>Categorical Set</p>
+<p>A categorical set defined explicitly. Use this for data where traditional distance is meaningless i.e. when 1 is not closer to 0 then to 5.
+Performance of this object for large dimensions may be bad, because the whole array is stored in memory.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">s</span> <span class="o">=</span> <span class="n">space</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int16</span><span class="p">))</span>
+<span class="k">assert</span> <span class="n">s</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">numpy</span><span class="o">.</span><span class="n">int16</span>
+<span class="k">assert</span> <span class="n">s</span><span class="o">.</span><span class="n">N</span> <span class="o">==</span> <span class="mi">3</span>
+<span class="k">assert</span> <span class="n">s</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">()</span>
+</pre></div>
+</div>
+<p>You can further set the seed of the space (useful when sampling from the space), force the dtype of the space and specify how membership to the space is checked via the keyword arguments. See <code class="docutils literal notranslate"><span class="pre">BaseSpace</span></code> for more information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>array</strong> (<em>numpy.ndarray</em><em>, </em><em>optional</em>) – set of values, defaults to None</p>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.base.Space.CatSet.sample" title="coopihc.base.Space.CatSet.sample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sample</span></code></a></p></td>
+<td><p>Generate values by sampling uniformly from the set.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">serialize</span></code></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.base.Space.CatSet.N" title="coopihc.base.Space.CatSet.N"><code class="xref py py-obj docutils literal notranslate"><span class="pre">N</span></code></a></p></td>
+<td><p>Cardinality of the set</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.base.Space.CatSet.dtype" title="coopihc.base.Space.CatSet.dtype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dtype</span></code></a></p></td>
+<td><p>numpy.dtype of data</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">high</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">low</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.base.Space.CatSet.shape" title="coopihc.base.Space.CatSet.shape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shape</span></code></a></p></td>
+<td><p>numpy shape of the data that belongs to the set</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">spacetype</span></code></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py property">
+<dt class="sig sig-object py" id="coopihc.base.Space.CatSet.N">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">N</span></span><a class="headerlink" href="#coopihc.base.Space.CatSet.N" title="Permalink to this definition"></a></dt>
+<dd><p>Cardinality of the set</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="coopihc.base.Space.CatSet.dtype">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dtype</span></span><a class="headerlink" href="#coopihc.base.Space.CatSet.dtype" title="Permalink to this definition"></a></dt>
+<dd><p>numpy.dtype of data</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.base.Space.CatSet.sample">
+<span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/base/Space.html#CatSet.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.base.Space.CatSet.sample" title="Permalink to this definition"></a></dt>
+<dd><p>Generate values by sampling uniformly from the set. You can set the seed to the rng, see keyword arguments at init.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">s</span> <span class="o">=</span> <span class="n">CatSet</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1000</span><span class="p">),</span> <span class="n">seed</span><span class="o">=</span><span class="mi">123</span><span class="p">)</span>
+<span class="n">q</span> <span class="o">=</span> <span class="n">CatSet</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1000</span><span class="p">),</span> <span class="n">seed</span><span class="o">=</span><span class="mi">123</span><span class="p">)</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">CatSet</span><span class="p">(</span><span class="n">array</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1000</span><span class="p">),</span> <span class="n">seed</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">_s</span><span class="p">,</span> <span class="n">_q</span><span class="p">,</span> <span class="n">_r</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">sample</span><span class="p">(),</span> <span class="n">q</span><span class="o">.</span><span class="n">sample</span><span class="p">(),</span> <span class="n">r</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">_s</span> <span class="ow">in</span> <span class="n">s</span>
+<span class="k">assert</span> <span class="n">_q</span> <span class="ow">in</span> <span class="n">q</span>
+<span class="k">assert</span> <span class="n">_r</span> <span class="ow">in</span> <span class="n">r</span>
+<span class="k">assert</span> <span class="n">_s</span> <span class="o">==</span> <span class="n">_q</span>
+<span class="k">assert</span> <span class="n">_s</span> <span class="o">!=</span> <span class="n">_r</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="coopihc.base.Space.CatSet.shape">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shape</span></span><a class="headerlink" href="#coopihc.base.Space.CatSet.shape" title="Permalink to this definition"></a></dt>
+<dd><p>numpy shape of the data that belongs to the set</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="coopihc.base.Space.BaseSpace.html" class="btn btn-neutral float-left" title="coopihc.base.Space.BaseSpace" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="coopihc.base.Space.Numeric.html" class="btn btn-neutral float-right" title="coopihc.base.Space.Numeric" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

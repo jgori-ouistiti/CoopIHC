@@ -1,0 +1,37 @@
+coopihc.observation.BaseObservationEngine.BaseObservationEngine
+===============================================================
+
+.. currentmodule:: coopihc.observation.BaseObservationEngine
+
+.. autoclass:: BaseObservationEngine
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~BaseObservationEngine.default_value
+      ~BaseObservationEngine.observe
+      ~BaseObservationEngine.observe_from_substates
+      ~BaseObservationEngine.reset
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~BaseObservationEngine.action
+      ~BaseObservationEngine.bundle
+      ~BaseObservationEngine.observation
+      ~BaseObservationEngine.unwrapped
+   
+   

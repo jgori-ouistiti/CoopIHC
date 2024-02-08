@@ -1,0 +1,40 @@
+coopihc.bundle.Simulator.Simulator
+==================================
+
+.. currentmodule:: coopihc.bundle.Simulator
+
+.. autoclass:: Simulator
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~Simulator.close
+      ~Simulator.open
+      ~Simulator.quarter_step
+      ~Simulator.render
+      ~Simulator.reset
+      ~Simulator.step
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Simulator.parameters
+      ~Simulator.round_number
+      ~Simulator.state
+      ~Simulator.turn_dict
+      ~Simulator.turn_number
+   
+   

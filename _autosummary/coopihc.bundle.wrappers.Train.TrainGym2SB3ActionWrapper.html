@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="coopihc.helpers" href="coopihc.helpers.html" />
+    <link rel="prev" title="coopihc.bundle.wrappers.Train.TrainGym" href="coopihc.bundle.wrappers.Train.TrainGym.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">    Home page</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="coopihc.html">    API reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="coopihc.agents.html">coopihc.agents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.base.html">coopihc.base</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="coopihc.bundle.html">coopihc.bundle</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="coopihc.bundle.BaseBundle.html">coopihc.bundle.BaseBundle</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.bundle.Bundle.html">coopihc.bundle.Bundle</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.bundle.Simulator.html">coopihc.bundle.Simulator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.bundle.WsServer.html">coopihc.bundle.WsServer</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="coopihc.bundle.wrappers.html">coopihc.bundle.wrappers</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="coopihc.bundle.wrappers.PipedTaskBundleWrapper.html">coopihc.bundle.wrappers.PipedTaskBundleWrapper</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="coopihc.bundle.wrappers.Train.html">coopihc.bundle.wrappers.Train</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.helpers.html">coopihc.helpers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.inference.html">coopihc.inference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.interactiontask.html">coopihc.interactiontask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.observation.html">coopihc.observation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.policy.html">coopihc.policy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="coopihc.html">coopihc</a> &raquo;</li>
+          <li><a href="coopihc.bundle.html">coopihc.bundle</a> &raquo;</li>
+          <li><a href="coopihc.bundle.wrappers.html">coopihc.bundle.wrappers</a> &raquo;</li>
+          <li><a href="coopihc.bundle.wrappers.Train.html">coopihc.bundle.wrappers.Train</a> &raquo;</li>
+      <li>coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="coopihc-bundle-wrappers-train-traingym2sb3actionwrapper">
+<h1>coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper<a class="headerlink" href="#coopihc-bundle-wrappers-train-traingym2sb3actionwrapper" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TrainGym2SB3ActionWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/bundle/wrappers/Train.html#TrainGym2SB3ActionWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gym.core.ActionWrapper</span></code></p>
+<p>Wrapper that flatten all spaces to boxes, using one-hot encoding for discrete spaces.</p>
+<p>While this wrapper will likely work for all cases, it may sometimes be more effective to code your own actionwrapper to avoid one-hot encoding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>gym</strong> (<em>[</em><em>type</em><em>]</em>) – [description]</p>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">action</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">class_name</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.close" title="coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.close"><code class="xref py py-obj docutils literal notranslate"><span class="pre">close</span></code></a></p></td>
+<td><p>Override close in your subclass to perform any necessary cleanup.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_reward</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.render" title="coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.render"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render</span></code></a></p></td>
+<td><p>Renders the environment.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.reset" title="coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.reset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset</span></code></a></p></td>
+<td><p>Resets the environment to an initial state and returns an initial observation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reverse_action</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.seed" title="coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.seed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">seed</span></code></a></p></td>
+<td><p>Sets the seed for this env's random number generator(s).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.step" title="coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.step"><code class="xref py py-obj docutils literal notranslate"><span class="pre">step</span></code></a></p></td>
+<td><p>Run one timestep of the environment's dynamics.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">action_space</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">metadata</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">observation_space</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reward_range</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">spec</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.unwrapped" title="coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.unwrapped"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unwrapped</span></code></a></p></td>
+<td><p>Completely unwrap this env.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.close" title="Permalink to this definition"></a></dt>
+<dd><p>Override close in your subclass to perform any necessary cleanup.</p>
+<p>Environments will automatically close() themselves when
+garbage collected or when the program exits.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.render">
+<span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'human'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.render" title="Permalink to this definition"></a></dt>
+<dd><p>Renders the environment.</p>
+<p>The set of supported modes varies per environment. (And some
+environments do not support rendering at all.) By convention,
+if mode is:</p>
+<ul class="simple">
+<li><p>human: render to the current display or terminal and
+return nothing. Usually for human consumption.</p></li>
+<li><p>rgb_array: Return an numpy.ndarray with shape (x, y, 3),
+representing RGB values for an x-by-y pixel image, suitable
+for turning into a video.</p></li>
+<li><p>ansi: Return a string (str) or StringIO.StringIO containing a
+terminal-style text representation. The text can include newlines
+and ANSI escape sequences (e.g. for colors).</p></li>
+</ul>
+<dl class="simple">
+<dt>Note:</dt><dd><dl class="simple">
+<dt>Make sure that your class’s metadata ‘render.modes’ key includes</dt><dd><p>the list of supported modes. It’s recommended to call super()
+in implementations to use the functionality of this method.</p>
+</dd>
+</dl>
+</dd>
+<dt>Args:</dt><dd><p>mode (str): the mode to render with</p>
+</dd>
+</dl>
+<p>Example:</p>
+<dl>
+<dt>class MyEnv(Env):</dt><dd><p>metadata = {‘render.modes’: [‘human’, ‘rgb_array’]}</p>
+<dl class="simple">
+<dt>def render(self, mode=’human’):</dt><dd><dl class="simple">
+<dt>if mode == ‘rgb_array’:</dt><dd><p>return np.array(…) # return RGB frame suitable for video</p>
+</dd>
+<dt>elif mode == ‘human’:</dt><dd><p>… # pop up a window and render</p>
+</dd>
+<dt>else:</dt><dd><p>super(MyEnv, self).render(mode=mode) # just raise an exception</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.reset" title="Permalink to this definition"></a></dt>
+<dd><p>Resets the environment to an initial state and returns an initial
+observation.</p>
+<p>Note that this function should not reset the environment’s random
+number generator(s); random variables in the environment’s state should
+be sampled independently between multiple calls to <cite>reset()</cite>. In other
+words, each call of <cite>reset()</cite> should yield an environment suitable for
+a new episode, independent of previous episodes.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>observation (object): the initial observation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.seed">
+<span class="sig-name descname"><span class="pre">seed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.seed" title="Permalink to this definition"></a></dt>
+<dd><p>Sets the seed for this env’s random number generator(s).</p>
+<dl class="simple">
+<dt>Note:</dt><dd><p>Some environments use multiple pseudorandom number generators.
+We want to capture all such seeds used in order to ensure that
+there aren’t accidental correlations between multiple generators.</p>
+</dd>
+<dt>Returns:</dt><dd><dl class="simple">
+<dt>list&lt;bigint&gt;: Returns the list of seeds used in this env’s random</dt><dd><p>number generators. The first value in the list should be the
+“main” seed, or the value which a reproducer should pass to
+‘seed’. Often, the main seed equals the provided ‘seed’, but
+this won’t be true if seed=None, for example.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.step" title="Permalink to this definition"></a></dt>
+<dd><p>Run one timestep of the environment’s dynamics. When end of
+episode is reached, you are responsible for calling <cite>reset()</cite>
+to reset this environment’s state.</p>
+<p>Accepts an action and returns a tuple (observation, reward, done, info).</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>action (object): an action provided by the agent</p>
+</dd>
+<dt>Returns:</dt><dd><p>observation (object): agent’s observation of the current environment
+reward (float) : amount of reward returned after previous action
+done (bool): whether the episode has ended, in which case further step() calls will return undefined results
+info (dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.unwrapped">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">unwrapped</span></span><a class="headerlink" href="#coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.unwrapped" title="Permalink to this definition"></a></dt>
+<dd><p>Completely unwrap this env.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>gym.Env: The base non-wrapped gym.Env instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="coopihc.bundle.wrappers.Train.TrainGym.html" class="btn btn-neutral float-left" title="coopihc.bundle.wrappers.Train.TrainGym" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="coopihc.helpers.html" class="btn btn-neutral float-right" title="coopihc.helpers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

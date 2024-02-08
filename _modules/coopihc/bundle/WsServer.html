@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coopihc.bundle.WsServer &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../_autosummary/coopihc.html">    API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>coopihc.bundle.WsServer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coopihc.bundle.WsServer</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Some of the code is adapted from https://github.com/IRLL/HIPPO_Gym/</span>
+<span class="kn">import</span> <span class="nn">asyncio</span><span class="o">,</span> <span class="nn">websockets</span><span class="o">,</span> <span class="nn">json</span><span class="o">,</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Process</span><span class="p">,</span> <span class="n">Pipe</span>
+
+<span class="kn">from</span> <span class="nn">coopihc.interactiontask</span> <span class="kn">import</span> <span class="n">PipeTaskWrapper</span>
+<span class="kn">from</span> <span class="nn">coopihc.bundle.wrappers</span> <span class="kn">import</span> <span class="n">PipedTaskBundleWrapper</span>
+
+
+<span class="c1"># like functools.partial, but with arguments added from the back</span>
+<div class="viewcode-block" id="partialback"><a class="viewcode-back" href="../../../_autosummary/coopihc.bundle.WsServer.partialback.html#coopihc.bundle.WsServer.partialback">[docs]</a><span class="k">def</span> <span class="nf">partialback</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">extra_args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;partialback</span>
+
+<span class="sd">    like functools.partial, but with arguments added from the back</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">extra_args</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span></div>
+
+
+<div class="viewcode-block" id="WsServer"><a class="viewcode-back" href="../../../_autosummary/coopihc.bundle.WsServer.WsServer.html#coopihc.bundle.WsServer.WsServer">[docs]</a><span class="k">class</span> <span class="nc">WsServer</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;WebSocket Server for Bundle</span>
+
+<span class="sd">    A Websocket server that handles a bundle with an external task that communicates with that server.</span>
+
+<span class="sd">    :param bundle: the bundle to serve</span>
+<span class="sd">    :type bundle: :py:class:`Bundle&lt;coopihc.bundle.Bundle.Bundle&gt;`</span>
+<span class="sd">    :param taskwrapper: Task wrapper</span>
+<span class="sd">    :type taskwrapper: :py:class:`PipeTaskWrapper&lt;coopihc.interactiontask.PipeTaskWrapper.PipeTaskWrapper&gt;`</span>
+<span class="sd">    :param address: server address, defaults to &quot;localhost&quot;</span>
+<span class="sd">    :type address: str, optional</span>
+<span class="sd">    :param port: port number, defaults to 4000</span>
+<span class="sd">    :type port: int, optional</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">,</span> <span class="n">taskwrapper</span><span class="p">,</span> <span class="n">address</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">4000</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_server</span> <span class="o">=</span> <span class="n">websockets</span><span class="o">.</span><span class="n">serve</span><span class="p">(</span>
+            <span class="n">partialback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bundlehandler</span><span class="p">,</span> <span class="n">bundle</span><span class="p">,</span> <span class="n">taskwrapper</span><span class="p">),</span> <span class="n">address</span><span class="p">,</span> <span class="n">port</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span> <span class="o">=</span> <span class="n">bundle</span>
+
+<div class="viewcode-block" id="WsServer.start"><a class="viewcode-back" href="../../../_autosummary/coopihc.bundle.WsServer.WsServer.html#coopihc.bundle.WsServer.WsServer.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;start</span>
+
+<span class="sd">        Start the server</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_server</span><span class="p">)</span>
+        <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span><span class="o">.</span><span class="n">run_forever</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="WsServer.bundlehandler"><a class="viewcode-back" href="../../../_autosummary/coopihc.bundle.WsServer.WsServer.html#coopihc.bundle.WsServer.WsServer.bundlehandler">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">bundlehandler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">websocket</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">bundle</span><span class="p">,</span> <span class="n">taskwrapper</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;bundlehandler</span>
+
+<span class="sd">        On websocket connection, starts a new userTrial in a new Process.</span>
+<span class="sd">        Then starts async listeners for sending and recieving messages.</span>
+
+<span class="sd">        :param websocket: address</span>
+<span class="sd">        :type websocket: string</span>
+<span class="sd">        :param path: portnumber</span>
+<span class="sd">        :type path: int</span>
+<span class="sd">        :param bundle: the bundle to serve</span>
+<span class="sd">        :type bundle: :py:class:`Bundle&lt;coopihc.bundle.Bundle.Bundle&gt;`</span>
+<span class="sd">        :param taskwrapper: Task wrapper</span>
+<span class="sd">        :type taskwrapper: :py:class:`PipeTaskWrapper&lt;coopihc.interactiontask.PipeTaskWrapper.PipeTaskWrapper&gt;`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">websocket</span><span class="p">)</span>
+        <span class="n">bundlepipeup</span><span class="p">,</span> <span class="n">bundlepipedown</span> <span class="o">=</span> <span class="n">Pipe</span><span class="p">()</span>
+        <span class="n">process</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span>
+            <span class="n">target</span><span class="o">=</span><span class="n">PipedTaskBundleWrapper</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">bundle</span><span class="p">,</span> <span class="n">taskwrapper</span><span class="p">,</span> <span class="n">bundlepipedown</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">process</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="n">consumerTask</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">ensure_future</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">consumer_handler</span><span class="p">(</span><span class="n">websocket</span><span class="p">,</span> <span class="n">bundlepipeup</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">producerTask</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">ensure_future</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">producer_handler</span><span class="p">(</span><span class="n">websocket</span><span class="p">,</span> <span class="n">bundlepipeup</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">done</span><span class="p">,</span> <span class="n">pending</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">consumerTask</span><span class="p">,</span> <span class="n">producerTask</span><span class="p">],</span> <span class="n">return_when</span><span class="o">=</span><span class="n">asyncio</span><span class="o">.</span><span class="n">FIRST_COMPLETED</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">pending</span><span class="p">:</span>
+            <span class="n">task</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+        <span class="k">await</span> <span class="n">websocket</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="WsServer.register"><a class="viewcode-back" href="../../../_autosummary/coopihc.bundle.WsServer.WsServer.html#coopihc.bundle.WsServer.WsServer.register">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">websocket</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;register</span>
+
+<span class="sd">        Keep track of clients.</span>
+
+<span class="sd">        :param websocket: address</span>
+<span class="sd">        :type websocket: string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">websocket</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;new task connected: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">websocket</span><span class="p">)))</span></div>
+
+<div class="viewcode-block" id="WsServer.consumer_handler"><a class="viewcode-back" href="../../../_autosummary/coopihc.bundle.WsServer.WsServer.html#coopihc.bundle.WsServer.WsServer.consumer_handler">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">consumer_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">websocket</span><span class="p">,</span> <span class="n">pipe</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;consumer_handler</span>
+
+<span class="sd">        When messages from websocket are received, send them over the pipe</span>
+
+<span class="sd">        :param websocket: address</span>
+<span class="sd">        :type websocket: string</span>
+<span class="sd">        :param pipe: Pipe through which messages are sent</span>
+<span class="sd">        :type pipe: :py:class:`Pipe &lt;subprocess.Pipe&gt;`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">websocket</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;received message </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">message</span><span class="p">))</span>
+            <span class="c1"># print(&quot;json&quot;, [[key, value, type(value)] for key, value in json.loads(message).items()])</span>
+            <span class="n">pipe</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">message</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="WsServer.producer_handler"><a class="viewcode-back" href="../../../_autosummary/coopihc.bundle.WsServer.WsServer.html#coopihc.bundle.WsServer.WsServer.producer_handler">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">producer_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">websocket</span><span class="p">,</span> <span class="n">pipe</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;producer_handler</span>
+
+<span class="sd">        Look for messages to send from the Bundle.</span>
+<span class="sd">        asyncio.sleep() is required to make this non-blocking</span>
+<span class="sd">        default sleep time is (0.01) which creates a maximum framerate of</span>
+<span class="sd">        just under 100 frames/s. For faster framerates decrease sleep time</span>
+<span class="sd">        however be aware that this will affect the ability of the</span>
+<span class="sd">        consumer_handler function to keep up with messages from the websocket</span>
+<span class="sd">        and may cause poor performance if the web-client is sending a high volume of messages.</span>
+
+<span class="sd">        :param websocket: address</span>
+<span class="sd">        :type websocket: string</span>
+<span class="sd">        :param pipe: Pipe through which messages are sent</span>
+<span class="sd">        :type pipe: :py:class:`Pipe &lt;subprocess.Pipe&gt;`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">done</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">producer</span><span class="p">(</span><span class="n">websocket</span><span class="p">,</span> <span class="n">pipe</span><span class="p">)</span>
+            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="WsServer.producer"><a class="viewcode-back" href="../../../_autosummary/coopihc.bundle.WsServer.WsServer.html#coopihc.bundle.WsServer.WsServer.producer">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">producer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">websocket</span><span class="p">,</span> <span class="n">pipe</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;producer</span>
+
+<span class="sd">        Check pipe for messages to send to websocket.</span>
+<span class="sd">        If the process is done, send final message to websocket and return</span>
+<span class="sd">        True to tell calling functions that the process is complete.</span>
+
+<span class="sd">        :param websocket: address</span>
+<span class="sd">        :type websocket: string</span>
+<span class="sd">        :param pipe: Pipe through which messages are sent</span>
+<span class="sd">        :type pipe: :py:class:`Pipe &lt;subprocess.Pipe&gt;`</span>
+<span class="sd">        :return: [description]</span>
+<span class="sd">        :rtype: [type]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">pipe</span><span class="o">.</span><span class="n">poll</span><span class="p">():</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">pipe</span><span class="o">.</span><span class="n">recv</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">message</span> <span class="o">==</span> <span class="s2">&quot;done&quot;</span><span class="p">:</span>
+                <span class="k">await</span> <span class="n">websocket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;done&quot;</span><span class="p">}))</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sending message: </span><span class="se">\t</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">message</span><span class="p">)))</span>
+                <span class="k">await</span> <span class="n">websocket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">message</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">False</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

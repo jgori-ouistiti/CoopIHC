@@ -1,0 +1,35 @@
+coopihc.policy.ExamplePolicy
+============================
+
+.. automodule:: coopihc.policy.ExamplePolicy
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      CoordinatedPolicy
+      CoordinatedPolicyWithParams
+      ExamplePolicy
+      PseudoRandomPolicy
+   
+   
+
+   
+   
+   
+
+
+

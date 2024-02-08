@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assistants that simulate users &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="The Interaction Model" href="interaction_model.html" />
+    <link rel="prev" title="Interfacing CoopIHC with a real user" href="realuser.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Assistants that simulate users</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#single-shot-predictions">Single-shot predictions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rollouts">Rollouts</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_autosummary/coopihc.html">    API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Assistants that simulate users</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/guide/simulating_rollouts.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="assistants-that-simulate-users">
+<h1>Assistants that simulate users<a class="headerlink" href="#assistants-that-simulate-users" title="Permalink to this headline"></a></h1>
+<p>In many cases it is useful to have an assistant maintain a model of a user, for example to perform single-shot predictions (what will be the next user step?) or complete simulations by means of rollouts (what is the end result if I choose this policy throughout the task?).
+This predictions can then be used in the decision-making process.</p>
+<p>Since in <em>CoopIHC</em> we define users as classes (and/or instances), it seems natural to want to pass a user to an assistant, which could then query it to perform predictions.</p>
+<section id="single-shot-predictions">
+<h2>Single-shot predictions<a class="headerlink" href="#single-shot-predictions" title="Permalink to this headline"></a></h2>
+<p>Single-shot predictions are easy to implement with basic <em>CoopIHC</em> functions. Below is an example, where we consider a coordination task: the user and assistant have to select the same action to make the task state evolve (+1). The coordination will be successful because the assistant will manage a simulation of the user that provides single-shot predictions of the next user action.</p>
+<p>We first modify the <code class="docutils literal notranslate"><span class="pre">ExampleTask</span></code> that we used in the Quickstart:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">class</span> <span class="nc">CoordinatedTask</span><span class="p">(</span><span class="n">InteractionTask</span><span class="p">):</span>
+<span class="linenos"> 2</span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="linenos"> 3</span>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="linenos"> 4</span>        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">discrete_array_element</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+<span class="linenos"> 5</span>
+<span class="linenos"> 6</span>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dic</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="linenos"> 7</span>        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos"> 8</span>        <span class="k">return</span>
+<span class="linenos"> 9</span>
+<span class="linenos">10</span>    <span class="k">def</span> <span class="nf">on_user_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="linenos">11</span>        <span class="n">is_done</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="linenos">12</span>
+<span class="linenos">13</span>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">9</span><span class="p">:</span>
+<span class="linenos">14</span>            <span class="n">is_done</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="linenos">15</span>
+<span class="linenos">16</span>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round_number</span> <span class="o">==</span> <span class="mi">100</span><span class="p">:</span>
+<span class="linenos">17</span>            <span class="n">is_done</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="linenos">18</span>
+<span class="linenos">19</span>        <span class="n">reward</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="linenos">20</span>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">is_done</span>
+<span class="linenos">21</span>
+<span class="linenos">22</span>    <span class="k">def</span> <span class="nf">on_assistant_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="linenos">23</span>        <span class="n">is_done</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="linenos">24</span>
+<span class="linenos">25</span>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_action</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">assistant_action</span><span class="p">:</span>
+<span class="linenos">26</span>            <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="linenos">27</span>
+<span class="linenos">28</span>        <span class="n">reward</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="linenos">29</span>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">is_done</span>
+</pre></div>
+</div>
+<p>The premise of the task is very simple: If the assistant and user input the same action (<code class="docutils literal notranslate"><span class="pre">self.user_action</span> <span class="pre">==</span> <span class="pre">self.assistant_action</span></code>), then the task state is incremented. When the task state reaches 9 the task is finished.</p>
+<p>We then create a pseudorandom user, that uses a pseudorandom policy. It picks an action prescribed by the formula <span class="math notranslate nohighlight">\(8 + p_0 \cdot{} x + p_1 \cdot{} x^2 + p_2 \cdot{} x^3 \pmod{10}\)</span> where the p’s are user parameters and x is the task state.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">class</span> <span class="nc">PseudoRandomPolicy</span><span class="p">(</span><span class="n">BasePolicy</span><span class="p">):</span>
+<span class="linenos"> 2</span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="linenos"> 3</span>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_observation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">agent_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="linenos"> 6</span>        <span class="k">if</span> <span class="n">agent_observation</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos"> 7</span>            <span class="n">agent_observation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation</span>
+<span class="linenos"> 8</span>
+<span class="linenos"> 9</span>        <span class="n">x</span> <span class="o">=</span> <span class="n">agent_observation</span><span class="o">.</span><span class="n">task_state</span><span class="o">.</span><span class="n">x</span>
+<span class="linenos">10</span>
+<span class="linenos">11</span>        <span class="n">_action_value</span> <span class="o">=</span> <span class="p">(</span>
+<span class="linenos">12</span>            <span class="mi">8</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">p0</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">p1</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">p2</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span>
+<span class="linenos">13</span>        <span class="p">)</span> <span class="o">%</span> <span class="mi">10</span>
+<span class="linenos">14</span>
+<span class="linenos">15</span>        <span class="k">return</span> <span class="n">_action_value</span><span class="p">,</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>The assistant is then constructed as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">class</span> <span class="nc">CoordinatedAssistant</span><span class="p">(</span><span class="n">BaseAgent</span><span class="p">):</span>
+<span class="linenos"> 2</span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span>        <span class="bp">self</span><span class="o">.</span><span class="n">user_model</span> <span class="o">=</span> <span class="n">user_model</span>
+<span class="linenos"> 5</span>
+<span class="linenos"> 6</span>        <span class="c1"># Call the policy defined above</span>
+<span class="linenos"> 7</span>        <span class="n">action_state</span> <span class="o">=</span> <span class="n">State</span><span class="p">()</span>
+<span class="linenos"> 8</span>        <span class="n">action_state</span><span class="p">[</span><span class="s2">&quot;action&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cat_element</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="linenos"> 9</span>
+<span class="linenos">10</span>        <span class="c1"># Use default observation and inference engines</span>
+<span class="linenos">11</span>        <span class="n">observation_engine</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="linenos">12</span>        <span class="n">inference_engine</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="linenos">13</span>
+<span class="linenos">14</span>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+<span class="linenos">15</span>            <span class="s2">&quot;assistant&quot;</span><span class="p">,</span>
+<span class="linenos">16</span>            <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+<span class="linenos">17</span>            <span class="n">agent_policy</span><span class="o">=</span><span class="n">CoordinatedPolicy</span><span class="p">(</span><span class="n">action_state</span><span class="o">=</span><span class="n">action_state</span><span class="p">),</span>
+<span class="linenos">18</span>            <span class="n">agent_observation_engine</span><span class="o">=</span><span class="n">observation_engine</span><span class="p">,</span>
+<span class="linenos">19</span>            <span class="n">agent_inference_engine</span><span class="o">=</span><span class="n">inference_engine</span><span class="p">,</span>
+<span class="linenos">20</span>            <span class="o">**</span><span class="n">kwargs</span>
+<span class="linenos">21</span>        <span class="p">)</span>
+<span class="linenos">22</span>
+<span class="linenos">23</span>    <span class="k">def</span> <span class="nf">finit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="linenos">24</span>        <span class="n">copy_task</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">)</span>
+<span class="linenos">25</span>        <span class="bp">self</span><span class="o">.</span><span class="n">simulation_bundle</span> <span class="o">=</span> <span class="n">Bundle</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="n">copy_task</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user_model</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Notice that:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>it expects that a <code class="docutils literal notranslate"><span class="pre">user_model</span></code> is passed during initialization.</p></li>
+<li><p>it uses the <code class="docutils literal notranslate"><span class="pre">finit</span></code> mechanism to create a simulation that can be used by the assistant. That simulation is nothing more than a <code class="docutils literal notranslate"><span class="pre">Bundle</span></code> between the task and the user model.</p></li>
+</ul>
+</div></blockquote>
+<p>This simulation is actually used in the policy of the assistant:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">class</span> <span class="nc">CoordinatedPolicy</span><span class="p">(</span><span class="n">BasePolicy</span><span class="p">):</span>
+<span class="linenos"> 2</span>    <span class="nd">@property</span>
+<span class="linenos"> 3</span>    <span class="k">def</span> <span class="nf">simulation_bundle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="linenos"> 4</span>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">simulation_bundle</span>
+<span class="linenos"> 5</span>
+<span class="linenos"> 6</span>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_observation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">agent_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="linenos"> 7</span>        <span class="k">if</span> <span class="n">agent_observation</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos"> 8</span>            <span class="n">agent_observation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation</span>
+<span class="linenos"> 9</span>
+<span class="linenos">10</span>        <span class="n">reset_dic</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;task_state&quot;</span><span class="p">:</span> <span class="n">agent_observation</span><span class="o">.</span><span class="n">task_state</span><span class="p">}</span>
+<span class="linenos">11</span>
+<span class="linenos">12</span>        <span class="bp">self</span><span class="o">.</span><span class="n">simulation_bundle</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">dic</span><span class="o">=</span><span class="n">reset_dic</span><span class="p">)</span>
+<span class="linenos">13</span>        <span class="bp">self</span><span class="o">.</span><span class="n">simulation_bundle</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">turn</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="linenos">14</span>
+<span class="linenos">15</span>        <span class="n">_action_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation_bundle</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">action</span>
+<span class="linenos">16</span>
+<span class="linenos">17</span>        <span class="k">return</span> <span class="n">_action_value</span><span class="p">,</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>The policy of the assistant is straightforward:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Observe the current state of the game, and put the simulation in that state, via the reset mechanism.</p></li>
+<li><p>Play the simulation just enough that the user model takes an action</p></li>
+<li><p>Observe the action that was taken by the user model and pick the same.</p></li>
+</ul>
+</div></blockquote>
+<p>At each turn, the assistant takes the same action as the user model. If we provide the assistant with the true model of the user, then the coordination is perfect:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">user</span> <span class="o">=</span> <span class="n">PseudoRandomUser</span><span class="p">()</span>
+<span class="linenos"> 2</span><span class="n">user_model</span> <span class="o">=</span> <span class="n">PseudoRandomUser</span><span class="p">()</span>  <span class="c1"># The same as user</span>
+<span class="linenos"> 3</span><span class="n">assistant</span> <span class="o">=</span> <span class="n">CoordinatedAssistant</span><span class="p">(</span><span class="n">user_model</span><span class="o">=</span><span class="n">user_model</span><span class="p">)</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span><span class="n">bundle</span> <span class="o">=</span> <span class="n">Bundle</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="n">CoordinatedTask</span><span class="p">(),</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">assistant</span><span class="o">=</span><span class="n">assistant</span><span class="p">)</span>
+<span class="linenos"> 6</span>
+<span class="linenos"> 7</span><span class="c1"># bundle.reset(go_to=3)</span>
+<span class="linenos"> 8</span><span class="nb">print</span><span class="p">(</span><span class="n">bundle</span><span class="o">.</span><span class="n">game_state</span><span class="p">)</span>
+<span class="linenos"> 9</span><span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<span class="linenos">10</span>    <span class="n">obs</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">is_done</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+<span class="linenos">11</span>    <span class="c1"># print(bundle.game_state)</span>
+<span class="linenos">12</span>    <span class="k">if</span> <span class="n">is_done</span><span class="p">:</span>
+<span class="linenos">13</span>        <span class="k">break</span>
+<span class="linenos">14</span>
+</pre></div>
+</div>
+</section>
+<section id="rollouts">
+<h2>Rollouts<a class="headerlink" href="#rollouts" title="Permalink to this headline"></a></h2>
+<p>Usually, we need a more comprehensive simulation that spans several steps and that features a user and an assistant.
+Using the same assistant simultaneously in a bundle and in a simulation is not straightforward, so <em>CoopIHC</em> provides a few helper classes. In particular, the inference engines, policies etc. used during simulation can not be the same as the ones during execution of the bundle (or, you would have infinite recursion). <em>CoopIHC</em> offers the possibility of having two different inference engines and policies, using the so-called <code class="docutils literal notranslate"><span class="pre">DualInferenceEngine</span></code> and <code class="docutils literal notranslate"><span class="pre">DualPolicy</span></code>. Depending on the state of the engine, the primary or the dual engine is used (same for the policy).</p>
+<p>To illustrate these, let’s go over a variation of the previous example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">task</span> <span class="o">=</span> <span class="n">CoordinatedTask</span><span class="p">()</span>
+<span class="linenos"> 2</span><span class="n">task_model</span> <span class="o">=</span> <span class="n">CoordinatedTask</span><span class="p">()</span>
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span><span class="n">user</span> <span class="o">=</span> <span class="n">PseudoRandomUserWithParams</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">])</span>
+<span class="linenos"> 5</span><span class="n">user_model</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+<span class="linenos"> 6</span>
+<span class="linenos"> 7</span>
+<span class="linenos"> 8</span><span class="n">assistant</span> <span class="o">=</span> <span class="n">CoordinatedAssistantWithRollout</span><span class="p">(</span><span class="n">task_model</span><span class="p">,</span> <span class="n">user_model</span><span class="p">,</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">])</span>
+<span class="linenos"> 9</span><span class="n">bundle</span> <span class="o">=</span> <span class="n">Bundle</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">assistant</span><span class="o">=</span><span class="n">assistant</span><span class="p">)</span>
+<span class="linenos">10</span><span class="n">bundle</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos">11</span><span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<span class="linenos">12</span>    <span class="n">obs</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">is_done</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+<span class="linenos">13</span>    <span class="k">if</span> <span class="n">is_done</span><span class="p">:</span>
+<span class="linenos">14</span>        <span class="k">break</span>
+</pre></div>
+</div>
+<p>Notice that the parameters of the <code class="docutils literal notranslate"><span class="pre">PseudoRandomPolicy</span></code> are given at initialization with the <code class="docutils literal notranslate"><span class="pre">PseudoRandomUserWithParams</span></code> (before, they were hard-coded in the user). If you look at the assistant, you see that we pass it a model of the task, a model of the user, as well as two parameters. These parameters are the last two parameters of the user model. The first one is unknown. The point of the assistant is now to infer that parameter using the models of the task and user it was given.</p>
+<p>The code for the assistant is as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">class</span> <span class="nc">CoordinatedAssistantWithRollout</span><span class="p">(</span><span class="n">BaseAgent</span><span class="p">):</span>
+<span class="linenos"> 2</span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_model</span><span class="p">,</span> <span class="n">user_model</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="linenos"> 3</span>        <span class="n">state</span> <span class="o">=</span> <span class="n">State</span><span class="p">()</span>
+<span class="linenos"> 4</span>        <span class="n">state</span><span class="p">[</span><span class="s2">&quot;p0&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">discrete_array_element</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+<span class="linenos"> 5</span>        <span class="n">state</span><span class="p">[</span><span class="s2">&quot;p1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">discrete_array_element</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+<span class="linenos"> 6</span>        <span class="n">state</span><span class="p">[</span><span class="s2">&quot;p2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">discrete_array_element</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+<span class="linenos"> 7</span>
+<span class="linenos"> 8</span>        <span class="c1"># Use default observation engine</span>
+<span class="linenos"> 9</span>        <span class="n">inference_engine</span> <span class="o">=</span> <span class="n">DualInferenceEngine</span><span class="p">(</span>
+<span class="linenos">10</span>            <span class="n">primary_inference_engine</span><span class="o">=</span><span class="n">RolloutCoordinatedInferenceEngine</span><span class="p">(</span>
+<span class="linenos">11</span>                <span class="n">task_model</span><span class="p">,</span> <span class="n">user_model</span><span class="p">,</span> <span class="bp">self</span>
+<span class="linenos">12</span>            <span class="p">),</span>
+<span class="linenos">13</span>            <span class="n">dual_inference_engine</span><span class="o">=</span><span class="n">BaseInferenceEngine</span><span class="p">(),</span>
+<span class="linenos">14</span>            <span class="n">primary_kwargs</span><span class="o">=</span><span class="p">{},</span>
+<span class="linenos">15</span>            <span class="n">dual_kwargs</span><span class="o">=</span><span class="p">{},</span>
+<span class="linenos">16</span>        <span class="p">)</span>
+<span class="linenos">17</span>
+<span class="linenos">18</span>        <span class="n">policy</span> <span class="o">=</span> <span class="n">PseudoRandomPolicy</span><span class="p">(</span>
+<span class="linenos">19</span>            <span class="n">action_state</span><span class="o">=</span><span class="n">State</span><span class="p">(</span>
+<span class="linenos">20</span>                <span class="o">**</span><span class="p">{</span><span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="n">discrete_array_element</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">9</span><span class="p">)}</span>
+<span class="linenos">21</span>            <span class="p">)</span>
+<span class="linenos">22</span>        <span class="p">)</span>
+<span class="linenos">23</span>
+<span class="linenos">24</span>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+<span class="linenos">25</span>            <span class="s2">&quot;assistant&quot;</span><span class="p">,</span>
+<span class="linenos">26</span>            <span class="n">agent_state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
+<span class="linenos">27</span>            <span class="n">agent_policy</span><span class="o">=</span><span class="n">policy</span><span class="p">,</span>
+<span class="linenos">28</span>            <span class="n">agent_observation_engine</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="linenos">29</span>            <span class="n">agent_inference_engine</span><span class="o">=</span><span class="n">inference_engine</span><span class="p">,</span>
+<span class="linenos">30</span>            <span class="o">**</span><span class="n">kwargs</span>
+<span class="linenos">31</span>        <span class="p">)</span>
+</pre></div>
+</div>
+<p>The state <code class="docutils literal notranslate"><span class="pre">p0</span></code> is the one that needs to be determined. Once it is known, the assistant can simply use the <code class="docutils literal notranslate"><span class="pre">PseudoRandomPolicy</span></code> to select the same action as the user.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">DualInferenceEngine</span></code> holds two inference engines: the primary <code class="docutils literal notranslate"><span class="pre">RolloutCoordinatedInferenceEngine</span></code> which is used during the bundle execution, and the dual <code class="docutils literal notranslate"><span class="pre">BaseInferenceEngine</span></code> which is used for the simulation.</p>
+<p>The remaining code is in the <code class="docutils literal notranslate"><span class="pre">RolloutCoordinatedInferenceEngine</span></code></p>
+<p>First, we define a simulator object. For that, simply instantiate a <code class="docutils literal notranslate"><span class="pre">Simulator</span></code> as you would a <code class="docutils literal notranslate"><span class="pre">Bundle</span></code>. The difference between a simulator and a bundle is that the former will consider the dual versions of the objects.
+The inference is then straightforward: All possible values of <code class="docutils literal notranslate"><span class="pre">p0</span></code> are tested, and the correct one is the one that leads to the highest reward.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="realuser.html" class="btn btn-neutral float-left" title="Interfacing CoopIHC with a real user" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="interaction_model.html" class="btn btn-neutral float-right" title="The Interaction Model" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

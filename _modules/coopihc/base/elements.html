@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coopihc.base.elements &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../_autosummary/coopihc.html">    API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>coopihc.base.elements</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coopihc.base.elements</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">xml.dom.minidom</span> <span class="kn">import</span> <span class="n">Attr</span>
+<span class="kn">from</span> <span class="nn">coopihc.base.Space</span> <span class="kn">import</span> <span class="n">Space</span>
+<span class="kn">from</span> <span class="nn">coopihc.base.StateElement</span> <span class="kn">import</span> <span class="n">StateElement</span>
+<span class="kn">from</span> <span class="nn">coopihc.base.State</span> <span class="kn">import</span> <span class="n">State</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+
+<span class="c1"># def _numpy_max_info(dtype):</span>
+<span class="c1">#     if numpy.issubdtype(dtype, numpy.integer):</span>
+<span class="c1">#         return numpy.iinfo(dtype).max</span>
+<span class="c1">#     else:</span>
+<span class="c1">#         return numpy.finfo(dtype).max</span>
+
+
+<span class="c1"># ======================== Space Shortcuts ========================</span>
+<span class="c1"># def lin_space(start, stop, num=50, endpoint=True, dtype=numpy.int64, seed=None, **kwargs):</span>
+<span class="c1">#     # lin_space(num=50, start=0, stop=None, endpoint=False, dtype=numpy.int64):</span>
+<span class="c1">#     &quot;&quot;&quot;Linearly spaced discrete space.</span>
+
+<span class="c1">#     Wrap numpy&#39;s linspace to produce a space that is compatible with COOPIHC. Parameters of this function are defined in https://numpy.org/doc/stable/reference/generated/numpy.linspace.html</span>
+
+
+<span class="c1">#     :return: _description_</span>
+<span class="c1">#     :rtype: _type_</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     if stop is None:</span>
+<span class="c1">#         stop = num + start</span>
+<span class="c1">#     return Space(</span>
+<span class="c1">#         array=numpy.linspace(</span>
+<span class="c1">#             start, stop, num=num, endpoint=endpoint, dtype=dtype</span>
+<span class="c1">#         ),</span>
+<span class="c1">#         seed=seed,</span>
+<span class="c1">#         **kwargs</span>
+<span class="c1">#     )</span>
+
+
+<div class="viewcode-block" id="integer_set"><a class="viewcode-back" href="../../../_autosummary/coopihc.base.elements.integer_set.html#coopihc.base.elements.integer_set">[docs]</a><span class="k">def</span> <span class="nf">integer_set</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int64</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;{0, 1, ... , N-1} Set</span>
+
+<span class="sd">    Wrapper around lin_space.</span>
+
+<span class="sd">    :param N: cardinality of set</span>
+<span class="sd">    :type N: int</span>
+<span class="sd">    :return: Integer Set</span>
+<span class="sd">    :rtype: CatSet</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">Space</span><span class="p">(</span>
+        <span class="n">array</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">N</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="integer_space"><a class="viewcode-back" href="../../../_autosummary/coopihc.base.elements.integer_space.html#coopihc.base.elements.integer_space">[docs]</a><span class="k">def</span> <span class="nf">integer_space</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int64</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;[0, 1, ... , N-1, N]</span>
+
+<span class="sd">    Wrapper around box_space</span>
+
+<span class="sd">    :param N: upper bound of discrete interval</span>
+<span class="sd">    :type N: integer</span>
+<span class="sd">    :return: Integer Space</span>
+<span class="sd">    :rtype: Numeric</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">stop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">N</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">N</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">iinfo</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">max</span>
+        <span class="n">stop</span> <span class="o">=</span> <span class="n">N</span> <span class="o">+</span> <span class="n">start</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">box_space</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="n">high</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">stop</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="box_space"><a class="viewcode-back" href="../../../_autosummary/coopihc.base.elements.box_space.html#coopihc.base.elements.box_space">[docs]</a><span class="k">def</span> <span class="nf">box_space</span><span class="p">(</span><span class="n">high</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">low</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;[low, high] Numeric</span>
+
+<span class="sd">    _extended_summary_</span>
+
+<span class="sd">    :param high: _description_, defaults to numpy.ones((1, 1))</span>
+<span class="sd">    :type high: _type_, optional</span>
+<span class="sd">    :param low: _description_, defaults to None</span>
+<span class="sd">    :type low: _type_, optional</span>
+<span class="sd">    :return: _description_</span>
+<span class="sd">    :rtype: _type_</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">low</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">low</span> <span class="o">=</span> <span class="o">-</span><span class="n">high</span>
+    <span class="k">return</span> <span class="n">Space</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">high</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<span class="c1"># ======================== StateElement Shortcuts ========================</span>
+
+
+<span class="k">def</span> <span class="nf">_get_shape_from_objects</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="o">*</span><span class="n">obj</span><span class="p">):</span>
+    <span class="n">_shape</span> <span class="o">=</span> <span class="p">[</span><span class="n">shape</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">_o</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_shape</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_o</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>  <span class="c1"># has no shape</span>
+            <span class="n">_shape</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">_o</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">_shape</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">],</span> <span class="n">key</span><span class="o">=</span><span class="nb">len</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">_set_shape_object</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">default_value</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">default_value</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">obj</span>
+
+
+<div class="viewcode-block" id="array_element"><a class="viewcode-back" href="../../../_autosummary/coopihc.base.elements.array_element.html#coopihc.base.elements.array_element">[docs]</a><span class="k">def</span> <span class="nf">array_element</span><span class="p">(</span>
+    <span class="n">shape</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out_of_bounds_mode</span><span class="o">=</span><span class="s2">&quot;warning&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">):</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">_get_shape_from_objects</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span>
+    <span class="n">init</span> <span class="o">=</span> <span class="n">_set_shape_object</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">low</span> <span class="o">=</span> <span class="n">_set_shape_object</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+    <span class="n">high</span> <span class="o">=</span> <span class="n">_set_shape_object</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">StateElement</span><span class="p">(</span>
+        <span class="n">init</span><span class="p">,</span>
+        <span class="n">Space</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">high</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
+        <span class="n">out_of_bounds_mode</span><span class="o">=</span><span class="n">out_of_bounds_mode</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="discrete_array_element"><a class="viewcode-back" href="../../../_autosummary/coopihc.base.elements.discrete_array_element.html#coopihc.base.elements.discrete_array_element">[docs]</a><span class="k">def</span> <span class="nf">discrete_array_element</span><span class="p">(</span>
+    <span class="n">N</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">):</span>
+    <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">int64</span>
+    <span class="k">if</span> <span class="n">N</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">array_element</span><span class="p">(</span>
+            <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="n">init</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">high</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">low</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">low</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">high</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">high</span> <span class="o">=</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">low</span>
+
+        <span class="k">return</span> <span class="n">array_element</span><span class="p">(</span>
+            <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="n">init</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">high</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="cat_element"><a class="viewcode-back" href="../../../_autosummary/coopihc.base.elements.cat_element.html#coopihc.base.elements.cat_element">[docs]</a><span class="k">def</span> <span class="nf">cat_element</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">out_of_bounds_mode</span><span class="o">=</span><span class="s2">&quot;warning&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">StateElement</span><span class="p">(</span>
+        <span class="n">init</span><span class="p">,</span> <span class="n">integer_set</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">out_of_bounds_mode</span><span class="o">=</span><span class="n">out_of_bounds_mode</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="example_game_state"><a class="viewcode-back" href="../../../_autosummary/coopihc.base.elements.example_game_state.html#coopihc.base.elements.example_game_state">[docs]</a><span class="k">def</span> <span class="nf">example_game_state</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">State</span><span class="p">(</span>
+        <span class="n">game_info</span><span class="o">=</span><span class="n">State</span><span class="p">(</span>
+            <span class="n">turn_index</span><span class="o">=</span><span class="n">cat_element</span><span class="p">(</span>
+                <span class="n">N</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">out_of_bounds_mode</span><span class="o">=</span><span class="s2">&quot;raw&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int8</span>
+            <span class="p">),</span>
+            <span class="n">round_index</span><span class="o">=</span><span class="n">discrete_array_element</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">out_of_bounds_mode</span><span class="o">=</span><span class="s2">&quot;raw&quot;</span><span class="p">),</span>
+        <span class="p">),</span>
+        <span class="n">task_state</span><span class="o">=</span><span class="n">State</span><span class="p">(</span>
+            <span class="n">position</span><span class="o">=</span><span class="n">discrete_array_element</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">out_of_bounds_mode</span><span class="o">=</span><span class="s2">&quot;clip&quot;</span><span class="p">),</span>
+            <span class="n">targets</span><span class="o">=</span><span class="n">discrete_array_element</span><span class="p">(</span>
+                <span class="n">init</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                <span class="n">low</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
+                <span class="n">high</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
+            <span class="p">),</span>
+        <span class="p">),</span>
+        <span class="n">user_state</span><span class="o">=</span><span class="n">State</span><span class="p">(</span><span class="n">goal</span><span class="o">=</span><span class="n">discrete_array_element</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">4</span><span class="p">)),</span>
+        <span class="n">assistant_state</span><span class="o">=</span><span class="n">State</span><span class="p">(</span>
+            <span class="n">beliefs</span><span class="o">=</span><span class="n">array_element</span><span class="p">(</span>
+                <span class="n">init</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">8</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)]),</span>
+                <span class="n">low</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">8</span><span class="p">,)),</span>
+                <span class="n">high</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">8</span><span class="p">,)),</span>
+            <span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">user_action</span><span class="o">=</span><span class="n">State</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="n">discrete_array_element</span><span class="p">(</span><span class="n">low</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">1</span><span class="p">)),</span>
+        <span class="n">assistant_action</span><span class="o">=</span><span class="n">State</span><span class="p">(</span>
+            <span class="n">action</span><span class="o">=</span><span class="n">cat_element</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">out_of_bounds_mode</span><span class="o">=</span><span class="s2">&quot;error&quot;</span><span class="p">)</span>
+        <span class="p">),</span>
+    <span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

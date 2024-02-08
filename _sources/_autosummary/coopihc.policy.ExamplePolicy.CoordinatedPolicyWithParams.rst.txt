@@ -1,0 +1,39 @@
+coopihc.policy.ExamplePolicy.CoordinatedPolicyWithParams
+========================================================
+
+.. currentmodule:: coopihc.policy.ExamplePolicy
+
+.. autoclass:: CoordinatedPolicyWithParams
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~CoordinatedPolicyWithParams.default_value
+      ~CoordinatedPolicyWithParams.reset
+      ~CoordinatedPolicyWithParams.sample
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~CoordinatedPolicyWithParams.action
+      ~CoordinatedPolicyWithParams.action_keys
+      ~CoordinatedPolicyWithParams.observation
+      ~CoordinatedPolicyWithParams.parameters
+      ~CoordinatedPolicyWithParams.simulation_bundle
+      ~CoordinatedPolicyWithParams.state
+      ~CoordinatedPolicyWithParams.unwrapped
+   
+   

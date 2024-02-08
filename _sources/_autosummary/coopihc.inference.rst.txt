@@ -1,0 +1,36 @@
+coopihc.inference
+=================
+
+.. automodule:: coopihc.inference
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. autosummary::
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+
+   coopihc.inference.BaseInferenceEngine
+   coopihc.inference.CascadedInferenceEngine
+   coopihc.inference.ContinuousKalmanUpdate
+   coopihc.inference.DualInferenceEngine
+   coopihc.inference.ExampleInferenceEngine
+   coopihc.inference.GoalInferenceWithUserPolicyGiven
+   coopihc.inference.LinearGaussianContinuous
+

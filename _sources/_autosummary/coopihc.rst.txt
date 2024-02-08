@@ -1,0 +1,37 @@
+﻿coopihc
+=======
+
+.. automodule:: coopihc
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. autosummary::
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+
+   coopihc.agents
+   coopihc.base
+   coopihc.bundle
+   coopihc.helpers
+   coopihc.inference
+   coopihc.interactiontask
+   coopihc.observation
+   coopihc.policy
+

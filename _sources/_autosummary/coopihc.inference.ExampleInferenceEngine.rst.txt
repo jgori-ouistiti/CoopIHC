@@ -1,0 +1,34 @@
+coopihc.inference.ExampleInferenceEngine
+========================================
+
+.. automodule:: coopihc.inference.ExampleInferenceEngine
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      CoordinatedInferenceEngine
+      ExampleInferenceEngine
+      RolloutCoordinatedInferenceEngine
+   
+   
+
+   
+   
+   
+
+
+

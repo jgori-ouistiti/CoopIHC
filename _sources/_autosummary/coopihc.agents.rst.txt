@@ -1,0 +1,33 @@
+coopihc.agents
+==============
+
+.. automodule:: coopihc.agents
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. autosummary::
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+
+   coopihc.agents.BaseAgent
+   coopihc.agents.ExampleAssistant
+   coopihc.agents.ExampleUser
+   coopihc.agents.lqrcontrollers
+

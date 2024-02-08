@@ -1,0 +1,32 @@
+coopihc.policy.BasePolicy
+=========================
+
+.. automodule:: coopihc.policy.BasePolicy
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      BasePolicy
+   
+   
+
+   
+   
+   
+
+
+

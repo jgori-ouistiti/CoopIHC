@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coopihc.agents.lqrcontrollers.IHCT_LQGController &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../_autosummary/coopihc.html">    API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>coopihc.agents.lqrcontrollers.IHCT_LQGController</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coopihc.agents.lqrcontrollers.IHCT_LQGController</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">coopihc.agents.BaseAgent</span> <span class="kn">import</span> <span class="n">BaseAgent</span>
+<span class="kn">from</span> <span class="nn">coopihc.observation.RuleObservationEngine</span> <span class="kn">import</span> <span class="n">RuleObservationEngine</span>
+<span class="kn">from</span> <span class="nn">coopihc.base.State</span> <span class="kn">import</span> <span class="n">State</span>
+<span class="kn">from</span> <span class="nn">coopihc.base.elements</span> <span class="kn">import</span> <span class="n">discrete_array_element</span><span class="p">,</span> <span class="n">array_element</span><span class="p">,</span> <span class="n">cat_element</span>
+<span class="kn">from</span> <span class="nn">coopihc.policy.LinearFeedback</span> <span class="kn">import</span> <span class="n">LinearFeedback</span>
+<span class="kn">from</span> <span class="nn">coopihc.inference.ContinuousKalmanUpdate</span> <span class="kn">import</span> <span class="n">ContinuousKalmanUpdate</span>
+
+
+<span class="c1"># Infinite Horizon Continuous Time LQG controller, based on Phillis 1985</span>
+<div class="viewcode-block" id="IHCT_LQGController"><a class="viewcode-back" href="../../../../_autosummary/coopihc.agents.lqrcontrollers.IHCT_LQGController.IHCT_LQGController.html#coopihc.agents.lqrcontrollers.IHCT_LQGController.IHCT_LQGController">[docs]</a><span class="k">class</span> <span class="nc">IHCT_LQGController</span><span class="p">(</span><span class="n">BaseAgent</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Infinite Horizon Continuous Time LQ Gaussian Controller.</span>
+
+<span class="sd">    An Infinite Horizon (Steady-state) LQG controller, based on [Phillis1985]_ and [Qian2013]_.</span>
+
+<span class="sd">    For the a task where state &#39;x&#39; follows a linear noisy dynamic:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\begin{align}</span>
+<span class="sd">            x(+.) = (Ax(.) + Bu(.))dt + Fx(.).d\\beta + G.d\\omega + Hu(.)d\\gamma \\\\</span>
+<span class="sd">        \\end{align}</span>
+
+<span class="sd">    the LQG controller produces the following observations dy and commands u minimizing cost J:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\begin{align*}</span>
+<span class="sd">        dy &amp; = Cxdt + Dd\\xi \\\\</span>
+<span class="sd">        d\\hat{x} &amp; = (A \\hat{x} + Bu) dt + K (dy - C\\hat{x}dt) \\\\</span>
+<span class="sd">        u &amp; = - L\\hat{x} \\\\</span>
+<span class="sd">        \\tilde{x} &amp; = x - \\hat{x} \\\\</span>
+<span class="sd">        J &amp; \simeq \\mathbb{E} [\\tilde{x}^T U \\tilde{x} + x^TQx + u^TRu]</span>
+<span class="sd">        \\end{align*}</span>
+
+<span class="sd">    .. [Phillis1985] Phillis, Y. &quot;Controller design of systems with multiplicative noise.&quot; IEEE Transactions on Automatic Control 30.10 (1985): 1017-1019. `Link &lt;https://ieeexplore.ieee.org/abstract/document/1103828&gt;`_</span>
+<span class="sd">    .. [Qian2013] Qian, Ning, et al. &quot;Movement duration, Fitts&#39;s law, and an infinite-horizon optimal feedback control model for biological motor systems.&quot; Neural computation 25.3 (2013): 697-724. `Link &lt;https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.296.4312&amp;rep=rep1&amp;type=pdf&gt;`_</span>
+
+<span class="sd">    :param role: &quot;user&quot; or &quot;assistant&quot;</span>
+<span class="sd">    :type role: string</span>
+<span class="sd">    :param timestep: duration of timestep</span>
+<span class="sd">    :type timestep: float</span>
+<span class="sd">    :param Q: State cost</span>
+<span class="sd">    :type Q: numpy.ndarray</span>
+<span class="sd">    :param R: Control cost</span>
+<span class="sd">    :type R: numpy.ndarray</span>
+<span class="sd">    :param U: Estimation error cost</span>
+<span class="sd">    :type U: numpy.ndarray</span>
+<span class="sd">    :param C: Observation matrix</span>
+<span class="sd">    :type C: numpy.ndarray</span>
+<span class="sd">    :param D: Observation noise matrix</span>
+<span class="sd">    :type D: numpy.ndarray</span>
+<span class="sd">    :param noise: whether or not to have, defaults to &quot;on&quot;</span>
+<span class="sd">    :type noise: str, optional</span>
+<span class="sd">    :param Acontroller: Representation of A for the agent. If None, the agent representation of A is equal to the task A, defaults to None.</span>
+<span class="sd">    :type Acontroller: numpy.ndarray, optional</span>
+<span class="sd">    :param Bcontroller: Representation of B for the agent. If None, the agent representation of B is equal to the task B, defaults to None.</span>
+<span class="sd">    :type Bcontroller: numpy.ndarray, optional</span>
+<span class="sd">    :param Fcontroller: Representation of F for the agent. If None, the agent representation of F is equal to the task F, defaults to None.</span>
+<span class="sd">    :type Fcontroller: numpy.ndarray, optional</span>
+<span class="sd">    :param Gcontroller: Representation of G for the agent. If None, the agent representation of G is equal to the task G, defaults to None.</span>
+<span class="sd">    :type Gcontroller: numpy.ndarray, optional</span>
+<span class="sd">    :param Hcontroller: Representation of H for the agent. If None, the agent representation of H is equal to the task H, defaults to None.</span>
+<span class="sd">    :type Hcontroller: numpy.ndarray, optional</span>
+
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">role</span><span class="p">,</span>
+        <span class="n">timestep</span><span class="p">,</span>
+        <span class="n">Q</span><span class="p">,</span>
+        <span class="n">R</span><span class="p">,</span>
+        <span class="n">U</span><span class="p">,</span>
+        <span class="n">C</span><span class="p">,</span>
+        <span class="n">D</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="n">noise</span><span class="o">=</span><span class="s2">&quot;on&quot;</span><span class="p">,</span>
+        <span class="n">Acontroller</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">Bcontroller</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">F</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">G</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">H</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">=</span> <span class="n">C</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Q</span> <span class="o">=</span> <span class="n">Q</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">R</span> <span class="o">=</span> <span class="n">R</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">U</span> <span class="o">=</span> <span class="n">U</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">D</span> <span class="o">=</span> <span class="n">D</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timestep</span> <span class="o">=</span> <span class="n">timestep</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">=</span> <span class="n">role</span>
+
+        <span class="c1"># Initialize Random Kalmain gains</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">K</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="o">*</span><span class="n">C</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">Q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">noise</span> <span class="o">=</span> <span class="n">noise</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Acontroller</span> <span class="o">=</span> <span class="n">Acontroller</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bcontroller</span> <span class="o">=</span> <span class="n">Bcontroller</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Fcontroller</span> <span class="o">=</span> <span class="n">F</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Gcontroller</span> <span class="o">=</span> <span class="n">G</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Hcontroller</span> <span class="o">=</span> <span class="n">H</span>
+
+        <span class="c1"># =================== Linear Feedback Policy ==========</span>
+
+        <span class="n">action_state</span> <span class="o">=</span> <span class="n">State</span><span class="p">()</span>
+        <span class="n">action_state</span><span class="p">[</span><span class="s2">&quot;action&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">array_element</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="c1"># StateElement(</span>
+        <span class="c1">#     numpy.zeros((1, 1)),</span>
+        <span class="c1">#     Space(</span>
+        <span class="c1">#         [numpy.full((1, 1), -numpy.inf), numpy.full((1, 1), numpy.inf)],</span>
+        <span class="c1">#         &quot;continuous&quot;,</span>
+        <span class="c1">#     ),</span>
+        <span class="c1"># )</span>
+
+        <span class="c1"># Linear Feedback with LQ reward</span>
+        <span class="k">class</span> <span class="nc">LFwithLQreward</span><span class="p">(</span><span class="n">LinearFeedback</span><span class="p">):</span>
+            <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">R</span> <span class="o">=</span> <span class="n">R</span>
+
+            <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_observation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">agent_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                <span class="n">action</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">agent_observation</span><span class="o">=</span><span class="n">agent_observation</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">(</span>
+                    <span class="n">action</span><span class="p">,</span>
+                    <span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">R</span> <span class="o">@</span> <span class="n">action</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                <span class="p">)</span>
+
+        <span class="n">agent_policy</span> <span class="o">=</span> <span class="n">LFwithLQreward</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">R</span><span class="p">,</span>
+            <span class="n">action_state</span><span class="p">,</span>
+            <span class="p">(</span><span class="s2">&quot;user_state&quot;</span><span class="p">,</span> <span class="s2">&quot;xhat&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># =========== Observation Engine ==============</span>
+        <span class="c1"># Rule Observation Engine with LQ reward</span>
+        <span class="k">class</span> <span class="nc">RuleObswithLQreward</span><span class="p">(</span><span class="n">RuleObservationEngine</span><span class="p">):</span>
+            <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">Q</span> <span class="o">=</span> <span class="n">Q</span>
+
+            <span class="k">def</span> <span class="nf">observe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">game_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                <span class="n">observation</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="n">game_state</span><span class="o">=</span><span class="n">game_state</span><span class="p">)</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">observation</span><span class="p">[</span><span class="s2">&quot;task_state&quot;</span><span class="p">][</span><span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+                <span class="n">reward</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">Q</span> <span class="o">@</span> <span class="n">x</span>
+                <span class="k">return</span> <span class="n">observation</span><span class="p">,</span> <span class="n">reward</span>
+
+        <span class="c1"># Base Spec</span>
+        <span class="n">user_engine_specification</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s2">&quot;game_info&quot;</span><span class="p">,</span> <span class="s2">&quot;all&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;task_state&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;user_state&quot;</span><span class="p">,</span> <span class="s2">&quot;all&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;assistant_state&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;user_action&quot;</span><span class="p">,</span> <span class="s2">&quot;all&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;assistant_action&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">]</span>
+
+        <span class="c1"># Add rule for matrix observation y += Cx</span>
+        <span class="k">def</span> <span class="nf">observation_linear_combination</span><span class="p">(</span><span class="n">_obs</span><span class="p">,</span> <span class="n">game_state</span><span class="p">,</span> <span class="n">C</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">C</span> <span class="o">@</span> <span class="n">_obs</span>
+
+        <span class="n">C_rule</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="p">(</span><span class="s2">&quot;task_state&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">):</span> <span class="p">(</span>
+                <span class="n">observation_linear_combination</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">C</span><span class="p">,),</span>
+            <span class="p">)</span>
+        <span class="p">}</span>
+        <span class="n">extradeterministicrules</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">extradeterministicrules</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">C_rule</span><span class="p">)</span>
+
+        <span class="c1"># Add rule for noisy observation y += D * epsilon ~ N(mu, sigma)</span>
+
+        <span class="k">def</span> <span class="nf">additive_gaussian_noise</span><span class="p">(</span><span class="n">_obs</span><span class="p">,</span> <span class="n">gamestate</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">args</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">_obs</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">_obs</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">_obs</span> <span class="o">+</span> <span class="n">D</span> <span class="o">@</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span>
+                <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Instantiate previous rule so that epsilon ~ N(0, sqrt(dt))</span>
+        <span class="n">agn_rule</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="p">(</span><span class="s2">&quot;task_state&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">):</span> <span class="p">(</span>
+                <span class="n">additive_gaussian_noise</span><span class="p">,</span>
+                <span class="p">(</span>
+                    <span class="n">D</span><span class="p">,</span>
+                    <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">C</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                        <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="p">),</span>
+                    <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">timestep</span><span class="p">)</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">}</span>
+
+        <span class="n">extraprobabilisticrules</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">extraprobabilisticrules</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">agn_rule</span><span class="p">)</span>
+
+        <span class="n">observation_engine</span> <span class="o">=</span> <span class="n">RuleObswithLQreward</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Q</span><span class="p">,</span>
+            <span class="n">deterministic_specification</span><span class="o">=</span><span class="n">user_engine_specification</span><span class="p">,</span>
+            <span class="n">extradeterministicrules</span><span class="o">=</span><span class="n">extradeterministicrules</span><span class="p">,</span>
+            <span class="n">extraprobabilisticrules</span><span class="o">=</span><span class="n">extraprobabilisticrules</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># ======================= Inference Engine</span>
+        <span class="n">inference_engine</span> <span class="o">=</span> <span class="n">ContinuousKalmanUpdate</span><span class="p">()</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="s2">&quot;user&quot;</span><span class="p">,</span>
+            <span class="n">agent_policy</span><span class="o">=</span><span class="n">agent_policy</span><span class="p">,</span>
+            <span class="n">agent_observation_engine</span><span class="o">=</span><span class="n">observation_engine</span><span class="p">,</span>
+            <span class="n">agent_inference_engine</span><span class="o">=</span><span class="n">inference_engine</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="IHCT_LQGController.finit"><a class="viewcode-back" href="../../../../_autosummary/coopihc.agents.lqrcontrollers.IHCT_LQGController.IHCT_LQGController.html#coopihc.agents.lqrcontrollers.IHCT_LQGController.IHCT_LQGController.finit">[docs]</a>    <span class="k">def</span> <span class="nf">finit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get and compute needed matrices.</span>
+
+<span class="sd">        0. Take A, B, F, G, H from task if not provided by the end-user</span>
+<span class="sd">        1. Create an :math:`\\hat{x}` state;</span>
+<span class="sd">        2. attach the model dynamics to the inference engine if needed</span>
+<span class="sd">        3. compute K and L;</span>
+<span class="sd">        4. set K and L in inference engine and policy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">task</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">task</span>
+
+        <span class="k">for</span> <span class="n">elem</span><span class="p">,</span> <span class="n">taskelem</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="s2">&quot;Acontroller&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Bcontroller&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Fcontroller&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Gcontroller&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Hcontroller&quot;</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="n">task</span><span class="o">.</span><span class="n">B</span><span class="p">,</span> <span class="n">task</span><span class="o">.</span><span class="n">F</span><span class="p">,</span> <span class="n">task</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="n">task</span><span class="o">.</span><span class="n">H</span><span class="p">],</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elem</span><span class="p">)</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elem</span><span class="p">,</span> <span class="n">taskelem</span><span class="p">)</span>
+
+        <span class="c1"># ---- init xhat state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;xhat&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">])</span>
+
+        <span class="c1"># ---- Attach the model dynamics to the inference engine.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine</span><span class="o">.</span><span class="n">fmd_flag</span><span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine</span><span class="o">.</span><span class="n">set_forward_model_dynamics</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">Acontroller</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Bcontroller</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">C</span>
+            <span class="p">)</span>
+
+        <span class="c1"># ---- Set K and L up</span>
+        <span class="n">mc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_MContainer</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Acontroller</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Bcontroller</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Gcontroller</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Hcontroller</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Q</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">R</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">U</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_Kalman_matrices</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">pass_args</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine</span><span class="o">.</span><span class="n">set_K</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">K</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">policy</span><span class="o">.</span><span class="n">set_feedback_gain</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="p">)</span></div>
+
+    <span class="k">class</span> <span class="nc">_MContainer</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Matrix container</span>
+
+<span class="sd">        The purpose of this container is to facilitate common manipulations of the matrices of the LQG problem, as well as potentially storing their evolution. (not implemented yet)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">U</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">=</span> <span class="n">A</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">B</span> <span class="o">=</span> <span class="n">B</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">=</span> <span class="n">C</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">D</span> <span class="o">=</span> <span class="n">D</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="n">G</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">H</span> <span class="o">=</span> <span class="n">H</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Q</span> <span class="o">=</span> <span class="n">Q</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">R</span> <span class="o">=</span> <span class="n">R</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">U</span> <span class="o">=</span> <span class="n">U</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_matrices</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">_check_matrices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="c1"># Not implemented yet</span>
+            <span class="k">pass</span>
+
+        <span class="k">def</span> <span class="nf">pass_args</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">B</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">H</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">Q</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">R</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">U</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_compute_Kalman_matrices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">matrices</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compute K and L</span>
+
+<span class="sd">        K and L are computed according to the algorithm described in [Qian2013]_ with some minor tweaks. K and L are obtained recursively, where more and more precise estimates are obtained. At first N iterations are performed, if that fails to converge, N is grown as :math:`N^{1.3}` and K and L are recomputed.</span>
+
+<span class="sd">        :param matrices: (A, B, C, D, G, H, Q, R, U)</span>
+<span class="sd">        :type matrices: tuple(numpy.ndarray)</span>
+<span class="sd">        :param N: max iterations of the algorithm on first try, defaults to 20</span>
+<span class="sd">        :type N: int, optional</span>
+<span class="sd">        :return: (K, L)</span>
+<span class="sd">        :rtype: tuple(numpy.ndarray, numpy.ndarray)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">U</span> <span class="o">=</span> <span class="n">matrices</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">B</span> <span class="o">@</span> <span class="n">H</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Lnorm</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">Knorm</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">K</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="o">*</span><span class="n">C</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">L</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+            <span class="n">Lnorm</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">L</span><span class="p">))</span>
+            <span class="n">Knorm</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">K</span><span class="p">))</span>
+
+            <span class="n">n</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span>
+            <span class="n">Abar</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">block</span><span class="p">([[</span><span class="n">A</span> <span class="o">-</span> <span class="n">B</span> <span class="o">@</span> <span class="n">L</span><span class="p">,</span> <span class="n">B</span> <span class="o">@</span> <span class="n">L</span><span class="p">],</span> <span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">)),</span> <span class="n">A</span> <span class="o">-</span> <span class="n">K</span> <span class="o">@</span> <span class="n">C</span><span class="p">]])</span>
+
+            <span class="n">Ybar</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">block</span><span class="p">([[</span><span class="o">-</span><span class="n">Y</span> <span class="o">@</span> <span class="n">L</span><span class="p">,</span> <span class="n">Y</span> <span class="o">@</span> <span class="n">L</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="n">Y</span> <span class="o">@</span> <span class="n">L</span><span class="p">,</span> <span class="n">Y</span> <span class="o">@</span> <span class="n">L</span><span class="p">]])</span>
+
+            <span class="n">Gbar</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">block</span><span class="p">(</span>
+                <span class="p">[[</span><span class="n">G</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">G</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">D</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))],</span> <span class="p">[</span><span class="n">G</span><span class="p">,</span> <span class="o">-</span><span class="n">K</span> <span class="o">@</span> <span class="n">D</span><span class="p">]]</span>
+            <span class="p">)</span>
+
+            <span class="n">V</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">block</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="p">[</span><span class="n">Q</span> <span class="o">+</span> <span class="n">L</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">R</span> <span class="o">@</span> <span class="n">L</span><span class="p">,</span> <span class="o">-</span><span class="n">L</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">R</span> <span class="o">@</span> <span class="n">L</span><span class="p">],</span>
+                    <span class="p">[</span><span class="o">-</span><span class="n">L</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">R</span> <span class="o">@</span> <span class="n">L</span><span class="p">,</span> <span class="n">L</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">R</span> <span class="o">@</span> <span class="n">L</span> <span class="o">+</span> <span class="n">U</span><span class="p">],</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="n">P</span><span class="p">,</span> <span class="n">p_res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LinRicatti</span><span class="p">(</span><span class="n">Abar</span><span class="p">,</span> <span class="n">Ybar</span><span class="p">,</span> <span class="n">Gbar</span> <span class="o">@</span> <span class="n">Gbar</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="n">S</span><span class="p">,</span> <span class="n">s_res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LinRicatti</span><span class="p">(</span><span class="n">Abar</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">Ybar</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span>
+
+            <span class="n">P22</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="n">n</span><span class="p">:,</span> <span class="n">n</span><span class="p">:]</span>
+            <span class="n">S11</span> <span class="o">=</span> <span class="n">S</span><span class="p">[:</span><span class="n">n</span><span class="p">,</span> <span class="p">:</span><span class="n">n</span><span class="p">]</span>
+            <span class="n">S22</span> <span class="o">=</span> <span class="n">S</span><span class="p">[</span><span class="n">n</span><span class="p">:,</span> <span class="n">n</span><span class="p">:]</span>
+
+            <span class="n">K</span> <span class="o">=</span> <span class="n">P22</span> <span class="o">@</span> <span class="n">C</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">D</span> <span class="o">@</span> <span class="n">D</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="n">L</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">R</span> <span class="o">+</span> <span class="n">Y</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="p">(</span><span class="n">S11</span> <span class="o">+</span> <span class="n">S22</span><span class="p">)</span> <span class="o">@</span> <span class="n">Y</span><span class="p">)</span> <span class="o">@</span> <span class="n">B</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">S11</span>
+
+        <span class="n">K</span><span class="p">,</span> <span class="n">L</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_KL</span><span class="p">(</span><span class="n">Knorm</span><span class="p">,</span> <span class="n">Lnorm</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">matrices</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">K</span><span class="p">,</span> <span class="n">L</span>
+
+    <span class="k">def</span> <span class="nf">_LinRicatti</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;_LinRicatti [summary]</span>
+
+<span class="sd">        Returns norm of an equation of the form</span>
+
+<span class="sd">        .. math ::</span>
+
+<span class="sd">            \\begin{align}</span>
+<span class="sd">            AX + XA.T + BXB.T + C = 0</span>
+<span class="sd">            \\end{align}</span>
+
+
+
+<span class="sd">        :param A: See Equation above</span>
+<span class="sd">        :type A: numpy.ndarray</span>
+<span class="sd">        :param B: See Equation above</span>
+<span class="sd">        :type B: numpy.ndarray</span>
+<span class="sd">        :param C: See Equation above</span>
+<span class="sd">        :type C: numpy.ndarray</span>
+<span class="sd">        :return: X, residue</span>
+<span class="sd">        :rtype: tuple(numpy.ndarray, float)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#</span>
+        <span class="n">n</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">nc</span><span class="p">,</span> <span class="n">mc</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="o">!=</span> <span class="n">m</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Matrix A has to be square&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">M</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">numpy</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">A</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">numpy</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+            <span class="o">+</span> <span class="n">numpy</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">M</span><span class="p">)</span> <span class="o">@</span> <span class="n">C</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nc</span><span class="p">,</span> <span class="n">mc</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">A</span> <span class="o">@</span> <span class="n">X</span> <span class="o">+</span> <span class="n">X</span> <span class="o">@</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> <span class="n">B</span> <span class="o">@</span> <span class="n">X</span> <span class="o">@</span> <span class="n">B</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> <span class="n">C</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">res</span>
+
+    <span class="c1"># Counting decorator</span>
+
+<div class="viewcode-block" id="IHCT_LQGController.counted_decorator"><a class="viewcode-back" href="../../../../_autosummary/coopihc.agents.lqrcontrollers.IHCT_LQGController.IHCT_LQGController.html#coopihc.agents.lqrcontrollers.IHCT_LQGController.IHCT_LQGController.counted_decorator">[docs]</a>    <span class="k">def</span> <span class="nf">counted_decorator</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;counted_decorator</span>
+
+<span class="sd">        Decorator that counts the number of times function f has been called</span>
+
+<span class="sd">        :param f: decorated function</span>
+<span class="sd">        :type f: function</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">wrapped</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">wrapped</span><span class="o">.</span><span class="n">calls</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">wrapped</span><span class="o">.</span><span class="n">calls</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="n">wrapped</span></div>
+
+    <span class="nd">@counted_decorator</span>
+    <span class="k">def</span> <span class="nf">_check_KL</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Knorm</span><span class="p">,</span> <span class="n">Lnorm</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">matrices</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check K and L convergence</span>
+
+<span class="sd">        Checks whether K and L have converged, by looking at the variations over the last 5 iterations.</span>
+
+<span class="sd">        :param Knorm: list of the norms of K on each iteration</span>
+<span class="sd">        :type Knorm: list(numpy.array)</span>
+<span class="sd">        :param Lnorm: list of the norms of L on each iteration</span>
+<span class="sd">        :type Lnorm: list(numpy.array)</span>
+<span class="sd">        :param K: See Equation in class docstring</span>
+<span class="sd">        :type K: numpy.array</span>
+<span class="sd">        :param L: See Equation in class docstring</span>
+<span class="sd">        :type L: numpy.array</span>
+<span class="sd">        :param matrices: Matrix container</span>
+<span class="sd">        :type matrices: _MContainer</span>
+<span class="sd">        :return: K and L</span>
+<span class="sd">        :rtype: tuple(numpy.ndarray, numpy.ndarray)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">average_delta</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span>
+            <span class="n">numpy</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">Lnorm</span><span class="p">)</span> <span class="o">+</span> <span class="n">numpy</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">Knorm</span><span class="p">),</span>
+            <span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="o">/</span> <span class="mi">5</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;full&quot;</span><span class="p">,</span>
+        <span class="p">)[</span><span class="o">-</span><span class="mi">5</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">average_delta</span> <span class="o">&gt;</span> <span class="mf">0.01</span><span class="p">:</span>  <span class="c1"># Arbitrary threshold</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s2">&quot;Warning: the K and L matrices computations did not converge. Retrying with different starting point and a N=</span><span class="si">{:d}</span><span class="s2"> search&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="nb">int</span><span class="p">(</span><span class="mi">20</span> <span class="o">*</span> <span class="mf">1.3</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_KL</span><span class="o">.</span><span class="n">calls</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">K</span><span class="p">,</span> <span class="n">L</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_Kalman_matrices</span><span class="p">(</span>
+                <span class="n">matrices</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="mi">20</span> <span class="o">*</span> <span class="mf">1.3</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_KL</span><span class="o">.</span><span class="n">calls</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">K</span><span class="p">,</span> <span class="n">L</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

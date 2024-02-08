@@ -1,0 +1,6 @@
+coopihc.bundle.WsServer.partialback
+===================================
+
+.. currentmodule:: coopihc.bundle.WsServer
+
+.. autofunction:: partialback

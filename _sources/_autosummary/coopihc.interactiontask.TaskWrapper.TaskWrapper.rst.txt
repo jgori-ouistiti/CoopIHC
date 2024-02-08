@@ -1,0 +1,43 @@
+coopihc.interactiontask.TaskWrapper.TaskWrapper
+===============================================
+
+.. currentmodule:: coopihc.interactiontask.TaskWrapper
+
+.. autoclass:: TaskWrapper
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~TaskWrapper.base_on_assistant_action
+      ~TaskWrapper.base_on_user_action
+      ~TaskWrapper.finit
+      ~TaskWrapper.on_assistant_action
+      ~TaskWrapper.on_user_action
+      ~TaskWrapper.render
+      ~TaskWrapper.reset
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~TaskWrapper.assistant_action
+      ~TaskWrapper.parameters
+      ~TaskWrapper.round_number
+      ~TaskWrapper.state
+      ~TaskWrapper.turn_number
+      ~TaskWrapper.unwrapped
+      ~TaskWrapper.user_action
+   
+   

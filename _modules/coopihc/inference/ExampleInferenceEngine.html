@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coopihc.inference.ExampleInferenceEngine &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../_autosummary/coopihc.html">    API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>coopihc.inference.ExampleInferenceEngine</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coopihc.inference.ExampleInferenceEngine</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">coopihc.inference.BaseInferenceEngine</span> <span class="kn">import</span> <span class="n">BaseInferenceEngine</span>
+<span class="kn">from</span> <span class="nn">coopihc.bundle.Simulator</span> <span class="kn">import</span> <span class="n">Simulator</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="c1"># [start-infeng-subclass]</span>
+<div class="viewcode-block" id="ExampleInferenceEngine"><a class="viewcode-back" href="../../../_autosummary/coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.html#coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine">[docs]</a><span class="k">class</span> <span class="nc">ExampleInferenceEngine</span><span class="p">(</span><span class="n">BaseInferenceEngine</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;ExampleInferenceEngine</span>
+
+<span class="sd">    Example class</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ExampleInferenceEngine.infer"><a class="viewcode-back" href="../../../_autosummary/coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.html#coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.infer">[docs]</a>    <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_observation</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;infer</span>
+
+<span class="sd">        Do nothing. Same behavior as parent ``BaseInferenceEngine``</span>
+
+<span class="sd">        :return: (new internal state, reward)</span>
+<span class="sd">        :rtype: tuple(:py:class:`State&lt;coopihc.base.State.State&gt;`, float)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">agent_observation</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">agent_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span>
+
+        <span class="n">reward</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># Do something</span>
+        <span class="c1"># agent_state = ..</span>
+        <span class="c1"># reward = ...</span>
+
+        <span class="k">return</span> <span class="n">agent_state</span><span class="p">,</span> <span class="n">reward</span></div></div>
+
+
+<span class="n">ExampleInferenceEngine</span><span class="p">(</span><span class="n">buffer_depth</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="c1"># [end-infeng-subclass]</span>
+
+
+<div class="viewcode-block" id="CoordinatedInferenceEngine"><a class="viewcode-back" href="../../../_autosummary/coopihc.inference.ExampleInferenceEngine.CoordinatedInferenceEngine.html#coopihc.inference.ExampleInferenceEngine.CoordinatedInferenceEngine">[docs]</a><span class="k">class</span> <span class="nc">CoordinatedInferenceEngine</span><span class="p">(</span><span class="n">BaseInferenceEngine</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">simulation_bundle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">simulation_bundle</span>
+
+    <span class="nd">@BaseInferenceEngine</span><span class="o">.</span><span class="n">default_value</span>
+    <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_observation</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="n">agent_state</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">agent_observation</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">role</span><span class="si">}</span><span class="s2">_state&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Parameter Inference is naive on purpose here</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="c1"># Prediction using user model (can sample directly from the policy in this case, because it already does a single-shot prediction)</span>
+            <span class="n">usermodel_action</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">take_action</span><span class="p">(</span>
+                <span class="n">agent_observation</span><span class="o">=</span><span class="n">agent_observation</span><span class="p">,</span> <span class="n">agent_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span>
+            <span class="p">)</span>
+
+            <span class="c1"># actual observation</span>
+            <span class="n">user_action</span> <span class="o">=</span> <span class="n">agent_observation</span><span class="o">.</span><span class="n">user_action</span><span class="o">.</span><span class="n">action</span>
+
+            <span class="c1"># Compare prediction with observation</span>
+            <span class="k">if</span> <span class="n">user_action</span> <span class="o">!=</span> <span class="n">usermodel_action</span><span class="p">:</span>
+                <span class="c1"># If different, increment parameter by 1 and apply modulo 10. This works because we assumed we knew everything except the value of this parameter.</span>
+                <span class="n">agent_state</span><span class="p">[</span><span class="s2">&quot;user_p0&quot;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">agent_state</span><span class="p">[</span><span class="s2">&quot;user_p0&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">10</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">break</span>
+
+        <span class="n">reward</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">reward</span></div>
+
+
+<div class="viewcode-block" id="RolloutCoordinatedInferenceEngine"><a class="viewcode-back" href="../../../_autosummary/coopihc.inference.ExampleInferenceEngine.RolloutCoordinatedInferenceEngine.html#coopihc.inference.ExampleInferenceEngine.RolloutCoordinatedInferenceEngine">[docs]</a><span class="k">class</span> <span class="nc">RolloutCoordinatedInferenceEngine</span><span class="p">(</span><span class="n">BaseInferenceEngine</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_model</span><span class="p">,</span> <span class="n">user_model</span><span class="p">,</span> <span class="n">assistant</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_model</span> <span class="o">=</span> <span class="n">task_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_model</span> <span class="o">=</span> <span class="n">user_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assistant</span> <span class="o">=</span> <span class="n">assistant</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_simulator</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__inference_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># define the simulator here. Simulator is called like a Bundle, but it will use the dual version of objects if available.</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">simulator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_simulator</span> <span class="o">=</span> <span class="n">Simulator</span><span class="p">(</span>
+                <span class="n">task_model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task_model</span><span class="p">,</span>
+                <span class="n">user_model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user_model</span><span class="p">,</span>
+                <span class="n">assistant</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">assistant</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simulator</span>
+
+    <span class="nd">@BaseInferenceEngine</span><span class="o">.</span><span class="n">default_value</span>
+    <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_observation</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__inference_count</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="p">):</span>  <span class="c1"># If it is the first time there is inference, continue, else just perform a BaseInference. We can do this because we know the parameter p[0] will not evolve over time.</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span><span class="n">agent_observation</span><span class="o">=</span><span class="n">agent_observation</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__inference_count</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">agent_state</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">agent_observation</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">role</span><span class="si">}</span><span class="s2">_state&quot;</span><span class="p">)</span>
+
+        <span class="n">mem_state</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span>
+            <span class="n">agent_state</span>
+        <span class="p">)</span>  <span class="c1"># agent state will be altered in the simulator, so keep a copy of it for reference.</span>
+
+        <span class="c1"># For the 10 possible values, completely simulate them. The right parameter is the one that leads to the maximum rewards</span>
+        <span class="n">rew</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>  <span class="c1"># Exhaustively try out all cases</span>
+
+            <span class="c1"># load the simulation with the right parameters</span>
+            <span class="n">reset_dic</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">agent_observation</span><span class="p">)</span>
+
+            <span class="c1"># try out a new state</span>
+            <span class="k">del</span> <span class="n">reset_dic</span><span class="p">[</span><span class="s2">&quot;assistant_state&quot;</span><span class="p">]</span>
+            <span class="n">reset_dic</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="o">**</span><span class="n">reset_dic</span><span class="p">,</span>
+                <span class="o">**</span><span class="p">{</span>
+                    <span class="s2">&quot;assistant_state&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;p0&quot;</span><span class="p">:</span> <span class="n">i</span><span class="p">,</span>
+                        <span class="s2">&quot;p1&quot;</span><span class="p">:</span> <span class="n">mem_state</span><span class="o">.</span><span class="n">p1</span><span class="p">,</span>
+                        <span class="s2">&quot;p2&quot;</span><span class="p">:</span> <span class="n">mem_state</span><span class="o">.</span><span class="n">p2</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">},</span>
+            <span class="p">}</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">go_to</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dic</span><span class="o">=</span><span class="n">reset_dic</span><span class="p">)</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">state</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">is_done</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+                <span class="n">rew</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">rewards</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+                <span class="k">if</span> <span class="n">is_done</span><span class="p">:</span>
+                    <span class="k">break</span>
+
+        <span class="c1"># Don&#39;t forget to close the simulator when you are finished.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="n">index</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">rew</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;user_p0&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">index</span>
+        <span class="k">return</span> <span class="n">mem_state</span><span class="p">,</span> <span class="mi">0</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

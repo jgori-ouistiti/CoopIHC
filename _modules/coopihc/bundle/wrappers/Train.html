@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coopihc.bundle.wrappers.Train &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../_autosummary/coopihc.html">    API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>coopihc.bundle.wrappers.Train</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coopihc.bundle.wrappers.Train</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">coopihc.base.StateElement</span> <span class="kn">import</span> <span class="n">StateElement</span>
+<span class="kn">from</span> <span class="nn">coopihc.base.Space</span> <span class="kn">import</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">CatSet</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">gym</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+
+<div class="viewcode-block" id="TrainGym2SB3ActionWrapper"><a class="viewcode-back" href="../../../../_autosummary/coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper.html#coopihc.bundle.wrappers.Train.TrainGym2SB3ActionWrapper">[docs]</a><span class="k">class</span> <span class="nc">TrainGym2SB3ActionWrapper</span><span class="p">(</span><span class="n">gym</span><span class="o">.</span><span class="n">ActionWrapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;TrainGym2SB3ActionWrapper</span>
+
+<span class="sd">    Wrapper that flatten all spaces to boxes, using one-hot encoding for discrete spaces.</span>
+
+<span class="sd">    While this wrapper will likely work for all cases, it may sometimes be more effective to code your own actionwrapper to avoid one-hot encoding.</span>
+
+<span class="sd">    :param gym: [description]</span>
+<span class="sd">    :type gym: [type]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_space</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">flatten_space</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">unflatten</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">reverse_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">action</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TrainGym"><a class="viewcode-back" href="../../../../_autosummary/coopihc.bundle.wrappers.Train.TrainGym.html#coopihc.bundle.wrappers.Train.TrainGym">[docs]</a><span class="k">class</span> <span class="nc">TrainGym</span><span class="p">(</span><span class="n">gym</span><span class="o">.</span><span class="n">Env</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Generic Wrapper to make bundles compatibles with gym.Env</span>
+
+<span class="sd">    This is a Wrapper to make a Bundle compatible with gym.Env. Read more on the Train class.</span>
+
+
+<span class="sd">    :param bundle: bundle to convert to a gym.Env</span>
+<span class="sd">    :type bundle: `Bundle &lt;coopihc.bundle.Bundle.Bundle&gt;`</span>
+<span class="sd">    :param train_user: whether to train the user, defaults to True</span>
+<span class="sd">    :type train_user: bool, optional</span>
+<span class="sd">    :param train_assistant: whether to train the assistant, defaults to True</span>
+<span class="sd">    :type train_assistant: bool, optional</span>
+<span class="sd">    :param observation_dict: to filter out observations, you can apply a dictionnary, defaults to None. e.g.:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        filterdict = OrderedDict(</span>
+<span class="sd">            {</span>
+<span class="sd">                &quot;user_state&quot;: OrderedDict({&quot;goal&quot;: 0}),</span>
+<span class="sd">                &quot;task_state&quot;: OrderedDict({&quot;x&quot;: 0}),</span>
+<span class="sd">            }</span>
+<span class="sd">        )</span>
+
+<span class="sd">    You can always filter out observations later using an ObservationWrapper. Difference in performance between the two approaches is unknown.</span>
+
+<span class="sd">    :type observation_dict: collections.OrderedDict, optional</span>
+<span class="sd">    :param reset_dic: During training, the bundle will be repeatedly reset. Pass the reset_dic here if needed (see Bundle reset mechanism), defaults to {}</span>
+<span class="sd">    :type reset_dic: dict, optional</span>
+<span class="sd">    :param reset_turn: During training, the bundle will be repeatedly reset. Pass the reset_turn here (see Bundle reset_turn mechanism), defaults to None, which selects either 1 if the user is trained else 3</span>
+<span class="sd">    :type reset_turn: int, optional</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">bundle</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="n">train_user</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">train_assistant</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">observation_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">reset_dic</span><span class="o">=</span><span class="p">{},</span>
+        <span class="n">reset_turn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">filter_observation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">train_user</span> <span class="o">=</span> <span class="n">train_user</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">train_assistant</span> <span class="o">=</span> <span class="n">train_assistant</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span> <span class="o">=</span> <span class="n">bundle</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observation_dict</span> <span class="o">=</span> <span class="n">observation_dict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_dic</span> <span class="o">=</span> <span class="n">reset_dic</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_observation</span> <span class="o">=</span> <span class="n">filter_observation</span>
+
+        <span class="k">if</span> <span class="n">reset_turn</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_user</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">reset_turn</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">train_assistant</span><span class="p">:</span>  <span class="c1"># override reset_turn if train_assistant is True</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">reset_turn</span> <span class="o">=</span> <span class="mi">3</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reset_turn</span> <span class="o">=</span> <span class="n">reset_turn</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_convertor</span> <span class="o">=</span> <span class="n">GymConvertor</span><span class="p">(</span><span class="n">filter_observation</span><span class="o">=</span><span class="n">filter_observation</span><span class="p">)</span>
+
+        <span class="c1"># The asymmetry of these two should be resolved. Currently, some fiddling is needed due to Issue # 58 https://github.com/jgori-ouistiti/CoopIHC/issues/58 . It is expected that when issue 58 is resolved, this code can be cleaned up.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_space</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_action_space</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observation_space</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_observation_space</span><span class="p">()</span>
+
+        <span class="c1"># Below: Using ordereddict here is forced due to Open AI gym&#39;s behavior: when initializing the Dict space, it tries to order the dict by keys, which may change the order of the dict entries. This is actually useless since Python 3.7 because dicts are ordered by default.</span>
+
+<div class="viewcode-block" id="TrainGym.get_action_space"><a class="viewcode-back" href="../../../../_autosummary/coopihc.bundle.wrappers.Train.TrainGym.html#coopihc.bundle.wrappers.Train.TrainGym.get_action_space">[docs]</a>    <span class="k">def</span> <span class="nf">get_action_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;get_action_space</span>
+
+<span class="sd">        Create a gym.spaces.Dict out of the action states of the Bundle.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># ----- Init Action space -------</span>
+        <span class="n">action_dict</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">({})</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_user</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_action</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">action</span><span class="p">):</span>
+                    <span class="n">action_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                        <span class="p">{</span><span class="sa">f</span><span class="s2">&quot;user_action_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_space</span><span class="p">(</span><span class="n">_action</span><span class="p">)}</span>
+                    <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>  <span class="c1"># Catch single actions</span>
+                <span class="n">action_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="p">{</span><span class="sa">f</span><span class="s2">&quot;user_action&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_space</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">action</span><span class="p">)}</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_assistant</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_action</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">assistant</span><span class="o">.</span><span class="n">action</span><span class="p">):</span>
+                    <span class="n">action_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                        <span class="p">{</span><span class="sa">f</span><span class="s2">&quot;assistant_action_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_space</span><span class="p">(</span><span class="n">_action</span><span class="p">)}</span>
+                    <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>  <span class="c1"># Catch single actions</span>
+                <span class="n">action_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="sa">f</span><span class="s2">&quot;assistant_action&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_space</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">assistant</span><span class="o">.</span><span class="n">action</span>
+                        <span class="p">)</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Dict</span><span class="p">(</span><span class="n">action_dict</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TrainGym.get_observation_space"><a class="viewcode-back" href="../../../../_autosummary/coopihc.bundle.wrappers.Train.TrainGym.html#coopihc.bundle.wrappers.Train.TrainGym.get_observation_space">[docs]</a>    <span class="k">def</span> <span class="nf">get_observation_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;get_observation_space</span>
+
+<span class="sd">        Same as get_action_space for observations.</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">go_to</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reset_turn</span><span class="p">)</span>
+        <span class="c1"># ------- Init Observation space</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_user</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_assistant</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s2">&quot;Currently this wrapper can not deal with simultaneous training of users and assistants.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_user</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_agent_observation_space</span><span class="p">(</span><span class="s2">&quot;user&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_assistant</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_agent_observation_space</span><span class="p">(</span><span class="s2">&quot;assistant&quot;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">get_agent_observation_space</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent</span><span class="p">):</span>
+        <span class="n">observation_dict</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">({})</span>
+
+        <span class="n">observation</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="p">,</span> <span class="n">agent</span><span class="p">)</span><span class="o">.</span><span class="n">observation</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_observation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">observation</span> <span class="o">=</span> <span class="n">observation</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;stateelement&quot;</span><span class="p">,</span> <span class="n">filterdict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">filter_observation</span>
+            <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">observation</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># for key, value in getattr(self.bundle, agent).observation.items():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;user_action&quot;</span> <span class="ow">or</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;assistant_action&quot;</span><span class="p">:</span>
+                <span class="n">observation_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_space</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s2">&quot;action&quot;</span><span class="p">])})</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">observation_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="n">__key</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_space</span><span class="p">(</span><span class="n">__value</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">__key</span><span class="p">,</span> <span class="n">__value</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Dict</span><span class="p">(</span><span class="n">observation_dict</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TrainGym.reset"><a class="viewcode-back" href="../../../../_autosummary/coopihc.bundle.wrappers.Train.TrainGym.html#coopihc.bundle.wrappers.Train.TrainGym.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">dic</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reset_dic</span><span class="p">,</span> <span class="n">go_to</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reset_turn</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_user</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_assistant</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_user</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convertor</span><span class="o">.</span><span class="n">filter_gamestate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">observation</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_assistant</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convertor</span><span class="o">.</span><span class="n">filter_gamestate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">assistant</span><span class="o">.</span><span class="n">observation</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TrainGym.step"><a class="viewcode-back" href="../../../../_autosummary/coopihc.bundle.wrappers.Train.TrainGym.html#coopihc.bundle.wrappers.Train.TrainGym.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+
+        <span class="n">user_action</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;user_action&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">assistant_action</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;assistant_action&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">obs</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">flag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">step</span><span class="p">(</span>
+            <span class="n">user_action</span><span class="o">=</span><span class="n">user_action</span><span class="p">,</span> <span class="n">assistant_action</span><span class="o">=</span><span class="n">assistant_action</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_user</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_assistant</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_user</span><span class="p">:</span>
+            <span class="n">obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convertor</span><span class="o">.</span><span class="n">filter_gamestate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">observation</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_assistant</span><span class="p">:</span>
+            <span class="n">obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convertor</span><span class="o">.</span><span class="n">filter_gamestate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">assistant</span><span class="o">.</span><span class="n">observation</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">obs</span><span class="p">,</span>
+            <span class="nb">float</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">rewards</span><span class="o">.</span><span class="n">values</span><span class="p">())),</span>
+            <span class="n">flag</span><span class="p">,</span>
+            <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;CoopIHC Bundle </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="p">))},</span>
+        <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">convert_space</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">object</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">StateElement</span><span class="p">):</span>
+            <span class="nb">object</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="n">space</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convertor</span><span class="o">.</span><span class="n">convert_space</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TrainGym.render"><a class="viewcode-back" href="../../../../_autosummary/coopihc.bundle.wrappers.Train.TrainGym.html#coopihc.bundle.wrappers.Train.TrainGym.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;See Bundle and gym API</span>
+
+<span class="sd">        :meta public:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">mode</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TrainGym.close"><a class="viewcode-back" href="../../../../_autosummary/coopihc.bundle.wrappers.Train.TrainGym.html#coopihc.bundle.wrappers.Train.TrainGym.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;See Bundle and gym API</span>
+
+<span class="sd">        :meta public:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="RLConvertor"><a class="viewcode-back" href="../../../../_autosummary/coopihc.bundle.wrappers.Train.RLConvertor.html#coopihc.bundle.wrappers.Train.RLConvertor">[docs]</a><span class="k">class</span> <span class="nc">RLConvertor</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;RLConvertor</span>
+
+<span class="sd">    An object, who should be subclassed that helps convert spaces from Bundles to another library.</span>
+
+<span class="sd">    :param interface: API target for conversion, defaults to &quot;gym&quot;</span>
+<span class="sd">    :type interface: str, optional</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface</span><span class="o">=</span><span class="s2">&quot;gym&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span> <span class="o">=</span> <span class="n">interface</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">interface</span> <span class="o">!=</span> <span class="s2">&quot;gym&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">convert_space</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">space</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">filter_gamestate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gamestate</span><span class="p">,</span> <span class="n">observation_mapping</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="GymConvertor"><a class="viewcode-back" href="../../../../_autosummary/coopihc.bundle.wrappers.Train.GymConvertor.html#coopihc.bundle.wrappers.Train.GymConvertor">[docs]</a><span class="k">class</span> <span class="nc">GymConvertor</span><span class="p">(</span><span class="n">RLConvertor</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;GymConvertor</span>
+
+<span class="sd">    Convertor to convert spaces from Bundle to Gym.</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">        Code is a little messy. Refactoring together with Train and TrainGym would be beneficial.</span>
+
+<span class="sd">    :param RLConvertor: [description]</span>
+<span class="sd">    :type RLConvertor: [type]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_observation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">interface</span><span class="o">=</span><span class="s2">&quot;gym&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_filter_observation</span> <span class="o">=</span> <span class="n">filter_observation</span>
+
+    <span class="k">def</span> <span class="nf">convert_space</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">space</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">Numeric</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span>
+                <span class="n">low</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">space</span><span class="o">.</span><span class="n">low</span><span class="p">),</span>
+                <span class="n">high</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">space</span><span class="o">.</span><span class="n">high</span><span class="p">),</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">space</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">CatSet</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Discrete</span><span class="p">(</span><span class="n">space</span><span class="o">.</span><span class="n">N</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GymConvertor.filter_gamestate"><a class="viewcode-back" href="../../../../_autosummary/coopihc.bundle.wrappers.Train.GymConvertor.html#coopihc.bundle.wrappers.Train.GymConvertor.filter_gamestate">[docs]</a>    <span class="k">def</span> <span class="nf">filter_gamestate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gamestate</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;filter_gamestate</span>
+
+<span class="sd">        converts a CoopIHC observation to a valid Gym observation</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">dic</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">({})</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">gamestate</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;array-Gym&quot;</span><span class="p">,</span> <span class="n">filterdict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_filter_observation</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># Hack, see Issue # 58  https://github.com/jgori-ouistiti/CoopIHC/issues/58</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">_key</span><span class="p">,</span> <span class="n">_value</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+            <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">&quot;user_action&quot;</span> <span class="ow">or</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">&quot;assistant_action&quot;</span><span class="p">:</span>
+                <span class="n">v</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;action&quot;</span><span class="p">)</span>
+                <span class="n">_key</span> <span class="o">=</span> <span class="n">k</span>
+
+            <span class="n">dic</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">dic</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

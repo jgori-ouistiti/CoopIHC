@@ -1,0 +1,32 @@
+coopihc.observation.RuleObservationEngine
+=========================================
+
+.. automodule:: coopihc.observation.RuleObservationEngine
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      RuleObservationEngine
+   
+   
+
+   
+   
+   
+
+
+

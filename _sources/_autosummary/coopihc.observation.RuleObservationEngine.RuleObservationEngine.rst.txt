@@ -1,0 +1,39 @@
+coopihc.observation.RuleObservationEngine.RuleObservationEngine
+===============================================================
+
+.. currentmodule:: coopihc.observation.RuleObservationEngine
+
+.. autoclass:: RuleObservationEngine
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~RuleObservationEngine.apply_mapping
+      ~RuleObservationEngine.create_mapping
+      ~RuleObservationEngine.default_value
+      ~RuleObservationEngine.observe
+      ~RuleObservationEngine.observe_from_substates
+      ~RuleObservationEngine.reset
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~RuleObservationEngine.action
+      ~RuleObservationEngine.bundle
+      ~RuleObservationEngine.observation
+      ~RuleObservationEngine.unwrapped
+   
+   

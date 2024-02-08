@@ -1,0 +1,34 @@
+coopihc.base
+============
+
+.. automodule:: coopihc.base
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. autosummary::
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+
+   coopihc.base.Space
+   coopihc.base.State
+   coopihc.base.StateElement
+   coopihc.base.elements
+   coopihc.base.utils
+

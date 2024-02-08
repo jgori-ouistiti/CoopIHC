@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coopihc.bundle.WsServer.WsServer &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="coopihc.bundle.wrappers" href="coopihc.bundle.wrappers.html" />
+    <link rel="prev" title="coopihc.bundle.WsServer.partialback" href="coopihc.bundle.WsServer.partialback.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">    Home page</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="coopihc.html">    API reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="coopihc.agents.html">coopihc.agents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.base.html">coopihc.base</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="coopihc.bundle.html">coopihc.bundle</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="coopihc.bundle.BaseBundle.html">coopihc.bundle.BaseBundle</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.bundle.Bundle.html">coopihc.bundle.Bundle</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.bundle.Simulator.html">coopihc.bundle.Simulator</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="coopihc.bundle.WsServer.html">coopihc.bundle.WsServer</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="coopihc.bundle.WsServer.partialback.html">coopihc.bundle.WsServer.partialback</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">coopihc.bundle.WsServer.WsServer</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.bundle.wrappers.html">coopihc.bundle.wrappers</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.helpers.html">coopihc.helpers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.inference.html">coopihc.inference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.interactiontask.html">coopihc.interactiontask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.observation.html">coopihc.observation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.policy.html">coopihc.policy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="coopihc.html">coopihc</a> &raquo;</li>
+          <li><a href="coopihc.bundle.html">coopihc.bundle</a> &raquo;</li>
+          <li><a href="coopihc.bundle.WsServer.html">coopihc.bundle.WsServer</a> &raquo;</li>
+      <li>coopihc.bundle.WsServer.WsServer</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/coopihc.bundle.WsServer.WsServer.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="coopihc-bundle-wsserver-wsserver">
+<h1>coopihc.bundle.WsServer.WsServer<a class="headerlink" href="#coopihc-bundle-wsserver-wsserver" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="coopihc.bundle.WsServer.WsServer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">WsServer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bundle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">taskwrapper</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'localhost'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/bundle/WsServer.html#WsServer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.bundle.WsServer.WsServer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>WebSocket Server for Bundle</p>
+<p>A Websocket server that handles a bundle with an external task that communicates with that server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bundle</strong> (<a class="reference internal" href="coopihc.bundle.Bundle.Bundle.html#coopihc.bundle.Bundle.Bundle" title="coopihc.bundle.Bundle.Bundle"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bundle</span></code></a>) – the bundle to serve</p></li>
+<li><p><strong>taskwrapper</strong> (<a class="reference internal" href="coopihc.interactiontask.PipeTaskWrapper.PipeTaskWrapper.html#coopihc.interactiontask.PipeTaskWrapper.PipeTaskWrapper" title="coopihc.interactiontask.PipeTaskWrapper.PipeTaskWrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">PipeTaskWrapper</span></code></a>) – Task wrapper</p></li>
+<li><p><strong>address</strong> (<em>str</em><em>, </em><em>optional</em>) – server address, defaults to “localhost”</p></li>
+<li><p><strong>port</strong> (<em>int</em><em>, </em><em>optional</em>) – port number, defaults to 4000</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.bundle.WsServer.WsServer.bundlehandler" title="coopihc.bundle.WsServer.WsServer.bundlehandler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bundlehandler</span></code></a></p></td>
+<td><p>On websocket connection, starts a new userTrial in a new Process.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.bundle.WsServer.WsServer.consumer_handler" title="coopihc.bundle.WsServer.WsServer.consumer_handler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">consumer_handler</span></code></a></p></td>
+<td><p>When messages from websocket are received, send them over the pipe</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.bundle.WsServer.WsServer.producer" title="coopihc.bundle.WsServer.WsServer.producer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">producer</span></code></a></p></td>
+<td><p>Check pipe for messages to send to websocket.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.bundle.WsServer.WsServer.producer_handler" title="coopihc.bundle.WsServer.WsServer.producer_handler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">producer_handler</span></code></a></p></td>
+<td><p>Look for messages to send from the Bundle.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.bundle.WsServer.WsServer.register" title="coopihc.bundle.WsServer.WsServer.register"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register</span></code></a></p></td>
+<td><p>Keep track of clients.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.bundle.WsServer.WsServer.start" title="coopihc.bundle.WsServer.WsServer.start"><code class="xref py py-obj docutils literal notranslate"><span class="pre">start</span></code></a></p></td>
+<td><p>Start the server</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.bundle.WsServer.WsServer.bundlehandler">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bundlehandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">websocket</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bundle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">taskwrapper</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/bundle/WsServer.html#WsServer.bundlehandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.bundle.WsServer.WsServer.bundlehandler" title="Permalink to this definition"></a></dt>
+<dd><p>On websocket connection, starts a new userTrial in a new Process.
+Then starts async listeners for sending and recieving messages.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>websocket</strong> (<em>string</em>) – address</p></li>
+<li><p><strong>path</strong> (<em>int</em>) – portnumber</p></li>
+<li><p><strong>bundle</strong> (<a class="reference internal" href="coopihc.bundle.Bundle.Bundle.html#coopihc.bundle.Bundle.Bundle" title="coopihc.bundle.Bundle.Bundle"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bundle</span></code></a>) – the bundle to serve</p></li>
+<li><p><strong>taskwrapper</strong> (<a class="reference internal" href="coopihc.interactiontask.PipeTaskWrapper.PipeTaskWrapper.html#coopihc.interactiontask.PipeTaskWrapper.PipeTaskWrapper" title="coopihc.interactiontask.PipeTaskWrapper.PipeTaskWrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">PipeTaskWrapper</span></code></a>) – Task wrapper</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.bundle.WsServer.WsServer.consumer_handler">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">consumer_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">websocket</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pipe</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/bundle/WsServer.html#WsServer.consumer_handler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.bundle.WsServer.WsServer.consumer_handler" title="Permalink to this definition"></a></dt>
+<dd><p>When messages from websocket are received, send them over the pipe</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>websocket</strong> (<em>string</em>) – address</p></li>
+<li><p><strong>pipe</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Pipe</span></code>) – Pipe through which messages are sent</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.bundle.WsServer.WsServer.producer">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">producer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">websocket</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pipe</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/bundle/WsServer.html#WsServer.producer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.bundle.WsServer.WsServer.producer" title="Permalink to this definition"></a></dt>
+<dd><p>Check pipe for messages to send to websocket.
+If the process is done, send final message to websocket and return
+True to tell calling functions that the process is complete.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>websocket</strong> (<em>string</em>) – address</p></li>
+<li><p><strong>pipe</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Pipe</span></code>) – Pipe through which messages are sent</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>[description]</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>[type]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.bundle.WsServer.WsServer.producer_handler">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">producer_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">websocket</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pipe</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/bundle/WsServer.html#WsServer.producer_handler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.bundle.WsServer.WsServer.producer_handler" title="Permalink to this definition"></a></dt>
+<dd><p>Look for messages to send from the Bundle.
+asyncio.sleep() is required to make this non-blocking
+default sleep time is (0.01) which creates a maximum framerate of
+just under 100 frames/s. For faster framerates decrease sleep time
+however be aware that this will affect the ability of the
+consumer_handler function to keep up with messages from the websocket
+and may cause poor performance if the web-client is sending a high volume of messages.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>websocket</strong> (<em>string</em>) – address</p></li>
+<li><p><strong>pipe</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Pipe</span></code>) – Pipe through which messages are sent</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.bundle.WsServer.WsServer.register">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">websocket</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/bundle/WsServer.html#WsServer.register"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.bundle.WsServer.WsServer.register" title="Permalink to this definition"></a></dt>
+<dd><p>Keep track of clients.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>websocket</strong> (<em>string</em>) – address</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.bundle.WsServer.WsServer.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/bundle/WsServer.html#WsServer.start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.bundle.WsServer.WsServer.start" title="Permalink to this definition"></a></dt>
+<dd><p>Start the server</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="coopihc.bundle.WsServer.partialback.html" class="btn btn-neutral float-left" title="coopihc.bundle.WsServer.partialback" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="coopihc.bundle.wrappers.html" class="btn btn-neutral float-right" title="coopihc.bundle.wrappers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

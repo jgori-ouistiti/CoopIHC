@@ -1,0 +1,39 @@
+coopihc.policy.ELLDiscretePolicy
+================================
+
+.. automodule:: coopihc.policy.ELLDiscretePolicy
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      ELLDiscretePolicy
+   
+   
+
+   
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+      :toctree:
+   
+      BadlyDefinedLikelihoodError
+   
+   
+
+
+

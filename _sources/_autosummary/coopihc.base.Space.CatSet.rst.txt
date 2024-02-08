@@ -1,0 +1,37 @@
+coopihc.base.Space.CatSet
+=========================
+
+.. currentmodule:: coopihc.base.Space
+
+.. autoclass:: CatSet
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~CatSet.sample
+      ~CatSet.serialize
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~CatSet.N
+      ~CatSet.dtype
+      ~CatSet.high
+      ~CatSet.low
+      ~CatSet.shape
+      ~CatSet.spacetype
+   
+   

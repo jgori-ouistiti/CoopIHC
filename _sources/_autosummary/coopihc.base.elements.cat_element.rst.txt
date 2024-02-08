@@ -1,0 +1,6 @@
+coopihc.base.elements.cat\_element
+==================================
+
+.. currentmodule:: coopihc.base.elements
+
+.. autofunction:: cat_element

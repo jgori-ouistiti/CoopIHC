@@ -1,0 +1,32 @@
+coopihc.inference.BaseInferenceEngine
+=====================================
+
+.. automodule:: coopihc.inference.BaseInferenceEngine
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      BaseInferenceEngine
+   
+   
+
+   
+   
+   
+
+
+

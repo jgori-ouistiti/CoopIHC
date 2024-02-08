@@ -1,0 +1,34 @@
+coopihc.agents.ExampleUser
+==========================
+
+.. automodule:: coopihc.agents.ExampleUser
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      ExampleUser
+      PseudoRandomUser
+      PseudoRandomUserWithParams
+   
+   
+
+   
+   
+   
+
+
+

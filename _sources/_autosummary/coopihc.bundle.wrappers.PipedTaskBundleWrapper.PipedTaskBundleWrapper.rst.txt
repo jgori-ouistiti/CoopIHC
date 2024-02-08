@@ -1,0 +1,41 @@
+coopihc.bundle.wrappers.PipedTaskBundleWrapper.PipedTaskBundleWrapper
+=====================================================================
+
+.. currentmodule:: coopihc.bundle.wrappers.PipedTaskBundleWrapper
+
+.. autoclass:: PipedTaskBundleWrapper
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~PipedTaskBundleWrapper.close
+      ~PipedTaskBundleWrapper.end
+      ~PipedTaskBundleWrapper.quarter_step
+      ~PipedTaskBundleWrapper.render
+      ~PipedTaskBundleWrapper.reset
+      ~PipedTaskBundleWrapper.run
+      ~PipedTaskBundleWrapper.step
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PipedTaskBundleWrapper.parameters
+      ~PipedTaskBundleWrapper.round_number
+      ~PipedTaskBundleWrapper.state
+      ~PipedTaskBundleWrapper.turn_dict
+      ~PipedTaskBundleWrapper.turn_number
+   
+   

@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Using Reinforcement Learning &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Interfacing CoopIHC with a real user" href="realuser.html" />
+    <link rel="prev" title="Modularity" href="modularity.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modularity.html">Modularity</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Using Reinforcement Learning</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#defining-the-bundle">Defining the Bundle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#making-a-bundle-compatible-with-gym">Making a Bundle compatible with Gym</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#training-an-agent">Training an Agent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#loading-the-trained-policy-in-coopihc">Loading the Trained Policy in CoopIHC</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rng.html">Random Number Generators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rendering.html">Rendering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="highlevel_objects.html">High-Level objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Using Reinforcement Learning</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/guide/learning.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="using-reinforcement-learning">
+<h1>Using Reinforcement Learning<a class="headerlink" href="#using-reinforcement-learning" title="Permalink to this headline"></a></h1>
+<p>The main structure of <em>CoopIHC</em> is a multi-agent decision making model known as a <a class="reference internal" href="interaction_model.html#decision-theoretic-models"><span class="std std-ref">Partially Observable Stochastic Game</span></a>. Because of that, it is relatively easy to convert a CoopIHC <code class="docutils literal notranslate"><span class="pre">Bundle</span></code> to other decision-making models. In this example, we cover a transformation to a single-agent decision-making model—known as the Partially Observable Markov Decision Process (POMDP)— which we attempt to solve with an off-the-shelf, model-free, Deep Reinforcement Learning (DRL) algorithm. This will give us a trained policy, which we can then further use as any other policy for an agent.</p>
+<p>The steps of this example are:</p>
+<ol class="arabic simple">
+<li><p>Define the Bundle as usual, where the policy of the agent to be trained has the correct action state but does not have a mechanism to select actions (e.g. random policy).</p></li>
+<li><p>Wrap the bundle in a <code class="docutils literal notranslate"><span class="pre">TrainGym</span></code> wrapper, making it compatible with the <a class="reference external" href="https://gym.openai.com/">Gym API</a> — a widely used standard in DRL research.</p></li>
+<li><p>Train the agent’s policy (i.e. attempt to solve the underlying POMDP). To do so, a machinery entirely specific to DRL and not <em>CoopIHC</em> is used. We will use <a class="reference external" href="https://stable-baselines3.readthedocs.io/en/master/">Stable-Baselines 3 (SB3)</a> to do so, which may add a few more constraints for step 2.</p></li>
+<li><p>Apply the proper wrapper to make the trained policy compatible with <em>CoopIHC</em>.</p></li>
+</ol>
+<p>A graphical representation of these steps is shown below.</p>
+<figure class="align-default" id="id1">
+<a class="reference internal image-reference" href="../_images/training_drl.png"><img alt="../_images/training_drl.png" src="../_images/training_drl.png" style="width: 800px;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 3 </span><span class="caption-text">A complete workflow using Deep RL, where a Bundle is wrapped as a Gym environment, an off-the-shelf learning algorithm is used, and the trained model is wrapped as a policy to be used in CoopIHC.</span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You are not obliged to use SB3 nor Gym at all, but you may have to code your own set of wrappers if you choose not to do so. The existing code should however be relatively easy to adapt to accommodate other libraries.</p>
+</div>
+<section id="defining-the-bundle">
+<h2>Defining the Bundle<a class="headerlink" href="#defining-the-bundle" title="Permalink to this headline"></a></h2>
+<p>We use predefined objects of the pointing problem in <em>CoopIHC-Zoo</em>. The goal  in this example is to formulate a user model that is close to real human behavior. To do so, we assume that human behavior is optimal and will seek to maximize rewards. As a result, we obtain the human-like policy by solving a POMDP where the learning algorithm selects actions and receives observations and rewards in return. We start by defining a bundle from the predefined components. This time however, the policy of the user agent is defined as the random policy with action set <span class="math notranslate nohighlight">\(\lbrace -5,-4,\dots{}, 4, 5\)</span>. Note the use of the override (<code class="docutils literal notranslate"><span class="pre">override_policy</span></code>) mechanism.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span> <span class="nn">coopihc.examples.simplepointing.envs</span> <span class="kn">import</span> <span class="n">SimplePointingTask</span>
+<span class="linenos"> 2</span><span class="kn">from</span> <span class="nn">coopihc.examples.simplepointing.users</span> <span class="kn">import</span> <span class="n">CarefulPointer</span>
+<span class="linenos"> 3</span><span class="kn">from</span> <span class="nn">coopihc.examples.simplepointing.assistants</span> <span class="kn">import</span> <span class="n">ConstantCDGain</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span>
+<span class="linenos"> 6</span><span class="n">task</span> <span class="o">=</span> <span class="n">SimplePointingTask</span><span class="p">(</span><span class="n">gridsize</span><span class="o">=</span><span class="mi">31</span><span class="p">,</span> <span class="n">number_of_targets</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="linenos"> 7</span><span class="n">unitcdgain</span> <span class="o">=</span> <span class="n">ConstantCDGain</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="linenos"> 8</span>
+<span class="linenos"> 9</span><span class="c1"># The policy to be trained has the simple action set [-5,-4,-3,-2,-1,0,1,2,3,,4,5]</span>
+<span class="linenos">10</span><span class="n">action_state</span> <span class="o">=</span> <span class="n">State</span><span class="p">()</span>
+<span class="linenos">11</span><span class="n">action_state</span><span class="p">[</span><span class="s2">&quot;action&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">discrete_array_element</span><span class="p">(</span><span class="n">low</span><span class="o">=-</span><span class="mi">5</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="linenos">12</span>
+<span class="linenos">13</span><span class="n">user</span> <span class="o">=</span> <span class="n">CarefulPointer</span><span class="p">(</span><span class="n">override_policy</span><span class="o">=</span><span class="p">(</span><span class="n">BasePolicy</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;action_state&quot;</span><span class="p">:</span> <span class="n">action_state</span><span class="p">}))</span>
+<span class="linenos">14</span><span class="n">bundle</span> <span class="o">=</span> <span class="n">Bundle</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">assistant</span><span class="o">=</span><span class="n">unitcdgain</span><span class="p">,</span> <span class="n">reset_go_to</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="linenos">15</span><span class="n">observation</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos">16</span>
+<span class="linenos">17</span><span class="c1"># &gt;&gt;&gt; print(observation)</span>
+<span class="linenos">18</span><span class="c1"># ----------------  -----------  -------------------------  -------------------</span>
+<span class="linenos">19</span><span class="c1"># game_info         turn_index   1                          CatSet(4) - int8</span>
+<span class="linenos">20</span><span class="c1">#                   round_index  0                          Numeric() - int64</span>
+<span class="linenos">21</span><span class="c1"># task_state        position     29                         Numeric() - int64</span>
+<span class="linenos">22</span><span class="c1">#                   targets      [ 5 10 14 15 19 21 27 28]  Numeric(8,) - int64</span>
+<span class="linenos">23</span><span class="c1"># user_state        goal         10                         Numeric() - int64</span>
+<span class="linenos">24</span><span class="c1"># user_action       action       -3                         Numeric() - int64</span>
+<span class="linenos">25</span><span class="c1"># assistant_action  action       [1]                        Numeric(1,) - int64</span>
+<span class="linenos">26</span><span class="c1"># ----------------  -----------  -------------------------  -------------------</span>
+<span class="linenos">27</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Finding an optimal policy in this case is actually straightforward: the optimal reward is obtained by minimizing the number of steps, which implies that if the goal is out of reach, an action of <span class="math notranslate nohighlight">\(\pm 5\)</span> is selected, otherwise the remaining distance to the goal is selected.</p>
+</div>
+</section>
+<section id="making-a-bundle-compatible-with-gym">
+<h2>Making a Bundle compatible with Gym<a class="headerlink" href="#making-a-bundle-compatible-with-gym" title="Permalink to this headline"></a></h2>
+<p>The Gym API expects a few attributes and methods to be defined. We provide a wrapper which makes the translation between <em>CoopIHC</em> and gym called <code class="docutils literal notranslate"><span class="pre">TrainGym</span></code>. We test that the environment is indeed Gym compatible with a function provided by stable baselines.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">rl_env</span> <span class="o">=</span> <span class="n">GymWrapper</span><span class="p">(</span>
+<span class="linenos"> 2</span>    <span class="n">bundle</span><span class="p">,</span>
+<span class="linenos"> 3</span>    <span class="n">train_user</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="linenos"> 4</span>    <span class="n">train_assistant</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="linenos"> 5</span><span class="p">)</span>
+<span class="linenos"> 6</span>
+<span class="linenos"> 7</span><span class="n">obs</span> <span class="o">=</span> <span class="n">rl_env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos"> 8</span><span class="c1"># &gt;&gt;&gt; print(env.action_space)</span>
+<span class="linenos"> 9</span><span class="c1"># Dict(user_action__action:Box([-5], [5], (1,), int64))</span>
+<span class="linenos">10</span><span class="c1"># &gt;&gt;&gt; print(env.observation_space)</span>
+<span class="linenos">11</span><span class="c1"># Dict(game_info__turn_index:Discrete(4), game_info__round_index:Box([0], [9223372036854775807], (1,), int64), task_state__position:Box([0], [30], (1,), int64), task_state__targets:Box([0 0 0 0 0 0 0 0], [30 30 30 30 30 30 30 30], (8,), int64), user_state__goal:Box([0], [30], (1,), int64), user_action__action:Box([-5], [5], (1,), int64), assistant_action__action:Box([1], [1], (1,), int64))</span>
+<span class="linenos">12</span>
+<span class="linenos">13</span><span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated_flag</span><span class="p">,</span> <span class="n">truncated_flag</span><span class="p">,</span> <span class="n">inf</span> <span class="o">=</span> <span class="n">rl_env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span>
+<span class="linenos">14</span>    <span class="p">{</span><span class="s2">&quot;user_action__action&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+<span class="linenos">15</span><span class="p">)</span>
+<span class="linenos">16</span>
+<span class="linenos">17</span><span class="c1"># Use env_checker from stable_baselines3 to verify that the env adheres to the Gym API</span>
+<span class="linenos">18</span><span class="kn">from</span> <span class="nn">stable_baselines3.common.env_checker</span> <span class="kn">import</span> <span class="n">check_env</span>
+<span class="linenos">19</span>
+<span class="linenos">20</span><span class="n">check_env</span><span class="p">(</span><span class="n">rl_env</span><span class="p">,</span> <span class="n">warn</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>TrainGym converts discrete spaces to be in <span class="math notranslate nohighlight">\(\\mathcal{N}\)</span> in line with Gym.</p>
+</div>
+<p>At this point, the environment is compatible with the Gym API, but we can not apply SB3 algorithms directly (<code class="docutils literal notranslate"><span class="pre">check_env</span></code> with <code class="docutils literal notranslate"><span class="pre">warn</span> <span class="pre">=</span> <span class="pre">False</span></code> raises no warnings, but does with <code class="docutils literal notranslate"><span class="pre">warn</span> <span class="pre">=</span> <span class="pre">True</span></code>). The reason is that <em>CoopIHC</em> returns dictionary spaces (<code class="docutils literal notranslate"><span class="pre">gym.spaces.Dict</span></code>) for actions , which is not supported by SB3 algorithms. We provide a simple <a class="reference external" href="https://github.com/openai/gym/blob/master/gym/core.py#L318">action wrapper</a> named <code class="docutils literal notranslate"><span class="pre">TrainGym2SB3ActionWrapper</span></code> that converts the actions to a “flattened space” (discrete actions are one-hot encoded to boxes).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="c1"># sb3env = TrainGym2SB3ActionWrapper(env)</span>
+<span class="linenos">2</span><span class="c1"># check_env(sb3env, warn=True)</span>
+</pre></div>
+</div>
+<p>It may be beneficial to write your own wrappers in many cases, especially considering it is usually pretty straightforward. The generic``TrainGym2SB3ActionWrapper`` wrapper converts discrete action spaces to unit boxes via a so-called one-hot encoding. The point of one-hot encoding is to make sure the metric information contained in the numeric representation does not influence learning (for example, for 3 actions A,B,C, if one were to code using e.g. A = 1, B = 2, C = 3, this could imply that A is closer to B than to C. Sometimes this needs to be avoided.) In the current example however, the actions represent distances to cover in either direction, and it is likely more efficient to convert the discrete space directly to a box by casting to a box (without one-hot encoding). In what follows, we will use hand-crafted wrappers.</p>
+</section>
+<section id="training-an-agent">
+<h2>Training an Agent<a class="headerlink" href="#training-an-agent" title="Permalink to this headline"></a></h2>
+<p>There are various tricks to making DRL training more efficient, see for example <a class="reference external" href="https://stable-baselines3.readthedocs.io/en/master/guide/rl_tips.html">SB3’s tips and tricks</a>. Usually, these require applying some extra wrappers. For example, for algorithms that work by finding the right parameters to Gaussians (e.g. PPO) it is recommended to normalize actions to <span class="math notranslate nohighlight">\([-1,1]\)</span>.</p>
+<p>Below, we apply some wrappers that filters out the relevant information out of the observation space and casts it to a continuous space (if not, SB3 will one-hot encode it automatically). Then, we apply a wrapper that casts the action to a continuous space and normalizes it.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span>
+<span class="linenos"> 2</span><span class="n">TEN_EPSILON64</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span><span class="k">class</span> <span class="nc">NormalizeActionWrapper</span><span class="p">(</span><span class="n">gym</span><span class="o">.</span><span class="n">ActionWrapper</span><span class="p">):</span>
+<span class="linenos"> 6</span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+<span class="linenos"> 7</span>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+<span class="linenos"> 8</span>
+<span class="linenos"> 9</span>        <span class="bp">self</span><span class="o">.</span><span class="n">action_space</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span>
+<span class="linenos">10</span>            <span class="n">low</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+<span class="linenos">11</span>            <span class="n">high</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="linenos">12</span>            <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span>
+<span class="linenos">13</span>            <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
+<span class="linenos">14</span>        <span class="p">)</span>
+<span class="linenos">15</span>
+<span class="linenos">16</span>    <span class="k">def</span> <span class="nf">action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+<span class="linenos">17</span>        <span class="k">return</span> <span class="p">{</span>
+<span class="linenos">18</span>            <span class="s2">&quot;user_action__action&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span>
+<span class="linenos">19</span>                <span class="n">numpy</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">action</span> <span class="o">*</span> <span class="mi">11</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">TEN_EPSILON64</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="linenos">20</span>            <span class="p">)</span>
+<span class="linenos">21</span>        <span class="p">}</span>
+<span class="linenos">22</span>
+<span class="linenos">23</span>    <span class="k">def</span> <span class="nf">reverse_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+<span class="linenos">24</span>        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">action</span><span class="p">[</span><span class="s2">&quot;user_action__action&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="mf">5.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">11.0</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+<span class="linenos">25</span>            <span class="n">numpy</span><span class="o">.</span><span class="n">float64</span>
+<span class="linenos">26</span>        <span class="p">)</span>
+<span class="linenos">27</span>
+<span class="linenos">28</span>
+<span class="linenos">29</span><span class="kn">from</span> <span class="nn">gym.wrappers</span> <span class="kn">import</span> <span class="n">FilterObservation</span><span class="p">,</span> <span class="n">FlattenObservation</span>
+<span class="linenos">30</span>
+<span class="linenos">31</span><span class="c1"># Apply Observation Wrapper</span>
+<span class="linenos">32</span><span class="n">modified_env</span> <span class="o">=</span> <span class="n">FlattenObservation</span><span class="p">(</span>
+<span class="linenos">33</span>    <span class="n">FilterObservation</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;task_state__position&quot;</span><span class="p">,</span> <span class="s2">&quot;user_state__goal&quot;</span><span class="p">))</span>
+<span class="linenos">34</span><span class="p">)</span>
+<span class="linenos">35</span><span class="c1"># Normalize actions with a custom wrapper</span>
+<span class="linenos">36</span><span class="n">modified_env</span> <span class="o">=</span> <span class="n">NormalizeActionWrapper</span><span class="p">(</span><span class="n">modified_env</span><span class="p">)</span>
+<span class="linenos">37</span><span class="c1"># &gt;&gt;&gt; print(modified_env.action_space)</span>
+<span class="linenos">38</span><span class="c1"># Box(-1.0, 1.0, (1,), float64)</span>
+<span class="linenos">39</span>
+<span class="linenos">40</span>
+<span class="linenos">41</span><span class="c1"># &gt;&gt;&gt; print(modified_env.observation_space)</span>
+<span class="linenos">42</span><span class="c1"># Box(0.0, 30.0, (2,), float32)</span>
+<span class="linenos">43</span>
+<span class="linenos">44</span>
+<span class="linenos">45</span><span class="n">check_env</span><span class="p">(</span><span class="n">modified_env</span><span class="p">,</span> <span class="n">warn</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos">46</span><span class="c1"># &gt;&gt;&gt; modified_env.reset()</span>
+<span class="linenos">47</span><span class="c1"># array([ 4., 23.], dtype=float32)</span>
+<span class="linenos">48</span>
+<span class="linenos">49</span><span class="c1"># Check that modified_env and the bundle game state concord</span>
+<span class="linenos">50</span><span class="c1"># &gt;&gt;&gt; print(modified_env.unwrapped.bundle.game_state)</span>
+<span class="linenos">51</span><span class="c1"># ----------------  -----------  -------------------------  -------------</span>
+<span class="linenos">52</span><span class="c1"># game_info         turn_index   1                          CatSet(4)</span>
+<span class="linenos">53</span><span class="c1">#                   round_index  0                          Numeric()</span>
+<span class="linenos">54</span><span class="c1"># task_state        position     4                          Numeric()</span>
+<span class="linenos">55</span><span class="c1">#                   targets      [ 2  7  8 19 20 21 23 25]  Numeric(8,)</span>
+<span class="linenos">56</span><span class="c1"># user_state        goal         23                         Numeric()</span>
+<span class="linenos">57</span><span class="c1"># user_action       action       -5                         Numeric()</span>
+<span class="linenos">58</span><span class="c1"># assistant_action  action       [[1]]                      Numeric(1, 1)</span>
+<span class="linenos">59</span><span class="c1"># ----------------  -----------  -------------------------  -------------</span>
+<span class="linenos">60</span>
+<span class="linenos">61</span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+<span class="linenos">62</span>    <span class="n">reset_state</span> <span class="o">=</span> <span class="n">modified_env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos">63</span>    <span class="n">obs</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">modified_env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="linenos">64</span>    <span class="k">assert</span> <span class="n">obs</span> <span class="ow">in</span> <span class="n">modified_env</span><span class="o">.</span><span class="n">observation_space</span>
+<span class="linenos">65</span>
+<span class="linenos">66</span><span class="n">modified_env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span>
+<span class="linenos">67</span>    <span class="mf">0.99</span>
+<span class="linenos">68</span><span class="p">)</span>  <span class="c1"># 0.99 is cast to +5, multiplied by CD gain of 1 = + 5 increment</span>
+<span class="linenos">69</span>
+<span class="linenos">70</span><span class="c1"># &gt;&gt;&gt; modified_env.step(</span>
+<span class="linenos">71</span><span class="c1"># ...     0.99</span>
+<span class="linenos">72</span><span class="c1"># ... )</span>
+<span class="linenos">73</span><span class="c1"># (array([ 9., 23.], dtype=float32), -1.0, False, \\infodict\\</span>
+<span class="linenos">74</span>
+<span class="linenos">75</span><span class="c1"># &gt;&gt;&gt; print(modified_env.unwrapped.bundle.game_state)</span>
+<span class="linenos">76</span><span class="c1"># ----------------  -----------  -------------------------  -------------</span>
+<span class="linenos">77</span><span class="c1"># game_info         turn_index   1                          CatSet(4)</span>
+<span class="linenos">78</span><span class="c1">#                   round_index  1                          Numeric()</span>
+<span class="linenos">79</span><span class="c1"># task_state        position     9                          Numeric()</span>
+<span class="linenos">80</span><span class="c1">#                   targets      [ 2  7  8 19 20 21 23 25]  Numeric(8,)</span>
+<span class="linenos">81</span><span class="c1"># user_state        goal         23                         Numeric()</span>
+<span class="linenos">82</span><span class="c1"># user_action       action       5                          Numeric()</span>
+<span class="linenos">83</span><span class="c1"># assistant_action  action       [[1]]                      Numeric(1, 1)</span>
+<span class="linenos">84</span><span class="c1"># ----------------  -----------  -------------------------  -------------</span>
+<span class="linenos">85</span>
+<span class="linenos">86</span>
+</pre></div>
+</div>
+<p>Not that everything is ready, we put all the relevant code into a function that, when called, will return an environment.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">def</span> <span class="nf">make_env</span><span class="p">():</span>
+<span class="linenos"> 2</span>    <span class="k">def</span> <span class="nf">_init</span><span class="p">():</span>
+<span class="linenos"> 3</span>        <span class="n">task</span> <span class="o">=</span> <span class="n">SimplePointingTask</span><span class="p">(</span><span class="n">gridsize</span><span class="o">=</span><span class="mi">31</span><span class="p">,</span> <span class="n">number_of_targets</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="linenos"> 4</span>        <span class="n">unitcdgain</span> <span class="o">=</span> <span class="n">ConstantCDGain</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="linenos"> 5</span>
+<span class="linenos"> 6</span>        <span class="n">action_state</span> <span class="o">=</span> <span class="n">State</span><span class="p">()</span>
+<span class="linenos"> 7</span>        <span class="n">action_state</span><span class="p">[</span><span class="s2">&quot;action&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">discrete_array_element</span><span class="p">(</span><span class="n">low</span><span class="o">=-</span><span class="mi">5</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="linenos"> 8</span>
+<span class="linenos"> 9</span>        <span class="n">user</span> <span class="o">=</span> <span class="n">CarefulPointer</span><span class="p">(</span>
+<span class="linenos">10</span>            <span class="n">override_policy</span><span class="o">=</span><span class="p">(</span><span class="n">BasePolicy</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;action_state&quot;</span><span class="p">:</span> <span class="n">action_state</span><span class="p">})</span>
+<span class="linenos">11</span>        <span class="p">)</span>
+<span class="linenos">12</span>        <span class="n">bundle</span> <span class="o">=</span> <span class="n">Bundle</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">assistant</span><span class="o">=</span><span class="n">unitcdgain</span><span class="p">)</span>
+<span class="linenos">13</span>        <span class="n">observation</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">go_to</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="linenos">14</span>        <span class="n">env</span> <span class="o">=</span> <span class="n">TrainGym</span><span class="p">(</span>
+<span class="linenos">15</span>            <span class="n">bundle</span><span class="p">,</span>
+<span class="linenos">16</span>            <span class="n">train_user</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="linenos">17</span>            <span class="n">train_assistant</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="linenos">18</span>        <span class="p">)</span>
+<span class="linenos">19</span>
+<span class="linenos">20</span>        <span class="n">modified_env</span> <span class="o">=</span> <span class="n">FlattenObservation</span><span class="p">(</span>
+<span class="linenos">21</span>            <span class="n">FilterObservation</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;task_state__position&quot;</span><span class="p">,</span> <span class="s2">&quot;user_state__goal&quot;</span><span class="p">))</span>
+<span class="linenos">22</span>        <span class="p">)</span>
+<span class="linenos">23</span>        <span class="n">modified_env</span> <span class="o">=</span> <span class="n">NormalizeActionWrapper</span><span class="p">(</span><span class="n">modified_env</span><span class="p">)</span>
+<span class="linenos">24</span>
+<span class="linenos">25</span>        <span class="k">return</span> <span class="n">modified_env</span>
+<span class="linenos">26</span>
+<span class="linenos">27</span>    <span class="k">return</span> <span class="n">_init</span>
+<span class="linenos">28</span>
+<span class="linenos">29</span>
+</pre></div>
+</div>
+<p>We are now ready to train the policy. Here, we use PPO with 4 vectorized environments:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="linenos"> 2</span>    <span class="n">env</span> <span class="o">=</span> <span class="n">SubprocVecEnv</span><span class="p">([</span><span class="n">make_env</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">)])</span>
+<span class="linenos"> 3</span>    <span class="c1"># to track rewards on tensorboard</span>
+<span class="linenos"> 4</span>    <span class="kn">from</span> <span class="nn">stable_baselines3.common.vec_env</span> <span class="kn">import</span> <span class="n">VecMonitor</span>
+<span class="linenos"> 5</span>    <span class="kn">import</span> <span class="nn">os</span>
+<span class="linenos"> 6</span>
+<span class="linenos"> 7</span>    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s2">&quot;.tmp&quot;</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos"> 8</span>    <span class="n">env</span> <span class="o">=</span> <span class="n">VecMonitor</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;.tmp/log&quot;</span><span class="p">)</span>
+<span class="linenos"> 9</span>    <span class="n">model</span> <span class="o">=</span> <span class="n">PPO</span><span class="p">(</span><span class="s2">&quot;MlpPolicy&quot;</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">tensorboard_log</span><span class="o">=</span><span class="s2">&quot;./tb/&quot;</span><span class="p">)</span>
+<span class="linenos">10</span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;start training&quot;</span><span class="p">)</span>
+<span class="linenos">11</span>    <span class="n">model</span><span class="o">.</span><span class="n">learn</span><span class="p">(</span><span class="n">total_timesteps</span><span class="o">=</span><span class="mf">1e6</span><span class="p">)</span>
+<span class="linenos">12</span>    <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;saved_model&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A tensorboard excerpt shows that training is successful and rather quick, at 10 minutes of wall training time on a regular laptop.</p>
+<figure class="align-default" id="id2">
+<a class="reference internal image-reference" href="../_images/rewards_rl.png"><img alt="../_images/rewards_rl.png" src="../_images/rewards_rl.png" style="width: 800px;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 4 </span><span class="caption-text">Average rewards per episode plotted against wall time. Less than 10 minutes are needed to train this simple policy.</span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="loading-the-trained-policy-in-coopihc">
+<h2>Loading the Trained Policy in CoopIHC<a class="headerlink" href="#loading-the-trained-policy-in-coopihc" title="Permalink to this headline"></a></h2>
+<p>To load the trained policy in CoopIHC, a special policy object called <code class="docutils literal notranslate"><span class="pre">RLPolicy</span></code> exists. It works by passing the agent’s observation as input to the trained neural net and gathers the output action.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">model_path</span> <span class="o">=</span> <span class="s2">&quot;saved_model.zip&quot;</span>
+<span class="linenos"> 2</span><span class="n">learning_algorithm</span> <span class="o">=</span> <span class="s2">&quot;PPO&quot;</span>
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span><span class="k">class</span> <span class="nc">FilledFilterObservation</span><span class="p">(</span><span class="n">FilterObservation</span><span class="p">):</span>
+<span class="linenos"> 6</span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+<span class="linenos"> 7</span>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">filter_keys</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;position&quot;</span><span class="p">,</span> <span class="s2">&quot;goal&quot;</span><span class="p">))</span>
+<span class="linenos"> 8</span>
+<span class="linenos"> 9</span>
+<span class="linenos">10</span><span class="n">wrappers</span> <span class="o">=</span> <span class="p">{</span>
+<span class="linenos">11</span>    <span class="s2">&quot;observation_wrappers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">FilledFilterObservation</span><span class="p">,</span> <span class="n">FlattenObservation</span><span class="p">],</span>
+<span class="linenos">12</span>    <span class="s2">&quot;action_wrappers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">NormalizeActionWrapper</span><span class="p">],</span>
+<span class="linenos">13</span><span class="p">}</span>
+<span class="linenos">14</span><span class="n">library</span> <span class="o">=</span> <span class="s2">&quot;stable_baselines3&quot;</span>
+<span class="linenos">15</span>
+<span class="linenos">16</span><span class="n">trained_policy</span> <span class="o">=</span> <span class="n">RLPolicy</span><span class="p">(</span>
+<span class="linenos">17</span>    <span class="n">action_state</span><span class="p">,</span> <span class="n">model_path</span><span class="p">,</span> <span class="n">learning_algorithm</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">wrappers</span><span class="p">,</span> <span class="n">library</span>
+<span class="linenos">18</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The policy can be visualized, which confirms training was successful:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">distance_to_goal</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos"> 2</span><span class="n">actions</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos"> 3</span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1000</span><span class="p">):</span>
+<span class="linenos"> 4</span>    <span class="n">bundle</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">go_to</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="linenos"> 5</span>    <span class="n">obs</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">observation</span>
+<span class="linenos"> 6</span>    <span class="n">distance_to_goal</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+<span class="linenos"> 7</span>        <span class="n">obs</span><span class="p">[</span><span class="s2">&quot;user_state&quot;</span><span class="p">][</span><span class="s2">&quot;goal&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">obs</span><span class="p">[</span><span class="s2">&quot;task_state&quot;</span><span class="p">][</span><span class="s2">&quot;position&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="linenos"> 8</span>    <span class="p">)</span>
+<span class="linenos"> 9</span>    <span class="n">action</span><span class="p">,</span> <span class="n">reward</span> <span class="o">=</span> <span class="n">trained_policy</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">observation</span><span class="o">=</span><span class="n">obs</span><span class="p">)</span>
+<span class="linenos">10</span>    <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">action</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="linenos">11</span>
+<span class="linenos">12</span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="linenos">13</span>
+<span class="linenos">14</span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="linenos">15</span><span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+<span class="linenos">16</span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">distance_to_goal</span><span class="p">,</span> <span class="n">actions</span><span class="p">,</span> <span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;action&quot;</span><span class="p">)</span>
+<span class="linenos">17</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;algebraic distance to goal (steps)&quot;</span><span class="p">)</span>
+<span class="linenos">18</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;actions selected by the RLPolicy&quot;</span><span class="p">)</span>
+<span class="linenos">19</span><span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="linenos">20</span><span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="linenos">21</span><span class="c1"># plt.show()</span>
+</pre></div>
+</div>
+<figure class="align-default" id="id3">
+<a class="reference internal image-reference" href="../_images/trained_policy.png"><img alt="../_images/trained_policy.png" src="../_images/trained_policy.png" style="width: 800px;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 5 </span><span class="caption-text">Trained policy. As expected, the policy is the identity operator for the admissible actions, and otherwise it saturates at the edge admissible actions.</span><a class="headerlink" href="#id3" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+<p>Finally, you can plug that policy back into the user and play with your bundle.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">task</span> <span class="o">=</span> <span class="n">SimplePointingTask</span><span class="p">(</span><span class="n">gridsize</span><span class="o">=</span><span class="mi">31</span><span class="p">,</span> <span class="n">number_of_targets</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="linenos"> 2</span><span class="n">unitcdgain</span> <span class="o">=</span> <span class="n">ConstantCDGain</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span><span class="n">user</span> <span class="o">=</span> <span class="n">CarefulPointer</span><span class="p">(</span><span class="n">override_policy</span><span class="o">=</span><span class="p">(</span><span class="n">trained_policy</span><span class="p">,</span> <span class="p">{}))</span>
+<span class="linenos"> 5</span><span class="n">bundle</span> <span class="o">=</span> <span class="n">Bundle</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">assistant</span><span class="o">=</span><span class="n">unitcdgain</span><span class="p">)</span>
+<span class="linenos"> 6</span>
+<span class="linenos"> 7</span><span class="n">bundle</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos"> 8</span><span class="n">bundle</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s2">&quot;plotext&quot;</span><span class="p">)</span>
+<span class="linenos"> 9</span><span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<span class="linenos">10</span>    <span class="n">obs</span><span class="p">,</span> <span class="n">rew</span><span class="p">,</span> <span class="n">flag</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+<span class="linenos">11</span>    <span class="n">bundle</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s2">&quot;plotext&quot;</span><span class="p">)</span>
+<span class="linenos">12</span>    <span class="k">if</span> <span class="n">flag</span><span class="p">:</span>
+<span class="linenos">13</span>        <span class="k">break</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modularity.html" class="btn btn-neutral float-left" title="Modularity" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="realuser.html" class="btn btn-neutral float-right" title="Interfacing CoopIHC with a real user" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

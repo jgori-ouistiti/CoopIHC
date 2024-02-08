@@ -1,0 +1,23 @@
+coopihc.observation.utils
+=========================
+
+.. automodule:: coopihc.observation.utils
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

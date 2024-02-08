@@ -1,0 +1,38 @@
+coopihc.policy.ExamplePolicy.PseudoRandomPolicy
+===============================================
+
+.. currentmodule:: coopihc.policy.ExamplePolicy
+
+.. autoclass:: PseudoRandomPolicy
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~PseudoRandomPolicy.default_value
+      ~PseudoRandomPolicy.reset
+      ~PseudoRandomPolicy.sample
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PseudoRandomPolicy.action
+      ~PseudoRandomPolicy.action_keys
+      ~PseudoRandomPolicy.observation
+      ~PseudoRandomPolicy.parameters
+      ~PseudoRandomPolicy.state
+      ~PseudoRandomPolicy.unwrapped
+   
+   

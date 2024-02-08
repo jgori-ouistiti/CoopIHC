@@ -1,0 +1,49 @@
+coopihc.agents.ExampleAssistant.CoordinatedAssistantWithInference
+=================================================================
+
+.. currentmodule:: coopihc.agents.ExampleAssistant
+
+.. autoclass:: CoordinatedAssistantWithInference
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~CoordinatedAssistantWithInference.finit
+      ~CoordinatedAssistantWithInference.infer
+      ~CoordinatedAssistantWithInference.observe
+      ~CoordinatedAssistantWithInference.prepare_action
+      ~CoordinatedAssistantWithInference.render
+      ~CoordinatedAssistantWithInference.reset
+      ~CoordinatedAssistantWithInference.reset_all
+      ~CoordinatedAssistantWithInference.take_action
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~CoordinatedAssistantWithInference.action
+      ~CoordinatedAssistantWithInference.assistant
+      ~CoordinatedAssistantWithInference.bundle
+      ~CoordinatedAssistantWithInference.bundle_memory
+      ~CoordinatedAssistantWithInference.inference_engine
+      ~CoordinatedAssistantWithInference.observation
+      ~CoordinatedAssistantWithInference.observation_engine
+      ~CoordinatedAssistantWithInference.parameters
+      ~CoordinatedAssistantWithInference.policy
+      ~CoordinatedAssistantWithInference.state
+      ~CoordinatedAssistantWithInference.task
+      ~CoordinatedAssistantWithInference.user
+   
+   

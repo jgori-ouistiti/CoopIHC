@@ -1,0 +1,40 @@
+coopihc.bundle.WsServer
+=======================
+
+.. automodule:: coopihc.bundle.WsServer
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      partialback
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      WsServer
+   
+   
+
+   
+   
+   
+
+
+

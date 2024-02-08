@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coopihc.interactiontask.ExampleTask.CoordinatedTask &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="coopihc.interactiontask.ExampleTask.ExampleTask" href="coopihc.interactiontask.ExampleTask.ExampleTask.html" />
+    <link rel="prev" title="coopihc.interactiontask.ExampleTask" href="coopihc.interactiontask.ExampleTask.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">    Home page</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="coopihc.html">    API reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="coopihc.agents.html">coopihc.agents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.base.html">coopihc.base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.bundle.html">coopihc.bundle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.helpers.html">coopihc.helpers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.inference.html">coopihc.inference</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="coopihc.interactiontask.html">coopihc.interactiontask</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="coopihc.interactiontask.ClassicControlTask.html">coopihc.interactiontask.ClassicControlTask</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="coopihc.interactiontask.ExampleTask.html">coopihc.interactiontask.ExampleTask</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">coopihc.interactiontask.ExampleTask.CoordinatedTask</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coopihc.interactiontask.ExampleTask.ExampleTask.html">coopihc.interactiontask.ExampleTask.ExampleTask</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.interactiontask.InteractionTask.html">coopihc.interactiontask.InteractionTask</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.interactiontask.PipeTaskWrapper.html">coopihc.interactiontask.PipeTaskWrapper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.interactiontask.TaskWrapper.html">coopihc.interactiontask.TaskWrapper</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.observation.html">coopihc.observation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.policy.html">coopihc.policy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="coopihc.html">coopihc</a> &raquo;</li>
+          <li><a href="coopihc.interactiontask.html">coopihc.interactiontask</a> &raquo;</li>
+          <li><a href="coopihc.interactiontask.ExampleTask.html">coopihc.interactiontask.ExampleTask</a> &raquo;</li>
+      <li>coopihc.interactiontask.ExampleTask.CoordinatedTask</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/coopihc.interactiontask.ExampleTask.CoordinatedTask.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="coopihc-interactiontask-exampletask-coordinatedtask">
+<h1>coopihc.interactiontask.ExampleTask.CoordinatedTask<a class="headerlink" href="#coopihc-interactiontask-exampletask-coordinatedtask" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="coopihc.interactiontask.ExampleTask.CoordinatedTask">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CoordinatedTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/interactiontask/ExampleTask.html#CoordinatedTask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.interactiontask.ExampleTask.CoordinatedTask" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="coopihc.interactiontask.InteractionTask.InteractionTask.html#coopihc.interactiontask.InteractionTask.InteractionTask" title="coopihc.interactiontask.InteractionTask.InteractionTask"><code class="xref py py-class docutils literal notranslate"><span class="pre">coopihc.interactiontask.InteractionTask.InteractionTask</span></code></a></p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.interactiontask.ExampleTask.CoordinatedTask.base_on_assistant_action" title="coopihc.interactiontask.ExampleTask.CoordinatedTask.base_on_assistant_action"><code class="xref py py-obj docutils literal notranslate"><span class="pre">base_on_assistant_action</span></code></a></p></td>
+<td><p>base assistant step</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.interactiontask.ExampleTask.CoordinatedTask.base_on_user_action" title="coopihc.interactiontask.ExampleTask.CoordinatedTask.base_on_user_action"><code class="xref py py-obj docutils literal notranslate"><span class="pre">base_on_user_action</span></code></a></p></td>
+<td><p>base user step</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">finit</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.interactiontask.ExampleTask.CoordinatedTask.on_assistant_action" title="coopihc.interactiontask.ExampleTask.CoordinatedTask.on_assistant_action"><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_assistant_action</span></code></a></p></td>
+<td><p>Redefine this to specify the task state transitions and rewards issued.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.interactiontask.ExampleTask.CoordinatedTask.on_user_action" title="coopihc.interactiontask.ExampleTask.CoordinatedTask.on_user_action"><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_user_action</span></code></a></p></td>
+<td><p>Redefine this to specify the task state transitions and rewards issued.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.interactiontask.ExampleTask.CoordinatedTask.render" title="coopihc.interactiontask.ExampleTask.CoordinatedTask.render"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render</span></code></a></p></td>
+<td><p>Render the task on the main plot.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.interactiontask.ExampleTask.CoordinatedTask.reset" title="coopihc.interactiontask.ExampleTask.CoordinatedTask.reset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset</span></code></a></p></td>
+<td><p>Redefine this to specify how to reinitialize the task before each new game.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.interactiontask.ExampleTask.CoordinatedTask.assistant_action" title="coopihc.interactiontask.ExampleTask.CoordinatedTask.assistant_action"><code class="xref py py-obj docutils literal notranslate"><span class="pre">assistant_action</span></code></a></p></td>
+<td><p>assistant action</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">parameters</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">round_number</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.interactiontask.ExampleTask.CoordinatedTask.state" title="coopihc.interactiontask.ExampleTask.CoordinatedTask.state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">state</span></code></a></p></td>
+<td><p>The current state of the task.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.interactiontask.ExampleTask.CoordinatedTask.turn_number" title="coopihc.interactiontask.ExampleTask.CoordinatedTask.turn_number"><code class="xref py py-obj docutils literal notranslate"><span class="pre">turn_number</span></code></a></p></td>
+<td><p>Turn number.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.interactiontask.ExampleTask.CoordinatedTask.user_action" title="coopihc.interactiontask.ExampleTask.CoordinatedTask.user_action"><code class="xref py py-obj docutils literal notranslate"><span class="pre">user_action</span></code></a></p></td>
+<td><p>user action</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py property">
+<dt class="sig sig-object py" id="coopihc.interactiontask.ExampleTask.CoordinatedTask.assistant_action">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">assistant_action</span></span><a class="headerlink" href="#coopihc.interactiontask.ExampleTask.CoordinatedTask.assistant_action" title="Permalink to this definition"></a></dt>
+<dd><p>assistant action</p>
+<p>The last action input by the assistant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>assistant action</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="coopihc.base.State.State.html#coopihc.base.State.State" title="coopihc.base.State.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.interactiontask.ExampleTask.CoordinatedTask.base_on_assistant_action">
+<span class="sig-name descname"><span class="pre">base_on_assistant_action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coopihc.interactiontask.ExampleTask.CoordinatedTask.base_on_assistant_action" title="Permalink to this definition"></a></dt>
+<dd><p>base assistant step</p>
+<p>Wraps the assistant defined on_assistant_action() method. For now does
+little but provide default values, may be useful later.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>(task state, task reward, is_done flag, metadata):</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tuple(<a class="reference internal" href="coopihc.base.State.State.html#coopihc.base.State.State" title="coopihc.base.State.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a>, float, boolean, dictionnary)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.interactiontask.ExampleTask.CoordinatedTask.base_on_user_action">
+<span class="sig-name descname"><span class="pre">base_on_user_action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coopihc.interactiontask.ExampleTask.CoordinatedTask.base_on_user_action" title="Permalink to this definition"></a></dt>
+<dd><p>base user step</p>
+<p>Wraps the user defined on_user_action() method. For now does little but
+provide default values, may be useful later.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>(task state, task reward, is_done flag, metadata):</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tuple(<a class="reference internal" href="coopihc.base.State.State.html#coopihc.base.State.State" title="coopihc.base.State.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a>, float, boolean, dictionnary)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.interactiontask.ExampleTask.CoordinatedTask.on_assistant_action">
+<span class="sig-name descname"><span class="pre">on_assistant_action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/interactiontask/ExampleTask.html#CoordinatedTask.on_assistant_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.interactiontask.ExampleTask.CoordinatedTask.on_assistant_action" title="Permalink to this definition"></a></dt>
+<dd><p>Redefine this to specify the task state transitions and rewards issued.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>(task state, task reward, is_done flag, {})</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tuple(<a class="reference internal" href="coopihc.base.State.State.html#coopihc.base.State.State" title="coopihc.base.State.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a>, float, boolean, dictionnary)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.interactiontask.ExampleTask.CoordinatedTask.on_user_action">
+<span class="sig-name descname"><span class="pre">on_user_action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/interactiontask/ExampleTask.html#CoordinatedTask.on_user_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.interactiontask.ExampleTask.CoordinatedTask.on_user_action" title="Permalink to this definition"></a></dt>
+<dd><p>Redefine this to specify the task state transitions and rewards issued.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>(task state, task reward, is_done flag, {})</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tuple(<a class="reference internal" href="coopihc.base.State.State.html#coopihc.base.State.State" title="coopihc.base.State.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a>, float, boolean, dictionnary)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.interactiontask.ExampleTask.CoordinatedTask.render">
+<span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'text'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax_user</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax_assistant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax_task</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coopihc.interactiontask.ExampleTask.CoordinatedTask.render" title="Permalink to this definition"></a></dt>
+<dd><p>Render the task on the main plot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mode</strong> – (str) text or plot</p></li>
+<li><p><strong>args</strong> – (list) list of axis in order axtask, axuser, axassistant</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.interactiontask.ExampleTask.CoordinatedTask.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/interactiontask/ExampleTask.html#CoordinatedTask.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.interactiontask.ExampleTask.CoordinatedTask.reset" title="Permalink to this definition"></a></dt>
+<dd><p>Redefine this to specify how to reinitialize the task before each new
+game.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="coopihc.interactiontask.ExampleTask.CoordinatedTask.state">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">state</span></span><a class="headerlink" href="#coopihc.interactiontask.ExampleTask.CoordinatedTask.state" title="Permalink to this definition"></a></dt>
+<dd><p>The current state of the task.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>task state</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="coopihc.base.State.State.html#coopihc.base.State.State" title="coopihc.base.State.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="coopihc.interactiontask.ExampleTask.CoordinatedTask.turn_number">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">turn_number</span></span><a class="headerlink" href="#coopihc.interactiontask.ExampleTask.CoordinatedTask.turn_number" title="Permalink to this definition"></a></dt>
+<dd><p>Turn number.</p>
+<p>The turn number of the game</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>turn number</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="coopihc.interactiontask.ExampleTask.CoordinatedTask.user_action">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">user_action</span></span><a class="headerlink" href="#coopihc.interactiontask.ExampleTask.CoordinatedTask.user_action" title="Permalink to this definition"></a></dt>
+<dd><p>user action</p>
+<p>The last action input by the user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>user action</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="coopihc.base.State.State.html#coopihc.base.State.State" title="coopihc.base.State.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="coopihc.interactiontask.ExampleTask.html" class="btn btn-neutral float-left" title="coopihc.interactiontask.ExampleTask" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="coopihc.interactiontask.ExampleTask.ExampleTask.html" class="btn btn-neutral float-right" title="coopihc.interactiontask.ExampleTask.ExampleTask" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,40 @@
+coopihc.policy.WrapAsPolicy.WrapAsPolicy
+========================================
+
+.. currentmodule:: coopihc.policy.WrapAsPolicy
+
+.. autoclass:: WrapAsPolicy
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~WrapAsPolicy.default_value
+      ~WrapAsPolicy.reset
+      ~WrapAsPolicy.sample
+      ~WrapAsPolicy.step
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~WrapAsPolicy.action
+      ~WrapAsPolicy.action_keys
+      ~WrapAsPolicy.game_state
+      ~WrapAsPolicy.observation
+      ~WrapAsPolicy.parameters
+      ~WrapAsPolicy.state
+      ~WrapAsPolicy.unwrapped
+   
+   

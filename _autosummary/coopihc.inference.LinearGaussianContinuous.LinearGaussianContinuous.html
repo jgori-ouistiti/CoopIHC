@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="coopihc.interactiontask" href="coopihc.interactiontask.html" />
+    <link rel="prev" title="coopihc.inference.LinearGaussianContinuous" href="coopihc.inference.LinearGaussianContinuous.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">    Home page</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="coopihc.html">    API reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="coopihc.agents.html">coopihc.agents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.base.html">coopihc.base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.bundle.html">coopihc.bundle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.helpers.html">coopihc.helpers</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="coopihc.inference.html">coopihc.inference</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="coopihc.inference.BaseInferenceEngine.html">coopihc.inference.BaseInferenceEngine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.inference.CascadedInferenceEngine.html">coopihc.inference.CascadedInferenceEngine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.inference.ContinuousKalmanUpdate.html">coopihc.inference.ContinuousKalmanUpdate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.inference.DualInferenceEngine.html">coopihc.inference.DualInferenceEngine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.inference.ExampleInferenceEngine.html">coopihc.inference.ExampleInferenceEngine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.inference.GoalInferenceWithUserPolicyGiven.html">coopihc.inference.GoalInferenceWithUserPolicyGiven</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="coopihc.inference.LinearGaussianContinuous.html">coopihc.inference.LinearGaussianContinuous</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.interactiontask.html">coopihc.interactiontask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.observation.html">coopihc.observation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.policy.html">coopihc.policy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="coopihc.html">coopihc</a> &raquo;</li>
+          <li><a href="coopihc.inference.html">coopihc.inference</a> &raquo;</li>
+          <li><a href="coopihc.inference.LinearGaussianContinuous.html">coopihc.inference.LinearGaussianContinuous</a> &raquo;</li>
+      <li>coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="coopihc-inference-lineargaussiancontinuous-lineargaussiancontinuous">
+<h1>coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous<a class="headerlink" href="#coopihc-inference-lineargaussiancontinuous-lineargaussiancontinuous" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">LinearGaussianContinuous</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/inference/LinearGaussianContinuous.html#LinearGaussianContinuous"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="coopihc.inference.BaseInferenceEngine.BaseInferenceEngine.html#coopihc.inference.BaseInferenceEngine.BaseInferenceEngine" title="coopihc.inference.BaseInferenceEngine.BaseInferenceEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">coopihc.inference.BaseInferenceEngine.BaseInferenceEngine</span></code></a></p>
+<p>An Inference Engine that handles a continuous Gaussian Belief. It assumes a Gaussian prior and a Gaussian likelihood.</p>
+<ul>
+<li><p><strong>Expectations of the engine</strong></p>
+<blockquote>
+<div><p>This inference engine expects the agent to have in its internal state:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>The mean matrix of the belief, stored as ‘belief-mu’</p></li>
+<li><p>The covariance matrix of the belief, stored as ‘belief-sigma’</p></li>
+<li><p>The new observation, stored as ‘y’</p></li>
+<li><p>The covariance matrix associated with the observation, stored as ‘Sigma_0’</p></li>
+</ul>
+</div></blockquote>
+</div></blockquote>
+</li>
+<li><p><strong>Inference</strong></p>
+<blockquote>
+<div><p>This engine uses the observation to update the beliefs (which has been computed from previous observations).</p>
+<p>To do so, a Gaussian noisy observation model is assumed, where x is the latest mean matrix of the belief.</p>
+<div class="math notranslate nohighlight">
+\[\begin{align}
+p(y|x) \sim \mathcal{N}(x, \Sigma_0)
+\end{align}\]</div>
+<p>If the initial prior (belief probability) is Gaussian as well, then the posterior will remain Gaussian (because we are only applying linear operations to Gaussians, Gaussianity is preserved). So the posterior after t-1 observations has the following form, where <span class="math notranslate nohighlight">\((\mu(t-1), \Sigma(t-1))\)</span> are respectively the mean and covariance matrices of the beliefs.</p>
+<div class="math notranslate nohighlight">
+\[\begin{align}
+p(x(t-1)) \sim \mathcal{N}(\mu(t-1), \Sigma(t-1))
+\end{align}\]</div>
+<p>On each new observation, the mean and covariance matrices are updated like so:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{align}
+p(x(t) | y, x(t-1)) \sim \mathcal{N}(\Sigma(t) \left[ \Sigma_0^{-1}y + \Sigma(t-1) \mu(t-1) \right], \Sigma(t)) \\
+\Sigma(t) = (\Sigma_0^{-1} + \Sigma(t-1)^{-1})^{-1}
+\end{align}\end{split}\]</div>
+</div></blockquote>
+</li>
+<li><p><strong>Render</strong></p>
+<blockquote>
+<div><p>—- plot mode:</p>
+<p>This engine will plot mean beliefs on the task axis and the covariance beliefs on the agent axis, plotted as confidence intervals (bars for 1D and ellipses for 2D).</p>
+</div></blockquote>
+</li>
+<li><p><strong>Example files</strong></p>
+<blockquote>
+<div><p>coopihczoo.eye.users</p>
+</div></blockquote>
+</li>
+</ul>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.add_observation" title="coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.add_observation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_observation</span></code></a></p></td>
+<td><p>add observation</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.bind" title="coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.bind"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bind</span></code></a></p></td>
+<td><p>Bind function to the engine with a given name.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.confidence_ellipse" title="coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.confidence_ellipse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">confidence_ellipse</span></code></a></p></td>
+<td><p>Draw confidence ellipsis.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.confidence_interval" title="coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.confidence_interval"><code class="xref py py-obj docutils literal notranslate"><span class="pre">confidence_interval</span></code></a></p></td>
+<td><p>Compute confidence interval.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.default_value" title="coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.default_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">default_value</span></code></a></p></td>
+<td><p>Apply this decorator to use self.agent_observation as default value to infer from if agent_observation = None</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.draw_beliefs" title="coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.draw_beliefs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_beliefs</span></code></a></p></td>
+<td><p>Draw beliefs of dimension 'dim' on axis 'ax'.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">infer</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.render" title="coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.render"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render</span></code></a></p></td>
+<td><p>Draws the beliefs (mean value and ellipsis or confidence intervals according to dimension).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.reset" title="coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.reset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset</span></code></a></p></td>
+<td><p>reset _summary_</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.action" title="coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.action"><code class="xref py py-obj docutils literal notranslate"><span class="pre">action</span></code></a></p></td>
+<td><p>The agent's last action</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">host</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.observation" title="coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.observation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">observation</span></code></a></p></td>
+<td><p>The last observation.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">role</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.state" title="coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">state</span></code></a></p></td>
+<td><p>The current agent state</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">unwrapped</span></code></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py property">
+<dt class="sig sig-object py" id="coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.action">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action</span></span><a class="headerlink" href="#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.action" title="Permalink to this definition"></a></dt>
+<dd><p>The agent’s last action</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>agent action</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="coopihc.base.State.State.html#coopihc.base.State.State" title="coopihc.base.State.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.add_observation">
+<span class="sig-name descname"><span class="pre">add_observation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">observation</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.add_observation" title="Permalink to this definition"></a></dt>
+<dd><p>add observation</p>
+<p>Add an observation to a buffer. If the buffer does not exist, create a naive buffer. The buffer has a size given by buffer length</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>observation</strong> (<a class="reference internal" href="coopihc.base.State.State.html#coopihc.base.State.State" title="coopihc.base.State.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a>) – observation produced by an engine</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.bind">
+<span class="sig-name descname"><span class="pre">bind</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.bind" title="Permalink to this definition"></a></dt>
+<dd><p>Bind function to the engine with a given name. If as_name is None, then the func name is used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> (<em>function</em>) – function to bind</p></li>
+<li><p><strong>as_name</strong> (<em>string</em><em>, </em><em>optional</em>) – name of resulting method, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>bound method</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>method</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.confidence_ellipse">
+<span class="sig-name descname"><span class="pre">confidence_ellipse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covariance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_std</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facecolor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'#d1dcf0'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edgecolor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'b'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/inference/LinearGaussianContinuous.html#LinearGaussianContinuous.confidence_ellipse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.confidence_ellipse" title="Permalink to this definition"></a></dt>
+<dd><p>Draw confidence ellipsis. See <a class="reference external" href="https://matplotlib.org/devdocs/gallery/statistics/confidence_ellipse.html">Matplotlib documentation</a> for source. Computing eigenvalues directly should lead to code that is more readily understandable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mu</strong> (<em>numpy.ndarray</em>) – mean matrix</p></li>
+<li><p><strong>cov</strong> (<em>numpy.ndarray</em>) – covariance matrix</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib object</em>) – axis</p></li>
+<li><p><strong>n_std</strong> (<em>float</em><em>, </em><em>optional</em>) – size of the confidence interval in std, defaults to 2.0</p></li>
+<li><p><strong>facecolor</strong> (<em>str</em><em>, </em><em>optional</em>) – fill color, defaults to “#d1dcf0”</p></li>
+<li><p><strong>edgecolor</strong> (<em>str</em><em>, </em><em>optional</em>) – frontier color, defaults to “b”</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.confidence_interval">
+<span class="sig-name descname"><span class="pre">confidence_interval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_std</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'b'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/inference/LinearGaussianContinuous.html#LinearGaussianContinuous.confidence_interval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.confidence_interval" title="Permalink to this definition"></a></dt>
+<dd><p>Compute confidence interval. For the Gaussian case like here, this is straightforward</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mu</strong> (<em>numpy.ndarray</em>) – mean matrix</p></li>
+<li><p><strong>cov</strong> (<em>numpy.ndarray</em>) – covariance matrix</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib object</em>) – axis</p></li>
+<li><p><strong>n_std</strong> (<em>float</em><em>, </em><em>optional</em>) – size of the confidence interval in std, defaults to 2.0</p></li>
+<li><p><strong>color</strong> (<em>str</em><em>, </em><em>optional</em>) – color of the CI, defaults to “b”</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.default_value">
+<span class="sig-name descname"><span class="pre">default_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.default_value" title="Permalink to this definition"></a></dt>
+<dd><p>Apply this decorator to use self.agent_observation as default value to infer from if agent_observation = None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.draw_beliefs">
+<span class="sig-name descname"><span class="pre">draw_beliefs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/inference/LinearGaussianContinuous.html#LinearGaussianContinuous.draw_beliefs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.draw_beliefs" title="Permalink to this definition"></a></dt>
+<dd><p>Draw beliefs of dimension ‘dim’ on axis ‘ax’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ax</strong> (<em>matplotlib object</em>) – axis</p></li>
+<li><p><strong>dim</strong> (<em>int</em>) – dimension of data</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.observation">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation</span></span><a class="headerlink" href="#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.observation" title="Permalink to this definition"></a></dt>
+<dd><p>The last observation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>last observation</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="coopihc.base.State.State.html#coopihc.base.State.State" title="coopihc.base.State.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.render">
+<span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'text'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax_user</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax_assistant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax_task</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/inference/LinearGaussianContinuous.html#LinearGaussianContinuous.render"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.render" title="Permalink to this definition"></a></dt>
+<dd><p>Draws the beliefs (mean value and ellipsis or confidence intervals according to dimension).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">random</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.reset" title="Permalink to this definition"></a></dt>
+<dd><p>reset _summary_</p>
+<p>Empty the buffer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>random</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether to randomize parameters internal to the inference engine. This is provided in case of subclass the BaseInferenceEngine, defaults to True.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.state">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">state</span></span><a class="headerlink" href="#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.state" title="Permalink to this definition"></a></dt>
+<dd><p>The current agent state</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>agent state</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="coopihc.base.State.State.html#coopihc.base.State.State" title="coopihc.base.State.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="coopihc.inference.LinearGaussianContinuous.html" class="btn btn-neutral float-left" title="coopihc.inference.LinearGaussianContinuous" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="coopihc.interactiontask.html" class="btn btn-neutral float-right" title="coopihc.interactiontask" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

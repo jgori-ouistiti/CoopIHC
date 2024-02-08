@@ -1,0 +1,42 @@
+coopihc.interactiontask.InteractionTask.InteractionTask
+=======================================================
+
+.. currentmodule:: coopihc.interactiontask.InteractionTask
+
+.. autoclass:: InteractionTask
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~InteractionTask.base_on_assistant_action
+      ~InteractionTask.base_on_user_action
+      ~InteractionTask.finit
+      ~InteractionTask.on_assistant_action
+      ~InteractionTask.on_user_action
+      ~InteractionTask.render
+      ~InteractionTask.reset
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~InteractionTask.assistant_action
+      ~InteractionTask.parameters
+      ~InteractionTask.round_number
+      ~InteractionTask.state
+      ~InteractionTask.turn_number
+      ~InteractionTask.user_action
+   
+   

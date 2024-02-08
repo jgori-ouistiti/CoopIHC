@@ -1,0 +1,38 @@
+coopihc.policy.BasePolicy.BasePolicy
+====================================
+
+.. currentmodule:: coopihc.policy.BasePolicy
+
+.. autoclass:: BasePolicy
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~BasePolicy.default_value
+      ~BasePolicy.reset
+      ~BasePolicy.sample
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~BasePolicy.action
+      ~BasePolicy.action_keys
+      ~BasePolicy.observation
+      ~BasePolicy.parameters
+      ~BasePolicy.state
+      ~BasePolicy.unwrapped
+   
+   

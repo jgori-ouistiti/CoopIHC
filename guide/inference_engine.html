@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Inference Engines &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Bundles" href="bundles.html" />
+    <link rel="prev" title="The Observation Engines" href="observation_engine.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">The Inference Engines</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#subclassing-baseinferenceengine">Subclassing BaseInferenceEngine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#combining-engines-cascadedinferenceengine">Combining Engines – CascadedInferenceEngine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#available-inference-engines">Available Inference Engines</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#goalinferencewithusermodelgiven">GoalInferenceWithUserModelGiven</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lineargaussiancontinuous">LinearGaussianContinuous</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#continuouskalmanupdate">ContinuousKalmanUpdate</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_autosummary/coopihc.html">    API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>The Inference Engines</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/guide/inference_engine.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="the-inference-engines">
+<h1>The Inference Engines<a class="headerlink" href="#the-inference-engines" title="Permalink to this headline"></a></h1>
+<p>Agents should be able to learn (infer parameters from observed data) and to adapt (change policy parameters based on observed data). As in observation engines, there might be a cost associated with making inferences:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Making an inference can be time costly.</p></li>
+<li><p>Inferring may be rewarding; for example, because it is enjoyable.</p></li>
+</ul>
+</div></blockquote>
+<p><em>CoopIHC</em> provides a generic object called inference engines to update internal states from observations. Although the name might suggest otherwise, these engines may use (any) other mechanisms than statistical inference that update the internal state. To create a new inference engine, you can base it off an existing engine or subclass the <code class="docutils literal notranslate"><span class="pre">BaseInferenceEngine</span></code>.</p>
+<section id="subclassing-baseinferenceengine">
+<h2>Subclassing BaseInferenceEngine<a class="headerlink" href="#subclassing-baseinferenceengine" title="Permalink to this headline"></a></h2>
+<p>Essentially, the <code class="docutils literal notranslate"><span class="pre">BaseInferenceEngine</span></code> provides a simple first-in-first-out (FIFO) buffer that stores observations. When subclassing <code class="docutils literal notranslate"><span class="pre">BaseInferenceEngine</span></code>, you simply have to redefine the <code class="docutils literal notranslate"><span class="pre">infer</span></code> method (by default, no inference is produced). An example is provided below, where the engine stores the last 5 observations.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">class</span> <span class="nc">ExampleInferenceEngine</span><span class="p">(</span><span class="n">BaseInferenceEngine</span><span class="p">):</span>
+<span class="linenos"> 2</span>    <span class="sd">&quot;&quot;&quot;ExampleInferenceEngine</span>
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span><span class="sd">    Example class</span>
+<span class="linenos"> 5</span>
+<span class="linenos"> 6</span><span class="sd">    &quot;&quot;&quot;</span>
+<span class="linenos"> 7</span>
+<span class="linenos"> 8</span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="linenos"> 9</span>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="linenos">10</span>
+<span class="linenos">11</span>    <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_observation</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="linenos">12</span>        <span class="sd">&quot;&quot;&quot;infer</span>
+<span class="linenos">13</span>
+<span class="linenos">14</span><span class="sd">        Do nothing. Same behavior as parent ``BaseInferenceEngine``</span>
+<span class="linenos">15</span>
+<span class="linenos">16</span><span class="sd">        :return: (new internal state, reward)</span>
+<span class="linenos">17</span><span class="sd">        :rtype: tuple(:py:class:`State&lt;coopihc.base.State.State&gt;`, float)</span>
+<span class="linenos">18</span><span class="sd">        &quot;&quot;&quot;</span>
+<span class="linenos">19</span>        <span class="k">if</span> <span class="n">agent_observation</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">20</span>            <span class="n">agent_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span>
+<span class="linenos">21</span>
+<span class="linenos">22</span>        <span class="n">reward</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">23</span>        <span class="c1"># Do something</span>
+<span class="linenos">24</span>        <span class="c1"># agent_state = ..</span>
+<span class="linenos">25</span>        <span class="c1"># reward = ...</span>
+<span class="linenos">26</span>
+<span class="linenos">27</span>        <span class="k">return</span> <span class="n">agent_state</span><span class="p">,</span> <span class="n">reward</span>
+<span class="linenos">28</span>
+<span class="linenos">29</span>
+<span class="linenos">30</span><span class="n">ExampleInferenceEngine</span><span class="p">(</span><span class="n">buffer_depth</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="combining-engines-cascadedinferenceengine">
+<h2>Combining Engines – CascadedInferenceEngine<a class="headerlink" href="#combining-engines-cascadedinferenceengine" title="Permalink to this headline"></a></h2>
+<p>It is sometimes useful to use several inference engine in a row (e.g. because you want to use two engines that target a different substate).</p>
+<p>For this case, you can use the <code class="docutils literal notranslate"><span class="pre">CascadedInferenceEngine</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">first_inference_engine</span> <span class="o">=</span> <span class="n">ProvideLikelihoodInferenceEngine</span><span class="p">(</span><span class="n">perceptualnoise</span><span class="p">)</span>
+<span class="n">second_inference_engine</span> <span class="o">=</span> <span class="n">LinearGaussianContinuous</span><span class="p">()</span>
+<span class="n">inference_engine</span> <span class="o">=</span> <span class="n">CascadedInferenceEngine</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">first_inference_engine</span><span class="p">,</span> <span class="n">second_inference_engine</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="available-inference-engines">
+<h2>Available Inference Engines<a class="headerlink" href="#available-inference-engines" title="Permalink to this headline"></a></h2>
+<section id="goalinferencewithusermodelgiven">
+<h3>GoalInferenceWithUserModelGiven<a class="headerlink" href="#goalinferencewithusermodelgiven" title="Permalink to this headline"></a></h3>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>outdated example</p>
+</div>
+<p>An inference Engine used by an assistant to infer the ‘goal’ of a user.
+The inference is based on a model of the user policy, which has to be provided to this engine.</p>
+<p>Bayesian updating in the discrete case.
+Computes for each target <span class="math notranslate nohighlight">\(\theta\)</span> the associated posterior probability, given an observation <span class="math notranslate nohighlight">\(x\)</span> and the last user action <span class="math notranslate nohighlight">\(y\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[P(\Theta = \theta | X=x, Y=y) = \frac{p(Y = y | \Theta = \theta, X=x)}{\sum_{\Theta} p(Y=y|\Theta = \theta, X=x)} P(\Theta = \theta).\]</div>
+<p>This inference engine expects the likelihood model <span class="math notranslate nohighlight">\(p(Y = y | \Theta = \theta, X=x)\)</span> to be supplied:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define the likelihood model for the user policy</span>
+<span class="c1"># user_policy_model = XXX</span>
+
+<span class="n">inference_engine</span> <span class="o">=</span> <span class="n">GoalInferenceWithUserPolicyGiven</span><span class="p">()</span>
+<span class="c1"># Attach it to the engine</span>
+<span class="n">inference_engine</span><span class="o">.</span><span class="n">_attach_policy</span><span class="p">(</span><span class="n">user_policy_model</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It also expects that the set of <span class="math notranslate nohighlight">\(\theta\)</span>’s is supplied:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">set_theta</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span>
+        <span class="p">(</span><span class="s2">&quot;user_state&quot;</span><span class="p">,</span> <span class="s2">&quot;goal&quot;</span><span class="p">):</span> <span class="n">StateElement</span><span class="p">(</span>
+            <span class="n">t</span><span class="p">,</span>
+            <span class="n">discrete_space</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">gridsize</span><span class="p">)))),</span>
+        <span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;targets&quot;</span><span class="p">]</span>
+<span class="p">]</span>
+
+<span class="n">inference_engine</span><span class="o">.</span><span class="n">attach_set_theta</span><span class="p">(</span><span class="n">set_theta</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can find a full worked-out example in CoopIHC-Zoo’s pointing module.</p>
+</section>
+<section id="lineargaussiancontinuous">
+<h3>LinearGaussianContinuous<a class="headerlink" href="#lineargaussiancontinuous" title="Permalink to this headline"></a></h3>
+<p>An Inference Engine that handles a continuous Gaussian Belief. It assumes a Gaussian prior and a Gaussian likelihood.</p>
+<ul>
+<li><p><strong>Expectations of the engine</strong></p>
+<blockquote>
+<div><p>This inference engine expects the agent to have in its internal state:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>The mean matrix of the belief, stored as ‘belief-mu’</p></li>
+<li><p>The covariance matrix of the belief, stored as ‘belief-sigma’</p></li>
+<li><p>The new observation, stored as ‘y’</p></li>
+<li><p>The covariance matrix associated with the observation, stored as ‘Sigma_0’</p></li>
+</ul>
+</div></blockquote>
+</div></blockquote>
+</li>
+<li><p><strong>Inference</strong></p>
+<blockquote>
+<div><p>This engine uses the observation to update the beliefs (which has been computed from previous observations).</p>
+<p>To do so, a Gaussian noisy observation model is assumed, where x is the latest mean matrix of the belief.</p>
+<div class="math notranslate nohighlight">
+\[\begin{align}
+p(y|x) \sim \mathcal{N}(x, \Sigma_0)
+\end{align}\]</div>
+<p>If the initial prior (belief probability) is Gaussian as well, then the posterior will remain Gaussian (because we are only applying linear operations to Gaussians, Gaussianity is preserved). So the posterior after t-1 observations has the following form, where <span class="math notranslate nohighlight">\((\\mu(t-1), \\Sigma(t-1))\)</span> are respectively the mean and covariance matrices of the beliefs.</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{align}
+p(x(t-1)) \\sim \mathcal{N}(\mu(t-1), \Sigma(t-1))
+\end{align}\end{split}\]</div>
+<p>On each new observation, the mean and covariance matrices are updated like so:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{align}
+p(x(t) | y, x(t-1)) \sim \mathcal{N}(\Sigma(t) \left[ \Sigma_0^{-1}y + \Sigma(t-1) \mu(t-1) \right], \Sigma(t)) \\
+\Sigma(t) = (\Sigma_0^{-1} + \Sigma(t-1)^{-1})^{-1}
+\end{align}\end{split}\]</div>
+</div></blockquote>
+</li>
+<li><p><strong>Render</strong></p>
+<blockquote>
+<div><p>—- plot mode:</p>
+<p>This engine will plot mean beliefs on the task axis and the covariance beliefs on the agent axis, plotted as confidence intervals (bars for 1D and ellipses for 2D).</p>
+</div></blockquote>
+</li>
+<li><p><strong>Example files</strong></p>
+<blockquote>
+<div><p>coopihczoo.eye.users</p>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="continuouskalmanupdate">
+<h3>ContinuousKalmanUpdate<a class="headerlink" href="#continuouskalmanupdate" title="Permalink to this headline"></a></h3>
+<p>LQG update, not documented yet, see API Reference</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="observation_engine.html" class="btn btn-neutral float-left" title="The Observation Engines" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bundles.html" class="btn btn-neutral float-right" title="Bundles" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

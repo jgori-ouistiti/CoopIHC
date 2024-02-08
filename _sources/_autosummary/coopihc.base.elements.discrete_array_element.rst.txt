@@ -1,0 +1,6 @@
+coopihc.base.elements.discrete\_array\_element
+==============================================
+
+.. currentmodule:: coopihc.base.elements
+
+.. autofunction:: discrete_array_element

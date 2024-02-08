@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coopihc.inference.LinearGaussianContinuous &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../_autosummary/coopihc.html">    API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>coopihc.inference.LinearGaussianContinuous</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coopihc.inference.LinearGaussianContinuous</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">from</span> <span class="nn">matplotlib.patches</span> <span class="kn">import</span> <span class="n">Ellipse</span>
+<span class="kn">import</span> <span class="nn">matplotlib.transforms</span> <span class="k">as</span> <span class="nn">transforms</span>
+
+<span class="kn">from</span> <span class="nn">coopihc.inference.BaseInferenceEngine</span> <span class="kn">import</span> <span class="n">BaseInferenceEngine</span>
+
+
+<div class="viewcode-block" id="LinearGaussianContinuous"><a class="viewcode-back" href="../../../_autosummary/coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.html#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous">[docs]</a><span class="k">class</span> <span class="nc">LinearGaussianContinuous</span><span class="p">(</span><span class="n">BaseInferenceEngine</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;LinearGaussianContinuous</span>
+
+<span class="sd">    An Inference Engine that handles a continuous Gaussian Belief. It assumes a Gaussian prior and a Gaussian likelihood.</span>
+
+<span class="sd">    - **Expectations of the engine**</span>
+
+<span class="sd">        This inference engine expects the agent to have in its internal state:</span>
+
+<span class="sd">            + The mean matrix of the belief, stored as &#39;belief-mu&#39;</span>
+<span class="sd">            + The covariance matrix of the belief, stored as &#39;belief-sigma&#39;</span>
+<span class="sd">            + The new observation, stored as &#39;y&#39;</span>
+<span class="sd">            + The covariance matrix associated with the observation, stored as &#39;Sigma_0&#39;</span>
+
+
+<span class="sd">    - **Inference**</span>
+
+<span class="sd">        This engine uses the observation to update the beliefs (which has been computed from previous observations).</span>
+
+<span class="sd">        To do so, a Gaussian noisy observation model is assumed, where x is the latest mean matrix of the belief.</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \\begin{align}</span>
+<span class="sd">            p(y|x) \\sim \\mathcal{N}(x, \\Sigma_0)</span>
+<span class="sd">            \\end{align}</span>
+
+
+<span class="sd">        If the initial prior (belief probability) is Gaussian as well, then the posterior will remain Gaussian (because we are only applying linear operations to Gaussians, Gaussianity is preserved). So the posterior after t-1 observations has the following form, where :math:`(\\mu(t-1), \\Sigma(t-1))` are respectively the mean and covariance matrices of the beliefs.</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \\begin{align}</span>
+<span class="sd">            p(x(t-1)) \\sim \mathcal{N}(\\mu(t-1), \\Sigma(t-1))</span>
+<span class="sd">            \\end{align}</span>
+
+<span class="sd">        On each new observation, the mean and covariance matrices are updated like so:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \\begin{align}</span>
+<span class="sd">            p(x(t) | y, x(t-1)) \\sim \\mathcal{N}(\\Sigma(t) \\left[ \\Sigma_0^{-1}y + \\Sigma(t-1) \\mu(t-1) \\right], \\Sigma(t)) \\\\</span>
+<span class="sd">            \\Sigma(t) = (\\Sigma_0^{-1} + \\Sigma(t-1)^{-1})^{-1}</span>
+<span class="sd">            \\end{align}</span>
+
+<span class="sd">    </span>
+<span class="sd">    - **Render**</span>
+
+<span class="sd">        ---- plot mode:</span>
+
+<span class="sd">        This engine will plot mean beliefs on the task axis and the covariance beliefs on the agent axis, plotted as confidence intervals (bars for 1D and ellipses for 2D).</span>
+
+
+<span class="sd">    - **Example files**</span>
+
+<span class="sd">        coopihczoo.eye.users</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">render_tag</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="s2">&quot;plot&quot;</span><span class="p">]</span>
+
+    <span class="nd">@BaseInferenceEngine</span><span class="o">.</span><span class="n">default_value</span>
+    <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_observation</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;user&quot;</span><span class="p">:</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="n">agent_observation</span><span class="p">[</span><span class="s2">&quot;user_state&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="n">agent_observation</span><span class="p">[</span><span class="s2">&quot;assistant_state&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Likelihood model</span>
+        <span class="n">y</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;Sigma_0&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+        <span class="c1"># Prior</span>
+        <span class="n">oldmu</span><span class="p">,</span> <span class="n">oldsigma</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;belief-mu&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span> <span class="n">state</span><span class="p">[</span>
+            <span class="s2">&quot;belief-sigma&quot;</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+
+        <span class="c1"># Posterior</span>
+        <span class="n">new_sigma</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">((</span><span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">oldsigma</span><span class="p">)</span> <span class="o">+</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">v</span><span class="p">)))</span>
+        <span class="n">newmu</span> <span class="o">=</span> <span class="n">new_sigma</span> <span class="o">@</span> <span class="p">(</span>
+            <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">@</span> <span class="n">y</span> <span class="o">+</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">oldsigma</span><span class="p">)</span> <span class="o">@</span> <span class="n">oldmu</span>
+        <span class="p">)</span>
+        <span class="c1"># state[&quot;belief-mu&quot;][:] = newmu</span>
+        <span class="c1"># state[&quot;belief-sigma&quot;][:, :] = new_sigma</span>
+        <span class="n">state</span><span class="p">[</span><span class="s2">&quot;belief-mu&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">newmu</span>
+        <span class="n">state</span><span class="p">[</span><span class="s2">&quot;belief-sigma&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_sigma</span>
+
+        <span class="k">return</span> <span class="n">state</span><span class="p">,</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="LinearGaussianContinuous.render"><a class="viewcode-back" href="../../../_autosummary/coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.html#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="n">ax_user</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ax_assistant</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ax_task</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;render</span>
+
+<span class="sd">        Draws the beliefs (mean value and ellipsis or confidence intervals according to dimension).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">render_flag</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">render_tag</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">mode</span><span class="p">:</span>
+                <span class="n">render_flag</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="s2">&quot;plot&quot;</span> <span class="ow">in</span> <span class="n">mode</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;user&quot;</span><span class="p">:</span>
+                <span class="n">ax</span> <span class="o">=</span> <span class="n">ax_user</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ax</span> <span class="o">=</span> <span class="n">ax_assistant</span>
+
+            <span class="n">dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">dimension</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">draw_beliefs</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span>
+            <span class="n">mean_belief</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;belief-mu&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">dim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">mean_belief</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">mean_belief</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="mi">0</span><span class="p">])</span>
+
+            <span class="n">ax_task</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">*</span><span class="n">mean_belief</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="s2">&quot;r*&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s2">&quot; beliefs&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;text&quot;</span> <span class="ow">in</span> <span class="n">mode</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s2">&quot;Belief: Mu = </span><span class="si">{}</span><span class="s2">, Sigma = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;belief-mu&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;belief-sigma&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="LinearGaussianContinuous.draw_beliefs"><a class="viewcode-back" href="../../../_autosummary/coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.html#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.draw_beliefs">[docs]</a>    <span class="k">def</span> <span class="nf">draw_beliefs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">dim</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;draw_beliefs</span>
+
+<span class="sd">        Draw beliefs of dimension &#39;dim&#39; on axis &#39;ax&#39;.</span>
+
+<span class="sd">        :param ax: axis</span>
+<span class="sd">        :type ax: matplotlib object</span>
+<span class="sd">        :param dim: dimension of data</span>
+<span class="sd">        :type dim: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mu</span><span class="p">,</span> <span class="n">cov</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;belief-mu&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;belief-sigma&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">dim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">patch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">confidence_ellipse</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">cov</span><span class="p">,</span> <span class="n">ax</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">patch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">confidence_interval</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">cov</span><span class="p">,</span> <span class="n">ax</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LinearGaussianContinuous.confidence_interval"><a class="viewcode-back" href="../../../_autosummary/coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.html#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.confidence_interval">[docs]</a>    <span class="k">def</span> <span class="nf">confidence_interval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">cov</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">n_std</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;confidence_interval</span>
+
+<span class="sd">        Compute confidence interval. For the Gaussian case like here, this is straightforward</span>
+
+<span class="sd">        :param mu: mean matrix</span>
+<span class="sd">        :type mu: numpy.ndarray</span>
+<span class="sd">        :param cov: covariance matrix</span>
+<span class="sd">        :type cov: numpy.ndarray</span>
+<span class="sd">        :param ax: axis</span>
+<span class="sd">        :type ax: matplotlib object</span>
+<span class="sd">        :param n_std: size of the confidence interval in std, defaults to 2.0</span>
+<span class="sd">        :type n_std: float, optional</span>
+<span class="sd">        :param color: color of the CI, defaults to &quot;b&quot;</span>
+<span class="sd">        :type color: str, optional</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">vec</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">mu</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">cov</span><span class="p">))</span>
+            <span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                <span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="p">(</span><span class="n">mu</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">cov</span><span class="p">))</span>
+            <span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                <span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+        <span class="p">]</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">vec</span><span class="p">,</span>
+            <span class="p">[</span>
+                <span class="o">-</span><span class="mf">0.5</span> <span class="o">+</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">round_number</span><span class="p">,</span>
+                <span class="o">-</span><span class="mf">0.5</span> <span class="o">+</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">round_number</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;-&quot;</span><span class="p">,</span>
+            <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;|&quot;</span><span class="p">,</span>
+            <span class="n">markersize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+            <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="LinearGaussianContinuous.confidence_ellipse"><a class="viewcode-back" href="../../../_autosummary/coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.html#coopihc.inference.LinearGaussianContinuous.LinearGaussianContinuous.confidence_ellipse">[docs]</a>    <span class="k">def</span> <span class="nf">confidence_ellipse</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">mu</span><span class="p">,</span>
+        <span class="n">covariance</span><span class="p">,</span>
+        <span class="n">ax</span><span class="p">,</span>
+        <span class="n">n_std</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+        <span class="n">facecolor</span><span class="o">=</span><span class="s2">&quot;#d1dcf0&quot;</span><span class="p">,</span>
+        <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;confidence_ellipse</span>
+
+<span class="sd">        Draw confidence ellipsis. See `Matplotlib documentation &lt;https://matplotlib.org/devdocs/gallery/statistics/confidence_ellipse.html&gt;`_ for source. Computing eigenvalues directly should lead to code that is more readily understandable.</span>
+
+<span class="sd">        :param mu: mean matrix</span>
+<span class="sd">        :type mu: numpy.ndarray</span>
+<span class="sd">        :param cov: covariance matrix</span>
+<span class="sd">        :type cov: numpy.ndarray</span>
+<span class="sd">        :param ax: axis</span>
+<span class="sd">        :type ax: matplotlib object</span>
+<span class="sd">        :param n_std: size of the confidence interval in std, defaults to 2.0</span>
+<span class="sd">        :type n_std: float, optional</span>
+<span class="sd">        :param facecolor: fill color, defaults to &quot;#d1dcf0&quot;</span>
+<span class="sd">        :type facecolor: str, optional</span>
+<span class="sd">        :param edgecolor: frontier color, defaults to &quot;b&quot;</span>
+<span class="sd">        :type edgecolor: str, optional</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">mu</span> <span class="o">=</span> <span class="n">mu</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+
+        <span class="n">rho</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">covariance</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">covariance</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">covariance</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="n">ellipse_radius_x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">rho</span><span class="p">)</span>
+        <span class="n">ellipse_radius_y</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">rho</span><span class="p">)</span>
+
+        <span class="n">ellipse1</span> <span class="o">=</span> <span class="n">Ellipse</span><span class="p">(</span>
+            <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="n">width</span><span class="o">=</span><span class="n">ellipse_radius_x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="n">height</span><span class="o">=</span><span class="n">ellipse_radius_y</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="n">facecolor</span><span class="o">=</span><span class="n">facecolor</span><span class="p">,</span>
+            <span class="n">edgecolor</span><span class="o">=</span><span class="n">edgecolor</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+        <span class="n">scale_x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">covariance</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">n_std</span>
+        <span class="n">mean_x</span> <span class="o">=</span> <span class="n">mu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">scale_y</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">covariance</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">n_std</span>
+        <span class="n">mean_y</span> <span class="o">=</span> <span class="n">mu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">transf</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">transforms</span><span class="o">.</span><span class="n">Affine2D</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">rotate_deg</span><span class="p">(</span><span class="mi">45</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">scale_x</span><span class="p">,</span> <span class="n">scale_y</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">mean_x</span><span class="p">,</span> <span class="n">mean_y</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">ellipse1</span><span class="o">.</span><span class="n">set_transform</span><span class="p">(</span><span class="n">transf</span> <span class="o">+</span> <span class="n">ax</span><span class="o">.</span><span class="n">transData</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">ellipse1</span><span class="p">)</span>
+
+        <span class="n">ellipse2</span> <span class="o">=</span> <span class="n">Ellipse</span><span class="p">(</span>
+            <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="n">width</span><span class="o">=</span><span class="n">ellipse_radius_x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="n">height</span><span class="o">=</span><span class="n">ellipse_radius_y</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="n">facecolor</span><span class="o">=</span><span class="n">facecolor</span><span class="p">,</span>
+            <span class="n">edgecolor</span><span class="o">=</span><span class="n">edgecolor</span><span class="p">,</span>
+            <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="n">n_std</span> <span class="o">=</span> <span class="n">n_std</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="n">scale_x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">covariance</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">n_std</span>
+        <span class="n">mean_x</span> <span class="o">=</span> <span class="n">mu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">scale_y</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">covariance</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">n_std</span>
+        <span class="n">mean_y</span> <span class="o">=</span> <span class="n">mu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">transf</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">transforms</span><span class="o">.</span><span class="n">Affine2D</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">rotate_deg</span><span class="p">(</span><span class="mi">45</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">scale_x</span><span class="p">,</span> <span class="n">scale_y</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">mean_x</span><span class="p">,</span> <span class="n">mean_y</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">ellipse2</span><span class="o">.</span><span class="n">set_transform</span><span class="p">(</span><span class="n">transf</span> <span class="o">+</span> <span class="n">ax</span><span class="o">.</span><span class="n">transData</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">ellipse2</span><span class="p">)</span>
+
+        <span class="k">return</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

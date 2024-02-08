@@ -1,0 +1,39 @@
+coopihc.policy.LinearFeedback.LinearFeedback
+============================================
+
+.. currentmodule:: coopihc.policy.LinearFeedback
+
+.. autoclass:: LinearFeedback
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~LinearFeedback.default_value
+      ~LinearFeedback.reset
+      ~LinearFeedback.sample
+      ~LinearFeedback.set_feedback_gain
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~LinearFeedback.action
+      ~LinearFeedback.action_keys
+      ~LinearFeedback.observation
+      ~LinearFeedback.parameters
+      ~LinearFeedback.state
+      ~LinearFeedback.unwrapped
+   
+   

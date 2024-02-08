@@ -1,0 +1,49 @@
+coopihc.agents.ExampleUser.ExampleUser
+======================================
+
+.. currentmodule:: coopihc.agents.ExampleUser
+
+.. autoclass:: ExampleUser
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~ExampleUser.finit
+      ~ExampleUser.infer
+      ~ExampleUser.observe
+      ~ExampleUser.prepare_action
+      ~ExampleUser.render
+      ~ExampleUser.reset
+      ~ExampleUser.reset_all
+      ~ExampleUser.take_action
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~ExampleUser.action
+      ~ExampleUser.assistant
+      ~ExampleUser.bundle
+      ~ExampleUser.bundle_memory
+      ~ExampleUser.inference_engine
+      ~ExampleUser.observation
+      ~ExampleUser.observation_engine
+      ~ExampleUser.parameters
+      ~ExampleUser.policy
+      ~ExampleUser.state
+      ~ExampleUser.task
+      ~ExampleUser.user
+   
+   

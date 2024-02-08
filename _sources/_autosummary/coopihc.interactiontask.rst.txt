@@ -1,0 +1,34 @@
+coopihc.interactiontask
+=======================
+
+.. automodule:: coopihc.interactiontask
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. autosummary::
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+
+   coopihc.interactiontask.ClassicControlTask
+   coopihc.interactiontask.ExampleTask
+   coopihc.interactiontask.InteractionTask
+   coopihc.interactiontask.PipeTaskWrapper
+   coopihc.interactiontask.TaskWrapper
+

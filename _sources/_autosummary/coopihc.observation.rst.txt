@@ -1,0 +1,35 @@
+coopihc.observation
+===================
+
+.. automodule:: coopihc.observation
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. autosummary::
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+
+   coopihc.observation.BaseObservationEngine
+   coopihc.observation.CascadedObservationEngine
+   coopihc.observation.ExampleObservationEngine
+   coopihc.observation.RuleObservationEngine
+   coopihc.observation.WrapAsObservationEngine
+   coopihc.observation.utils
+

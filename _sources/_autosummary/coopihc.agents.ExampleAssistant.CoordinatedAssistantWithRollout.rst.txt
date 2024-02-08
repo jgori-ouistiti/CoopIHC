@@ -1,0 +1,49 @@
+coopihc.agents.ExampleAssistant.CoordinatedAssistantWithRollout
+===============================================================
+
+.. currentmodule:: coopihc.agents.ExampleAssistant
+
+.. autoclass:: CoordinatedAssistantWithRollout
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~CoordinatedAssistantWithRollout.finit
+      ~CoordinatedAssistantWithRollout.infer
+      ~CoordinatedAssistantWithRollout.observe
+      ~CoordinatedAssistantWithRollout.prepare_action
+      ~CoordinatedAssistantWithRollout.render
+      ~CoordinatedAssistantWithRollout.reset
+      ~CoordinatedAssistantWithRollout.reset_all
+      ~CoordinatedAssistantWithRollout.take_action
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~CoordinatedAssistantWithRollout.action
+      ~CoordinatedAssistantWithRollout.assistant
+      ~CoordinatedAssistantWithRollout.bundle
+      ~CoordinatedAssistantWithRollout.bundle_memory
+      ~CoordinatedAssistantWithRollout.inference_engine
+      ~CoordinatedAssistantWithRollout.observation
+      ~CoordinatedAssistantWithRollout.observation_engine
+      ~CoordinatedAssistantWithRollout.parameters
+      ~CoordinatedAssistantWithRollout.policy
+      ~CoordinatedAssistantWithRollout.state
+      ~CoordinatedAssistantWithRollout.task
+      ~CoordinatedAssistantWithRollout.user
+   
+   

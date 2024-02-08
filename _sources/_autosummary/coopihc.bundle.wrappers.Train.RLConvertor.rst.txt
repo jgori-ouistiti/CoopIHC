@@ -1,0 +1,26 @@
+coopihc.bundle.wrappers.Train.RLConvertor
+=========================================
+
+.. currentmodule:: coopihc.bundle.wrappers.Train
+
+.. autoclass:: RLConvertor
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~RLConvertor.convert_space
+      ~RLConvertor.filter_gamestate
+   
+   
+
+   
+   
+   

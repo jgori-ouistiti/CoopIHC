@@ -1,0 +1,34 @@
+coopihc.bundle
+==============
+
+.. automodule:: coopihc.bundle
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. autosummary::
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+
+   coopihc.bundle.BaseBundle
+   coopihc.bundle.Bundle
+   coopihc.bundle.Simulator
+   coopihc.bundle.WsServer
+   coopihc.bundle.wrappers
+

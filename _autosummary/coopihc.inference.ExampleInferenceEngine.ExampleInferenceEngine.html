@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="coopihc.inference.ExampleInferenceEngine.RolloutCoordinatedInferenceEngine" href="coopihc.inference.ExampleInferenceEngine.RolloutCoordinatedInferenceEngine.html" />
+    <link rel="prev" title="coopihc.inference.ExampleInferenceEngine.CoordinatedInferenceEngine" href="coopihc.inference.ExampleInferenceEngine.CoordinatedInferenceEngine.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">    Home page</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="coopihc.html">    API reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="coopihc.agents.html">coopihc.agents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.base.html">coopihc.base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.bundle.html">coopihc.bundle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.helpers.html">coopihc.helpers</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="coopihc.inference.html">coopihc.inference</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="coopihc.inference.BaseInferenceEngine.html">coopihc.inference.BaseInferenceEngine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.inference.CascadedInferenceEngine.html">coopihc.inference.CascadedInferenceEngine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.inference.ContinuousKalmanUpdate.html">coopihc.inference.ContinuousKalmanUpdate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.inference.DualInferenceEngine.html">coopihc.inference.DualInferenceEngine</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="coopihc.inference.ExampleInferenceEngine.html">coopihc.inference.ExampleInferenceEngine</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="coopihc.inference.ExampleInferenceEngine.CoordinatedInferenceEngine.html">coopihc.inference.ExampleInferenceEngine.CoordinatedInferenceEngine</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coopihc.inference.ExampleInferenceEngine.RolloutCoordinatedInferenceEngine.html">coopihc.inference.ExampleInferenceEngine.RolloutCoordinatedInferenceEngine</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.inference.GoalInferenceWithUserPolicyGiven.html">coopihc.inference.GoalInferenceWithUserPolicyGiven</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coopihc.inference.LinearGaussianContinuous.html">coopihc.inference.LinearGaussianContinuous</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.interactiontask.html">coopihc.interactiontask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.observation.html">coopihc.observation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coopihc.policy.html">coopihc.policy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="coopihc.html">coopihc</a> &raquo;</li>
+          <li><a href="coopihc.inference.html">coopihc.inference</a> &raquo;</li>
+          <li><a href="coopihc.inference.ExampleInferenceEngine.html">coopihc.inference.ExampleInferenceEngine</a> &raquo;</li>
+      <li>coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="coopihc-inference-exampleinferenceengine-exampleinferenceengine">
+<h1>coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine<a class="headerlink" href="#coopihc-inference-exampleinferenceengine-exampleinferenceengine" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ExampleInferenceEngine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/inference/ExampleInferenceEngine.html#ExampleInferenceEngine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="coopihc.inference.BaseInferenceEngine.BaseInferenceEngine.html#coopihc.inference.BaseInferenceEngine.BaseInferenceEngine" title="coopihc.inference.BaseInferenceEngine.BaseInferenceEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">coopihc.inference.BaseInferenceEngine.BaseInferenceEngine</span></code></a></p>
+<p>Example class</p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.add_observation" title="coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.add_observation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_observation</span></code></a></p></td>
+<td><p>add observation</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.bind" title="coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.bind"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bind</span></code></a></p></td>
+<td><p>Bind function to the engine with a given name.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.default_value" title="coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.default_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">default_value</span></code></a></p></td>
+<td><p>Apply this decorator to use self.agent_observation as default value to infer from if agent_observation = None</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.infer" title="coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.infer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">infer</span></code></a></p></td>
+<td><p>Do nothing.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">render</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.reset" title="coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.reset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset</span></code></a></p></td>
+<td><p>reset _summary_</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.action" title="coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.action"><code class="xref py py-obj docutils literal notranslate"><span class="pre">action</span></code></a></p></td>
+<td><p>The agent's last action</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">host</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.observation" title="coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.observation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">observation</span></code></a></p></td>
+<td><p>The last observation.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">role</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.state" title="coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">state</span></code></a></p></td>
+<td><p>The current agent state</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">unwrapped</span></code></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py property">
+<dt class="sig sig-object py" id="coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.action">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action</span></span><a class="headerlink" href="#coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.action" title="Permalink to this definition"></a></dt>
+<dd><p>The agent’s last action</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>agent action</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="coopihc.base.State.State.html#coopihc.base.State.State" title="coopihc.base.State.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.add_observation">
+<span class="sig-name descname"><span class="pre">add_observation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">observation</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.add_observation" title="Permalink to this definition"></a></dt>
+<dd><p>add observation</p>
+<p>Add an observation to a buffer. If the buffer does not exist, create a naive buffer. The buffer has a size given by buffer length</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>observation</strong> (<a class="reference internal" href="coopihc.base.State.State.html#coopihc.base.State.State" title="coopihc.base.State.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a>) – observation produced by an engine</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.bind">
+<span class="sig-name descname"><span class="pre">bind</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.bind" title="Permalink to this definition"></a></dt>
+<dd><p>Bind function to the engine with a given name. If as_name is None, then the func name is used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> (<em>function</em>) – function to bind</p></li>
+<li><p><strong>as_name</strong> (<em>string</em><em>, </em><em>optional</em>) – name of resulting method, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>bound method</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>method</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.default_value">
+<span class="sig-name descname"><span class="pre">default_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.default_value" title="Permalink to this definition"></a></dt>
+<dd><p>Apply this decorator to use self.agent_observation as default value to infer from if agent_observation = None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.infer">
+<span class="sig-name descname"><span class="pre">infer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agent_observation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/coopihc/inference/ExampleInferenceEngine.html#ExampleInferenceEngine.infer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.infer" title="Permalink to this definition"></a></dt>
+<dd><p>Do nothing. Same behavior as parent <code class="docutils literal notranslate"><span class="pre">BaseInferenceEngine</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>(new internal state, reward)</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tuple(<a class="reference internal" href="coopihc.base.State.State.html#coopihc.base.State.State" title="coopihc.base.State.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a>, float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.observation">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observation</span></span><a class="headerlink" href="#coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.observation" title="Permalink to this definition"></a></dt>
+<dd><p>The last observation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>last observation</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="coopihc.base.State.State.html#coopihc.base.State.State" title="coopihc.base.State.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">random</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.reset" title="Permalink to this definition"></a></dt>
+<dd><p>reset _summary_</p>
+<p>Empty the buffer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>random</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether to randomize parameters internal to the inference engine. This is provided in case of subclass the BaseInferenceEngine, defaults to True.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.state">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">state</span></span><a class="headerlink" href="#coopihc.inference.ExampleInferenceEngine.ExampleInferenceEngine.state" title="Permalink to this definition"></a></dt>
+<dd><p>The current agent state</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>agent state</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="coopihc.base.State.State.html#coopihc.base.State.State" title="coopihc.base.State.State"><code class="xref py py-class docutils literal notranslate"><span class="pre">State</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="coopihc.inference.ExampleInferenceEngine.CoordinatedInferenceEngine.html" class="btn btn-neutral float-left" title="coopihc.inference.ExampleInferenceEngine.CoordinatedInferenceEngine" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="coopihc.inference.ExampleInferenceEngine.RolloutCoordinatedInferenceEngine.html" class="btn btn-neutral float-right" title="coopihc.inference.ExampleInferenceEngine.RolloutCoordinatedInferenceEngine" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

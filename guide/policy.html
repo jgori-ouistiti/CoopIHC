@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Policies &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="The Observation Engines" href="observation_engine.html" />
+    <link rel="prev" title="Agents" href="agents.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agents.html">Agents</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Policies</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#subclassing-basepolicy">Subclassing BasePolicy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#explicit-likelihood-discrete-elld-policy">Explicit Likelihood Discrete (ELLD) Policy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#bigdiscretepolicy">BIGDiscretePolicy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#linearfeedback">LinearFeedback</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rlpolicy">RLPolicy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#wrapaspolicy">WrapAsPolicy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_autosummary/coopihc.html">    API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Policies</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/guide/policy.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="policies">
+<h1>Policies<a class="headerlink" href="#policies" title="Permalink to this headline"></a></h1>
+<p>In <em>CoopIHC</em>, it is assumed that agents performed decisions (take actions) based on their observations as well as their internal state. There might also be a cost associated with selecting an action, for example, a physical cost associated with moving an item, or benefit, for example if having a large diversity of actions is rewarding.</p>
+<p><em>CoopIHC</em> provides a generic object called a policy wich specifies how actions are taken by the agent. To specify a new policy, you will usually subclass the <code class="docutils literal notranslate"><span class="pre">BasePolicy</span></code>, although several predefined policies also exist.</p>
+<section id="subclassing-basepolicy">
+<h2>Subclassing BasePolicy<a class="headerlink" href="#subclassing-basepolicy" title="Permalink to this headline"></a></h2>
+<p>To define a policy, simply subclass <cite>:py:class:BasePolicy&lt;coopihc.policy.BasePolicy&gt;</cite> and redefine its <code class="docutils literal notranslate"><span class="pre">sample()</span></code> method. Below, we show how <code class="docutils literal notranslate"><span class="pre">ExamplePolicy</span></code> has been defined.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">class</span> <span class="nc">ExamplePolicy</span><span class="p">(</span><span class="n">BasePolicy</span><span class="p">):</span>
+<span class="linenos"> 2</span>    <span class="sd">&quot;&quot;&quot;ExamplePolicy</span>
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span><span class="sd">    A simple policy which assumes that the agent using it has a &#39;goal&#39; state and that the task has an &#39;x&#39; state. x is compared to the goal and appropriate action is taken to make sure x reaches the goal.</span>
+<span class="linenos"> 5</span>
+<span class="linenos"> 6</span>
+<span class="linenos"> 7</span><span class="sd">    &quot;&quot;&quot;</span>
+<span class="linenos"> 8</span>
+<span class="linenos"> 9</span>    <span class="k">def</span> <span class="nf">__init____init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">action_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="linenos">10</span>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">action_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="linenos">11</span>
+<span class="linenos">12</span>    <span class="nd">@BasePolicy</span><span class="o">.</span><span class="n">default_value</span>
+<span class="linenos">13</span>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_observation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">agent_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="linenos">14</span>        <span class="sd">&quot;&quot;&quot;sample</span>
+<span class="linenos">15</span>
+<span class="linenos">16</span><span class="sd">        Compares &#39;x&#39; to goal and issues +-1 accordingly.</span>
+<span class="linenos">17</span>
+<span class="linenos">18</span><span class="sd">        :return: action, reward</span>
+<span class="linenos">19</span><span class="sd">        :rtype: tuple(`StateElement&lt;coopihc.base.StateElement.StateElement&gt;`, float)</span>
+<span class="linenos">20</span><span class="sd">        &quot;&quot;&quot;</span>
+<span class="linenos">21</span>
+<span class="linenos">22</span>        <span class="k">if</span> <span class="p">(</span>
+<span class="linenos">23</span>            <span class="n">agent_observation</span><span class="p">[</span><span class="s2">&quot;task_state&quot;</span><span class="p">][</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+<span class="linenos">24</span>            <span class="o">&lt;</span> <span class="n">agent_observation</span><span class="p">[</span><span class="s2">&quot;user_state&quot;</span><span class="p">][</span><span class="s2">&quot;goal&quot;</span><span class="p">]</span>
+<span class="linenos">25</span>        <span class="p">):</span>
+<span class="linenos">26</span>            <span class="n">_action_value</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="linenos">27</span>        <span class="k">elif</span> <span class="p">(</span>
+<span class="linenos">28</span>            <span class="n">agent_observation</span><span class="p">[</span><span class="s2">&quot;task_state&quot;</span><span class="p">][</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+<span class="linenos">29</span>            <span class="o">&gt;</span> <span class="n">agent_observation</span><span class="p">[</span><span class="s2">&quot;user_state&quot;</span><span class="p">][</span><span class="s2">&quot;goal&quot;</span><span class="p">]</span>
+<span class="linenos">30</span>        <span class="p">):</span>
+<span class="linenos">31</span>            <span class="n">_action_value</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="linenos">32</span>        <span class="k">else</span><span class="p">:</span>
+<span class="linenos">33</span>            <span class="n">_action_value</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">34</span>
+<span class="linenos">35</span>        <span class="k">return</span> <span class="n">_action_value</span><span class="p">,</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Don’t forget to return a reward with the action.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can virtually put anything inside this function: that includes the output of a neural network, of a complex simulation process, and even the output of another bundle (see <a class="reference internal" href="modularity.html"><span class="doc">Modularity</span></a> for an example.)</p>
+</div>
+<p>Other than that, there are a few predefined policies which you may find useful.</p>
+</section>
+<section id="explicit-likelihood-discrete-elld-policy">
+<h2>Explicit Likelihood Discrete (ELLD) Policy<a class="headerlink" href="#explicit-likelihood-discrete-elld-policy" title="Permalink to this headline"></a></h2>
+<p>Explicit Likelihood Discrete (ELLD) Policy is used in cases where the agent model is straightforward enough to be specified by an analytical model.</p>
+<p>Below, we define a simple probabilistic model which assigns different probabilities to each possible discrete action.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="c1"># Define the likelihood model</span>
+<span class="linenos"> 2</span><span class="k">def</span> <span class="nf">likelihood_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">observation</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="linenos"> 3</span>    <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<span class="linenos"> 4</span>        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">7</span>
+<span class="linenos"> 5</span>    <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+<span class="linenos"> 6</span>        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">7</span> <span class="o">+</span> <span class="mf">0.05</span>
+<span class="linenos"> 7</span>    <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+<span class="linenos"> 8</span>        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">7</span> <span class="o">-</span> <span class="mf">0.05</span>
+<span class="linenos"> 9</span>    <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+<span class="linenos">10</span>        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">7</span> <span class="o">+</span> <span class="mf">0.1</span>
+<span class="linenos">11</span>    <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+<span class="linenos">12</span>        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">7</span> <span class="o">-</span> <span class="mf">0.1</span>
+<span class="linenos">13</span>    <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+<span class="linenos">14</span>        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">7</span> <span class="o">+</span> <span class="mf">0.075</span>
+<span class="linenos">15</span>    <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+<span class="linenos">16</span>        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">7</span> <span class="o">-</span> <span class="mf">0.075</span>
+<span class="linenos">17</span>    <span class="k">else</span><span class="p">:</span>
+<span class="linenos">18</span>        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+<span class="linenos">19</span>            <span class="s2">&quot;warning, unable to compute likelihood. You may have not covered all cases in the likelihood definition&quot;</span>
+<span class="linenos">20</span>        <span class="p">)</span>
+<span class="linenos">21</span>
+<span class="linenos">22</span>
+</pre></div>
+</div>
+<p>You can then define your policy and attach the model to it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">_seed</span> <span class="o">=</span> <span class="mi">123</span>
+<span class="linenos">2</span><span class="n">se</span> <span class="o">=</span> <span class="n">cat_element</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="linenos">3</span><span class="n">action_state</span> <span class="o">=</span> <span class="n">State</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="n">se</span><span class="p">})</span>
+<span class="linenos">4</span><span class="n">policy</span> <span class="o">=</span> <span class="n">ELLDiscretePolicy</span><span class="p">(</span><span class="n">action_state</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">_seed</span><span class="p">)</span>
+<span class="linenos">5</span><span class="c1"># Attach the model</span>
+<span class="linenos">6</span><span class="n">policy</span><span class="o">.</span><span class="n">attach_likelihood_function</span><span class="p">(</span><span class="n">likelihood_model</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="bigdiscretepolicy">
+<h2>BIGDiscretePolicy<a class="headerlink" href="#bigdiscretepolicy" title="Permalink to this headline"></a></h2>
+<p>The Bayesian Information Gain Policy is a reimplementation of BIGPoint introduced by Liu et al <a class="footnote-reference brackets" href="#id2" id="id1">1</a>.</p>
+<p>The main ideas/assumptions are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>A user wants the task to go to some goal state <span class="math notranslate nohighlight">\(\\Theta\)</span></p></li>
+<li><p>The assistant can set the task in a number of states (X)</p></li>
+<li><p>The user can perform a given set of action Y</p></li>
+<li><p>A model <span class="math notranslate nohighlight">\(p(Y=y|X=X, \\Theta = \\theta)\)</span> exists for user behavior. This model is exploited by the assistant, and is not necessarily the true model.</p></li>
+</ul>
+</div></blockquote>
+<p>After the policy has been defined, make sure to call:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">attach_set_theta</span></code>, to specify the potential goal states</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">attach_transition_function</span></code>, to specify how the task state evolves after an assistant action.</p></li>
+</ul>
+</div></blockquote>
+<p>You can find an example implementation in CoopIHC-Zoo’s pointing module. Below are the important steps:</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Example outdated</p>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">TASK_SIZE</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="n">TARGETS</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">19</span><span class="p">]</span>
+
+<span class="n">action_state</span> <span class="o">=</span> <span class="n">State</span><span class="p">()</span>
+<span class="n">action_state</span><span class="p">[</span><span class="s2">&quot;action&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">StateElement</span><span class="p">(</span>
+   <span class="mi">0</span><span class="p">,</span>
+   <span class="n">autospace</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">TASK_SIZE</span><span class="p">)]),</span>
+   <span class="n">out_of_bounds_mode</span><span class="o">=</span><span class="s2">&quot;error&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="c1"># Define the user_policy_model that the assistant will use</span>
+<span class="n">user_policy_model</span> <span class="o">=</span> <span class="n">XXX</span>
+
+<span class="c1"># Define Policy</span>
+<span class="n">agent_policy</span> <span class="o">=</span> <span class="n">BIGDiscretePolicy</span><span class="p">(</span><span class="n">action_state</span><span class="p">,</span> <span class="n">user_policy_model</span><span class="p">)</span>
+
+<span class="c1"># Specify the potential Goal states of the user. Here, potential goals are all cases where targets may be the use goal</span>
+<span class="n">set_theta</span> <span class="o">=</span> <span class="p">[</span>
+         <span class="p">{</span>
+             <span class="p">(</span><span class="s2">&quot;user_state&quot;</span><span class="p">,</span> <span class="s2">&quot;goal&quot;</span><span class="p">):</span> <span class="n">StateElement</span><span class="p">(</span>
+                 <span class="n">t</span><span class="p">,</span>
+                 <span class="n">discrete_space</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">TASK_SIZE</span><span class="p">)))),</span>
+             <span class="p">)</span>
+         <span class="p">}</span>
+         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">TARGETS</span>
+     <span class="p">]</span>
+<span class="c1"># Attach this set to the policy</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">policy</span><span class="o">.</span><span class="n">attach_set_theta</span><span class="p">(</span><span class="n">set_theta</span><span class="p">)</span>
+
+<span class="c1"># Define the predicted future observation of the user due to assistant action</span>
+<span class="k">def</span> <span class="nf">transition_function</span><span class="p">(</span><span class="n">assistant_action</span><span class="p">,</span> <span class="n">observation</span><span class="p">):</span>
+   <span class="sd">&quot;&quot;&quot;What future observation will the user see due to assistant action&quot;&quot;&quot;</span>
+   <span class="c1"># always do this</span>
+   <span class="n">observation</span><span class="p">[</span><span class="s2">&quot;assistant_action&quot;</span><span class="p">][</span><span class="s2">&quot;action&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">assistant_action</span>
+   <span class="c1"># specific to BIGpointer</span>
+   <span class="n">observation</span><span class="p">[</span><span class="s2">&quot;task_state&quot;</span><span class="p">][</span><span class="s2">&quot;position&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">assistant_action</span>
+   <span class="k">return</span> <span class="n">observation</span>
+
+<span class="c1"># Attach it to the policy</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">policy</span><span class="o">.</span><span class="n">attach_transition_function</span><span class="p">(</span><span class="n">transition_function</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="linearfeedback">
+<h2>LinearFeedback<a class="headerlink" href="#linearfeedback" title="Permalink to this headline"></a></h2>
+</section>
+<section id="rlpolicy">
+<h2>RLPolicy<a class="headerlink" href="#rlpolicy" title="Permalink to this headline"></a></h2>
+<p>The RLPolicy is a wrapper for a neural network trained via Deep Reinforcement Learning. For an example, head over to <a class="reference internal" href="learning.html#using-reinforcement-learning"><span class="std std-ref">Using Reinforcement Learning</span></a>.</p>
+</section>
+<section id="wrapaspolicy">
+<h2>WrapAsPolicy<a class="headerlink" href="#wrapaspolicy" title="Permalink to this headline"></a></h2>
+<dl class="footnote brackets">
+<dt class="label" id="id2"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
+<dd><p>Liu, Wanyu, et al. “Bignav: Bayesian information gain for guiding multiscale navigation.” Proceedings of the 2017 CHI Conference on Human Factors in Computing Systems. 2017.</p>
+</dd>
+</dl>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="agents.html" class="btn btn-neutral float-left" title="Agents" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="observation_engine.html" class="btn btn-neutral float-right" title="The Observation Engines" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

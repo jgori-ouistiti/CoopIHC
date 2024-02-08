@@ -1,0 +1,32 @@
+coopihc.inference.DualInferenceEngine
+=====================================
+
+.. automodule:: coopihc.inference.DualInferenceEngine
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      DualInferenceEngine
+   
+   
+
+   
+   
+   
+
+
+

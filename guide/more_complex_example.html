@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>More Complex Example &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Modularity" href="modularity.html" />
+    <link rel="prev" title="Quick Start" href="quickstart.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">More Complex Example</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#task">Task</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#synthetic-user-model">Synthetic User Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#assistant">Assistant</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#bundle">Bundle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-next">What next</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_autosummary/coopihc.html">    API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>More Complex Example</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/guide/more_complex_example.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Code below has to be updated</p>
+</div>
+<section id="more-complex-example">
+<h1>More Complex Example<a class="headerlink" href="#more-complex-example" title="Permalink to this headline"></a></h1>
+<p>We are going to build a fully working bundle, with a task, a user model, and an assistant. The task that the user is trying to accomplish is to select a particular target, called the user’s goal, by positioning a cursor on top of  it. The assistant can help the user by positioning the cursor anywhere. For now we keep the task very simple and consider a 1D gridworld:</p>
+<a class="reference internal image-reference" href="../_images/simplepointingtask_render.png"><img alt="../_images/simplepointingtask_render.png" class="align-center" src="../_images/simplepointingtask_render.png" style="width: 800px;" /></a>
+<p>The user goal is the green ‘G’, the current cursor position is the blue ‘P’ and the other targets are the purple ‘T’s. The cursor can go anywhere within this space.</p>
+<section id="task">
+<h2>Task<a class="headerlink" href="#task" title="Permalink to this headline"></a></h2>
+<p>We start off by subclassing <code class="docutils literal notranslate"><span class="pre">InteractionTask</span></code>. In the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method,  we define the static information such as the size of the gridworld in which the cursor moves, as well as the number of targets in that gridworld.
+We also add two components to the task state: ‘position’ and ‘targets’, which respectively hold the information about cursor and target positions.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">coopihc</span> <span class="kn">import</span> <span class="n">InteractionTask</span><span class="p">,</span> <span class="n">StateElement</span><span class="p">,</span> <span class="n">autospace</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="k">class</span> <span class="nc">SimplePointingTask</span><span class="p">(</span><span class="n">InteractionTask</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gridsize</span><span class="o">=</span><span class="mi">31</span><span class="p">,</span> <span class="n">number_of_targets</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;gain&quot;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gridsize</span> <span class="o">=</span> <span class="n">gridsize</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">number_of_targets</span> <span class="o">=</span> <span class="n">number_of_targets</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;position&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">StateElement</span><span class="p">(</span>
+            <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">)],</span>
+            <span class="n">autospace</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">gridsize</span><span class="p">)])),</span>
+            <span class="n">out_of_bounds_mode</span><span class="o">=</span><span class="s2">&quot;clip&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;targets&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">StateElement</span><span class="p">(</span>
+            <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">j</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_targets</span><span class="p">)]),</span>
+            <span class="n">autospace</span><span class="p">(</span>
+                <span class="n">flatten</span><span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">gridsize</span><span class="p">)])</span>
+                        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_targets</span><span class="p">)</span>
+                    <span class="p">]</span>
+                <span class="p">)</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+<p>We then define a reset method, that randomizes the grid (useful when we want to repeat experiments)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dic</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+    <span class="n">targets</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+        <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+            <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gridsize</span><span class="p">)),</span> <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_targets</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Define starting position not on top of any target</span>
+    <span class="n">copy</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">)))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">:</span>
+        <span class="n">copy</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">position</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">copy</span><span class="p">))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;position&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">position</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;targets&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">targets</span>
+</pre></div>
+</div>
+<p>Finally, we define two methods that describe how the state of the task transitions when receiving user and assistant actions.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">on_user_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check if the user signals that the cursor is on the goal.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># User signals with 0 if the cursor is on the goal</span>
+    <span class="n">is_done</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_action</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">is_done</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">is_done</span>
+
+<span class="k">def</span> <span class="nf">on_assistant_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">is_done</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># Stopping condition if too many turns</span>
+    <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">round_number</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">30</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="p">{}</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;position&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assistant_action</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">False</span>
+</pre></div>
+</div>
+<p>You can now check that everything works as intended, by bundling the task without any other agent for now. You can play a round of interaction by using arbitrary action values, e.g. 1 for the user and 18 for the assistant.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">coopihc.bundle.Bundle</span> <span class="kn">import</span> <span class="n">Bundle</span>
+
+
+<span class="n">task</span> <span class="o">=</span> <span class="n">SimplePointingTask</span><span class="p">(</span><span class="n">gridsize</span><span class="o">=</span><span class="mi">31</span><span class="p">,</span> <span class="n">number_of_targets</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">bundle</span> <span class="o">=</span> <span class="n">Bundle</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">)</span>
+<span class="n">game_state</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">game_state</span><span class="p">)</span>
+<span class="c1"># &gt;&gt;&gt; print(game_state)</span>
+<span class="c1"># ----------------  -----------  -------------------------  ------------------------------------------</span>
+<span class="c1"># game_info         turn_index   0                          Discr(4)</span>
+<span class="c1">#                   round_index  0                          Discr(2)</span>
+<span class="c1"># task_state        position     7                          Discr(31)</span>
+<span class="c1">#                   targets      [ 2  3  8 11 17 20 22 23]  MultiDiscr[31, 31, 31, 31, 31, 31, 31, 31]</span>
+<span class="c1"># user_action       action       1                          Discr(2)</span>
+<span class="c1"># assistant_action  action       1                          Discr(2)</span>
+<span class="c1"># ----------------  -----------  -------------------------  ------------------------------------------</span>
+<span class="n">bundle</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">user_action</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">assistant_action</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">bundle</span><span class="o">.</span><span class="n">game_state</span><span class="p">)</span>
+<span class="c1"># ----------------  -----------  -------------------------  ------------------------------------------</span>
+<span class="c1"># game_info         turn_index   0                          Discr(4)</span>
+<span class="c1">#                   round_index  1                          Discr(2)</span>
+<span class="c1"># task_state        position     18                         Discr(31)</span>
+<span class="c1">#                   targets      [ 2  3  8 11 17 20 22 23]  MultiDiscr[31, 31, 31, 31, 31, 31, 31, 31]</span>
+<span class="c1"># user_action       action       1                          Discr(2)</span>
+<span class="c1"># assistant_action  action       18                         Discr(2)</span>
+<span class="c1"># ----------------  -----------  -------------------------  ------------------------------------------</span>
+</pre></div>
+</div>
+<p>The complete code for this task is available in the CoopIHC-zoo <a class="reference external" href="https://github.com/jgori-ouistiti/CoopIHC-zoo/tree/main/coopihczoo/pointing/envs.py">task pointing repository</a>, where the task has two modes and a rendering method.</p>
+</section>
+<section id="synthetic-user-model">
+<h2>Synthetic User Model<a class="headerlink" href="#synthetic-user-model" title="Permalink to this headline"></a></h2>
+<p>To define the user model (called CarefulPointer), we have to describe the 4 components of a CoopIHC agent: the state, the observation and inference engines, and the policy.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">CarefulPointer</span><span class="p">(</span><span class="n">BaseAgent</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">error_rate</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_targets</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+        <span class="c1"># -------------------------- User Policy --------------------------</span>
+        <span class="c1"># Indicates left (-1), right (1), or select (0)</span>
+        <span class="n">action_state</span> <span class="o">=</span> <span class="n">State</span><span class="p">()</span>
+        <span class="n">action_state</span><span class="p">[</span><span class="s2">&quot;action&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">StateElement</span><span class="p">(</span>
+            <span class="mi">0</span><span class="p">,</span> <span class="n">autospace</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])),</span> <span class="n">out_of_bounds_mode</span><span class="o">=</span><span class="s2">&quot;warning&quot;</span>
+        <span class="p">)</span>
+
+        <span class="c1"># This part uses the ExplicitLikelihoodDiscretePolicy. It works by selecting actions according to various probabilities defined by the compute_likelihood function, which maps actions and observations to a probability. For example, if the user observes that the cursor is to the right of the target (goal &gt; position), then -1 is mapped to 1-epsilon, and +1 mapped to epsilon. As a result, the user model will select action -1 with probability 1-epsilon.</span>
+        <span class="n">ELLD_dic</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;compute_likelihood_args&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;error_rate&quot;</span><span class="p">:</span> <span class="n">error_rate</span><span class="p">}}</span>
+        <span class="n">ELLD_dic</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;policy_kwargs&quot;</span><span class="p">,</span> <span class="p">{}))</span>
+
+        <span class="n">agent_policy</span> <span class="o">=</span> <span class="n">ELLDiscretePolicy</span><span class="p">(</span>
+            <span class="n">action_state</span><span class="o">=</span><span class="n">action_state</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">ELLD_dic</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">compute_likelihood</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">observation</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">error_rate</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;error_rate&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="c1"># convert actions and observations</span>
+            <span class="n">goal</span> <span class="o">=</span> <span class="n">observation</span><span class="p">[</span><span class="s2">&quot;user_state&quot;</span><span class="p">][</span><span class="s2">&quot;goal&quot;</span><span class="p">]</span>
+            <span class="n">position</span> <span class="o">=</span> <span class="n">observation</span><span class="p">[</span><span class="s2">&quot;task_state&quot;</span><span class="p">][</span><span class="s2">&quot;position&quot;</span><span class="p">]</span>
+            <span class="c1"># Write down all possible cases (5)</span>
+            <span class="c1"># (1) Goal to the right, positive action</span>
+            <span class="k">if</span> <span class="n">goal</span> <span class="o">&gt;</span> <span class="n">position</span> <span class="ow">and</span> <span class="n">action</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">error_rate</span>
+            <span class="c1"># (2) Goal to the right, negative action</span>
+            <span class="k">elif</span> <span class="n">goal</span> <span class="o">&gt;</span> <span class="n">position</span> <span class="ow">and</span> <span class="n">action</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">error_rate</span>
+            <span class="c1"># (3) Goal to the left, positive action</span>
+            <span class="k">if</span> <span class="n">goal</span> <span class="o">&lt;</span> <span class="n">position</span> <span class="ow">and</span> <span class="n">action</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">error_rate</span>
+            <span class="c1"># (4) Goal to the left, negative action</span>
+            <span class="k">elif</span> <span class="n">goal</span> <span class="o">&lt;</span> <span class="n">position</span> <span class="ow">and</span> <span class="n">action</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">error_rate</span>
+            <span class="k">elif</span> <span class="n">goal</span> <span class="o">==</span> <span class="n">position</span> <span class="ow">and</span> <span class="n">action</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">goal</span> <span class="o">==</span> <span class="n">position</span> <span class="ow">and</span> <span class="n">action</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">0</span>
+            <span class="k">elif</span> <span class="n">goal</span> <span class="o">!=</span> <span class="n">position</span> <span class="ow">and</span> <span class="n">action</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="s2">&quot;warning, unable to compute likelihood. You may have not covered all cases in the likelihood definition&quot;</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Attach likelihood function to the policy</span>
+
+        <span class="n">agent_policy</span><span class="o">.</span><span class="n">attach_likelihood_function</span><span class="p">(</span><span class="n">compute_likelihood</span><span class="p">)</span>
+
+        <span class="c1"># ------------------ User Observation Engine ---------------------</span>
+
+        <span class="c1"># Here we simply call the base user engine, see the documentation on observation engines.</span>
+        <span class="n">observation_engine</span> <span class="o">=</span> <span class="n">RuleObservationEngine</span><span class="p">(</span>
+            <span class="n">deterministic_specification</span><span class="o">=</span><span class="n">base_user_engine_specification</span><span class="p">,</span>
+        <span class="p">)</span>
+
+
+        <span class="c1"># ----------------- User Inference Engine and internal states -----</span>
+
+        <span class="c1"># The user has a goal state, which is changed on each reset, so we might as well define the goal state there. The goal state is static throughout the game (the user will not change target goals in between resets), so there is no need for an inference engine as well.</span>
+
+
+
+
+        <span class="c1"># ---------- Calling BaseAgent class -----------</span>
+        <span class="c1"># Always finish by calling BaseAgent&#39;s init to correctly initialize all components.</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="s2">&quot;user&quot;</span><span class="p">,</span>
+            <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+            <span class="n">agent_policy</span><span class="o">=</span><span class="n">agent_policy</span><span class="p">,</span>
+            <span class="n">agent_observation_engine</span><span class="o">=</span><span class="n">observation_engine</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="c1"># property to make code more readable</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">targets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;targets&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dic</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="c1"># Select a random target as the goal.</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;goal&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">StateElement</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">[</span><span class="n">index</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="o">.</span><span class="n">spaces</span><span class="p">[</span><span class="n">index</span><span class="p">],</span>
+            <span class="n">out_of_bounds_mode</span><span class="o">=</span><span class="s2">&quot;warning&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+<p>Notice that the code re-uses a lot of existing classes, which is in the spirit of CoopIHC. You can find more information about these in their respective documentation <a class="reference internal" href="observation_engine.html"><span class="doc">RuleObservationEngine</span></a> and <a class="reference internal" href="policy.html"><span class="doc">ExplicitLikelihoodDiscretePolicy</span></a>.</p>
+</section>
+<section id="assistant">
+<h2>Assistant<a class="headerlink" href="#assistant" title="Permalink to this headline"></a></h2>
+<p>We are going to couple this operator with an intelligent assistant which leverages Bayesian Information Gain (BIG) <a class="reference internal" href="#liu2017" id="id1"><span>[Liu2017]</span></a>. This assistant follows two mechanisms:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>It holds a belief vector, that assigns each target with a probability (namely the probability that that particular target is the user goal). This belief is maintained by a particular inference engine called GoalInferenceWithUserPolicyGiven, which as the name suggests, is capable of updating the beliefs associated with each target by leveraging a user model.</p></li>
+<li><p>It maintains a policy, that at each step, puts the cursor in a position that is going to be maximally informative for the assistant. This policy is implemented as a BIGDiscretePolicy.</p></li>
+</ol>
+</div></blockquote>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">BIGGain</span><span class="p">(</span><span class="n">BaseAgent</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="s2">&quot;assistant&quot;</span><span class="p">,</span> <span class="n">agent_inference_engine</span><span class="o">=</span><span class="n">GoalInferenceWithUserPolicyGiven</span><span class="p">()</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">finit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">action_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;assistant_action&quot;</span><span class="p">]</span>
+        <span class="n">action_state</span><span class="p">[</span><span class="s2">&quot;action&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">StateElement</span><span class="p">(</span>
+            <span class="mi">0</span><span class="p">,</span>
+            <span class="n">autospace</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">gridsize</span><span class="p">)]),</span>
+            <span class="n">out_of_bounds_mode</span><span class="o">=</span><span class="s2">&quot;error&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># Feed the model of the user policy to the policy and the inference engine.</span>
+        <span class="n">user_policy_model</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">policy</span><span class="p">)</span>
+        <span class="n">agent_policy</span> <span class="o">=</span> <span class="n">BIGDiscretePolicy</span><span class="p">(</span><span class="n">action_state</span><span class="p">,</span> <span class="n">user_policy_model</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_attach_policy</span><span class="p">(</span><span class="n">agent_policy</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine</span><span class="o">.</span><span class="n">_attach_policy</span><span class="p">(</span><span class="n">user_policy_model</span><span class="p">)</span>
+
+        <span class="c1"># Initialize uniformly distributed beliefs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;beliefs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">StateElement</span><span class="p">(</span>
+            <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">number_of_targets</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">number_of_targets</span><span class="p">)</span>
+                <span class="p">]</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">autospace</span><span class="p">(</span>
+                <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">number_of_targets</span><span class="p">)),</span>
+                <span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">number_of_targets</span><span class="p">)),</span>
+            <span class="p">),</span>
+            <span class="n">out_of_bounds_mode</span><span class="o">=</span><span class="s2">&quot;error&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dic</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># Uniformly distributed beliefs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;beliefs&quot;</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">number_of_targets</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">number_of_targets</span><span class="p">)</span>
+            <span class="p">]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Below, we provide the set of potential goals (set_theta) and a model of the transition function to the inference engine and the policy of the assistant (those are specific to these particular components and not the assistants or policies and inference engines in general)</span>
+        <span class="n">set_theta</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="p">(</span><span class="s2">&quot;user_state&quot;</span><span class="p">,</span> <span class="s2">&quot;goal&quot;</span><span class="p">):</span> <span class="n">StateElement</span><span class="p">(</span>
+                    <span class="n">t</span><span class="p">,</span>
+                    <span class="n">discrete_space</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">gridsize</span><span class="p">)))),</span>
+                <span class="p">)</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;targets&quot;</span><span class="p">]</span>
+        <span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine</span><span class="o">.</span><span class="n">attach_set_theta</span><span class="p">(</span><span class="n">set_theta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">policy</span><span class="o">.</span><span class="n">attach_set_theta</span><span class="p">(</span><span class="n">set_theta</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">transition_function</span><span class="p">(</span><span class="n">assistant_action</span><span class="p">,</span> <span class="n">observation</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;What future observation will the user see due to assistant action&quot;&quot;&quot;</span>
+            <span class="c1"># always do this</span>
+            <span class="n">observation</span><span class="p">[</span><span class="s2">&quot;assistant_action&quot;</span><span class="p">][</span><span class="s2">&quot;action&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">assistant_action</span>
+            <span class="c1"># specific to BIGpointer</span>
+            <span class="n">observation</span><span class="p">[</span><span class="s2">&quot;task_state&quot;</span><span class="p">][</span><span class="s2">&quot;position&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">assistant_action</span>
+
+            <span class="k">return</span> <span class="n">observation</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">policy</span><span class="o">.</span><span class="n">attach_transition_function</span><span class="p">(</span><span class="n">transition_function</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can find this assistant in the <a class="reference external" href="https://github.com/jgori-ouistiti/CoopIHC-zoo/tree/main/coopihczoo/pointing/assistants.py">assistant pointing repository</a>.</p>
+</section>
+<section id="bundle">
+<h2>Bundle<a class="headerlink" href="#bundle" title="Permalink to this headline"></a></h2>
+<p>Now that all components are ready, we can bundle them together to evaluate our first combination of user model and assistant. These components exist in CoopIHC-zoo and we import them directly from there. We then evaluate the performance of this pair, by playing a few rounds until the game ends and accumulating samples and rewards.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">coopihczoo.pointing.envs</span> <span class="kn">import</span> <span class="n">SimplePointingTask</span>
+<span class="kn">from</span> <span class="nn">coopihczoo.pointing.users</span> <span class="kn">import</span> <span class="n">CarefulPointer</span>
+<span class="kn">from</span> <span class="nn">coopihczoo.pointing.assistants</span> <span class="kn">import</span> <span class="n">BIGGain</span>
+<span class="kn">from</span> <span class="nn">coopihc.bundle.Bundle</span> <span class="kn">import</span> <span class="n">Bundle</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="n">task</span> <span class="o">=</span> <span class="n">SimplePointingTask</span><span class="p">(</span><span class="n">gridsize</span><span class="o">=</span><span class="mi">31</span><span class="p">,</span> <span class="n">number_of_targets</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;position&quot;</span><span class="p">)</span>
+<span class="n">binary_user</span> <span class="o">=</span> <span class="n">CarefulPointer</span><span class="p">(</span><span class="n">error_rate</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="n">BIGpointer</span> <span class="o">=</span> <span class="n">BIGGain</span><span class="p">()</span>
+
+<span class="n">bundle</span> <span class="o">=</span> <span class="n">Bundle</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">binary_user</span><span class="p">,</span> <span class="n">assistant</span><span class="o">=</span><span class="n">BIGpointer</span><span class="p">)</span>
+<span class="n">game_state</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="n">bundle</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s2">&quot;plotext&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+    <span class="n">game_state</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">is_done</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">user_action</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">assistant_action</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="c1"># Do something with rewards or the game state</span>
+    <span class="n">bundle</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s2">&quot;plotext&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_done</span><span class="p">:</span>
+        <span class="n">bundle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">break</span>
+</pre></div>
+</div>
+<p>This assistant has very good performance. This is expected since we have given the assistant the true user model, and since the user model in itself is extremely simple and does not account for various ‘penalties’ a real user would incur from the cursor jumping around the gridworld.</p>
+<p>The figures below show a run, which finished in 3 steps with the task state as well as the assistant beliefs rendered.</p>
+<a class="reference internal image-reference" href="../_images/biggain_0.png"><img alt="../_images/biggain_0.png" src="../_images/biggain_0.png" style="width: 49%;" /></a>
+<a class="reference internal image-reference" href="../_images/biggain_1.png"><img alt="../_images/biggain_1.png" src="../_images/biggain_1.png" style="width: 49%;" /></a>
+<a class="reference internal image-reference" href="../_images/biggain_2.png"><img alt="../_images/biggain_2.png" src="../_images/biggain_2.png" style="width: 49%;" /></a>
+<a class="reference internal image-reference" href="../_images/biggain_3.png"><img alt="../_images/biggain_3.png" src="../_images/biggain_3.png" style="width: 49%;" /></a>
+</section>
+<section id="what-next">
+<h2>What next<a class="headerlink" href="#what-next" title="Permalink to this headline"></a></h2>
+<p>The example that we have just seen is what you would expect from an early prototype. Several extensions and enhancements could follow:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>You could use a more complex user model to pair with the assistant. For example, a visual search model could determine how the cursor is located after a ‘jump’, penalizing frequent and high amplitude jumps. A motor control model could determine how the cursor moves (e.g. fast initially, and much slower towards the end. To see such examples, head over to <a class="reference internal" href="modularity.html"><span class="doc">Modularity</span></a>.</p></li>
+<li><p>Alternatively, you could learn the user behavior for a given assistant policy, e.g. via Deep Reinforcement Learning. See <a class="reference internal" href="learning.html"><span class="doc">Using Reinforcement Learning</span></a> for an example.</p></li>
+<li><p>You could tune the BIGGain assistant to account for the extra cost associated with jumps in the cursor.</p></li>
+<li><p>You could look at the effect of model mismatch between the model handled by the BIGGain assistant and the synthetic user model</p></li>
+<li><p>You could pair your assistant with a real user to evaluate its short term performance. See <a class="reference internal" href="realuser.html"><span class="doc">Interfacing CoopIHC with a real user</span></a> for an example.</p></li>
+<li><p>You could jointly train the user model and the assistant to simulate co-adaptation between a user and a tool.</p></li>
+</ol>
+</div></blockquote>
+<dl class="citation">
+<dt class="label" id="liu2017"><span class="brackets"><a class="fn-backref" href="#id1">Liu2017</a></span></dt>
+<dd><p>Liu, Wanyu, et al. “Bignav: Bayesian information gain for guiding multiscale navigation.” Proceedings of the 2017 CHI Conference on Human Factors in Computing Systems. 2017.</p>
+</dd>
+</dl>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="quickstart.html" class="btn btn-neutral float-left" title="Quick Start" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="modularity.html" class="btn btn-neutral float-right" title="Modularity" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

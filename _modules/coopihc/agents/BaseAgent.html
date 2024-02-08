@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coopihc.agents.BaseAgent &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../_autosummary/coopihc.html">    API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>coopihc.agents.BaseAgent</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coopihc.agents.BaseAgent</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">coopihc.base.State</span> <span class="kn">import</span> <span class="n">State</span>
+<span class="kn">from</span> <span class="nn">coopihc.base.StateElement</span> <span class="kn">import</span> <span class="n">StateElement</span>
+<span class="kn">from</span> <span class="nn">coopihc.base.elements</span> <span class="kn">import</span> <span class="n">discrete_array_element</span><span class="p">,</span> <span class="n">array_element</span><span class="p">,</span> <span class="n">cat_element</span>
+<span class="kn">from</span> <span class="nn">coopihc.policy.BasePolicy</span> <span class="kn">import</span> <span class="n">BasePolicy</span>
+<span class="kn">from</span> <span class="nn">coopihc.observation.RuleObservationEngine</span> <span class="kn">import</span> <span class="n">RuleObservationEngine</span>
+<span class="kn">from</span> <span class="nn">coopihc.observation.utils</span> <span class="kn">import</span> <span class="n">base_user_engine_specification</span>
+<span class="kn">from</span> <span class="nn">coopihc.observation.utils</span> <span class="kn">import</span> <span class="n">base_assistant_engine_specification</span>
+<span class="kn">from</span> <span class="nn">coopihc.inference.BaseInferenceEngine</span> <span class="kn">import</span> <span class="n">BaseInferenceEngine</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+
+<div class="viewcode-block" id="BaseAgent"><a class="viewcode-back" href="../../../_autosummary/coopihc.agents.BaseAgent.BaseAgent.html#coopihc.agents.BaseAgent.BaseAgent">[docs]</a><span class="k">class</span> <span class="nc">BaseAgent</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A *Coopihc* agent.</span>
+
+
+<span class="sd">    Instantiate or subclass this class to define an agent that is compatible with *CoopIHC*.</span>
+
+<span class="sd">    An agent has 4 components:</span>
+
+<span class="sd">        * An internal state</span>
+<span class="sd">        * An observation engine, that produces observations of the task and the other agent</span>
+<span class="sd">        * An inference engine, that uses this observation to make the internal state transition towards a new state</span>
+<span class="sd">        * A policy, which, based on the agent&#39;s internal state and its observation, picks an action.</span>
+
+
+
+<span class="sd">    By default, this class will be initialized with an empty internal :py:class:`State&lt;coopihc.base.State&gt;`, a random binary :py:class:`BasePolicy&lt;coopihc.policy.BasePolicy&gt;`, a :py:class:`RuleObservationEngine&lt;coopihc.observation.RuleObservationEngine&gt;` that sees everything except the other agent&#39;s internal state, and a :py:class:`BaseInference&lt;coopihc.observation.BaseInference&gt;` engine which does not update the state.</span>
+
+
+
+<span class="sd">    The API methods that users of this class can redefine are:</span>
+
+<span class="sd">        + ``finit``: a second round of initialization once a bundle has been formed -- useful because at that point the agent has a reference to the other agent and task.</span>
+<span class="sd">        + ``reset``: to specify how to initialize the agent&#39;s state at the end of each game. Policies, inference engines, and observation engines handle their own resets methods.</span>
+<span class="sd">        + ``render``: specifies what to display.</span>
+
+
+<span class="sd">    Some things to know:</span>
+
+<span class="sd">    * The agent can be used to produce observations, inferences and actions outside of any Bundle. See methods ``observe(), infer(), take_action()``.</span>
+
+<span class="sd">    * You can override some components, e.g. to override the existing policy of an agent named ``MyNewUser`` with some other policy, you can do the following</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        changed_policy_user = MyNewUser(override_agent_policy = (some_other_policy, other_policy_kwargs))</span>
+
+
+<span class="sd">    :param str role: &quot;user&quot; or &quot;assistant&quot;</span>
+<span class="sd">    :param type \*\*kwargs: keyword values ( each agent_X key expects a valid X object, and X_kwargs expects a valid dictionary of keyword arguments for X)</span>
+
+<span class="sd">        + agent_policy</span>
+<span class="sd">        + agent_inference_engine</span>
+<span class="sd">        + agent_observation_engine</span>
+<span class="sd">        + agent_state</span>
+<span class="sd">        + policy_kwargs</span>
+<span class="sd">        + inference_engine_kwargs</span>
+<span class="sd">        + observation_engine_kwargs</span>
+<span class="sd">        + state_kwargs</span>
+
+
+<span class="sd">    :return: A *CoopIHC* and :py:class:`Bundle&lt;coopihc.bundle&gt;`-compatible agent</span>
+<span class="sd">    :rtype: BaseAgent</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">role</span><span class="p">,</span>
+        <span class="n">agent_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">agent_policy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">agent_inference_engine</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">agent_observation_engine</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">state_kwargs</span><span class="o">=</span><span class="p">{},</span>
+        <span class="n">policy_kwargs</span><span class="o">=</span><span class="p">{},</span>
+        <span class="n">inference_engine_kwargs</span><span class="o">=</span><span class="p">{},</span>
+        <span class="n">observation_engine_kwargs</span><span class="o">=</span><span class="p">{},</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+
+        <span class="c1"># Bundles stuff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bundle</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bundle_memory</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># Set role of agent</span>
+        <span class="k">if</span> <span class="n">role</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;assistant&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;First argument &#39;role&#39; should be either &#39;user&#39; or &#39;assistant&#39;&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">=</span> <span class="n">role</span>
+
+        <span class="c1"># Define policy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_attach_policy</span><span class="p">(</span><span class="n">agent_policy</span><span class="p">,</span> <span class="o">**</span><span class="n">policy_kwargs</span><span class="p">)</span>
+
+        <span class="c1"># Init state</span>
+        <span class="k">if</span> <span class="n">agent_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">State</span><span class="p">(</span><span class="o">**</span><span class="n">state_kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">agent_state</span>
+
+        <span class="c1"># Define observation engine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_attach_observation_engine</span><span class="p">(</span>
+            <span class="n">agent_observation_engine</span><span class="p">,</span> <span class="o">**</span><span class="n">observation_engine_kwargs</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Define inference engine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_attach_inference_engine</span><span class="p">(</span><span class="n">agent_inference_engine</span><span class="p">,</span> <span class="o">**</span><span class="n">inference_engine_kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_override_components</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_override_components</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;_override_components</span>
+
+<span class="sd">        Allows the end-user to override any component for any agent via a kwarg</span>
+
+<span class="sd">        kwargs are as follows:</span>
+
+<span class="sd">            * &#39;override_policy&#39; = (policy, policy_kwargs)</span>
+<span class="sd">            * &#39;override_state&#39; = state</span>
+<span class="sd">            * &#39;override_observation_engine&#39; = (observation engine, observation engine_kwargs)</span>
+<span class="sd">            * &#39;override_inference_engine&#39; = (inference engine, inference engine kwargs)</span>
+
+<span class="sd">        :param init_kwargs: kwargs passed from init</span>
+<span class="sd">        :type init_kwargs: dict</span>
+
+<span class="sd">        :meta private:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Override agent policy</span>
+        <span class="n">agent_policy</span><span class="p">,</span> <span class="n">agent_policy_kwargs</span> <span class="o">=</span> <span class="n">init_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;override_policy&quot;</span><span class="p">,</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">agent_policy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_attach_policy</span><span class="p">(</span><span class="n">agent_policy</span><span class="p">,</span> <span class="o">**</span><span class="n">agent_policy_kwargs</span><span class="p">)</span>
+
+        <span class="c1"># Override agent state</span>
+        <span class="n">agent_state</span> <span class="o">=</span> <span class="n">init_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;override_state&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">agent_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">agent_state</span>
+
+        <span class="c1"># Override agent observation engine</span>
+        <span class="n">agent_obseng</span><span class="p">,</span> <span class="n">agent_obseng_kwargs</span> <span class="o">=</span> <span class="n">init_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;override_observation_engine&quot;</span><span class="p">,</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">agent_obseng</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_attach_observation_engine</span><span class="p">(</span><span class="n">agent_obseng</span><span class="p">,</span> <span class="o">**</span><span class="n">agent_obseng_kwargs</span><span class="p">)</span>
+
+        <span class="c1"># Override agent inference engine</span>
+        <span class="n">agent_infeng</span><span class="p">,</span> <span class="n">agent_infeng_kwargs</span> <span class="o">=</span> <span class="n">init_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;override_inference_engine&quot;</span><span class="p">,</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">agent_infeng</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_attach_inference_engine</span><span class="p">(</span><span class="n">agent_infeng</span><span class="p">,</span> <span class="o">**</span><span class="n">agent_infeng_kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__content__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Custom class representation.</span>
+
+<span class="sd">        A custom representation of the class.</span>
+
+<span class="sd">        :return: dictionary with content for all components.</span>
+<span class="sd">        :rtype: dict</span>
+
+<span class="sd">        :meta private:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;Name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="s2">&quot;State&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">__content__</span><span class="p">(),</span>
+            <span class="s2">&quot;Observation Engine&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_engine</span><span class="o">.</span><span class="n">__content__</span><span class="p">(),</span>
+            <span class="s2">&quot;Inference Engine&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine</span><span class="o">.</span><span class="n">__content__</span><span class="p">(),</span>
+            <span class="s2">&quot;Policy&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">policy</span><span class="o">.</span><span class="n">__content__</span><span class="p">(),</span>
+        <span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">parameters</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">bundle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bundle</span>
+
+    <span class="nd">@bundle</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">bundle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;Simulator&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bundle_memory</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bundle</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bundle</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">bundle_memory</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bundle_memory</span>
+
+    <span class="nd">@bundle_memory</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">bundle_memory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;Simulator&quot;</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bundle_memory</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">_simulator_close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bundle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bundle_memory</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">policy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Agent policy&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_policy</span>
+
+    <span class="nd">@policy</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_attach_policy</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">inference_engine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Agent inference engine&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inference_engine</span>
+
+    <span class="nd">@inference_engine</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">inference_engine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_attach_inference_engine</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">observation_engine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Agent observation engine&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observation_engine</span>
+
+    <span class="nd">@observation_engine</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">observation_engine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_attach_observation_engine</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Agent internal state&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">observation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Last agent observation&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine</span><span class="o">.</span><span class="n">buffer</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine</span><span class="o">.</span><span class="n">buffer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="kc">None</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">action</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Last agent action&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">policy</span><span class="o">.</span><span class="n">action</span>
+
+    <span class="nd">@action</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">policy</span><span class="o">.</span><span class="n">action</span> <span class="o">=</span> <span class="n">item</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">user</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Connected user&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;user&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">user</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>  <span class="c1"># No bundle known</span>
+                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Agent</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> has not been connected to a user yet.&quot;</span>
+                <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">assistant</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Connected assistant&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;assistant&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">assistant</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>  <span class="c1"># No bundle known</span>
+                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Agent</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> has not been connected to a assistant yet.&quot;</span>
+                <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">task</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Connected task&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">task</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>  <span class="c1"># No bundle known</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Agent</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> has not been connected to a task yet.&quot;</span>
+            <span class="p">)</span>
+
+    <span class="c1"># def __getattr__(self, value):</span>
+    <span class="c1">#     try:</span>
+    <span class="c1">#         return self.parameters.__getitem__(value)</span>
+    <span class="c1">#     except:</span>
+    <span class="c1">#         raise AttributeError(</span>
+    <span class="c1">#             f&quot;{self.__class__.__name__} object has no attribute {value}&quot;</span>
+    <span class="c1">#         )</span>
+
+    <span class="k">def</span> <span class="nf">_attach_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">policy</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Attach a policy</span>
+
+<span class="sd">        Helper function to attach a policy.</span>
+
+<span class="sd">        :param policy: a CoopIHC policy</span>
+<span class="sd">        :type policy: :doc:mod:`Policy&lt;coopihc/policy&gt;`</span>
+
+<span class="sd">        :meta private:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">policy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">policy</span> <span class="o">=</span> <span class="n">BasePolicy</span>
+
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">policy</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_policy</span> <span class="o">=</span> <span class="n">policy</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_policy</span> <span class="o">=</span> <span class="n">policy</span>
+            <span class="k">if</span> <span class="n">kwargs</span> <span class="o">!=</span> <span class="p">{}:</span>
+                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+                    <span class="s2">&quot;Can&#39;t input an instantiated policy and associated keyword arguments. Either pass the policy class, or fully instantiate that policy before passing it.&quot;</span>
+                <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_policy</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">_attach_observation_engine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observation_engine</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Attach an observation engine</span>
+
+<span class="sd">        Helper function to attach an observation engine.</span>
+
+<span class="sd">        :param observation_engine: a CoopIHC observation engine</span>
+<span class="sd">        :type observation_engine: :doc:mod:`Observation Engine&lt;coopihc/observation&gt;`</span>
+
+<span class="sd">        :meta private:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">observation_engine</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;user&quot;</span><span class="p">:</span>
+                <span class="n">observation_engine</span> <span class="o">=</span> <span class="n">RuleObservationEngine</span><span class="p">(</span>
+                    <span class="n">deterministic_specification</span><span class="o">=</span><span class="n">base_user_engine_specification</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;assistant&quot;</span><span class="p">:</span>
+                <span class="n">observation_engine</span> <span class="o">=</span> <span class="n">RuleObservationEngine</span><span class="p">(</span>
+                    <span class="n">deterministic_specification</span><span class="o">=</span><span class="n">base_assistant_engine_specification</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">observation_engine</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_observation_engine</span> <span class="o">=</span> <span class="n">observation_engine</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_observation_engine</span> <span class="o">=</span> <span class="n">observation_engine</span>
+            <span class="k">if</span> <span class="n">kwargs</span> <span class="o">!=</span> <span class="p">{}:</span>
+                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+                    <span class="s2">&quot;Can&#39;t input an instantiated observation engine and associated keyword arguments. Either pass the observation engine class, or fully instantiate that policy before passing it.&quot;</span>
+                <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_observation_engine</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">_attach_inference_engine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inference_engine</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Attach an inference engine</span>
+
+<span class="sd">        Helper function to attach an inference engine.</span>
+
+<span class="sd">        :param inference: a CoopIHC inference engine</span>
+<span class="sd">        :type inference: :doc:mod:`Inference Engine&lt;coopihc/inference&gt;`</span>
+
+<span class="sd">        :meta private:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">inference_engine</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">inference_engine</span> <span class="o">=</span> <span class="n">BaseInferenceEngine</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">inference_engine</span> <span class="o">=</span> <span class="n">inference_engine</span>
+
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">inference_engine</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_inference_engine</span> <span class="o">=</span> <span class="n">inference_engine</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_inference_engine</span> <span class="o">=</span> <span class="n">inference_engine</span>
+            <span class="k">if</span> <span class="n">kwargs</span> <span class="o">!=</span> <span class="p">{}:</span>
+                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+                    <span class="s2">&quot;Can&#39;t input an instantiated inference engine and associated keyword arguments. Either pass the inference engine class, or fully instantiate that policy before passing it.&quot;</span>
+                <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inference_engine</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">_base_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">all</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dic</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reset function called by the Bundle.</span>
+
+<span class="sd">        This method is called by the bundle to reset the agent. It defines a bunch of actions that should be performed upon each reset. It namely calls the reset method that can be modified by the end-user of the library.</span>
+
+
+
+<span class="sd">        :param all: which components to reset, defaults to True</span>
+<span class="sd">        :type all: bool, optional</span>
+<span class="sd">        :param dic: reset dictionary, defaults to None.</span>
+<span class="sd">        :type dic: [type], optional</span>
+
+<span class="sd">        :meta private:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">policy</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">random</span><span class="o">=</span><span class="n">random</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">random</span><span class="o">=</span><span class="n">random</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">observation_engine</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">random</span><span class="o">=</span><span class="n">random</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dic</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">random</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+            <span class="k">return</span>
+
+        <span class="c1"># forced reset with dic</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">dic</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">StateElement</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+                <span class="k">continue</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+            <span class="k">elif</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="n">key</span><span class="p">][</span>
+                        <span class="o">...</span>
+                    <span class="p">]</span> <span class="o">=</span> <span class="n">value</span>  <span class="c1"># Give StateElement&#39;s preprocessvalues method a chance</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+<div class="viewcode-block" id="BaseAgent.reset"><a class="viewcode-back" href="../../../_autosummary/coopihc.agents.BaseAgent.BaseAgent.html#coopihc.agents.BaseAgent.BaseAgent.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;reset the agent --- Override this</span>
+
+<span class="sd">        Override this method to specify how the components of the agent will be reset. By default, the agent will already call the reset method of all 4 components (policy, inference engine, observation engine, state). You can specify some added behavior here e.g. if you want each game to begin with a specific state value, you can specify that here. For example:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            # Sets the value of state &#39;x&#39; to 0</span>
+<span class="sd">            def reset(self):</span>
+<span class="sd">                self.state[&quot;x&quot;][...] = 123</span>
+
+<span class="sd">        :meta public:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="BaseAgent.reset_all"><a class="viewcode-back" href="../../../_autosummary/coopihc.agents.BaseAgent.BaseAgent.html#coopihc.agents.BaseAgent.BaseAgent.reset_all">[docs]</a>    <span class="k">def</span> <span class="nf">reset_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dic</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;reset the agent and all its components</span>
+
+<span class="sd">        In addition to running the agent&#39;s ``reset()``, ``reset_all()`` also calls state, observation engine, inference engine and policies&#39; ``reset()`` method.</span>
+
+<span class="sd">        :param dic: reset_dictionnary, defaults to None. See the ``reset()`` method in `py:class:Bundle&lt;coopihc.bundle.Bundle&gt;` for more information.</span>
+<span class="sd">        :type dic: dictionary, optional</span>
+<span class="sd">        :param random: whether states should be randomly reset, defaults to True. See the ``reset()`` method in `py:class:Bundle&lt;coopihc.bundle.Bundle&gt;` for more information.</span>
+<span class="sd">        :type random: bool, optional</span>
+
+<span class="sd">        :meta public:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_reset</span><span class="p">(</span><span class="nb">all</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dic</span><span class="o">=</span><span class="n">dic</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="n">random</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BaseAgent.finit"><a class="viewcode-back" href="../../../_autosummary/coopihc.agents.BaseAgent.BaseAgent.html#coopihc.agents.BaseAgent.BaseAgent.finit">[docs]</a>    <span class="k">def</span> <span class="nf">finit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Finish initializing.</span>
+
+<span class="sd">        Method that specifies what happens when initializing the agent for the very first time (similar to __init__), but after a bundle has been initialized already. This allows to finish initializing (finit) the agent when information from another component is required to do so.</span>
+
+<span class="sd">        :meta public:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="BaseAgent.take_action"><a class="viewcode-back" href="../../../_autosummary/coopihc.agents.BaseAgent.BaseAgent.html#coopihc.agents.BaseAgent.BaseAgent.take_action">[docs]</a>    <span class="k">def</span> <span class="nf">take_action</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">agent_observation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">agent_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">increment_turn</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Select an action</span>
+
+<span class="sd">        Select an action based on agent_observation and agent_state, by querying the agent&#39;s policy. If either of these arguments is not provided, then the argument is deduced from the agent&#39;s internals.</span>
+
+<span class="sd">        :param agent_observation: last agent observation, defaults to None. If None, gets the observation from the inference engine&#39;s buffer.</span>
+<span class="sd">        :type agent_observation: :py:class:State&lt;coopihc.base.State&gt;, optional</span>
+<span class="sd">        :param agent_state: current value of the agent&#39;s internal state, defaults to None. If None, gets the state from itself.</span>
+<span class="sd">        :type agent_state: :py:class:State&lt;coopihc.base.State&gt;, optional</span>
+<span class="sd">        :param increment_turn: whether to update bundle&#39;s turn and round</span>
+<span class="sd">        :type increment_turn: bool, optional</span>
+
+<span class="sd">        :meta public:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">increment_turn</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">turn_number</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">turn_number</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">4</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">turn_number</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">round_number</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>  <span class="c1"># Catch case where agent not linked to a bundle</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># Re-raise exception</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">turn_number</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">turn_number</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">4</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">policy</span><span class="o">.</span><span class="n">_base_sample</span><span class="p">(</span>
+            <span class="n">agent_observation</span><span class="o">=</span><span class="n">agent_observation</span><span class="p">,</span> <span class="n">agent_state</span><span class="o">=</span><span class="n">agent_state</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="BaseAgent.observe"><a class="viewcode-back" href="../../../_autosummary/coopihc.agents.BaseAgent.BaseAgent.html#coopihc.agents.BaseAgent.BaseAgent.observe">[docs]</a>    <span class="k">def</span> <span class="nf">observe</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">game_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">affect_bundle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">game_info</span><span class="o">=</span><span class="p">{},</span>
+        <span class="n">task_state</span><span class="o">=</span><span class="p">{},</span>
+        <span class="n">user_state</span><span class="o">=</span><span class="p">{},</span>
+        <span class="n">assistant_state</span><span class="o">=</span><span class="p">{},</span>
+        <span class="n">user_action</span><span class="o">=</span><span class="p">{},</span>
+        <span class="n">assistant_action</span><span class="o">=</span><span class="p">{},</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;produce an observation</span>
+
+<span class="sd">        Produce an observation based on state information, by querying the agent&#39;s observation engine. By default, the agent will find the appropriate states to observe. To bypass this behavior, you can provide state information. When doing so, either provide the full game state, or provide the needed individual states.</span>
+<span class="sd">        The affect_bundle flag determines whether or not the observation produces like this becomes the agent&#39;s last observation.</span>
+
+<span class="sd">        :param game_state: the full game state as defined in the *CoopIHC* interaction model, defaults to None.</span>
+<span class="sd">        :type game_state: `:py:class:State&lt;coopihc.base.State&gt;`, optional</span>
+<span class="sd">        :param affect_bundle: whether or not the observation is stored and becomes the agent&#39;s last observation, defaults to True.</span>
+<span class="sd">        :type affect_bundle: bool, optional</span>
+<span class="sd">        :param game_info: game_info substate, see the *CoopIHC* interaction model, defaults to {}.</span>
+<span class="sd">        :type game_info: `:py:class:State&lt;coopihc.base.State&gt;`, optional</span>
+<span class="sd">        :param task_state: task_state substate, see the *CoopIHC* interaction model, defaults to {}</span>
+<span class="sd">        :type task_state: `:py:class:State&lt;coopihc.base.State&gt;`, optional</span>
+<span class="sd">        :param user_state: user_state substate, see the *CoopIHC* interaction model, defaults to {}</span>
+<span class="sd">        :type user_state: `:py:class:State&lt;coopihc.base.State&gt;`, optional</span>
+<span class="sd">        :param assistant_state: assistant_state substate, see the *CoopIHC* interaction model, defaults to {}</span>
+<span class="sd">        :type assistant_state: `:py:class:State&lt;coopihc.base.State&gt;`, optional</span>
+<span class="sd">        :param user_action: user_action substate, see the *CoopIHC* interaction model, defaults to {}</span>
+<span class="sd">        :type user_action: `:py:class:State&lt;coopihc.base.State&gt;`, optional</span>
+<span class="sd">        :param assistant_action: assistant_action substate, see the *CoopIHC* interaction model, defaults to {}</span>
+<span class="sd">        :type assistant_action: `:py:class:State&lt;coopihc.base.State&gt;`, optional</span>
+
+<span class="sd">        :meta public:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="nb">bool</span><span class="p">(</span><span class="n">game_info</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="nb">bool</span><span class="p">(</span><span class="n">task_state</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="nb">bool</span><span class="p">(</span><span class="n">user_state</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="nb">bool</span><span class="p">(</span><span class="n">assistant_state</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="nb">bool</span><span class="p">(</span><span class="n">user_action</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="nb">bool</span><span class="p">(</span><span class="n">assistant_action</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="n">observation</span><span class="p">,</span> <span class="n">reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_engine</span><span class="o">.</span><span class="n">observe_from_substates</span><span class="p">(</span>
+                <span class="n">game_info</span><span class="o">=</span><span class="n">game_info</span><span class="p">,</span>
+                <span class="n">task_state</span><span class="o">=</span><span class="n">task_state</span><span class="p">,</span>
+                <span class="n">user_state</span><span class="o">=</span><span class="n">user_state</span><span class="p">,</span>
+                <span class="n">assistant_state</span><span class="o">=</span><span class="n">assistant_state</span><span class="p">,</span>
+                <span class="n">user_action</span><span class="o">=</span><span class="n">user_action</span><span class="p">,</span>
+                <span class="n">assistant_action</span><span class="o">=</span><span class="n">assistant_action</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">observation</span><span class="p">,</span> <span class="n">reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_engine</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="n">game_state</span><span class="o">=</span><span class="n">game_state</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">affect_bundle</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine</span><span class="o">.</span><span class="n">add_observation</span><span class="p">(</span><span class="n">observation</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">observation</span><span class="p">,</span> <span class="n">reward</span></div>
+
+<div class="viewcode-block" id="BaseAgent.infer"><a class="viewcode-back" href="../../../_autosummary/coopihc.agents.BaseAgent.BaseAgent.html#coopihc.agents.BaseAgent.BaseAgent.infer">[docs]</a>    <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_observation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">affect_bundle</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;infer the agent&#39;s internal state</span>
+
+<span class="sd">        Infer the new agent state from the agent&#39;s observation. By default, the agent will select the agent&#39;s last observation. To bypass this behavior, you can provide a given agent_observation.</span>
+<span class="sd">        The affect_bundle flag determines whether or not the agent&#39;s internal state is actually updated.</span>
+
+
+<span class="sd">        :param agent_observation: last agent observation, defaults to None. If None, gets the observation from the inference engine&#39;s buffer.</span>
+<span class="sd">        :type agent_observation: :py:class:State&lt;coopihc.base.State&gt;, optional</span>
+<span class="sd">        :param affect_bundle: whether or not the agent&#39;s state is updated with the new inferred state, defaults to True.</span>
+<span class="sd">        :type affect_bundle: bool, optional</span>
+
+<span class="sd">        :meta public:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">agent_state</span><span class="p">,</span> <span class="n">agent_infer_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span>
+            <span class="n">agent_observation</span><span class="o">=</span><span class="n">agent_observation</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">affect_bundle</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">agent_state</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">agent_state</span><span class="p">,</span> <span class="n">agent_infer_reward</span></div>
+
+    <span class="k">def</span> <span class="nf">_agent_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">infer</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Play an agent&#39;s turn.</span>
+
+<span class="sd">        Observe the game state via the observation engine, update the internal state via the inference engine, collect rewards for both processes and return them to the caller (the bundle).</span>
+
+<span class="sd">        :param infer: whether inference should be performed, defaults to True</span>
+<span class="sd">        :type infer: bool, optional</span>
+<span class="sd">        :return: observation and inference rewards</span>
+<span class="sd">        :rtype: tuple(float, float)</span>
+
+<span class="sd">        :meta private:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># agent_observation, agent_obs_reward = self.observe(self.bundle.game_state)</span>
+        <span class="n">agent_observation</span><span class="p">,</span> <span class="n">agent_obs_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observe</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">infer</span><span class="p">:</span>
+            <span class="n">agent_state</span><span class="p">,</span> <span class="n">agent_infer_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">agent_infer_reward</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="n">agent_obs_reward</span><span class="p">,</span> <span class="n">agent_infer_reward</span>
+
+    <span class="k">def</span> <span class="nf">prepare_action</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">affect_bundle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">game_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">agent_observation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">increment_turn</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">turn_number</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;user&quot;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;You are preparing User </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> to take an action, but the Bundle is at turn </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">turn_number</span><span class="si">}</span><span class="s2"> (should be 0) &quot;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">turn_number</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;assistant&quot;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;You are preparing Assistant </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> to take an action, but the Bundle is at turn </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">turn_number</span><span class="si">}</span><span class="s2"> (should be 2) &quot;</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">increment_turn</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">turn_number</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bundle</span><span class="o">.</span><span class="n">turn_number</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">4</span>
+
+        <span class="k">if</span> <span class="n">agent_observation</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_agent_observation</span><span class="p">,</span> <span class="n">agent_obs_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span>
+                <span class="n">affect_bundle</span><span class="o">=</span><span class="n">affect_bundle</span><span class="p">,</span> <span class="n">game_state</span><span class="o">=</span><span class="n">game_state</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">agent_observation</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">agent_observation</span> <span class="o">=</span> <span class="n">_agent_observation</span>
+            <span class="n">agent_state</span><span class="p">,</span> <span class="n">agent_infer_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span>
+                <span class="n">agent_observation</span><span class="o">=</span><span class="n">agent_observation</span><span class="p">,</span> <span class="n">affect_bundle</span><span class="o">=</span><span class="n">affect_bundle</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">agent_obs_reward</span> <span class="o">+</span> <span class="n">agent_infer_reward</span>
+
+<div class="viewcode-block" id="BaseAgent.render"><a class="viewcode-back" href="../../../_autosummary/coopihc.agents.BaseAgent.BaseAgent.html#coopihc.agents.BaseAgent.BaseAgent.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="n">ax_user</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ax_assistant</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ax_task</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;render the agent</span>
+
+<span class="sd">        Displays agent information on the passed axes.</span>
+
+<span class="sd">        :param mode: display mode, defaults to &quot;text&quot;. Also supports &quot;plot&quot;.</span>
+<span class="sd">        :type mode: str, optional</span>
+<span class="sd">        :param ax_user: user axis, defaults to None</span>
+<span class="sd">        :type ax_user: Matploblib axis, optional</span>
+<span class="sd">        :param ax_assistant: assistant axis, defaults to None</span>
+<span class="sd">        :type ax_assistant: Matploblib axis, optional</span>
+<span class="sd">        :param ax_task: task axis, defaults to None</span>
+<span class="sd">        :type ax_task: Matploblib axis, optional</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="s2">&quot;plot&quot;</span> <span class="ow">in</span> <span class="n">mode</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;user&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ax</span> <span class="o">=</span> <span class="n">ax_user</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ax</span> <span class="o">=</span> <span class="n">ax_assistant</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s2">&quot; State&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;text&quot;</span> <span class="ow">in</span> <span class="n">mode</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s2">&quot; State&quot;</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

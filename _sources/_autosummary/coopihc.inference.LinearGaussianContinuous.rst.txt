@@ -1,0 +1,32 @@
+coopihc.inference.LinearGaussianContinuous
+==========================================
+
+.. automodule:: coopihc.inference.LinearGaussianContinuous
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      LinearGaussianContinuous
+   
+   
+
+   
+   
+   
+
+
+

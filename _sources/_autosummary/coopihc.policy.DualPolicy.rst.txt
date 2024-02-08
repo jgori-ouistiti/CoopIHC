@@ -1,0 +1,32 @@
+coopihc.policy.DualPolicy
+=========================
+
+.. automodule:: coopihc.policy.DualPolicy
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      DualPolicy
+   
+   
+
+   
+   
+   
+
+
+

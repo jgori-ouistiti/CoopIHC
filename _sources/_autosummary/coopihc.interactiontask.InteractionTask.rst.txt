@@ -1,0 +1,32 @@
+coopihc.interactiontask.InteractionTask
+=======================================
+
+.. automodule:: coopihc.interactiontask.InteractionTask
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      InteractionTask
+   
+   
+
+   
+   
+   
+
+
+

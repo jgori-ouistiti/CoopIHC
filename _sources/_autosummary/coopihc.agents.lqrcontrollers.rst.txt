@@ -1,0 +1,33 @@
+coopihc.agents.lqrcontrollers
+=============================
+
+.. automodule:: coopihc.agents.lqrcontrollers
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. autosummary::
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+
+   coopihc.agents.lqrcontrollers.FHDT_LQRController
+   coopihc.agents.lqrcontrollers.IHCT_LQGController
+   coopihc.agents.lqrcontrollers.IHDT_LQRController
+   coopihc.agents.lqrcontrollers.LQRController
+

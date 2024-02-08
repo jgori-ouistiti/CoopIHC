@@ -1,0 +1,37 @@
+coopihc.base.elements
+=====================
+
+.. automodule:: coopihc.base.elements
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      array_element
+      box_space
+      cat_element
+      discrete_array_element
+      example_game_state
+      integer_set
+      integer_space
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

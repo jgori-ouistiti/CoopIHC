@@ -1,0 +1,42 @@
+coopihc.interactiontask.ExampleTask.ExampleTask
+===============================================
+
+.. currentmodule:: coopihc.interactiontask.ExampleTask
+
+.. autoclass:: ExampleTask
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~ExampleTask.base_on_assistant_action
+      ~ExampleTask.base_on_user_action
+      ~ExampleTask.finit
+      ~ExampleTask.on_assistant_action
+      ~ExampleTask.on_user_action
+      ~ExampleTask.render
+      ~ExampleTask.reset
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~ExampleTask.assistant_action
+      ~ExampleTask.parameters
+      ~ExampleTask.round_number
+      ~ExampleTask.state
+      ~ExampleTask.turn_number
+      ~ExampleTask.user_action
+   
+   

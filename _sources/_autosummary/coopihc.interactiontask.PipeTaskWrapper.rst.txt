@@ -1,0 +1,32 @@
+coopihc.interactiontask.PipeTaskWrapper
+=======================================
+
+.. automodule:: coopihc.interactiontask.PipeTaskWrapper
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      PipeTaskWrapper
+   
+   
+
+   
+   
+   
+
+
+

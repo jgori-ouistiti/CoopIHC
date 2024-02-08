@@ -1,0 +1,35 @@
+coopihc.base.Space
+==================
+
+.. automodule:: coopihc.base.Space
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      BaseSpace
+      CatSet
+      Numeric
+      Space
+   
+   
+
+   
+   
+   
+
+
+

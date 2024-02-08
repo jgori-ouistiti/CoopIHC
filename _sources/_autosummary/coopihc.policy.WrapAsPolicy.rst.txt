@@ -1,0 +1,32 @@
+coopihc.policy.WrapAsPolicy
+===========================
+
+.. automodule:: coopihc.policy.WrapAsPolicy
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
+   
+      WrapAsPolicy
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,41 @@
+coopihc.inference.BaseInferenceEngine.BaseInferenceEngine
+=========================================================
+
+.. currentmodule:: coopihc.inference.BaseInferenceEngine
+
+.. autoclass:: BaseInferenceEngine
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~BaseInferenceEngine.add_observation
+      ~BaseInferenceEngine.bind
+      ~BaseInferenceEngine.default_value
+      ~BaseInferenceEngine.infer
+      ~BaseInferenceEngine.render
+      ~BaseInferenceEngine.reset
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~BaseInferenceEngine.action
+      ~BaseInferenceEngine.host
+      ~BaseInferenceEngine.observation
+      ~BaseInferenceEngine.role
+      ~BaseInferenceEngine.state
+      ~BaseInferenceEngine.unwrapped
+   
+   

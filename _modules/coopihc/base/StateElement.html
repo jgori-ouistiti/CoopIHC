@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coopihc.base.StateElement &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../_autosummary/coopihc.html">    API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>coopihc.base.StateElement</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coopihc.base.StateElement</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">array</span> <span class="kn">import</span> <span class="n">array</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">from</span> <span class="nn">coopihc.base.Space</span> <span class="kn">import</span> <span class="n">BaseSpace</span>
+<span class="kn">from</span> <span class="nn">coopihc.base.utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">StateNotContainedError</span><span class="p">,</span>
+    <span class="n">StateNotContainedWarning</span><span class="p">,</span>
+    <span class="n">SpaceNotSeparableError</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="StateElement"><a class="viewcode-back" href="../../../_autosummary/coopihc.base.StateElement.StateElement.html#coopihc.base.StateElement.StateElement">[docs]</a><span class="k">class</span> <span class="nc">StateElement</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;StateElement</span>
+
+<span class="sd">    The container for an element of a state. A numpy array, with an associated space.</span>
+
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        # Discrete Set</span>
+<span class="sd">        x = StateElement(2, integer_set(3))</span>
+<span class="sd">        # Continuous Interval</span>
+<span class="sd">        x = StateElement(</span>
+<span class="sd">            numpy.zeros((2, 2)), box_space(numpy.ones((2, 2))), out_of_bounds_mode=&quot;error&quot;</span>
+<span class="sd">        )</span>
+
+
+<span class="sd">    :param input_object: value</span>
+<span class="sd">    :type input_object: numpy array-like</span>
+<span class="sd">    :param space: space where input_object takes value</span>
+<span class="sd">    :type space: `Space&lt;coopihc.base.Space.BaseSpace&gt;`</span>
+<span class="sd">    :param out_of_bounds_mode: what to do when the value is outside the bound, defaults to &quot;warning&quot;. Possible values are:</span>
+
+<span class="sd">        * &quot;error&quot; --&gt; raises a StateNotContainedError</span>
+<span class="sd">        * &quot;warning&quot; --&gt; raises a StateNotContainedWarning</span>
+<span class="sd">        * &quot;clip&quot; --&gt; clips the data to force it to belong to the space</span>
+<span class="sd">        * &quot;silent&quot; --&gt; Values not in the space are accepted silently (behavior is roughly equivalent to a regular numpy.ndarray). Broadcasting and type casting may still be applied</span>
+<span class="sd">        * &quot;raw&quot; --&gt; No data transformation is applied. This is faster than the other options, because the preprocessing of input data is short-circuited. However, this provides no tolerance for ill-specified input.</span>
+
+<span class="sd">    :type out_of_bounds_mode: str, optional</span>
+
+<span class="sd">    A few examples for out_of_bounds_mode behavior:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        # Error</span>
+<span class="sd">        x = StateElement(2, integer_set(3), out_of_bounds_mode=&quot;error&quot;) # Passes</span>
+<span class="sd">        x = StateElement(4, integer_set(3), out_of_bounds_mode=&quot;error&quot;) # raises a ``StateNotContainedError``</span>
+
+<span class="sd">        # Warning</span>
+<span class="sd">        x = StateElement(2, integer_set(3), out_of_bounds_mode=&quot;warning&quot;) # Passes</span>
+<span class="sd">        x = StateElement(4, integer_set(3), out_of_bounds_mode=&quot;warning&quot;) # Passes, but warns with ``StateNotContainedWarning``</span>
+
+<span class="sd">        # Clip</span>
+<span class="sd">        x = StateElement(4, integer_set(3), out_of_bounds_mode=&quot;clip&quot;)</span>
+<span class="sd">        assert x == numpy.array([2])</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Simple static two-way dict</span>
+    <span class="n">__precedence__</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;warning&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s2">&quot;clip&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;silent&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="s2">&quot;raw&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="s2">&quot;0&quot;</span><span class="p">:</span> <span class="s2">&quot;error&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="s2">&quot;warning&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;clip&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;3&quot;</span><span class="p">:</span> <span class="s2">&quot;silent&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;4&quot;</span><span class="p">:</span> <span class="s2">&quot;raw&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="n">HANDLED_FUNCTIONS</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">SAFE_FUNCTIONS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">]</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_clip</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">space</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Simple wrapper for numpy clip&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">space</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">space</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="n">space</span><span class="o">.</span><span class="n">high</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">spacetype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">spacetype</span>
+
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">input_object</span><span class="p">,</span> <span class="n">space</span><span class="p">,</span> <span class="n">out_of_bounds_mode</span><span class="o">=</span><span class="s2">&quot;warning&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;__new__, see https://numpy.org/doc/stable/user/basics.subclassing.html&quot;&quot;&quot;</span>
+
+        <span class="n">input_object</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+            <span class="n">StateElement</span><span class="o">.</span><span class="n">_process_input_values</span><span class="p">(</span>
+                <span class="n">input_object</span><span class="p">,</span>
+                <span class="n">space</span><span class="p">,</span>
+                <span class="n">out_of_bounds_mode</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">input_object</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">space</span> <span class="o">=</span> <span class="n">space</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">out_of_bounds_mode</span> <span class="o">=</span> <span class="n">out_of_bounds_mode</span>
+        <span class="k">return</span> <span class="n">obj</span>
+
+    <span class="k">def</span> <span class="nf">__array_finalize__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;__array_finalize__, see https://numpy.org/doc/stable/user/basics.subclassing.html&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">space</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;space&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">out_of_bounds_mode</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;out_of_bounds_mode&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">space</span> <span class="o">=</span> <span class="n">space</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out_of_bounds_mode</span> <span class="o">=</span> <span class="n">out_of_bounds_mode</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">dtype</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">seed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">seed</span>
+
+    <span class="c1"># Code below is kept as an example in case one day we decide on overriding numpy functions (again).</span>
+    <span class="c1"># def __array_ufunc__(self, ufunc, method, *input_args, out=None, **kwargs):</span>
+    <span class="c1">#     &quot;&quot;&quot;__array_ufunc__, see https://numpy.org/doc/stable/user/basics.subclassing.html.</span>
+
+    <span class="c1">#     This can lead to some issues with some numpy universal functions. For example, modf returns the fractional and integral part of an array in the form of two new StateElements. In that case, the fractional part is necessarily in ]0,1[, whatever the actual space of the original StateElement, but the former will receive the latter&#39;s space. To deal with that case, it is suggested to select a proper &quot;out_of_bounds_mode&quot;, perhaps dynamically, and to change the space attribute of the new object afterwards if actually needed.</span>
+
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     args = []</span>
+    <span class="c1">#     argmode = &quot;raw&quot;</span>
+    <span class="c1">#     # Input and Output conversion to numpy</span>
+    <span class="c1">#     for _input in input_args:</span>
+    <span class="c1">#         if isinstance(_input, StateElement):</span>
+    <span class="c1">#             args.append(_input.view(numpy.ndarray))</span>
+    <span class="c1">#             if (</span>
+    <span class="c1">#                 StateElement.__precedence__[_input.out_of_bounds_mode]</span>
+    <span class="c1">#                 &lt; StateElement.__precedence__[argmode]</span>
+    <span class="c1">#             ):</span>
+    <span class="c1">#                 argmode = _input.out_of_bounds_mode</span>
+    <span class="c1">#         else:</span>
+    <span class="c1">#             args.append(_input)</span>
+
+    <span class="c1">#     outputs = out</span>
+    <span class="c1">#     if outputs:</span>
+    <span class="c1">#         out_args = []</span>
+    <span class="c1">#         for output in outputs:</span>
+    <span class="c1">#             if isinstance(output, StateElement):</span>
+    <span class="c1">#                 out_args.append(output.view(numpy.ndarray))</span>
+    <span class="c1">#             else:</span>
+    <span class="c1">#                 out_args.append(output)</span>
+    <span class="c1">#         kwargs[&quot;out&quot;] = tuple(out_args)</span>
+    <span class="c1">#     else:</span>
+    <span class="c1">#         outputs = (None,) * ufunc.nout</span>
+
+    <span class="c1">#     # Actually apply the ufunc to numpy array</span>
+    <span class="c1">#     result = getattr(ufunc, method)(*args, **kwargs)</span>
+    <span class="c1">#     if result is NotImplemented:</span>
+    <span class="c1">#         return NotImplemented</span>
+    <span class="c1">#     # Back conversion to StateElement. Only pass results in this who need to be processed (types that subclass numpy.number, e.g. exclude booleans)</span>
+    <span class="c1">#     if isinstance(result, (numpy.ndarray, StateElement)):</span>
+    <span class="c1">#         if issubclass(result.dtype.type, numpy.number):</span>
+    <span class="c1">#             result = StateElement._process_input_values(</span>
+    <span class="c1">#                 result, self.space, self.out_of_bounds_mode</span>
+    <span class="c1">#             )</span>
+
+    <span class="c1">#     # In place</span>
+    <span class="c1">#     if method == &quot;at&quot;:</span>
+    <span class="c1">#         if isinstance(input_args[0], StateElement):</span>
+    <span class="c1">#             input_args[0].space = self.space</span>
+    <span class="c1">#             input_args[0].out_of_bounds_mode = argmode</span>
+    <span class="c1">#             input_args[0].kwargs = self.kwargs</span>
+
+    <span class="c1">#     if ufunc.nout == 1:</span>
+    <span class="c1">#         result = (result,)</span>
+
+    <span class="c1">#     result = tuple(</span>
+    <span class="c1">#         (numpy.asarray(_result).view(StateElement) if output is None else output)</span>
+    <span class="c1">#         for _result, output in zip(result, outputs)</span>
+    <span class="c1">#     )</span>
+    <span class="c1">#     if result and isinstance(result[0], StateElement):</span>
+    <span class="c1">#         result[0].space = self.space</span>
+    <span class="c1">#         result[0].out_of_bounds_mode = argmode</span>
+    <span class="c1">#         result[0].kwargs = kwargs</span>
+
+    <span class="c1">#     return result[0] if len(result) == 1 else result</span>
+
+    <span class="c1"># def __array_function__(self, func, types, args, kwargs):</span>
+    <span class="c1">#     &quot;&quot;&quot;__array_function__ [summary]</span>
+
+    <span class="c1">#     If func is not know to be handled by StateElement, then pass it to Numpy. In that case, a numpy array is returned.</span>
+    <span class="c1">#     If an implementation for func has been provided that is specific to StateElement via the ``implements`` decorator, then call that one.</span>
+
+    <span class="c1">#     See `this NEP&lt;https://numpy.org/neps/nep-0018-array-function-protocol.html&gt;`_ as well as `this Numpy doc&lt;https://numpy.org/doc/stable/user/basics.dispatch.html&gt;`_ ifor more details on how to implement __array_function__.</span>
+
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     # Calls default numpy implementations and returns a numpy ndarray</span>
+    <span class="c1">#     if func not in self.HANDLED_FUNCTIONS:</span>
+    <span class="c1">#         if func.__name__ not in self.SAFE_FUNCTIONS:</span>
+    <span class="c1">#             warnings.warn(</span>
+    <span class="c1">#                 NumpyFunctionNotHandledWarning(</span>
+    <span class="c1">#                     &quot;Numpy function with name {} is currently not implemented for this object with type {}, and CoopIHC is returning a numpy.ndarray object. If you want to have a StateElement object returned, consider implementing your own version of this function and using the implements decorator (example in the decorator&#39;s documentation) to add it to the StateElement, as well as formulating a PR to have it included in CoopIHC core code.&quot;.format(</span>
+    <span class="c1">#                         func.__name__, type(self)</span>
+    <span class="c1">#                     )</span>
+    <span class="c1">#                 )</span>
+    <span class="c1">#             )</span>
+    <span class="c1">#         return (super().__array_function__(func, types, args, kwargs)).view(</span>
+    <span class="c1">#             numpy.ndarray</span>
+    <span class="c1">#         )</span>
+    <span class="c1">#     # Note: this allows subclasses that don&#39;t override</span>
+    <span class="c1">#     # __array_function__ to handle MyArray objects</span>
+    <span class="c1">#     if not all(issubclass(t, StateElement) for t in types):</span>
+    <span class="c1">#         return NotImplemented</span>
+    <span class="c1">#     return self.HANDLED_FUNCTIONS[func](*args, **kwargs)</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;__getitem__</span>
+
+<span class="sd">        Includes an extra mechanism, to automatically extract values with the corresponding space, which slightly abuses the slice and indexing notations:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            x = StateElement(1, integer_set(3))</span>
+<span class="sd">            assert x[..., {&quot;space&quot;: True}] == x</span>
+<span class="sd">            assert x[..., {&quot;space&quot;: True}] is x</span>
+<span class="sd">            assert x[...] == x</span>
+
+
+<span class="sd">            x = StateElement(</span>
+<span class="sd">            numpy.array([[0.0, 0.1], [0.2, 0.3]]), box_space(numpy.ones((2, 2)))</span>
+<span class="sd">            assert x[0, 1, {&quot;space&quot;: True}] == StateElement(0.1, box_space(numpy.float64(1)))</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="n">key</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="p">{</span><span class="s2">&quot;space&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}:</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">item</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="p">(</span><span class="bp">Ellipsis</span><span class="p">,):</span>
+                <span class="k">return</span> <span class="bp">self</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">space</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">except</span> <span class="n">SpaceNotSeparableError</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span>
+
+            <span class="k">return</span> <span class="n">StateElement</span><span class="p">(</span>
+                <span class="n">item</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span>
+                <span class="n">space</span><span class="p">,</span>
+                <span class="n">out_of_bounds_mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_of_bounds_mode</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                <span class="c1"># If one-element slice</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">start</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">key</span><span class="o">.</span><span class="n">stop</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">():</span>
+                        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)[</span><span class="o">...</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;__setitem__</span>
+
+<span class="sd">        Simply calls numpy&#39;s __setitem__ after having checked input values.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            x = StateElement(1, integer_set(3))</span>
+<span class="sd">            x[...] = 2</span>
+<span class="sd">            assert x == StateElement(2, integer_set(3))</span>
+<span class="sd">            with pytest.warns(StateNotContainedWarning):</span>
+<span class="sd">                x[...] = 4</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># The except clause is here to support numpy broadcasting when indexing.</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">StateElement</span><span class="o">.</span><span class="n">_process_input_values</span><span class="p">(</span>
+            <span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_of_bounds_mode</span>
+        <span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Numpy-style __iter__</span>
+
+<span class="sd">        Iterating over the value in Numpy style, with the corresponding space.</span>
+
+<span class="sd">        :return: _description_</span>
+<span class="sd">        :rtype: _type_</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_iterable_space</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_iterable_value</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__iter__</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Numpy-style __next__</span>
+
+<span class="sd">        Next value in Numpy style, with corresponding space.</span>
+
+<span class="sd">        :return: _description_</span>
+<span class="sd">        :rtype: _type_</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">space</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_iterable_space</span><span class="o">.</span><span class="fm">__next__</span><span class="p">()</span>
+        <span class="p">)</span>  <span class="c1"># make sure that space is called before so that it can raise StopIteration before having an IndexError on the values</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iterable_value</span><span class="o">.</span><span class="fm">__next__</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">StateElement</span><span class="p">(</span>
+            <span class="n">value</span><span class="p">,</span>
+            <span class="n">space</span><span class="p">,</span>
+            <span class="n">out_of_bounds_mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_of_bounds_mode</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;StateElement(</span><span class="si">{</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">))</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span><span class="si">}</span><span class="s2">, &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">out_of_bounds_mode</span><span class="si">}</span><span class="s2">&#39;)&quot;</span>
+
+<div class="viewcode-block" id="StateElement.reset"><a class="viewcode-back" href="../../../_autosummary/coopihc.base.StateElement.StateElement.html#coopihc.base.StateElement.StateElement.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;reset</span>
+
+<span class="sd">        Reset the StateElement to a random or chosen value, by sampling the underlying space.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            x = StateElement(numpy.ones((2, 2)), box_space(numpy.ones((2, 2))))</span>
+<span class="sd">            x.reset()</span>
+
+<span class="sd">            # Forced reset</span>
+<span class="sd">            x.reset(0.59 * numpy.ones((2, 2)))</span>
+
+<span class="sd">        :param value: reset value for forced reset, defaults to None. If None, samples randomly from the space.</span>
+<span class="sd">        :type value: numpy.ndarray, optional</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+
+        <span class="c1"># Ellipsis to deal with any dim array</span>
+        <span class="bp">self</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="StateElement.serialize"><a class="viewcode-back" href="../../../_autosummary/coopihc.base.StateElement.StateElement.html#coopihc.base.StateElement.StateElement.serialize">[docs]</a>    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate a JSON representation of StateElement.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            x = StateElement(numpy.array([2]), integer_set(3))</span>
+<span class="sd">            assert x.serialize() == {</span>
+<span class="sd">                &quot;values&quot;: 2,</span>
+<span class="sd">                &quot;space&quot;: {</span>
+<span class="sd">                    &quot;space&quot;: &quot;CatSet&quot;,</span>
+<span class="sd">                    &quot;seed&quot;: None,</span>
+<span class="sd">                    &quot;array&quot;: [0, 1, 2],</span>
+<span class="sd">                    &quot;dtype&quot;: &quot;dtype[int64]&quot;,</span>
+<span class="sd">                },</span>
+<span class="sd">            }</span>
+
+<span class="sd">        :return: JSON serializable content.</span>
+<span class="sd">        :rtype: dictionnary</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;values&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="s2">&quot;space&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">serialize</span><span class="p">(),</span>
+        <span class="p">}</span></div>
+
+<div class="viewcode-block" id="StateElement.equals"><a class="viewcode-back" href="../../../_autosummary/coopihc.base.StateElement.StateElement.html#coopihc.base.StateElement.StateElement.equals">[docs]</a>    <span class="k">def</span> <span class="nf">equals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;soft&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;equals</span>
+
+<span class="sd">        Soft mode is equivalent to __eq__ inherited from numpy.ndarray.</span>
+<span class="sd">        In Hard mode, contrary to __eq__, the space and out of bounds mode are also compared.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+
+<span class="sd">            int_space = integer_set(3)</span>
+<span class="sd">            other_int_space = integer_set(4)</span>
+<span class="sd">            x = StateElement(numpy.array(1), int_space)</span>
+<span class="sd">            y = StateElement(numpy.array(1), other_int_space)</span>
+<span class="sd">            assert x.equals(y)</span>
+<span class="sd">            assert not x.equals(y, mode=&quot;hard&quot;)</span>
+
+<span class="sd">        :param other: object to compare to</span>
+<span class="sd">        :type other: StateElement, numpy.ndarray</span>
+<span class="sd">        :param mode: [description], defaults to &quot;soft&quot;</span>
+<span class="sd">        :type mode: str, optional</span>
+<span class="sd">        :return: [description]</span>
+<span class="sd">        :rtype: [type]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;soft&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">other</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">StateElement</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">space</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_of_bounds_mode</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">out_of_bounds_mode</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="StateElement.cast"><a class="viewcode-back" href="../../../_autosummary/coopihc.base.StateElement.StateElement.html#coopihc.base.StateElement.StateElement.cast">[docs]</a>    <span class="k">def</span> <span class="nf">cast</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert values of a StateElement taking values in one space to those of another space, if a one-to-one mapping is possible.</span>
+
+<span class="sd">        Equally spaced discrete space are assumed when converting between continuous and discrete space.</span>
+
+<span class="sd">        The mode parameter indicates how the discrete space is mapped to a continuous space. If ``mode = &#39;edges&#39;``, then the continuous space will prefectly overlap with unit width intervals of the discrete space. Otherwise, the continuous space&#39; boundaries will match with the center of the two extreme intervals of the discrete space. Examples below, including visualisations.</span>
+
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            discr_box_space = box_space(low=numpy.int8(1), high=numpy.int8(3))</span>
+<span class="sd">            cont_box_space = box_space(low=numpy.float64(-1.5), high=numpy.float64(1.5))</span>
+
+
+<span class="sd">            + discrete2continuous:</span>
+
+<span class="sd">            .. code-block:: python</span>
+
+<span class="sd">                x = StateElement(1, discr_box_space)</span>
+<span class="sd">                ret_stateElem = x.cast(cont_box_space, mode=&quot;edges&quot;)</span>
+<span class="sd">                assert ret_stateElem == StateElement(-1.5, cont_box_space)</span>
+<span class="sd">                ret_stateElem = x.cast(cont_box_space, mode=&quot;center&quot;)</span>
+<span class="sd">                assert ret_stateElem == StateElement(-1, cont_box_space)</span>
+
+
+<span class="sd">            + continuous2continuous:</span>
+
+<span class="sd">            .. code-block:: python</span>
+
+<span class="sd">                    x = StateElement(0, cont_box_space)</span>
+<span class="sd">                    ret_stateElem = x.cast(discr_box_space, mode=&quot;center&quot;)</span>
+<span class="sd">                    assert ret_stateElem == StateElement(2, discr_box_space)</span>
+<span class="sd">                    ret_stateElem = x.cast(discr_box_space, mode=&quot;edges&quot;)</span>
+<span class="sd">                    assert ret_stateElem == StateElement(2, discr_box_space)</span>
+
+<span class="sd">                    center = []</span>
+<span class="sd">                    edges = []</span>
+<span class="sd">                    for i in numpy.linspace(-1.5, 1.5, 100):</span>
+<span class="sd">                        x = StateElement(i, cont_box_space)</span>
+<span class="sd">                        ret_stateElem = x.cast(discr_box_space, mode=&quot;center&quot;)</span>
+<span class="sd">                        if i &lt; -0.75:</span>
+<span class="sd">                            assert ret_stateElem == StateElement(1, discr_box_space)</span>
+<span class="sd">                        if i &gt; -0.75 and i &lt; 0.75:</span>
+<span class="sd">                            assert ret_stateElem == StateElement(2, discr_box_space)</span>
+<span class="sd">                        if i &gt; 0.75:</span>
+<span class="sd">                            assert ret_stateElem == StateElement(3, discr_box_space)</span>
+<span class="sd">                        center.append(ret_stateElem.tolist())</span>
+
+<span class="sd">                        ret_stateElem = x.cast(discr_box_space, mode=&quot;edges&quot;)</span>
+<span class="sd">                        if i &lt; -0.5:</span>
+<span class="sd">                            assert ret_stateElem == StateElement(1, discr_box_space)</span>
+<span class="sd">                        if i &gt; -0.5 and i &lt; 0.5:</span>
+<span class="sd">                            assert ret_stateElem == StateElement(2, discr_box_space)</span>
+<span class="sd">                        if i &gt; 0.5:</span>
+<span class="sd">                            assert ret_stateElem == StateElement(3, discr_box_space)</span>
+
+<span class="sd">                        edges.append(ret_stateElem.tolist())</span>
+
+<span class="sd">                    import matplotlib.pyplot as plt</span>
+
+<span class="sd">                    fig = plt.figure()</span>
+<span class="sd">                    ax = fig.add_subplot(111)</span>
+<span class="sd">                    ax.plot(</span>
+<span class="sd">                        numpy.linspace(-1.5, 1.5, 100), numpy.array(center) - 0.05, &quot;+&quot;, label=&quot;center&quot;</span>
+<span class="sd">                    )</span>
+<span class="sd">                    ax.plot(</span>
+<span class="sd">                        numpy.linspace(-1.5, 1.5, 100), numpy.array(edges) + 0.05, &quot;o&quot;, label=&quot;edges&quot;</span>
+<span class="sd">                    )</span>
+<span class="sd">                    ax.legend()</span>
+<span class="sd">                    plt.show()</span>
+
+<span class="sd">            + continuous2continuous: (currently only works if all elements of the lower and upper bounds are equal (e.g. autospace([[-1,-1]],[[1,1]]) would work, but not autospace([[-1,-2]],[[1,1]]))</span>
+
+<span class="sd">            .. code-block:: python</span>
+
+<span class="sd">                cont_space = box_space(numpy.full((2, 2), 1), dtype=numpy.float32)</span>
+<span class="sd">                other_cont_space = box_space(</span>
+<span class="sd">                    low=numpy.full((2, 2), 0), high=numpy.full((2, 2), 4), dtype=numpy.float32</span>
+<span class="sd">                )</span>
+
+<span class="sd">                for i in numpy.linspace(-1, 1, 100):</span>
+<span class="sd">                    x = StateElement(numpy.full((2, 2), i), cont_space)</span>
+<span class="sd">                    ret_stateElement = x.cast(other_cont_space)</span>
+<span class="sd">                    assert (ret_stateElement == (x + 1) * 2).all()</span>
+
+<span class="sd">            + discrete2discrete:</span>
+
+<span class="sd">            .. code-block:: python</span>
+
+<span class="sd">                discr_box_space = box_space(low=numpy.int8(1), high=numpy.int8(4))</span>
+<span class="sd">                other_discr_box_space = box_space(low=numpy.int8(11), high=numpy.int8(14))</span>
+
+<span class="sd">                for i in [1, 2, 3, 4]:</span>
+<span class="sd">                    x = StateElement(i, discr_box_space)</span>
+<span class="sd">                    ret_stateElement = x.cast(other_discr_box_space)</span>
+<span class="sd">                    assert ret_stateElement == x + 10</span>
+
+
+<span class="sd">        :param other: Space to cast values to. Also works with a StateElement.</span>
+<span class="sd">        :type other: :py:class:`Space &lt;coopihc.base.Space.Space&gt;`</span>
+<span class="sd">        :param mode: how to map discrete and continuous space, defaults to &quot;center&quot;. See examples in the documentation.</span>
+<span class="sd">        :type mode: str, optional</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="n">StateElement</span><span class="p">,</span> <span class="n">BaseSpace</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">&quot;input arg </span><span class="si">{}</span><span class="s2"> of type </span><span class="si">{}</span><span class="s2"> must be of type StateElement or Space&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="n">other</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">StateElement</span><span class="p">):</span>
+            <span class="n">mix_outbounds</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__precedence__</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">out_of_bounds_mode</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__precedence__</span><span class="p">[</span><span class="n">other</span><span class="o">.</span><span class="n">out_of_bounds_mode</span><span class="p">],</span>
+            <span class="p">)</span>
+
+            <span class="n">mix_outbounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__precedence__</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">mix_outbounds</span><span class="p">)]</span>
+            <span class="n">other</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">space</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mix_outbounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_of_bounds_mode</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">spacetype</span> <span class="o">==</span> <span class="s2">&quot;discrete&quot;</span> <span class="ow">and</span> <span class="n">other</span><span class="o">.</span><span class="n">spacetype</span> <span class="o">==</span> <span class="s2">&quot;continuous&quot;</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_discrete2continuous</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">spacetype</span> <span class="o">==</span> <span class="s2">&quot;continuous&quot;</span> <span class="ow">and</span> <span class="n">other</span><span class="o">.</span><span class="n">spacetype</span> <span class="o">==</span> <span class="s2">&quot;continuous&quot;</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_continuous2continuous</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">spacetype</span> <span class="o">==</span> <span class="s2">&quot;continuous&quot;</span> <span class="ow">and</span> <span class="n">other</span><span class="o">.</span><span class="n">spacetype</span> <span class="o">==</span> <span class="s2">&quot;discrete&quot;</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_continuous2discrete</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">spacetype</span> <span class="o">==</span> <span class="s2">&quot;discrete&quot;</span> <span class="ow">and</span> <span class="n">other</span><span class="o">.</span><span class="n">spacetype</span> <span class="o">==</span> <span class="s2">&quot;discrete&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">N</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">N</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_discrete2discrete</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;You are trying to match a discrete space to another discrete space of different size </span><span class="si">{}</span><span class="s2"> != </span><span class="si">{}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">N</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">N</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+        <span class="k">return</span> <span class="n">StateElement</span><span class="p">(</span>
+            <span class="n">numpy</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">value</span><span class="p">)),</span>
+            <span class="n">other</span><span class="p">,</span>
+            <span class="n">out_of_bounds_mode</span><span class="o">=</span><span class="n">mix_outbounds</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_discrete2continuous</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;edges&quot;</span><span class="p">:</span>
+            <span class="n">ls</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">high</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">N</span><span class="p">)</span>
+            <span class="n">shift</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;center&quot;</span><span class="p">:</span>
+            <span class="n">ls</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">high</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">N</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">shift</span> <span class="o">=</span> <span class="p">(</span><span class="n">ls</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">ls</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
+
+        <span class="n">value</span> <span class="o">=</span> <span class="n">shift</span> <span class="o">+</span> <span class="n">ls</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="o">...</span><span class="p">])]</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_continuous2discrete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">):</span>
+
+        <span class="n">_range</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">high</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">low</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;edges&quot;</span><span class="p">:</span>
+            <span class="n">_remainder</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">low</span><span class="o">.</span><span class="n">squeeze</span><span class="p">())</span> <span class="o">%</span> <span class="p">(</span><span class="n">_range</span> <span class="o">/</span> <span class="n">other</span><span class="o">.</span><span class="n">N</span><span class="p">)</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
+                <span class="nb">int</span><span class="p">((</span><span class="bp">self</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">low</span> <span class="o">-</span> <span class="n">_remainder</span><span class="p">)</span> <span class="o">/</span> <span class="n">_range</span> <span class="o">*</span> <span class="n">other</span><span class="o">.</span><span class="n">N</span><span class="p">),</span>
+                <span class="n">other</span><span class="o">.</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;center&quot;</span><span class="p">:</span>
+            <span class="n">N</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="n">_remainder</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">low</span> <span class="o">+</span> <span class="p">(</span><span class="n">_range</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">N</span><span class="p">))</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">_range</span> <span class="o">/</span> <span class="p">(</span><span class="n">N</span><span class="p">)</span>
+            <span class="p">)</span>
+
+            <span class="n">index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+                <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">low</span> <span class="o">-</span> <span class="n">_remainder</span> <span class="o">+</span> <span class="n">_range</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">N</span><span class="p">)</span> <span class="o">/</span> <span class="n">_range</span> <span class="o">*</span> <span class="n">N</span>
+                <span class="o">+</span> <span class="mf">1e-5</span>
+            <span class="p">)</span>  <span class="c1"># 1e-5 --&gt; Hack to get around floating point arithmetic</span>
+        <span class="k">return</span> <span class="n">other</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="n">index</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_continuous2continuous</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+
+        <span class="n">s_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">high</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">low</span>
+        <span class="n">o_range</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">high</span> <span class="o">-</span> <span class="n">other</span><span class="o">.</span><span class="n">low</span>
+        <span class="n">s_mid</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">high</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">low</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">o_mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">high</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">low</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">-</span> <span class="n">s_mid</span><span class="p">)</span> <span class="o">/</span> <span class="n">s_range</span> <span class="o">*</span> <span class="n">o_range</span> <span class="o">+</span> <span class="n">o_mid</span>
+
+    <span class="k">def</span> <span class="nf">_discrete2discrete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+
+        <span class="k">return</span> <span class="n">other</span><span class="o">.</span><span class="n">array</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="o">...</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())]</span>
+
+    <span class="k">def</span> <span class="nf">_tabulate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;_tabulate</span>
+
+<span class="sd">        outputs a list ready for tabulate.tabulate(), as well as the number of lines of the generated table.</span>
+
+<span class="sd">        Examples:</span>
+
+<span class="sd">        .. code-block::</span>
+<span class="sd">            &gt;&gt;&gt; x = StateElement(1, integer_set(3))</span>
+<span class="sd">            &gt;&gt;&gt; x._tabulate()</span>
+<span class="sd">            ([[array(1), &#39;CatSet(3)&#39;]], 1)</span>
+<span class="sd">            &gt;&gt;&gt; tabulate(x._tabulate()[0])</span>
+<span class="sd">            &#39;-  ---------\n1  CatSet(3)\n-  ---------&#39;</span>
+
+
+
+<span class="sd">            &gt;&gt;&gt; x = StateElement(numpy.zeros((3, 3)), box_space(numpy.ones((3, 3))))</span>
+<span class="sd">            &gt;&gt;&gt; x._tabulate()</span>
+<span class="sd">            ([[array([[0., 0., 0.],</span>
+<span class="sd">                [0., 0., 0.],</span>
+<span class="sd">                [0., 0., 0.]]), &#39;\nNumeric(3, 3)\n&#39;]], 3)</span>
+<span class="sd">            &gt;&gt;&gt; tabulate(x._tabulate()[0])</span>
+<span class="sd">            &#39;------------  -------------\n[[0. 0. 0.]   Numeric(3, 3)\n [0. 0. 0.]\n [0. 0. 0.]]\n------------  -------------&#39;</span>
+
+
+
+<span class="sd">        :return: list ready for tabulate.tabulate(), line numbers</span>
+<span class="sd">        :rtype: tuple(list, int)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">string_space</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>  <span class="c1"># for shapes (X,) and ()</span>
+            <span class="n">string_space</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="n">_index</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;Numeric&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">seed</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">string_space</span><span class="p">[</span>
+                    <span class="n">_index</span>
+                <span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Numeric</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">string_space</span><span class="p">[</span>
+                    <span class="n">_index</span>
+                <span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Numeric</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2"> (seed:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">seed</span><span class="si">}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">()</span>
+            <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;CatSet&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">seed</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">string_space</span><span class="p">[</span><span class="n">_index</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;CatSet(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">N</span><span class="si">}</span><span class="s2">) - </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">string_space</span><span class="p">[</span>
+                    <span class="n">_index</span>
+                <span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;CatSet(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">N</span><span class="si">}</span><span class="s2">) - </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2"> seed:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="o">.</span><span class="n">seed</span><span class="si">}</span><span class="s2">&quot;</span>
+
+            <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="n">_shape</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="p">([[</span><span class="n">array</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">string_space</span><span class="p">)]],</span> <span class="n">_shape</span><span class="p">)</span>
+
+    <span class="c1"># @classmethod</span>
+    <span class="c1"># def implements(cls, numpy_function):</span>
+    <span class="c1">#     &quot;&quot;&quot;implements</span>
+
+    <span class="c1">#     Register an __array_function__ implementation for StateElement objects. Example usage for the amax function, with incomplete implementation (only continuous space is targeted). The steps are:</span>
+
+    <span class="c1">#         1. get all the attributes from the StateElement</span>
+    <span class="c1">#         2. convert the StateElement to a numpy ndarray</span>
+    <span class="c1">#         3. Apply the numpy amax function, and get the corresponding space via argmax</span>
+    <span class="c1">#         4. Cast the corresponding space to a Space, the numpy ndarray to a StateElement, and reattach all attributes</span>
+
+    <span class="c1">#     .. code-block:: python</span>
+
+    <span class="c1">#         @StateElement.implements(numpy.amax)</span>
+    <span class="c1">#         def amax(arr, **keywordargs):</span>
+    <span class="c1">#             space, out_of_bounds_mode, kwargs = (</span>
+    <span class="c1">#                 arr.space,</span>
+    <span class="c1">#                 arr.out_of_bounds_mode,</span>
+    <span class="c1">#                 arr.kwargs,</span>
+    <span class="c1">#             )</span>
+    <span class="c1">#             obj = arr.view(numpy.ndarray)</span>
+    <span class="c1">#             argmax = numpy.argmax(obj, **keywordargs)</span>
+    <span class="c1">#             index = numpy.unravel_index(argmax, arr.space.shape)</span>
+    <span class="c1">#             obj = numpy.amax(obj, **keywordargs)</span>
+    <span class="c1">#             obj = numpy.asarray(obj).view(StateElement)</span>
+    <span class="c1">#             if arr.space.space_type == &quot;continuous&quot;:</span>
+    <span class="c1">#                 obj.space = autospace(</span>
+    <span class="c1">#                     numpy.atleast_2d(arr.space.low[index[0], index[1]]),</span>
+    <span class="c1">#                     numpy.atleast_2d(arr.space.high[index[0], index[1]]),</span>
+    <span class="c1">#                 )</span>
+    <span class="c1">#             else:</span>
+    <span class="c1">#                 raise NotImplementedError</span>
+    <span class="c1">#             obj.out_of_bounds_mode = arr.out_of_bounds_mode</span>
+    <span class="c1">#             obj.kwargs = arr.kwargs</span>
+    <span class="c1">#             return obj</span>
+
+    <span class="c1">#     &quot;&quot;&quot;</span>
+
+    <span class="c1">#     def decorator(func):</span>
+    <span class="c1">#         if cls.HANDLED_FUNCTIONS.get(numpy_function, None) is None:</span>
+    <span class="c1">#             cls.HANDLED_FUNCTIONS[numpy_function] = func</span>
+    <span class="c1">#         else:</span>
+    <span class="c1">#             raise RedefiningHandledFunctionWarning(</span>
+    <span class="c1">#                 &quot;You are redefining the existing method {} of StateElement.&quot;</span>
+    <span class="c1">#             )</span>
+    <span class="c1">#         return func</span>
+
+    <span class="c1">#     return decorator</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_process_input_values</span><span class="p">(</span><span class="n">input_object</span><span class="p">,</span> <span class="n">space</span><span class="p">,</span> <span class="n">out_of_bounds_mode</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">space</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">out_of_bounds_mode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">input_object</span>
+        <span class="k">if</span> <span class="n">out_of_bounds_mode</span> <span class="o">==</span> <span class="s2">&quot;raw&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">input_object</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">input_object</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">input_object</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">space</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">space</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">input_object</span><span class="p">))</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">input_object</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">space</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">input_object</span><span class="p">,</span> <span class="n">space</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">input_object</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">space</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">out_of_bounds_mode</span> <span class="o">==</span> <span class="s2">&quot;error&quot;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">StateNotContainedError</span><span class="p">(</span>
+                    <span class="s2">&quot;Instantiated Value </span><span class="si">{}</span><span class="s2">(</span><span class="si">{}</span><span class="s2">) is not contained in corresponding space </span><span class="si">{}</span><span class="s2"> (low = </span><span class="si">{}</span><span class="s2">, high = </span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="nb">str</span><span class="p">(</span><span class="n">input_object</span><span class="p">),</span>
+                        <span class="nb">type</span><span class="p">(</span><span class="n">input_object</span><span class="p">),</span>
+                        <span class="nb">str</span><span class="p">(</span><span class="n">space</span><span class="p">),</span>
+                        <span class="nb">str</span><span class="p">(</span><span class="n">space</span><span class="o">.</span><span class="n">low</span><span class="p">),</span>
+                        <span class="nb">str</span><span class="p">(</span><span class="n">space</span><span class="o">.</span><span class="n">high</span><span class="p">),</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">out_of_bounds_mode</span> <span class="o">==</span> <span class="s2">&quot;warning&quot;</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                    <span class="n">StateNotContainedWarning</span><span class="p">(</span>
+                        <span class="s2">&quot;Warning: Instantiated Value </span><span class="si">{}</span><span class="s2">(</span><span class="si">{}</span><span class="s2">) is not contained in corresponding space </span><span class="si">{}</span><span class="s2"> (low = </span><span class="si">{}</span><span class="s2">, high = </span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="nb">str</span><span class="p">(</span><span class="n">input_object</span><span class="p">),</span>
+                            <span class="nb">type</span><span class="p">(</span><span class="n">input_object</span><span class="p">),</span>
+                            <span class="nb">str</span><span class="p">(</span><span class="n">space</span><span class="p">),</span>
+                            <span class="nb">str</span><span class="p">(</span><span class="n">space</span><span class="o">.</span><span class="n">low</span><span class="p">),</span>
+                            <span class="nb">str</span><span class="p">(</span><span class="n">space</span><span class="o">.</span><span class="n">high</span><span class="p">),</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">out_of_bounds_mode</span> <span class="o">==</span> <span class="s2">&quot;clip&quot;</span><span class="p">:</span>
+
+                <span class="n">input_object</span> <span class="o">=</span> <span class="n">StateElement</span><span class="o">.</span><span class="n">_clip</span><span class="p">(</span><span class="n">input_object</span><span class="p">,</span> <span class="n">space</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="k">return</span> <span class="n">input_object</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

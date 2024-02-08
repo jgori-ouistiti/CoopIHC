@@ -1,0 +1,49 @@
+coopihc.agents.lqrcontrollers.IHDT\_LQRController.IHDT\_LQRController
+=====================================================================
+
+.. currentmodule:: coopihc.agents.lqrcontrollers.IHDT_LQRController
+
+.. autoclass:: IHDT_LQRController
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~IHDT_LQRController.finit
+      ~IHDT_LQRController.infer
+      ~IHDT_LQRController.observe
+      ~IHDT_LQRController.prepare_action
+      ~IHDT_LQRController.render
+      ~IHDT_LQRController.reset
+      ~IHDT_LQRController.reset_all
+      ~IHDT_LQRController.take_action
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~IHDT_LQRController.action
+      ~IHDT_LQRController.assistant
+      ~IHDT_LQRController.bundle
+      ~IHDT_LQRController.bundle_memory
+      ~IHDT_LQRController.inference_engine
+      ~IHDT_LQRController.observation
+      ~IHDT_LQRController.observation_engine
+      ~IHDT_LQRController.parameters
+      ~IHDT_LQRController.policy
+      ~IHDT_LQRController.state
+      ~IHDT_LQRController.task
+      ~IHDT_LQRController.user
+   
+   

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tasks &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Agents" href="agents.html" />
+    <link rel="prev" title="State" href="state.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="state.html">State</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tasks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#classiccontroltask">ClassicControlTask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pipetaskwrapper">PipeTaskWrapper</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_autosummary/coopihc.html">    API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Tasks</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/guide/tasks.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tasks">
+<h1>Tasks<a class="headerlink" href="#tasks" title="Permalink to this headline"></a></h1>
+<p>Tasks represent the agent’s environment. Usually in the <em>CoopIHC</em> context, the task will represent the part of an interface that the user can interact with and drive to a certain state.</p>
+<p>Essentially, tasks are characterized by:</p>
+<ul class="simple">
+<li><p>An internal state called the <strong>task</strong> <code class="docutils literal notranslate"><span class="pre">state</span></code> which holds all the task’s information; for example, the state of the interface.</p></li>
+<li><p>A <code class="docutils literal notranslate"><span class="pre">on_user_action()</span></code> method, which is a transition function that describes how the task state changes on receiving a user action.</p></li>
+<li><p>An <code class="docutils literal notranslate"><span class="pre">on_assistant_action()</span></code> method, which is a transition function that describes how the task state changes based on the assistant action.</p></li>
+</ul>
+<p>As an example, let’s define a simple task where the goal of the user is to drive the substate called ‘x’ to a value of 4. Both the user and the assistant can provide three actions: -1, +0 and +1. We define a task by inheriting from <code class="docutils literal notranslate"><span class="pre">InteractionTask</span></code> and redefining a few methods.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">class</span> <span class="nc">ExampleTask</span><span class="p">(</span><span class="n">InteractionTask</span><span class="p">):</span>
+<span class="linenos"> 2</span>    <span class="sd">&quot;&quot;&quot;ExampleTask</span>
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span><span class="sd">    An example algebraic task which a single task state &#39;x&#39;, which finishes when x = 4.</span>
+<span class="linenos"> 5</span>
+<span class="linenos"> 6</span><span class="sd">    &quot;&quot;&quot;</span>
+<span class="linenos"> 7</span>
+<span class="linenos"> 8</span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="linenos"> 9</span>
+<span class="linenos">10</span>        <span class="c1"># Call super().__init__() beofre anything else, which initializes some useful attributes, including a State (self.state) for the task</span>
+<span class="linenos">11</span>
+<span class="linenos">12</span>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="linenos">13</span>
+<span class="linenos">14</span>        <span class="c1"># Describe the state. Here it is a single item which takes value in [-4, -3, ..., 3, 4]. The StateElement has out_of_bounds_mode = clip, which means that values outside the range will automatically be clipped to fit the space.</span>
+<span class="linenos">15</span>        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">discrete_array_element</span><span class="p">(</span>
+<span class="linenos">16</span>            <span class="n">init</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">low</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">out_of_bounds_mode</span><span class="o">=</span><span class="s2">&quot;clip&quot;</span>
+<span class="linenos">17</span>        <span class="p">)</span>
+<span class="linenos">18</span>
+<span class="linenos">19</span>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dic</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="linenos">20</span>        <span class="c1"># Always start with state &#39;x&#39; at 0</span>
+<span class="linenos">21</span>        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">22</span>        <span class="k">return</span>
+<span class="linenos">23</span>
+<span class="linenos">24</span>    <span class="k">def</span> <span class="nf">on_user_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="linenos">25</span>        <span class="c1"># Modify the state in place, adding the user action</span>
+<span class="linenos">26</span>        <span class="n">is_done</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="linenos">27</span>        <span class="c1"># self.state[&quot;x&quot;] = self.state[&quot;x&quot;] + self.user_action</span>
+<span class="linenos">28</span>        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_action</span>
+<span class="linenos">29</span>
+<span class="linenos">30</span>        <span class="c1"># Stopping condition, return is_done boolean floag</span>
+<span class="linenos">31</span>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+<span class="linenos">32</span>            <span class="n">is_done</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="linenos">33</span>
+<span class="linenos">34</span>        <span class="n">reward</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="linenos">35</span>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">is_done</span>
+<span class="linenos">36</span>
+<span class="linenos">37</span>    <span class="k">def</span> <span class="nf">on_assistant_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="linenos">38</span>        <span class="n">is_done</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="linenos">39</span>        <span class="c1"># Modify the state in place, adding the assistant action</span>
+<span class="linenos">40</span>        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assistant_action</span>
+<span class="linenos">41</span>        <span class="c1"># Stopping condition, return is_done boolean floag</span>
+<span class="linenos">42</span>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+<span class="linenos">43</span>            <span class="n">is_done</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="linenos">44</span>
+<span class="linenos">45</span>        <span class="n">reward</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="linenos">46</span>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">is_done</span>
+</pre></div>
+</div>
+<p>Some comments on the code snippet above:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>The task state <code class="docutils literal notranslate"><span class="pre">'x'</span></code> is defined in the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method. Remember to always call <code class="docutils literal notranslate"><span class="pre">super()</span></code>’s <code class="docutils literal notranslate"><span class="pre">__init__</span></code> before anything else to ensure all necessary variables internal to <em>CoopIHC</em> are set.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">reset</span></code> method resets the task to an initial state, in this case <code class="docutils literal notranslate"><span class="pre">'x'=0</span></code>. You don’t have to define a reset method, in which case it will inherit it from <cite>:py:class:InteractionTask&lt;coopihc.interactiontask.InteractionTask&gt;</cite>, and the reset method will randomly pick values for each state.</p></li>
+<li><p>You have to define a user and assistant step function otherwise an error will be raised. Both of these are expected to return the triple (task state, reward, is_done).</p></li>
+<li><p>A render method is available if you want to render the task online, see <cite>:py:class:InteractionTask&lt;coopihc.interactiontask.InteractionTask&gt;</cite></p></li>
+</ul>
+</div></blockquote>
+<section id="classiccontroltask">
+<h2>ClassicControlTask<a class="headerlink" href="#classiccontroltask" title="Permalink to this headline"></a></h2>
+</section>
+<section id="pipetaskwrapper">
+<h2>PipeTaskWrapper<a class="headerlink" href="#pipetaskwrapper" title="Permalink to this headline"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="state.html" class="btn btn-neutral float-left" title="State" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="agents.html" class="btn btn-neutral float-right" title="Agents" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

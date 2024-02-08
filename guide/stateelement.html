@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StateElement &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="State" href="state.html" />
+    <link rel="prev" title="Space" href="space.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="space.html">Space</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">StateElement</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#other-mechanisms">Other mechanisms</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_autosummary/coopihc.html">    API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>StateElement</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/guide/stateelement.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="stateelement">
+<h1>StateElement<a class="headerlink" href="#stateelement" title="Permalink to this headline"></a></h1>
+<p>A <code class="docutils literal notranslate"><span class="pre">StateElement</span></code> is a a combination of a value and a space. Under the hood, <code class="docutils literal notranslate"><span class="pre">StateElement</span></code> subclasses <code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code>; essentially, it adds a layer that checks whether the values are contained in the space (and what to do if not). As a result, many NumPy methods will work.</p>
+<p>Instantiating a StateElement is straightforward.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="c1"># Value in a Categorical set</span>
+<span class="linenos">2</span><span class="n">x</span> <span class="o">=</span> <span class="n">cat_element</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="linenos">3</span><span class="c1"># Discrete value</span>
+<span class="linenos">4</span><span class="n">y</span> <span class="o">=</span> <span class="n">discrete_array_element</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="linenos">5</span><span class="c1"># Continuous Value</span>
+<span class="linenos">6</span><span class="n">z</span> <span class="o">=</span> <span class="n">array_element</span><span class="p">(</span>
+<span class="linenos">7</span>    <span class="n">low</span><span class="o">=-</span><span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span> <span class="n">high</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span> <span class="n">out_of_bounds_mode</span><span class="o">=</span><span class="s2">&quot;error&quot;</span>
+<span class="linenos">8</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The examples above give the preferred input shape, but StateElement will consider the input as an array and try to viewcast input that does not match expected shape. That means that e.g. <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">=</span> <span class="pre">StateElement(2,</span> <span class="pre">discr_space,</span> <span class="pre">out_of_bounds_mode=&quot;error&quot;)</span></code> is also considered valid input.</p>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">StateElement</span></code> has an <code class="docutils literal notranslate"><span class="pre">out_of_bounds_mode</span></code> keyword argument (defaults to ‘warning’) that specifies what to do when a value is not contained in the space:</p>
+<ul class="simple">
+<li><p>“error” –&gt; raises a <code class="docutils literal notranslate"><span class="pre">StateNotContainedError</span></code></p></li>
+<li><p>“warning” –&gt; warns with a <code class="docutils literal notranslate"><span class="pre">StateNotContainedWarning</span></code>, but accepts the input</p></li>
+<li><p>“clip” –&gt; clips the data to force it to belong to the space</p></li>
+<li><p>“silent” –&gt; Values not in the space are accepted silently (behavior should become equivalent to numpy.ndarray).</p></li>
+<li><p>“raw” –&gt; No data transformation is applied. This is faster than the other options, because the preprocessing of input data is short-circuited. However, this provides no tolerance for misspecified input.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Broad/viewcasting and type casting are applied if necessary to the first four cases if the space has “contains” set to “soft”, but never with “raw”.</p>
+</div>
+<section id="other-mechanisms">
+<h2>Other mechanisms<a class="headerlink" href="#other-mechanisms" title="Permalink to this headline"></a></h2>
+<ul>
+<li><dl>
+<dt><strong>You can randomize its values</strong></dt><dd><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span>
+<span class="linenos"> 2</span><span class="c1"># Random resets</span>
+<span class="linenos"> 3</span><span class="n">x</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos"> 4</span><span class="n">y</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos"> 5</span><span class="n">z</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos"> 6</span>
+<span class="linenos"> 7</span><span class="c1"># Forced resets</span>
+<span class="linenos"> 8</span><span class="n">x</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="linenos"> 9</span><span class="n">y</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="linenos">10</span><span class="n">z</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="mf">0.59</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
+<span class="linenos">11</span>
+<span class="linenos">12</span>
+<span class="linenos">13</span><span class="c1"># forced reset also raise input checks:</span>
+<span class="linenos">14</span><span class="k">try</span><span class="p">:</span>
+<span class="linenos">15</span>    <span class="n">x</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="linenos">16</span><span class="k">except</span> <span class="n">StateNotContainedError</span><span class="p">:</span>
+<span class="linenos">17</span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;raised Error </span><span class="si">{}</span><span class="s2"> as expected&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">StateNotContainedError</span><span class="p">))</span>
+<span class="linenos">18</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+<li><p><strong>You can iterate over them</strong></p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="c1"># iterating over a continuous space like in Numpy: first over rows, then over columns</span>
+<span class="linenos"> 2</span><span class="n">x</span> <span class="o">=</span> <span class="n">array_element</span><span class="p">(</span>
+<span class="linenos"> 3</span>    <span class="n">init</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]]),</span>
+<span class="linenos"> 4</span>    <span class="n">low</span><span class="o">=-</span><span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+<span class="linenos"> 5</span>    <span class="n">high</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+<span class="linenos"> 6</span><span class="p">)</span>
+<span class="linenos"> 7</span>
+<span class="linenos"> 8</span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="linenos"> 9</span>    <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">_xx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">_x</span><span class="p">):</span>
+<span class="linenos">10</span>        <span class="nb">print</span><span class="p">(</span><span class="n">_xx</span><span class="p">)</span>
+<span class="linenos">11</span>
+<span class="linenos">12</span><span class="c1"># you can&#39;t iterate over a discrete set</span>
+<span class="linenos">13</span><span class="n">x</span> <span class="o">=</span> <span class="n">cat_element</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="linenos">14</span><span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
+<span class="linenos">15</span>    <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p><strong>You can compare them</strong>. This includes a “hard” comparison, which checks if spaces are equal.</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">x</span> <span class="o">=</span> <span class="n">discrete_array_element</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="linenos">2</span><span class="n">w</span> <span class="o">=</span> <span class="n">discrete_array_element</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="linenos">3</span><span class="k">assert</span> <span class="n">w</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="linenos">4</span><span class="c1"># Hard comparison checks also space</span>
+<span class="linenos">5</span><span class="k">assert</span> <span class="ow">not</span> <span class="n">w</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s2">&quot;hard&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p><strong>You can extract values with or without spaces</strong>. Extracting the spaces together with the values can be done by a mechanism that abuses the slice notation.</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="c1"># CoopIHC abuses Python&#39;s indexing mechanism; you can extract values together with spaces</span>
+<span class="linenos"> 2</span><span class="n">x</span> <span class="o">=</span> <span class="n">cat_element</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="linenos"> 3</span><span class="k">assert</span> <span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;space&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}]</span> <span class="o">==</span> <span class="n">x</span>
+<span class="linenos"> 4</span><span class="k">assert</span> <span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">==</span> <span class="n">x</span>
+<span class="linenos"> 5</span>
+<span class="linenos"> 6</span><span class="n">x</span> <span class="o">=</span> <span class="n">array_element</span><span class="p">(</span>
+<span class="linenos"> 7</span>    <span class="n">init</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">]]),</span>
+<span class="linenos"> 8</span>    <span class="n">low</span><span class="o">=-</span><span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+<span class="linenos"> 9</span>    <span class="n">high</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+<span class="linenos">10</span><span class="p">)</span>
+<span class="linenos">11</span><span class="k">assert</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span>
+<span class="linenos">12</span><span class="k">assert</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;space&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}]</span> <span class="o">==</span> <span class="n">array_element</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">low</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p><strong>You can cast values from one space to the other</strong>. This includes two modes of casting between discrete and continuous spaces.</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span>
+<span class="linenos"> 2</span><span class="c1"># --------------------------- Init viz.</span>
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="linenos"> 5</span>
+<span class="linenos"> 6</span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="linenos"> 7</span><span class="n">axd2c</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">221</span><span class="p">)</span>
+<span class="linenos"> 8</span><span class="n">axc2d</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">222</span><span class="p">)</span>
+<span class="linenos"> 9</span><span class="n">axc2c</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">223</span><span class="p">)</span>
+<span class="linenos">10</span><span class="n">axd2d</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">224</span><span class="p">)</span>
+<span class="linenos">11</span>
+<span class="linenos">12</span><span class="c1"># --------------------------  Discrete 2 Continuous</span>
+<span class="linenos">13</span>
+<span class="linenos">14</span><span class="n">_center</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos">15</span><span class="n">_edges</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos">16</span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]:</span>
+<span class="linenos">17</span>    <span class="n">x</span> <span class="o">=</span> <span class="n">discrete_array_element</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="linenos">18</span>    <span class="n">y</span> <span class="o">=</span> <span class="n">array_element</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">low</span><span class="o">=-</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+<span class="linenos">19</span>    <span class="n">_center</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+<span class="linenos">20</span>    <span class="n">_edges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;edges&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+<span class="linenos">21</span>
+<span class="linenos">22</span>
+<span class="linenos">23</span><span class="n">axd2c</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">_center</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.05</span><span class="p">,</span> <span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">)</span>
+<span class="linenos">24</span><span class="n">axd2c</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">_edges</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.05</span><span class="p">,</span> <span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;edges&quot;</span><span class="p">)</span>
+<span class="linenos">25</span><span class="n">axd2c</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="linenos">26</span>
+<span class="linenos">27</span><span class="c1"># ------------------------   Continuous 2 Discrete</span>
+<span class="linenos">28</span><span class="n">center</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos">29</span><span class="n">edges</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos">30</span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mi">100</span><span class="p">):</span>
+<span class="linenos">31</span>    <span class="n">x</span> <span class="o">=</span> <span class="n">discrete_array_element</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="linenos">32</span>    <span class="n">y</span> <span class="o">=</span> <span class="n">array_element</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">low</span><span class="o">=-</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+<span class="linenos">33</span>
+<span class="linenos">34</span>    <span class="n">ret_stateElem</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">)</span>
+<span class="linenos">35</span>    <span class="n">center</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ret_stateElem</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+<span class="linenos">36</span>
+<span class="linenos">37</span>    <span class="n">ret_stateElem</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;edges&quot;</span><span class="p">)</span>
+<span class="linenos">38</span>    <span class="n">edges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ret_stateElem</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+<span class="linenos">39</span>
+<span class="linenos">40</span>
+<span class="linenos">41</span><span class="n">axc2d</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+<span class="linenos">42</span>    <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">center</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.05</span><span class="p">,</span> <span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;center&quot;</span>
+<span class="linenos">43</span><span class="p">)</span>
+<span class="linenos">44</span><span class="n">axc2d</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+<span class="linenos">45</span>    <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">edges</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.05</span><span class="p">,</span> <span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;edges&quot;</span>
+<span class="linenos">46</span><span class="p">)</span>
+<span class="linenos">47</span><span class="n">axc2d</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="linenos">48</span>
+<span class="linenos">49</span>
+<span class="linenos">50</span><span class="c1"># ------------------------- Continuous2Continuous</span>
+<span class="linenos">51</span>
+<span class="linenos">52</span><span class="n">output</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos">53</span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">):</span>
+<span class="linenos">54</span>    <span class="n">x</span> <span class="o">=</span> <span class="n">array_element</span><span class="p">(</span>
+<span class="linenos">55</span>        <span class="n">init</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">i</span><span class="p">),</span>
+<span class="linenos">56</span>        <span class="n">low</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+<span class="linenos">57</span>        <span class="n">high</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="mi">1</span><span class="p">),</span>
+<span class="linenos">58</span>        <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+<span class="linenos">59</span>    <span class="p">)</span>
+<span class="linenos">60</span>    <span class="n">y</span> <span class="o">=</span> <span class="n">array_element</span><span class="p">(</span>
+<span class="linenos">61</span>        <span class="n">low</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="mi">0</span><span class="p">),</span> <span class="n">high</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">float32</span>
+<span class="linenos">62</span>    <span class="p">)</span>
+<span class="linenos">63</span>    <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">y</span><span class="p">)[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+<span class="linenos">64</span>
+<span class="linenos">65</span><span class="n">axc2c</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">output</span><span class="p">),</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span>
+<span class="linenos">66</span>
+<span class="linenos">67</span><span class="c1"># -------------------------- Discrete2Discrete</span>
+<span class="linenos">68</span>
+<span class="linenos">69</span>
+<span class="linenos">70</span><span class="n">output</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos">71</span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]:</span>
+<span class="linenos">72</span>    <span class="n">x</span> <span class="o">=</span> <span class="n">discrete_array_element</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="linenos">73</span>    <span class="n">y</span> <span class="o">=</span> <span class="n">discrete_array_element</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="linenos">74</span>    <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+<span class="linenos">75</span>
+<span class="linenos">76</span><span class="n">axd2d</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">output</span><span class="p">,</span> <span class="s2">&quot;+&quot;</span><span class="p">)</span>
+<span class="linenos">77</span>
+<span class="linenos">78</span>
+<span class="linenos">79</span><span class="c1"># ----------------------- show viz</span>
+<span class="linenos">80</span><span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="linenos">81</span><span class="c1"># plt.show()</span>
+<span class="linenos">82</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="space.html" class="btn btn-neutral float-left" title="Space" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="state.html" class="btn btn-neutral float-right" title="State" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
