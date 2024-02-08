@@ -18,8 +18,6 @@ def partialback(func, *extra_args):
     def wrapper(*args):
         args = list(args)
         args.extend(extra_args)
-        print("---------")
-        print(len(args))
         return func(*args)
 
     return wrapper
