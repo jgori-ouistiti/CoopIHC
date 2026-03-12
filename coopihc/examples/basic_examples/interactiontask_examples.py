@@ -15,20 +15,20 @@ user_action_state["action"] = discrete_array_element(low=-1, high=1)
 assistant_action_state = State()
 assistant_action_state["action"] = discrete_array_element(low=-1, high=1)
 
-
+user_policy = BasePolicy(action_state=user_action_state)
+assistant_policy = BasePolicy(action_state=assistant_action_state)
 # Bundle a task together with two BaseAgents
 bundle = Bundle(
     task=ExampleTask(),
-    user=BaseAgent("user", agent_policy=BasePolicy(user_action_state)),
+    user=BaseAgent("user", agent_policy=user_policy),
     assistant=BaseAgent(
         "assistant",
-        agent_policy=BasePolicy(assistant_action_state),
+        agent_policy=assistant_policy,
     ),
 )
-
 # Reset the task, plot the state.
 bundle.reset(go_to=1)
-bundle.step(1, 1)
+bundle.step(user_action=1, assistant_action=1)
 
 # Test simple input
 bundle.step(1, 1)

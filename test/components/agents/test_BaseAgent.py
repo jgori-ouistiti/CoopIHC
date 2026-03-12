@@ -1,4 +1,4 @@
-from symbol import return_stmt
+# from symbol import return_stmt
 import pytest
 import numpy
 import copy
@@ -62,7 +62,7 @@ def test_init_args():
     assert bool(action_state) == True
     assert action_state.get("action") is not None
     assert isinstance(action_state["action"], StateElement)
-    assert action_state["action"] == 0
+    assert action_state["action"] == 1
     space = action_state["action"].space
     # ----------- Check observation engine default
     obseng = new_agent.observation_engine

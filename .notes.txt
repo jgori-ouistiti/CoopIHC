@@ -1,0 +1,10 @@
+# benchmarks
+
+run uv without benchmarks (for CI/CD)
+uv run pytest -vv -m "not benchmark"
+run only benchmarks
+uv run pytest -vv -m benchmark
+
+
+# run in interactive mode within uv shell
+uv run python -i test_predict.py

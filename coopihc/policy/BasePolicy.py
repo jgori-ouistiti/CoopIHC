@@ -2,8 +2,7 @@ import numpy
 import copy
 
 from coopihc.base.State import State
-from coopihc.base.elements import discrete_array_element, array_element, cat_element
-from coopihc.base.elements import cat_element
+from coopihc.base.elements import array_element
 
 
 ## Included in Python 3.10, code taken from PEP 618

@@ -12,7 +12,10 @@ from coopihc.base.elements import discrete_array_element, cat_element
 
 import cProfile
 
+import pytest
 
+
+@pytest.mark.benchmark
 def test_bundle_round(benchmark):
     """Runs a performance test for a single bundle round using
     pytest-benchmark."""

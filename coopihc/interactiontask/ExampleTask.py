@@ -3,7 +3,6 @@ This module provides access to an example subclass of
 the InteractionTask class.
 """
 
-
 import numpy
 from coopihc.base.elements import discrete_array_element, array_element, cat_element
 from coopihc.base.elements import discrete_array_element
@@ -24,8 +23,11 @@ class ExampleTask(InteractionTask):
         super().__init__(*args, **kwargs)
 
         # Describe the state. Here it is a single item which takes value in [-4, -3, ..., 3, 4]. The StateElement has out_of_bounds_mode = clip, which means that values outside the range will automatically be clipped to fit the space.
+        # self.state["x"] = discrete_array_element(
+        #     init=0, low=-1, high=4, out_of_bounds_mode="clip"
+        # )
         self.state["x"] = discrete_array_element(
-            init=0, low=-1, high=4, out_of_bounds_mode="clip"
+            init=0, low=-1, high=4, out_of_bounds_mode="warning"
         )
 
     def reset(self, dic=None):
@@ -37,6 +39,8 @@ class ExampleTask(InteractionTask):
         # Modify the state in place, adding the user action
         is_done = False
         # self.state["x"] = self.state["x"] + self.user_action
+        print(self.state["x"])
+        print(self.user_action)
         self.state["x"] += self.user_action
 
         # Stopping condition, return is_done boolean float

@@ -228,8 +228,8 @@ class GymWrapper(gym.Env, _GymnasiumBasedEnv):
 class PettingZooWrapper(pettingzoo.utils.env.AECEnv, _GymnasiumBasedEnv):
     def __init__(
         self,
-        *args,
         bundle,
+        *args,
         observation_dict=None,
         reset_dic=None,
         reset_turn=None,
@@ -250,6 +250,7 @@ class PettingZooWrapper(pettingzoo.utils.env.AECEnv, _GymnasiumBasedEnv):
         self.possible_agents = ["user", "assistant"]
         self.reset_turn = reset_turn
         _GymnasiumBasedEnv.__init__(
+            self,
             bundle,
             observation_dict=observation_dict,
             reset_dic=reset_dic,

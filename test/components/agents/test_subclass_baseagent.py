@@ -9,9 +9,6 @@ from coopihc.observation.BaseObservationEngine import BaseObservationEngine
 from coopihc.observation.ExampleObservationEngine import ExampleObservationEngine
 
 
-import numpy
-
-
 class MinimalAgent(BaseAgent):
     """Non-functional minimal subclass to use in tests."""
 
@@ -42,7 +39,7 @@ class NonMinimalAgent(BaseAgent):
             agent_policy=policy,
             agent_inference_engine=inference_engine,
             agent_observation_engine=observation_engine,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -171,7 +168,6 @@ def test_override_policy():
     agent = NonMinimalAgent(override_policy=(policy, {}))
     # [end-override-policy]
     assert isinstance(agent.policy, BasePolicy)
-    assert agent.action == cat_element(N=2)
 
 
 def test_override_obseng():

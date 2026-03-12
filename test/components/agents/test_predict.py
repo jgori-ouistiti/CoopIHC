@@ -1,13 +1,12 @@
-from curses import wrapper
 from coopihc.examples.simplepointing.users import CarefulPointer
 from coopihc.examples.simplepointing.envs import SimplePointingTask
 from coopihc.examples.simplepointing.assistants import BIGGain
 
 from coopihc import Bundle, WrapperReferencer
 
-from gym import ActionWrapper
-from gym.spaces import Box
-from gym.wrappers import FilterObservation, FlattenObservation
+from gymnasium import ActionWrapper
+from gymnasium.spaces import Box
+from gymnasium.wrappers import FilterObservation, FlattenObservation
 from stable_baselines3.common.env_checker import check_env
 import numpy as np
 
@@ -66,8 +65,10 @@ def test_predict_one_step():
     env = make_simple_pointing_env()
     for i in range(100):
         env.reset()
-        action, reward = env.bundle.assistant.take_action(increment_turn=False)
-        _action, _ = env.bundle.assistant.predict(
+        action, reward = env.unwrapped.bundle.assistant.take_action(
+            increment_turn=False
+        )
+        _action, _ = env.unwrapped.bundle.assistant.predict(
             None, increment_turn=False, wrappers=True
         )
         assert (_action) + 1 * 19 / 2
@@ -76,9 +77,12 @@ def test_predict_one_step():
 def test_predict_increment_False():
     env = make_simple_pointing_env()
     env.reset()
-    action, reward = env.bundle.assistant.take_action(increment_turn=False)
+    action, reward = env.unwrapped.bundle.assistant.take_action(increment_turn=False)
     for i in range(100):
-        assert action == env.bundle.assistant.take_action(increment_turn=False)[0]
+        assert (
+            action
+            == env.unwrapped.bundle.assistant.take_action(increment_turn=False)[0]
+        )
 
 
 def test_predict_with_step():
@@ -89,26 +93,37 @@ def test_predict_with_step():
     copied_env = copy.deepcopy(env)
 
     state_just_after_initial_reset = copy.deepcopy(env.unwrapped.bundle.state)
-    action, reward = env.unwrapped.bundle.assistant.take_action(increment_turn=False, update_action_state = False)
-    state_after_action_increment_turn_and_update_action_state__false = env.unwrapped.bundle.state
-    assert state_just_after_initial_reset == state_after_action_increment_turn_and_update_action_state__false
+    action, reward = env.unwrapped.bundle.assistant.take_action(
+        increment_turn=False, update_action_state=False
+    )
+    state_after_action_increment_turn_and_update_action_state__false = (
+        env.unwrapped.bundle.state
+    )
+    assert (
+        state_just_after_initial_reset
+        == state_after_action_increment_turn_and_update_action_state__false
+    )
 
     for i in range(100):
-        action, reward = env.unwrapped.bundle.assistant.take_action(increment_turn=False, update_action_state = False)
-        assert state_just_after_initial_reset == state_after_action_increment_turn_and_update_action_state__false
-
+        action, reward = env.unwrapped.bundle.assistant.take_action(
+            increment_turn=False, update_action_state=False
+        )
+        assert (
+            state_just_after_initial_reset
+            == state_after_action_increment_turn_and_update_action_state__false
+        )
 
     # before trying out things make sure we have the same object:
     assert env.unwrapped.bundle.state == copied_env.unwrapped.bundle.state
     # pick action, step
     _action, _ = copied_env.unwrapped.bundle.assistant.predict(
-        None, increment_turn=False, wrapper=True, update_action_state = False
+        None, increment_turn=False, wrapper=True, update_action_state=False
     )
     env.step(_action)
 
     # Play the copied bundle forward so that we can compare with step
     copied_env.unwrapped.bundle.step(go_to=3)
-    
+
     # assert env.unwrapped.bundle.state == copied_env.unwrapped.bundle.state
     assert env.unwrapped.bundle.state == copied_env.unwrapped.bundle.state
 
