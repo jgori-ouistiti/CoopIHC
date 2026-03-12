@@ -65,7 +65,7 @@ check_env(rl_env, warn=False)
 # [end-define-traingym]
 
 
-#### MARL test
+#### MARL test =========== DOES NOT WORK ANYMORE
 from coopihc.bundle.wrappers.Train import PettingZooWrapper
 from pettingzoo.test import api_test
 

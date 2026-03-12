@@ -1,15 +1,11 @@
 from typing import OrderedDict
-from stable_baselines3 import PPO
-from stable_baselines3.common.vec_env import SubprocVecEnv
-from stable_baselines3.common.env_util import make_vec_env
-from stable_baselines3.common.utils import set_random_seed
+
 
 from coopihc import State, BasePolicy, Bundle, discrete_array_element
 from coopihc.bundle.wrappers.Train import GymWrapper
 
 import numpy
 import gymnasium
-import pytest
 
 
 from coopihc.examples.simplepointing.envs import SimplePointingTask

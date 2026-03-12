@@ -1,27 +1,14 @@
-import coopihc
 from coopihc.agents.BaseAgent import BaseAgent
-from coopihc.agents.lqrcontrollers.IHCT_LQGController import IHCT_LQGController
 
 from coopihc.observation.RuleObservationEngine import RuleObservationEngine
 from coopihc.observation.utils import base_user_engine_specification
 
-from coopihc.bundle.Bundle import Bundle
-
-from coopihc.base.Space import Space
-from coopihc.base.State import State
-from coopihc.base.StateElement import StateElement
-from coopihc.base.elements import discrete_array_element, array_element, cat_element
 
 from coopihc.policy.ELLDiscretePolicy import ELLDiscretePolicy
-from coopihc.policy.WrapAsPolicy import WrapAsPolicy
-from coopihc.policy.ELLDiscretePolicy import BadlyDefinedLikelihoodError
 
-from coopihc.interactiontask.ClassicControlTask import ClassicControlTask
+from coopihc import State, discrete_array_element
 
-
-import gym
 import numpy
-import copy
 
 
 class CarefulPointer(BaseAgent):

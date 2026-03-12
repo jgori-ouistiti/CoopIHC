@@ -7,15 +7,12 @@ name = "coopihc"
 version = "0.0.2"
 description = "Two-agent component-based interaction environments for computational HCI with Python"
 authors = [{name = "Julien Gori"}]
-requires-python = ">=3.8,<3.13"
+requires-python = ">=3.9,<3.13"
 
 dependencies = [
   "PyYAML>=6.0,<7.0",
-  "gymnasium[rl]>=1.1.1",
   "matplotlib>=3,<4",
   "numpy>=1,<2",
-  "pettingzoo[rl]>=1.24.3",
-  "pytest-timeout>=2.0.2,<3",
   "scipy>=1.7.3,<2",
   "tabulate",
   "websockets>=10.1,<11",
@@ -23,9 +20,10 @@ dependencies = [
 
 [project.optional-dependencies]
 rl = [
-  "stable-baselines3>=1.3.0,<2.0.0",
-  "gym>=0.17,<0.18",
-  "tensorboard>=2.8.0,<3"
+  "stable-baselines3>=2.2",
+  "tensorboard>=2.8.0,<3",
+  "gymnasium>=1.1.1",
+  "pettingzoo>=1.24.3",
 ]
 
 [tool.setuptools.packages.find]
@@ -34,3 +32,15 @@ include = ["coopihc*"]
 
 [tool.setuptools.package-data]
 "*" = ["*"]
+
+[dependency-groups]
+dev = [
+    "black>=24.8.0",
+    "pytest>=8.3.5",
+    "pytest-benchmark>=4.0.0",
+    "sphinx>=7.1.2",
+    "sphinx-rtd-theme>=3.1.0",
+    "sphinxcontrib-tikz>=0.4.20",
+    "twine>=6.1.0",
+    "pytest-timeout>=2.0.2,<3",
+]

@@ -5,7 +5,6 @@ import copy
 
 from coopihc.agents.BaseAgent import BaseAgent
 from coopihc.base.State import State
-from coopihc.base.Space import Space
 from coopihc.base.elements import discrete_array_element, array_element, cat_element
 from coopihc.base.StateElement import StateElement
 
