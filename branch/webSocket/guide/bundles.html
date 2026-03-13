@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bundles &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Random Number Generators" href="rng.html" />
+    <link rel="prev" title="The Inference Engines" href="inference_engine.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Bundles</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview-of-bundle-mechanisms">Overview of Bundle mechanisms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#stepping-through-a-bundle">Stepping through a Bundle</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#moving-rounds">Moving rounds</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#moving-turns">Moving turns</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="rng.html">Random Number Generators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rendering.html">Rendering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="highlevel_objects.html">High-Level objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Bundles</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/guide/bundles.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="bundles">
+<h1>Bundles<a class="headerlink" href="#bundles" title="Permalink to this headline"></a></h1>
+<p>Bundles are the objects that compose the three main components (task, user and assistant) into a game. It forms the joint state, collects the rewards and ensure synchronous sequential sequences of observations, inferences and actions of the two agents.</p>
+<a class="reference internal image-reference" href="../_images/bundle.png"><img alt="../_images/bundle.png" class="align-center" src="../_images/bundle.png" style="width: 800px;" /></a>
+<p>They are useful because they allow you to orchestrate the interaction how you want it.</p>
+<p>In most cases, there is no need to define a new Bundle, and you can straightaway use the standard existing <code class="docutils literal notranslate"><span class="pre">Bundle</span></code>. For example, you can create a bundle and interact with it like so:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span>
+<span class="linenos"> 2</span>
+<span class="linenos"> 3</span><span class="k">class</span> <span class="nc">ExampleTaskWithoutAssistant</span><span class="p">(</span><span class="n">ExampleTask</span><span class="p">):</span>
+<span class="linenos"> 4</span>    <span class="k">def</span> <span class="nf">on_assistant_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="linenos"> 5</span>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">False</span>
+<span class="linenos"> 6</span>
+<span class="linenos"> 7</span>
+<span class="linenos"> 8</span><span class="n">example_task</span> <span class="o">=</span> <span class="n">ExampleTaskWithoutAssistant</span><span class="p">()</span>
+<span class="linenos"> 9</span><span class="n">example_user</span> <span class="o">=</span> <span class="n">ExampleUser</span><span class="p">()</span>
+<span class="linenos">10</span><span class="n">bundle</span> <span class="o">=</span> <span class="n">Bundle</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="n">example_task</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">example_user</span><span class="p">)</span>
+<span class="linenos">11</span><span class="n">bundle</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">go_to</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+<span class="linenos">12</span>
+<span class="linenos">13</span><span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<span class="linenos">14</span>    <span class="n">state</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">is_done</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+<span class="linenos">15</span>    <span class="k">if</span> <span class="n">is_done</span><span class="p">:</span>
+<span class="linenos">16</span>        <span class="k">break</span>
+</pre></div>
+</div>
+<section id="overview-of-bundle-mechanisms">
+<h2>Overview of Bundle mechanisms<a class="headerlink" href="#overview-of-bundle-mechanisms" title="Permalink to this headline"></a></h2>
+<p>The main API methods are the same as gym’s, although their functionality is extended.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">reset</span></code>, which allows you to have control which components you reset and how you reset them.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">step</span></code>, which allows you to specify how agents select their actions, and how many turns to play .</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">render</span></code>, which combines all rendering methods of the components.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">close</span></code>, which closes the bundle properly.</p></li>
+</ul>
+<p>The following graphic explicits how the most important options work</p>
+<a class="reference internal image-reference" href="../_images/turns.png"><img alt="../_images/turns.png" class="align-center" src="../_images/turns.png" style="width: 800px;" /></a>
+</section>
+<section id="stepping-through-a-bundle">
+<h2>Stepping through a Bundle<a class="headerlink" href="#stepping-through-a-bundle" title="Permalink to this headline"></a></h2>
+<p>The bundle directs the order of operations. Two important concepts are turns and rounds:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>There are 4 turns (see interaction model):</dt><dd><ol class="arabic simple" start="0">
+<li><p>user prepares action (by creating observations and updating its internal state)</p></li>
+<li><p>user takes action</p></li>
+<li><p>assistant prepares action</p></li>
+<li><p>assistant takes action</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p>A round is the sequence of these 4 turns.</p></li>
+</ul>
+<p>There are several ways in which you can indicate how to move the bundle from a state in a given round and turn to another.</p>
+<section id="moving-rounds">
+<h3>Moving rounds<a class="headerlink" href="#moving-rounds" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p><strong>step-by-step</strong> To move rounds, you can simply call <code class="docutils literal notranslate"><span class="pre">step(user_action=</span> <span class="pre">None,</span> <span class="pre">assistant_action</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">go_to=None)</span></code>. This will move the bundle from turn T and round R to turn T and round T+1, by having the 4 turns be executed. If <code class="docutils literal notranslate"><span class="pre">user_action=None</span></code>, then the user action is sampled from its policy engine. Otherwise, the provided action is used. This allows you to test the effect of a different policy on the same agent straightforwardly. The same holds for the assistant. If <code class="docutils literal notranslate"><span class="pre">go_to</span> <span class="pre">=</span> <span class="pre">k</span></code>, then the turns will be played until the turn k is reached without completing the full round.</p></li>
+<li><p><strong>Episodic sampling</strong> You can sample complete episodes at once with bundles sample method e.g. <code class="docutils literal notranslate"><span class="pre">sample(n_turns</span> <span class="pre">=</span> <span class="pre">10)</span></code> will sample 10 complete episodes (i.e. reset the bundle, step through it until the task is done, and in total 10 times).</p></li>
+</ul>
+<p>The equivalence between step by step interaction and episodic sampling is shown below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Interaction loop starts</span>
+<span class="n">bundle</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="n">bundle</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s2">&quot;plottext&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+<span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+    <span class="n">obs</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">is_done</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+    <span class="n">bundle</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s2">&quot;plottext&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_done</span><span class="p">:</span>
+        <span class="n">bundle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">break</span>
+<span class="c1"># Interaction loop ends</span>
+
+<span class="c1"># Interaction loop is equivalent to this (without render)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n_turns</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="moving-turns">
+<h3>Moving turns<a class="headerlink" href="#moving-turns" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p><strong>quarter steps.</strong> The simplest is the <code class="docutils literal notranslate"><span class="pre">quarter_step</span></code> method, which just wraps the step method so that it advances exactly one turn:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># e.g. in turn 0, round 3</span>
+<span class="n">bundle</span><span class="o">.</span><span class="n">quarter_step</span><span class="p">()</span> <span class="c1"># turn 1 round 3</span>
+<span class="n">bundle</span><span class="o">.</span><span class="n">quarter_step</span><span class="p">()</span> <span class="c1"># query action from user policy engine, turn 2, round3</span>
+<span class="n">bundle</span><span class="o">.</span><span class="n">quarter_step</span><span class="p">()</span> <span class="c1"># turn 3 round 3</span>
+<span class="n">bundle</span><span class="o">.</span><span class="n">quarter_step</span><span class="p">(</span><span class="n">assistant_action</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># turn 0 round 4, use action &#39;1&#39; instead of querying from assistant_policy_engine</span>
+
+<span class="c1">## equivalent to</span>
+<span class="n">bundle</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">assistant_action</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul>
+<li><p><strong>triggered from agent.</strong> Each quarter step can also be triggered directly from the agent (and not the bundle), in a flexible way, allowing various effects on the actual bundle.</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">agent.prepare_action(affect_bundle=True,</span> <span class="pre">game_state=None,</span> <span class="pre">agent_observation=None,</span> <span class="pre">increment_turn=True)</span></code> will prepare the action, i.e. equivalent to moving from turn 0 to 1.</dt><dd><ul>
+<li><p>if <code class="docutils literal notranslate"><span class="pre">increment_turn=True</span></code>, the turn number of the bundle is incremented by 1</p></li>
+<li><p>if <code class="docutils literal notranslate"><span class="pre">game_state</span></code> and <code class="docutils literal notranslate"><span class="pre">agent_observation</span></code> are given, then these will be used to prepare the action, otherwise the agent will use values internal to the bundle.</p></li>
+<li><p>if <code class="docutils literal notranslate"><span class="pre">affect_bundle</span> <span class="pre">=</span> <span class="pre">False</span></code>, then the produced observation and the new internal state are not propagated to the bundle. This allows you to query your agent even though it is inside a bundle, without affecting the bundle.</p></li>
+<li><p>By default, <code class="docutils literal notranslate"><span class="pre">agent.prepare_action()</span></code> is equivalent to the <code class="docutils literal notranslate"><span class="pre">quarter_step</span></code> between turns 0 and 1, and 2 and 3.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">agent.take_action(agent_observation=None,</span> <span class="pre">agent_state=None,</span> <span class="pre">increment_turn=True,</span> <span class="pre">update_action_state=True)</span></code> will query the agent’s policy engine.</dt><dd><ul>
+<li><p>if <code class="docutils literal notranslate"><span class="pre">increment_turn=True</span></code>, the turn number of the bundle is incremented by 1</p></li>
+<li><p>if <code class="docutils literal notranslate"><span class="pre">agent_state</span></code> and <code class="docutils literal notranslate"><span class="pre">agent_observation</span></code> are given, then these will be used to select the action, otherwise the agent will use values internal to the bundle.</p></li>
+<li><p>if <code class="docutils literal notranslate"><span class="pre">update_action_state</span> <span class="pre">=</span> <span class="pre">True</span></code>, then the produced action is propagated to the bundle. This allows you to query your agent even though it is inside a bundle, without affecting the bundle.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p><strong>being even more precise.</strong> You can also access the workings of each component at a more precise level.</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">## 0-&gt;1 equivalent to bundle.quarter_step()</span>
+<span class="n">obs</span><span class="p">,</span> <span class="n">reward</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="n">affect_bundle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">state</span><span class="p">,</span> <span class="n">reward</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span><span class="n">affect_bundle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">increment_turn</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1">## 1-&gt;2 equivalent to bundle.quarter_step()</span>
+<span class="n">action</span><span class="p">,</span> <span class="n">reward</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">take_action</span><span class="p">(</span> <span class="n">increment_turn</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">task_transition</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You will find this useful if you need to query an agent without affecting the bundle.</p>
+</div></blockquote>
+</li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="inference_engine.html" class="btn btn-neutral float-left" title="The Inference Engines" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="rng.html" class="btn btn-neutral float-right" title="Random Number Generators" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

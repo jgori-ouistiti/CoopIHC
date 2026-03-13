@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Interaction Model &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Space" href="space.html" />
+    <link rel="prev" title="Assistants that simulate users" href="simulating_rollouts.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">The Interaction Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#commitments-and-assumptions">Commitments and Assumptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#user-assistance-model">User Assistance Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#library-architecture">Library Architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#decision-theoretic-models">Decision-Theoretic Models</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rng.html">Random Number Generators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rendering.html">Rendering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="highlevel_objects.html">High-Level objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">The Interaction Model</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/guide/interaction_model.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="the-interaction-model">
+<h1>The Interaction Model<a class="headerlink" href="#the-interaction-model" title="Permalink to this headline"></a></h1>
+<p>This library builds on the idea that the successful interaction between a human and a computer is in many cases a problem of <strong>cooperation</strong>.</p>
+<section id="commitments-and-assumptions">
+<h2>Commitments and Assumptions<a class="headerlink" href="#commitments-and-assumptions" title="Permalink to this headline"></a></h2>
+<p>In designing the library, we made the following theoretical commitments:</p>
+<ul class="simple">
+<li><p>Users go through states, which represent a given user context (e.g. a set of preferences or abilities that may evolve over time);</p></li>
+<li><p>User observations can be incomplete and noisy;</p></li>
+<li><p>Users are (imperfectly) rational, meaning they are assumed to be maximizing a utility function under certain constraints. In particular, user behavior is driven by scalar reward maximization;</p></li>
+<li><p>Users may maintain internal models of their environment;</p></li>
+<li><p>Systems may also, and will usually, benefit from maintaining internal models of the user;</p></li>
+<li><p>Users and systems may adapt to each other;</p></li>
+<li><p>Efficient system behavior can be attained by maximizing scalar rewards.</p></li>
+</ul>
+<p>The result is a symmetric, stateful characterization of models of both users and artificial systems which have the ability to make observations, perform inferences and produce actions as a result.</p>
+</section>
+<section id="user-assistance-model">
+<h2>User Assistance Model<a class="headerlink" href="#user-assistance-model" title="Permalink to this headline"></a></h2>
+<p>At a high level, <em>CoopIHC</em> builds on a model of user assistance (<a class="reference internal" href="#interaction-model-fig-label">See Figure</a>), where a user and an assistant work together to drive a task toward a goal state:</p>
+<ul class="simple">
+<li><p>A task is represented by a state <span class="math notranslate nohighlight">\(s_T\)</span>. Accomplishing that task usually means driving the task state to a goal state.</p></li>
+<li><p>A user, who wants to drive the task to a goal state, and can issue some actions.</p></li>
+<li><p>An assistant, who is here to help (assist) the user drive the task state to a goal state, and can issue actions as well.</p></li>
+</ul>
+<p>The model further assumes that the user and assistant act sequentially (one after the other).</p>
+<div class="figure" id="id1" style="text-align: center">
+<span id="interaction-model-fig-label"></span><p><img width="80%" src="../_images/tikz-9c7d3d22e136ca9a4c850415c7ad7b93ef665917.png" alt="Figure made with TikZ" /></p>
+<p><span class="caption-number">Fig. 7 </span><span class="caption-text">Model of user assistance</span></p>
+</div><p>Both the user and assistant (generically referred to as <strong>agents</strong>) are fundamentally described by their ability to produce observations, make inferences and take actions:</p>
+<ol class="arabic simple">
+<li><p>They have an internal state (<span class="math notranslate nohighlight">\(s_U\)</span> and <span class="math notranslate nohighlight">\(s_A\)</span> for the user and assistant respectively), which may be used to store, for example, goals, preferences, model parameters.</p></li>
+<li><p>They observe (perfectly or partially) the various states of the  interaction model. When making an observation, the agents may receive a reward to model some positive or negative effects of observation; for example, observations may take some time to be created (negative reward) or may satisfy a curiosity (positive reward).</p></li>
+<li><p>Based on these observations, agents make inferences that change their internal states. The agents again may receive a reward to account for situations where there is a cost (e.g. mental effort, computational resources) or a benefit (e.g. satisfaction) to inferring.</p></li>
+<li><p>Based on their internal states and their observations, agents take actions as dictated by a policy. Those actions may have an effect on the other states (e.g. the task state) of the interaction model.</p></li>
+</ol>
+<div class="figure" id="id2" style="text-align: center"><p><img width="50%" src="../_images/tikz-3510aaf44fa2d1d28bb89e8d5d884018caa479cb.png" alt="Figure made with TikZ" /></p>
+<p><span class="caption-number">Fig. 8 </span><span class="caption-text">Order of Sequential Operations</span></p>
+</div><div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The sequential nature of actions is not a strong assumption: simultaneous play can always be achieved by delaying the effect of one’s action to the other’s turn. It can also be argued that no real simultaneous play is ever possible.</p>
+</div>
+</section>
+<section id="library-architecture">
+<h2>Library Architecture<a class="headerlink" href="#library-architecture" title="Permalink to this headline"></a></h2>
+<p>The model presented before rests on the ideas of agents with states, with abilities to make observations, perform inferences and take actions. The library integrates these ideas by giving and providing a simple and normalized way of expressing each of those components so that various components can be used interchangeably.
+The resulting architecture of the library is displayed below.</p>
+<figure class="align-default" id="id3">
+<a class="reference internal image-reference" href="../_images/lib_architecture.png"><img alt="../_images/lib_architecture.png" src="../_images/lib_architecture.png" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 9 </span><span class="caption-text">The general architecture of an interaction context in <em>CoopIHC</em></span><a class="headerlink" href="#id3" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+<p>Key components of the library are the following:</p>
+<ul class="simple">
+<li><p>All states of the model, as well as the last actions produced by both agents are joined into a single <strong>game state</strong>;</p></li>
+<li><p>Observations are produced by <strong>observation engines</strong>, applying some transformation to the entire game state.</p></li>
+<li><p>Inferences are performed by <strong>inference engines</strong>, using the current agent’s internal state and observations as input.</p></li>
+<li><p>Actions are taken by <strong>policies</strong>, using the current agent’s internal state and observation as input.</p></li>
+<li><p>User and assistant actions make the task state transition to a new state. If the goal state is reached, the task finishes.</p></li>
+<li><p>All these components may issue rewards, which are collected by both agents.</p></li>
+<li><p>User, assistants and tasks are combined to a single object by a <code class="docutils literal notranslate"><span class="pre">Bundle</span></code>. The interface of that object depends on how the bundle is instantiated (see below).</p></li>
+</ul>
+<p>When using the library, you will need to specify states as well as observation engines, inference engines and policies. You can reuse existing components if available or implement your own.</p>
+</section>
+<section id="decision-theoretic-models">
+<h2>Decision-Theoretic Models<a class="headerlink" href="#decision-theoretic-models" title="Permalink to this headline"></a></h2>
+<p>The model of user assistance presented above can be formulated as a Partially Observable Stochastic Game (POSG). The POSG ia a very general model of decision making. It describes sequential decision making for <em>multiple agents</em> in a <em>stochastic</em> environment with <em>imperfect observability</em>. POSG simplify to many special cases (see Table 1 for some examples), including the well-known MDP.
+This means that problems of interaction can be converted to generic decision making models, by using an appropriate <code class="xref py py-mod docutils literal notranslate"><span class="pre">Bundle</span></code>, for which generic off-the-shelf solutions may already exist.</p>
+<table class="colwidths-auto docutils align-center" id="id4">
+<caption><span class="caption-number">Table 1 </span><span class="caption-text">POSG and subclasses of POSG</span><a class="headerlink" href="#id4" title="Permalink to this table"></a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Observation</p></th>
+<th class="head"><p>Single-Agent</p></th>
+<th class="head"><p>Multi-Agent</p></th>
+<th class="head"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Perfect</p></td>
+<td><p>MDP</p></td>
+<td><p>MMDP</p></td>
+<td><p>same reward</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td><p>Markov Games</p></td>
+<td><p>different reward</p></td>
+</tr>
+<tr class="row-even"><td><p>Imperfect</p></td>
+<td><p>POMDP</p></td>
+<td><p>Dec-POMDP</p></td>
+<td><p>same reward</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td><p>POSG</p></td>
+<td><p>different reward</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="simulating_rollouts.html" class="btn btn-neutral float-left" title="Assistants that simulate users" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="space.html" class="btn btn-neutral float-right" title="Space" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modularity &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Using Reinforcement Learning" href="learning.html" />
+    <link rel="prev" title="More Complex Example" href="more_complex_example.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Modularity</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#description-of-the-example">Description of the example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#eye-movement-model">Eye-movement model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#adapting-the-existing-task">Adapting the existing task</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-observation-engine">The Observation Engine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#assembling-everything">Assembling everything</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bundles.html">Bundles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rng.html">Random Number Generators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rendering.html">Rendering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="highlevel_objects.html">High-Level objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Modularity</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/guide/modularity.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="modularity">
+<h1>Modularity<a class="headerlink" href="#modularity" title="Permalink to this headline"></a></h1>
+<figure class="align-default" id="id2">
+<a class="reference internal image-reference" href="../_images/modules.png"><img alt="../_images/modules.png" src="../_images/modules.png" style="width: 800px;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 2 </span><span class="caption-text">Constructing a complex user model: An model of foveal vision and motor control is used to respectively define part of an observation engine and a policy</span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
+<p>As we have seen, you can create new classes from scratch, by subclassing one of the coopihc classes, adding a few methods, and adhering to a few conventions.</p>
+<p>Another way in which one can create new classes is by re-using existing models or components and wrapping them appropriately.
+In this example we present a fully worked example where a complex sequence of interactions is described in a relatively simple manner using relatively few lines of code, and by maximally re-using existing code.</p>
+<section id="description-of-the-example">
+<h2>Description of the example<a class="headerlink" href="#description-of-the-example" title="Permalink to this headline"></a></h2>
+<p>In the <a class="reference internal" href="more_complex_example.html"><span class="doc">previous example</span></a>, we presented a BIG assistant which would assist a user in selecting a target. While proving more efficient than the unassisted version, that evaluation might have been biased: since the user cannot predict the next position of the cursor when using the BIG assistant, it needs to locate the target which is costly. This cost had not been accounted for, which somewhat inflates our evaluation of BIGGain. In this example, we re-use an existing bundle that was made to model eye movements, and incorporate it to our user model, to simulate the time it takes to find the cursor.</p>
+<p>The steps in this example are:</p>
+<ol class="arabic simple">
+<li><p>Definition of a Bundle that describes how the eye displaces its fovea to locate a target</p></li>
+<li><p>After each assistant intervention, the cursor jumps to a new unexpected location. We are going to use the foveal vision bundle to simulate the time it takes to relocate the cursor, by resetting the foveal vision to the state after the intervention, and wrap it up into an observation engine.</p></li>
+<li><p>The previous observation engine only deals with cursor information, but not the other information. We are going to cascade the old default engine and the new observation engine into a single one.</p></li>
+<li><p>This new cascaded observation engine is used instead of the old one in the user model.</p></li>
+</ol>
+</section>
+<section id="eye-movement-model">
+<h2>Eye-movement model<a class="headerlink" href="#eye-movement-model" title="Permalink to this headline"></a></h2>
+<p>We start off from a model of foveal vision which specifies how the eye can locate a target through displacement of the fovea. This model is adapted from <a class="reference internal" href="#chen2021" id="id1"><span>[Chen2021]</span></a> and is available in the CoopIHC-zoo <a class="reference external" href="https://github.com/jgori-ouistiti/CoopIHC-zoo/tree/main/coopihczoo/eye">eye-repository</a>.</p>
+<p>Without going in to the details, the model explains how beliefs about where the target might be is refined by successive jumps from the fovea.</p>
+<ol class="arabic simple">
+<li><p>The controller of the fovea holds a belief regarding where the target might be located in the space.</p></li>
+<li><p>A target outside of the foveal area (a small ellipsis) is visible but through noisy observations, where the further away from that ellipsis the noisier it is.</p></li>
+<li><p>Based on that information, the controller decides on the new foveal position. However, when moving, signal-dependent motor noise affects the actual position (the higher the amplitude of foveal movement, the higher the amplitude of the noise).</p></li>
+</ol>
+<p>As usual, we define a bundle by pairing the user model with a task.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">coopihczoo.eye.envs</span> <span class="kn">import</span> <span class="n">ChenEyePointingTask</span>
+<span class="kn">from</span> <span class="nn">coopihczoo.eye.users</span> <span class="kn">import</span> <span class="n">ChenEye</span>
+
+<span class="kn">from</span> <span class="nn">coopihc.bundle.Bundle</span> <span class="kn">import</span> <span class="n">Bundle</span>
+
+<span class="c1"># Parameters tuned on empirical data</span>
+<span class="n">fitts_W</span> <span class="o">=</span> <span class="mf">4e-2</span>
+<span class="n">fitts_D</span> <span class="o">=</span> <span class="mf">0.8</span>
+<span class="n">perceptualnoise</span> <span class="o">=</span> <span class="mf">0.2</span>
+<span class="n">oculomotornoise</span> <span class="o">=</span> <span class="mf">0.2</span>
+
+<span class="c1"># Models and tasks</span>
+<span class="n">task</span> <span class="o">=</span> <span class="n">ChenEyePointingTask</span><span class="p">(</span><span class="n">fitts_W</span><span class="p">,</span> <span class="n">fitts_D</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">user</span> <span class="o">=</span> <span class="n">ChenEye</span><span class="p">(</span><span class="n">perceptualnoise</span><span class="p">,</span> <span class="n">oculomotornoise</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">obs_bundle</span> <span class="o">=</span> <span class="n">Bundle</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A render of the various states is shown below (for the 2D version, more easily interpretable), where the red circle is the target, the green circle the current position of the fovea and the red start the current mean belief about target location. The user render also shows the beliefs confidence ellipses.</p>
+<a class="reference internal image-reference" href="../_images/cheneye2d_0.png"><img alt="../_images/cheneye2d_0.png" src="../_images/cheneye2d_0.png" style="width: 49%;" /></a>
+<a class="reference internal image-reference" href="../_images/cheneye2d_1.png"><img alt="../_images/cheneye2d_1.png" src="../_images/cheneye2d_1.png" style="width: 49%;" /></a>
+<a class="reference internal image-reference" href="../_images/cheneye2d_2.png"><img alt="../_images/cheneye2d_2.png" src="../_images/cheneye2d_2.png" style="width: 49%;" /></a>
+<a class="reference internal image-reference" href="../_images/cheneye2d_3.png"><img alt="../_images/cheneye2d_3.png" src="../_images/cheneye2d_3.png" style="width: 49%;" /></a>
+<section id="adapting-the-existing-task">
+<h3>Adapting the existing task<a class="headerlink" href="#adapting-the-existing-task" title="Permalink to this headline"></a></h3>
+<p>The task that is solved by the bundle just above is to position the eye on top of the target. Basically, the cursor position before assistance provides the starting point, while the cursor position after assistance (and potentially a jump) provides the target.
+We will then let the bundle play out in time, finding the cursor in some number of steps.</p>
+<p>We therefore add a state to the task for the old position of the cursor, leaving the rest of the logic unchanged</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">oldpositionMemorizedSimplePointingTask</span><span class="p">(</span><span class="n">SimplePointingTask</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">memorized</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dic</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">dic</span><span class="o">=</span><span class="n">dic</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;oldposition&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;position&quot;</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">on_user_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">memorized</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;position&quot;</span><span class="p">])</span>
+        <span class="n">obs</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">is_done</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_user_action</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">obs</span><span class="p">[</span><span class="s2">&quot;oldposition&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">memorized</span>
+        <span class="k">return</span> <span class="n">obs</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">is_done</span>
+
+    <span class="k">def</span> <span class="nf">on_assistant_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">memorized</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;position&quot;</span><span class="p">])</span>
+        <span class="n">obs</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">is_done</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_assistant_action</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">obs</span><span class="p">[</span><span class="s2">&quot;oldposition&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">memorized</span>
+        <span class="k">return</span> <span class="n">obs</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">is_done</span>
+
+
+<span class="n">pointing_task</span> <span class="o">=</span> <span class="n">oldpositionMemorizedSimplePointingTask</span><span class="p">(</span>
+    <span class="n">gridsize</span><span class="o">=</span><span class="mi">31</span><span class="p">,</span> <span class="n">number_of_targets</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;position&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="the-observation-engine">
+<h3>The Observation Engine<a class="headerlink" href="#the-observation-engine" title="Permalink to this headline"></a></h3>
+<p>The crux of the method here is to wrap the bundle previously defined into an observation engine. As explained in <a class="reference internal" href="observation_engine.html"><span class="doc">The Observation Engines</span></a>, the only constraint for an observation engine is that it subclasses an existing <code class="docutils literal notranslate"><span class="pre">ObservationEngine</span></code> and defines an <code class="docutils literal notranslate"><span class="pre">observe</span></code> method with the right signature. Here we subclass from <code class="docutils literal notranslate"><span class="pre">WrapAsObservationEngine</span></code>, which is exactly made for this purpose (i.e. when you need to define an observation engine from a bundle).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">coopihc</span> <span class="kn">import</span> <span class="n">WrapAsObservationEngine</span>
+
+
+<span class="k">class</span> <span class="nc">ChenEyeObservationEngineWrapper</span><span class="p">(</span><span class="n">WrapAsObservationEngine</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs_bundle</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">obs_bundle</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">observe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">game_state</span><span class="p">):</span>
+
+        <span class="c1"># Deal with the case where the cursor is in the same position as the target. While this would never happen with a continuous model like in the eye model, the discrete pointing model here can lead to distance of zero, which leads to singular matrices later on.</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;task_state&quot;</span><span class="p">][</span><span class="s2">&quot;position&quot;</span><span class="p">]</span>
+            <span class="o">==</span> <span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;task_state&quot;</span><span class="p">][</span><span class="s2">&quot;oldposition&quot;</span><span class="p">]</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="n">game_state</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="c1"># set observation bundle to the right state and cast it to the right space. See the StateElement entry in the API Reference to read more about cast</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;task_state&quot;</span><span class="p">][</span><span class="s2">&quot;position&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;task_state&quot;</span><span class="p">][</span><span class="s2">&quot;target&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">fixation</span> <span class="o">=</span> <span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;task_state&quot;</span><span class="p">][</span><span class="s2">&quot;oldposition&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;task_state&quot;</span><span class="p">][</span><span class="s2">&quot;fixation&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Now that the target and initial fixation have been determined, we can reset the eye bundle to that specific situation, via a forced reset</span>
+        <span class="n">reset_dic</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;task_state&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="n">target</span><span class="p">,</span> <span class="s2">&quot;fixation&quot;</span><span class="p">:</span> <span class="n">fixation</span><span class="p">}}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">dic</span><span class="o">=</span><span class="n">reset_dic</span><span class="p">,</span> <span class="n">turn</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Actually play the eye game</span>
+        <span class="n">is_done</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">obs</span><span class="p">,</span> <span class="n">reward_dic</span><span class="p">,</span> <span class="n">is_done</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+            <span class="n">rewards</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">reward_dic</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+            <span class="k">if</span> <span class="n">is_done</span><span class="p">:</span>
+                <span class="k">break</span>
+
+        <span class="c1"># cast back to initial space and return</span>
+        <span class="n">obs</span><span class="p">[</span><span class="s2">&quot;task_state&quot;</span><span class="p">][</span><span class="s2">&quot;fixation&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;task_state&quot;</span><span class="p">][</span><span class="s2">&quot;oldposition&quot;</span><span class="p">])</span>
+        <span class="n">obs</span><span class="p">[</span><span class="s2">&quot;task_state&quot;</span><span class="p">][</span><span class="s2">&quot;target&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">game_state</span><span class="p">[</span><span class="s2">&quot;task_state&quot;</span><span class="p">][</span><span class="s2">&quot;position&quot;</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">game_state</span><span class="p">,</span> <span class="n">rewards</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Notice the use of the cast and forced reset mechanisms, which are documented in the API Reference, and should prove very useful.</p>
+</div>
+<p>This engine specifically attributes a cost to observing the cursor. To combine it with the existing observation engine (which observes the targets etc.), we use another observation engine specifically made to combine other observation engines serially, namely a <code class="docutils literal notranslate"><span class="pre">CascadedObservationEngine</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">coopihc.observation.RuleObservationEngine</span> <span class="kn">import</span> <span class="n">RuleObservationEngine</span>
+<span class="kn">from</span> <span class="nn">coopihc.observation.CascadedObservationEngine</span> <span class="kn">import</span> <span class="n">CascadedObservationEngine</span>
+<span class="kn">from</span> <span class="nn">coopihc.observation.utils</span> <span class="kn">import</span> <span class="n">base_user_engine_specification</span>
+
+<span class="c1"># Define cascaded observation engine</span>
+<span class="n">cursor_tracker</span> <span class="o">=</span> <span class="n">ChenEyeObservationEngineWrapper</span><span class="p">(</span><span class="n">obs_bundle</span><span class="p">)</span>
+
+<span class="n">default_observation_engine</span> <span class="o">=</span> <span class="n">RuleObservationEngine</span><span class="p">(</span>
+    <span class="n">deterministic_specification</span><span class="o">=</span><span class="n">base_user_engine_specification</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">new_observation_engine</span> <span class="o">=</span> <span class="n">CascadedObservationEngine</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">cursor_tracker</span><span class="p">,</span> <span class="n">default_observation_engine</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="assembling-everything">
+<h3>Assembling everything<a class="headerlink" href="#assembling-everything" title="Permalink to this headline"></a></h3>
+<p>We can now assemble everything: First, we reload the user model, but plug in our new observation engine. Then, we repeat the same process as before, bundling the user model with BIGGain and playing an episode of the game.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">coopihczoo.pointing.users</span> <span class="kn">import</span> <span class="n">CarefulPointer</span>
+<span class="kn">from</span> <span class="nn">coopihczoo.pointing.assistants</span> <span class="kn">import</span> <span class="n">BIGGain</span>
+
+<span class="n">binary_user</span> <span class="o">=</span> <span class="n">CarefulPointer</span><span class="p">(</span><span class="n">override_observation_engine</span><span class="o">=</span><span class="p">(</span><span class="n">new_observation_engine</span><span class="p">,</span> <span class="p">{}))</span> <span class="c1"># Override the old observation engine and plug in our new one.</span>
+<span class="n">BIGpointer</span> <span class="o">=</span> <span class="n">BIGGain</span><span class="p">()</span>
+
+<span class="n">bundle</span> <span class="o">=</span> <span class="n">Bundle</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="n">pointing_task</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">binary_user</span><span class="p">,</span> <span class="n">assistant</span><span class="o">=</span><span class="n">BIGpointer</span><span class="p">)</span>
+<span class="n">game_state</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">turn</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">bundle</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s2">&quot;plotext&quot;</span><span class="p">)</span>
+<span class="n">reward_list</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+    <span class="n">obs</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">is_done</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+    <span class="n">reward_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rewards</span><span class="p">)</span>
+    <span class="n">bundle</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="s2">&quot;plotext&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_done</span><span class="p">:</span>
+        <span class="k">break</span>
+</pre></div>
+</div>
+<dl class="citation">
+<dt class="label" id="chen2021"><span class="brackets"><a class="fn-backref" href="#id1">Chen2021</a></span></dt>
+<dd><p>Chen, Xiuli, et al. “An adaptive model of gaze-based selection.” Proceedings of the 2021 CHI Conference on Human Factors in Computing Systems. 2021.</p>
+</dd>
+</dl>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="more_complex_example.html" class="btn btn-neutral float-left" title="More Complex Example" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="learning.html" class="btn btn-neutral float-right" title="Using Reinforcement Learning" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Random Number Generators &mdash; CoopIHC 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Rendering" href="rendering.html" />
+    <link rel="prev" title="Bundles" href="bundles.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            CoopIHC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="more_complex_example.html">More Complex Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modularity.html">Modularity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="learning.html">Using Reinforcement Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="realuser.html">Interfacing CoopIHC with a real user</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulating_rollouts.html">Assistants that simulate users</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="interaction_model.html">The Interaction Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="space.html">Space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stateelement.html">StateElement</a></li>
+<li class="toctree-l1"><a class="reference internal" href="state.html">State</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="policy.html">Policies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observation_engine.html">The Observation Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference_engine.html">The Inference Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bundles.html">Bundles</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Random Number Generators</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#seeding-sample">Seeding <code class="docutils literal notranslate"><span class="pre">sample()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#calling-a-rng-from-within-coopihc-code">Calling a RNG from within <em>CoopIHC</em> code</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="rendering.html">Rendering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="highlevel_objects.html">High-Level objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_modeling.html">User Modeling Facilitation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wrappers.html">Wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository.html">Task and Agent Repository</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See also</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">    Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="terminology.html">Terminology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CoopIHC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Random Number Generators</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/guide/rng.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="random-number-generators">
+<h1>Random Number Generators<a class="headerlink" href="#random-number-generators" title="Permalink to this headline"></a></h1>
+<p>Usually when dealing with stochastic processes, there comes a point where you want to set the seed used by the Random Number Generator (RNG). This may be for reproducing results by a colleague, forcing a deterministic behavior when debugging a code etc.</p>
+<p><em>CoopIHC</em> supports setting seeds for the following two sources:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">sample()</span></code> method of <code class="docutils literal notranslate"><span class="pre">Space</span></code>.</p></li>
+<li><p>Other calls to a RNG, e.g., when implementing a stochastic transition function.</p></li>
+</ul>
+</div></blockquote>
+<section id="seeding-sample">
+<h2>Seeding <code class="docutils literal notranslate"><span class="pre">sample()</span></code><a class="headerlink" href="#seeding-sample" title="Permalink to this headline"></a></h2>
+<p>To set the seed for all spaces, you can directly pass a <code class="docutils literal notranslate"><span class="pre">seed</span></code> keyword argument to <code class="docutils literal notranslate"><span class="pre">Bundle</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">example_task</span> <span class="o">=</span> <span class="n">ExampleTask</span><span class="p">()</span>
+<span class="linenos"> 2</span><span class="n">example_user</span> <span class="o">=</span> <span class="n">ExampleUser</span><span class="p">()</span>
+<span class="linenos"> 3</span><span class="n">example_assistant</span> <span class="o">=</span> <span class="n">ExampleAssistant</span><span class="p">()</span>
+<span class="linenos"> 4</span><span class="n">bundle</span> <span class="o">=</span> <span class="n">Bundle</span><span class="p">(</span>
+<span class="linenos"> 5</span>    <span class="n">task</span><span class="o">=</span><span class="n">example_task</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">example_user</span><span class="p">,</span> <span class="n">assistant</span><span class="o">=</span><span class="n">example_assistant</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1234</span>
+<span class="linenos"> 6</span><span class="p">)</span>
+<span class="linenos"> 7</span><span class="n">bundle</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos"> 8</span><span class="c1"># &gt;&gt;&gt; print(bundle.state)</span>
+<span class="linenos"> 9</span><span class="c1"># ----------------  -----------  -  -------------------------------------</span>
+<span class="linenos">10</span><span class="c1"># game_info         turn_index   0  CatSet(4) - int8</span>
+<span class="linenos">11</span><span class="c1">#                   round_index  0  Numeric() - int64</span>
+<span class="linenos">12</span><span class="c1"># task_state        x            0  Numeric() - int64 seed:1234(0, 0)</span>
+<span class="linenos">13</span><span class="c1"># user_state        goal         4  Numeric() - int64 seed:1234(1, 0, 0)</span>
+<span class="linenos">14</span><span class="c1"># user_action       action       0  Numeric() - int64 seed:1234(1, 1, 0)</span>
+<span class="linenos">15</span><span class="c1"># assistant_action  action       0  CatSet(1) - int64 seed:1234(2, 1, 0))</span>
+<span class="linenos">16</span><span class="c1"># ----------------  -----------  -  -------------------------------------</span>
+<span class="linenos">17</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can set seeds manually, by calling an object’s <code class="docutils literal notranslate"><span class="pre">_set_seed()</span></code> method, or by passing a <code class="docutils literal notranslate"><span class="pre">seedsequence</span></code> keyword argument to the object’s constructor. However, setting seeds via the bundle is the preferred way, because it ensures a very low risk of RNG collisions between the various spaces, see <a class="reference external" href="https://numpy.org/doc/stable/reference/random/parallel.html">NumPy’s documentation for parallel RNG</a></p>
+</div>
+</section>
+<section id="calling-a-rng-from-within-coopihc-code">
+<h2>Calling a RNG from within <em>CoopIHC</em> code<a class="headerlink" href="#calling-a-rng-from-within-coopihc-code" title="Permalink to this headline"></a></h2>
+<p>You can call an RNG, which will use a spawn from the same seed that was used during the bundle initialization, by calling a <em>CoopIHC</em> component’s <code class="docutils literal notranslate"><span class="pre">_get_rng()</span></code> method.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Inside a *CoopIHC* component</span>
+<span class="c1"># generate a random number</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">get_rng</span><span class="p">()</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="bundles.html" class="btn btn-neutral float-left" title="Bundles" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="rendering.html" class="btn btn-neutral float-right" title="Rendering" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Julien Gori.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
