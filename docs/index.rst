@@ -14,7 +14,7 @@ Welcome to CoopIHC's documentation!
     This is work in progress. Documentation  may be outdated. Please contact me directly or raise an issue if appropriate.
 
 
-*CoopIHC* (pronounced "kopik") is a Python module that provides a common basis for describing **computational Human Computer Interaction (HCI)** contexts, mostly targeted at expressing models of users and intelligent assistants. See our `paper <https://jgori-ouistiti.github.io/academic/files/main_manuscript.pdf>`
+*CoopIHC* (pronounced "kopik") is a Python module that provides a common basis for describing **computational Human Computer Interaction (HCI)** contexts, mostly targeted at expressing models of users and intelligent assistants. See our `paper <https://jgori-ouistiti.github.io/academic/files/main_manuscript.pdf>`_
 
 1. It provides a common conceptual and practical reference, which facilitates reusing and helps extending other researcher's work. Some examples that use *CoopIHC* can be found in the `CoopIHC-Zoo <https://jgori-ouistiti.github.io/CoopIHC-zoo/>`_. These full examples, or parts thereof, can be re-used by a *CoopIHC* end-user.
 2. It can help design intelligent assistants. For example, you can wrap a CoopIHC :py:class:`Bundle<../coopihc.bundle.Bundle.Bundle>` into an environment that is compatible with `gym <https://gym.openai.com/>`_ and use off-the-shelf Deep Reinforcement Learning algorithms to train a policy for an intelligent assistant.
